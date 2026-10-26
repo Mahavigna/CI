@@ -234,11 +234,128 @@ static float fuzzy_rules(
     return result;
 }
 
+static void plot_strength_functions(char *filename)
+{
+    if (!FUZZY_PLOT(
+        filename ,
+        "Paint Strength Membership Functions",
+        0.0f,
+        100.0f,
+        1.0f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Little",
+            "#ef4444",
+            strength_little
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Fair",
+            "#22c55e",
+            strength_fair
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Massive",
+            "#3b82f6",
+            strength_massive
+        ),
+    )) {
+        fprintf(
+            stderr,
+            "Failed to create %s.svg\n",
+            filename
+        );
+
+        return;
+    }
+
+    printf(
+        "\nMembership plot written to %s.svg\n",
+        filename   
+    );
+}
+
+static void plot_mixture_content_functions(char *filename)
+{
+    if (!FUZZY_PLOT(
+        filename,
+        "Mixture Content Membership Functions",
+        0.0f,
+        100.0f,
+        1.0f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Little",
+            "#ef4444",
+            mixture_content_small
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Fair",
+            "#22c55e",
+            mixture_content_huge
+        ),
+    )) {
+        fprintf(
+            stderr,
+            "Failed to create %s.svg\n",
+            filename
+        );
+
+        return;
+    }
+
+    printf(
+        "\nMembership plot written to %s.svg\n",
+        filename
+    );
+}
+
+static void plot_temperature_functions(char *filename)
+{
+    if (!FUZZY_PLOT(
+        filename,
+        "Temperature Membership Functions",
+        0.0f,
+        100.0f,
+        1.0f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Little",
+            "#ef4444",
+            temperature_low
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Fair",
+            "#22c55e",
+            temperature_medium
+        ),
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Massive",
+            "#3b82f6",
+            temperature_high
+        ),
+    )) {
+        fprintf(
+            stderr,
+            "Failed to create %s.svg\n",
+            filename
+        );
+
+        return;
+    }
+
+    printf(
+        "\nMembership plot written to %s.svg\n",
+        filename
+    );
+}
 
 /* ==========================================================
  * Program entry point
  * ========================================================== */
-
 int main(void)
 {
     float temperature;
@@ -250,14 +367,22 @@ int main(void)
     printf("Enter the temperature (C): ");
 
     if (scanf("%f", &temperature) != 1) {
-        fprintf(stderr, "Invalid temperature input.\n");
+        fprintf(
+            stderr,
+            "Invalid temperature input.\n"
+        );
+
         return 1;
     }
 
     printf("Enter the mixture content: ");
 
     if (scanf("%f", &mixture_content) != 1) {
-        fprintf(stderr, "Invalid mixture-content input.\n");
+        fprintf(
+            stderr,
+            "Invalid mixture-content input.\n"
+        );
+
         return 1;
     }
 
@@ -271,6 +396,10 @@ int main(void)
         "\nPaint strength: %.5f\n",
         strength
     );
+
+    plot_strength_functions("strength");
+    plot_mixture_content_functions("mixture_content");
+    plot_temperature_functions("temperature");
 
     return 0;
 }

@@ -49,6 +49,88 @@ typedef struct FuzzyRules {
     size_t capacity;
 } fuzzy_rules_t;
 
+typedef struct FuzzyPlot {
+    FILE *file;
+
+    float lower;
+    float upper;
+    float step;
+
+    int width;
+    int height;
+    int padding;
+
+    int plot_count;
+} fuzzy_plot_t;
+
+typedef struct FuzzyPlotSeries {
+    char *name;
+    char *color;
+    fuzzy_output_function_t function;
+} fuzzy_plot_series_t;
+
+bool fuzzy_plot_many(
+    char *filename,
+    char *title,
+    float lower,
+    float upper,
+    float step,
+    const fuzzy_plot_series_t series[],
+    size_t series_count
+);
+
+#define FUZZY_PLOT_FUNCTION(function_arg, color_arg)        \
+    (fuzzy_plot_series_t) {                                 \
+        .name = #function_arg,                              \
+        .color = (color_arg),                               \
+        .function = (function_arg)                          \
+    }
+
+#define FUZZY_PLOT_FUNCTION_NAMED(                          \
+    name_arg, color_arg, function_arg                       \
+)                                                           \
+    (fuzzy_plot_series_t) {                                 \
+        .name = (name_arg),                                 \
+        .color = (color_arg),                               \
+        .function = (function_arg)                          \
+    }
+
+#define FUZZY_PLOT(                                         \
+    filename_arg, title_arg, lower_arg, upper_arg,           \
+    step_arg, ...                                           \
+)                                                           \
+    fuzzy_plot_many(                                        \
+        (filename_arg),                                     \
+        (title_arg),                                        \
+        (lower_arg),                                        \
+        (upper_arg),                                        \
+        (step_arg),                                         \
+        (const fuzzy_plot_series_t[]) { __VA_ARGS__ },      \
+        sizeof((const fuzzy_plot_series_t[]) {               \
+            __VA_ARGS__                                     \
+        }) / sizeof(fuzzy_plot_series_t)                    \
+    )
+
+bool fuzzy_plot_begin(
+    fuzzy_plot_t *plot,
+    char *filename,
+    char *title,
+    float lower,
+    float upper,
+    float step
+);
+
+bool fuzzy_plot_add(
+    fuzzy_plot_t *plot,
+    char *name,
+    char *color,
+    fuzzy_output_function_t function
+);
+
+void fuzzy_plot_end(
+    fuzzy_plot_t *plot
+);
+
 #define FUZZY_RULE_ADD(rules, value, output_function) \
     fuzzy_rules_add(                                  \
         (rules),                                      \
@@ -179,6 +261,9 @@ static float fuzzy_apply_hedge(float membership, float hedge)
 
     return powf(membership, hedge);
 }
+
+
+
 
 
 /*
@@ -803,6 +888,444 @@ void fuzzy_rules_free(fuzzy_rules_t *rules)
     rules->rules = NULL;
     rules->count = 0;
     rules->capacity = 0;
+}
+
+static void fuzzy_plot_write_text(
+    FILE *file,
+    const char *text
+)
+{
+    if (file == NULL || text == NULL) {
+        return;
+    }
+
+    while (*text != '\0') {
+        switch (*text) {
+            case '&':
+                fputs("&amp;", file);
+                break;
+
+            case '<':
+                fputs("&lt;", file);
+                break;
+
+            case '>':
+                fputs("&gt;", file);
+                break;
+
+            case '"':
+                fputs("&quot;", file);
+                break;
+
+            case '\'':
+                fputs("&apos;", file);
+                break;
+
+            default:
+                fputc(*text, file);
+                break;
+        }
+
+        text++;
+    }
+}
+
+bool fuzzy_plot_begin(
+    fuzzy_plot_t *plot,
+    char *filename,
+    char *title,
+    float lower,
+    float upper,
+    float step
+)
+{
+    if (
+        plot == NULL ||
+        filename == NULL ||
+        lower >= upper ||
+        step <= 0.0f
+    ) {
+        return false;
+    }
+
+    plot->file = fopen(filename, "w");
+
+    if (plot->file == NULL) {
+        return false;
+    }
+
+    plot->lower = lower;
+    plot->upper = upper;
+    plot->step = step;
+
+    plot->width = 900;
+    plot->height = 600;
+    plot->padding = 80;
+    plot->plot_count = 0;
+
+    FILE *file = plot->file;
+
+    int left = plot->padding;
+    int right = plot->width - plot->padding;
+    int top = plot->padding;
+    int bottom = plot->height - plot->padding;
+
+    fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+
+    fprintf(
+        file,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
+        plot->width,
+        plot->height,
+        plot->width,
+        plot->height
+    );
+
+    fprintf(
+        file,
+        "<rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"white\" />\n",
+        plot->width,
+        plot->height
+    );
+
+    fprintf(
+        file,
+        "<text x=\"%d\" y=\"35\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"22\" font-weight=\"bold\" fill=\"black\">",
+        plot->width / 2
+    );
+
+    fuzzy_plot_write_text(
+        file,
+        title != NULL
+            ? title
+            : "Fuzzy Membership Functions"
+    );
+
+    fprintf(file, "</text>\n");
+
+    /*
+     * Horizontal grid lines and membership-axis labels.
+     */
+    for (int i = 0; i <= 10; i++) {
+        float membership = (float)i / 10.0f;
+
+        float y =
+            (float)bottom -
+            membership * (float)(bottom - top);
+
+        fprintf(
+            file,
+            "<line x1=\"%d\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#dddddd\" stroke-width=\"1\" />\n",
+            left,
+            y,
+            right,
+            y
+        );
+
+        fprintf(
+            file,
+            "<text x=\"%d\" y=\"%.2f\" text-anchor=\"end\" dominant-baseline=\"middle\" font-family=\"sans-serif\" font-size=\"12\" fill=\"black\">%.1f</text>\n",
+            left - 10,
+            y,
+            membership
+        );
+    }
+
+    /*
+     * Vertical grid lines and input-axis labels.
+     */
+    for (int i = 0; i <= 10; i++) {
+        float ratio = (float)i / 10.0f;
+
+        float value =
+            lower +
+            ratio * (upper - lower);
+
+        float x =
+            (float)left +
+            ratio * (float)(right - left);
+
+        fprintf(
+            file,
+            "<line x1=\"%.2f\" y1=\"%d\" x2=\"%.2f\" y2=\"%d\" stroke=\"#eeeeee\" stroke-width=\"1\" />\n",
+            x,
+            top,
+            x,
+            bottom
+        );
+
+        fprintf(
+            file,
+            "<text x=\"%.2f\" y=\"%d\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"12\" fill=\"black\">%.1f</text>\n",
+            x,
+            bottom + 22,
+            value
+        );
+    }
+
+    /*
+     * Main horizontal and vertical axes.
+     */
+    fprintf(
+        file,
+        "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"black\" stroke-width=\"2\" />\n",
+        left,
+        bottom,
+        right,
+        bottom
+    );
+
+    fprintf(
+        file,
+        "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"black\" stroke-width=\"2\" />\n",
+        left,
+        top,
+        left,
+        bottom
+    );
+
+    /*
+     * Axis titles.
+     */
+    fprintf(
+        file,
+        "<text x=\"%d\" y=\"%d\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"15\" fill=\"black\">Input value</text>\n",
+        plot->width / 2,
+        plot->height - 20
+    );
+
+    fprintf(
+        file,
+        "<text x=\"22\" y=\"%d\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"15\" fill=\"black\" transform=\"rotate(-90 22 %d)\">Membership</text>\n",
+        plot->height / 2,
+        plot->height / 2
+    );
+
+    return true;
+}
+
+bool fuzzy_plot_add(
+    fuzzy_plot_t *plot,
+    char *name,
+    char *color,
+    fuzzy_output_function_t function
+)
+{
+    if (
+        plot == NULL ||
+        plot->file == NULL ||
+        function == NULL
+    ) {
+        return false;
+    }
+
+    if (name == NULL) {
+        name = "Unnamed";
+    }
+
+    if (color == NULL) {
+        color = "black";
+    }
+
+    FILE *file = plot->file;
+
+    int left = plot->padding;
+    int right = plot->width - plot->padding;
+    int top = plot->padding;
+    int bottom = plot->height - plot->padding;
+
+    fprintf(
+        file,
+        "<polyline fill=\"none\" stroke=\"%s\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\" points=\"",
+        color
+    );
+
+    /*
+     * Use an integer sample index to avoid floating-point
+     * accumulation errors from repeatedly adding step.
+     */
+    size_t sample_count =
+        (size_t)ceilf(
+            (plot->upper - plot->lower) /
+            plot->step
+        );
+
+    for (size_t i = 0; i <= sample_count; i++) {
+        float value =
+            plot->lower +
+            (float)i * plot->step;
+
+        if (value > plot->upper) {
+            value = plot->upper;
+        }
+
+        float membership =
+            fuzzy_clamp(function(value));
+
+        float input_ratio =
+            (value - plot->lower) /
+            (plot->upper - plot->lower);
+
+        float x =
+            (float)left +
+            input_ratio * (float)(right - left);
+
+        float y =
+            (float)bottom -
+            membership * (float)(bottom - top);
+
+        fprintf(
+            file,
+            "%.2f,%.2f",
+            x,
+            y
+        );
+
+        if (i < sample_count) {
+            fputc(' ', file);
+        }
+    }
+
+    fprintf(file, "\" />\n");
+
+    /*
+     * Legend entry.
+     */
+    int legend_x = left + 15;
+
+    int legend_y =
+        top +
+        20 +
+        plot->plot_count * 24;
+
+    fprintf(
+        file,
+        "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"4\" />\n",
+        legend_x,
+        legend_y,
+        legend_x + 30,
+        legend_y,
+        color
+    );
+
+    fprintf(
+        file,
+        "<text x=\"%d\" y=\"%d\" dominant-baseline=\"middle\" font-family=\"sans-serif\" font-size=\"14\" fill=\"black\">",
+        legend_x + 40,
+        legend_y
+    );
+
+    fuzzy_plot_write_text(
+        file,
+        name
+    );
+
+    fprintf(file, "</text>\n");
+
+    plot->plot_count++;
+
+    return true;
+}
+
+void fuzzy_plot_end(
+    fuzzy_plot_t *plot
+)
+{
+    if (
+        plot == NULL ||
+        plot->file == NULL
+    ) {
+        return;
+    }
+
+    fprintf(plot->file, "</svg>\n");
+
+    fclose(plot->file);
+
+    plot->file = NULL;
+}
+
+bool fuzzy_plot_many(
+    char *filename,
+    char *title,
+    float lower,
+    float upper,
+    float step,
+    const fuzzy_plot_series_t series[],
+    size_t series_count
+)
+{
+    if (
+        filename == NULL ||
+        series == NULL ||
+        series_count == 0
+    ) {
+        return false;
+    }
+
+    fuzzy_plot_t plot;
+
+    const char *plot_title = title != NULL
+        ? title
+        : "Fuzzy Membership Functions";
+
+    char plot_filename[256];
+
+    int written = snprintf(
+        plot_filename,
+        sizeof(plot_filename),
+        "%s.svg",
+        filename
+    );
+
+    if (
+        written < 0 ||
+        (size_t)written >= sizeof(plot_filename)
+    ) {
+        fprintf(
+            stderr,
+            "Plot filename is too long.\n"
+        );
+
+        return false;
+    }
+
+    if (!fuzzy_plot_begin(
+        &plot,
+        plot_filename,
+        plot_title,
+        lower,
+        upper,
+        step
+    )) {
+        return false;
+    }
+
+    for (size_t i = 0; i < series_count; i++) {
+        if (series[i].function == NULL) {
+            fuzzy_plot_end(&plot);
+            return false;
+        }
+
+        if (!fuzzy_plot_add(
+            &plot,
+            series[i].name,
+            series[i].color,
+            series[i].function
+        )) {
+            fuzzy_plot_end(&plot);
+            return false;
+        }
+    }
+
+    fuzzy_plot_end(&plot);
+
+    printf(
+        "Membership plot written to %s\n",
+        plot_filename
+    );
+
+    return true;
 }
 
 #endif /* FUZZY_IMPLEMENTATION_ONCE */
