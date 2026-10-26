@@ -19,10 +19,13 @@ $(DEMO_TARGET): $(DEMO_SOURCE) fuzzy.h
 	$(CC) $(CFLAGS) $(DEMO_SOURCE) $(LDFLAGS) -o $(DEMO_TARGET) $(LDLIBS)
 
 run: $(TARGET)
+	mkdir -p svg
 	./$(TARGET)
 
 demo: $(DEMO_TARGET)
+	mkdir -p svg
 	./$(DEMO_TARGET)
 
 clean:
-	rm -f $(TARGET) $(DEMO_TARGET) svg/*.svg
+	rm -f $(TARGET) $(DEMO_TARGET)
+	rm -f svg/*.svg
