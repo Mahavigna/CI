@@ -469,6 +469,104 @@ float fuzzy_function(
         );
     }
 
+    /*
+    * Triangular membership function.
+    *
+    * Arguments:
+    * double left
+    * double peak
+    * double right
+    */
+    else if (strcmp(shape, "triangle") == 0) {
+        float left =
+            (float)va_arg(args, double);
+
+        float peak =
+            (float)va_arg(args, double);
+
+        float right =
+            (float)va_arg(args, double);
+
+        if (
+            left >= peak ||
+            peak >= right
+        ) {
+            result = LEVEL_LO;
+        }
+        else if (
+            value <= left ||
+            value >= right
+        ) {
+            result = LEVEL_LO;
+        }
+        else if (value == peak) {
+            result = LEVEL_HI;
+        }
+        else if (value < peak) {
+            result =
+                (value - left) /
+                (peak - left);
+        }
+        else {
+            result =
+                (right - value) /
+                (right - peak);
+        }
+    }
+
+    /*
+    * Trapezoidal membership function.
+    *
+    * Arguments:
+    * double left
+    * double top_left
+    * double top_right
+    * double right
+    */
+    else if (strcmp(shape, "trapezoid") == 0) {
+        float left =
+            (float)va_arg(args, double);
+
+        float top_left =
+            (float)va_arg(args, double);
+
+        float top_right =
+            (float)va_arg(args, double);
+
+        float right =
+            (float)va_arg(args, double);
+
+        if (
+            left >= top_left ||
+            top_left > top_right ||
+            top_right >= right
+        ) {
+            result = LEVEL_LO;
+        }
+        else if (
+            value <= left ||
+            value >= right
+        ) {
+            result = LEVEL_LO;
+        }
+        else if (
+            value >= top_left &&
+            value <= top_right
+        ) {
+            result = LEVEL_HI;
+        }
+        else if (value < top_left) {
+            result =
+                (value - left) /
+                (top_left - left);
+        }
+        else {
+            result =
+                (right - value) /
+                (right - top_right);
+        }
+    }
+
 
     /*
      * S-shaped membership function.
@@ -631,7 +729,7 @@ float fuzzy_function(
             float normalized =
                 fabsf(
                     (value - center) /
-                    width
+                    (width/2.0f)
                 );
 
             result =
@@ -1327,6 +1425,330 @@ bool fuzzy_plot_many(
 
     return true;
 }
+
+#ifdef FUZZY_DEMO
+
+/* ==========================================================
+ * Built-in membership-function SVG demonstration
+ * ========================================================== */
+
+static float fuzzy_demo_ramp(float value)
+{
+    return fuzzy_function(
+        "ramp",
+        value,
+        1.0f,
+        20.0,
+        80.0,
+        true
+    );
+}
+
+static float fuzzy_demo_triangle(float value)
+{
+    return fuzzy_function(
+        "triangle",
+        value,
+        1.0f,
+        20.0,
+        50.0,
+        80.0
+    );
+}
+
+static float fuzzy_demo_trapezoid(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        1.0f,
+        10.0,
+        30.0,
+        70.0,
+        90.0
+    );
+}
+
+static float fuzzy_demo_trapezoid_normal(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        1.0f,
+        10.0,
+        30.0,
+        70.0,
+        90.0
+    );
+}
+
+static float fuzzy_demo_trapezoid_very(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        2.0f,
+        10.0,
+        30.0,
+        70.0,
+        90.0
+    );
+}
+
+static float fuzzy_demo_trapezoid_extremely(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        3.0f,
+        10.0,
+        30.0,
+        70.0,
+        90.0
+    );
+}
+
+static float fuzzy_demo_trapezoid_somewhat(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        0.5f,
+        10.0,
+        30.0,
+        70.0,
+        90.0
+    );
+}
+
+static float fuzzy_demo_trapezoid_slightly(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        0.75f,
+        10.0,
+        30.0,
+        70.0,
+        90.0
+    );
+}
+
+static float fuzzy_demo_smf(float value)
+{
+    return fuzzy_function(
+        "smf",
+        value,
+        1.0f,
+        20.0,
+        80.0
+    );
+}
+
+static float fuzzy_demo_zmf(float value)
+{
+    return fuzzy_function(
+        "zmf",
+        value,
+        1.0f,
+        20.0,
+        80.0
+    );
+}
+
+static float fuzzy_demo_gauss(float value)
+{
+    return fuzzy_function(
+        "gauss",
+        value,
+        1.0f,
+        50.0,
+        15.0
+    );
+}
+
+static float fuzzy_demo_bell(float value)
+{
+    return fuzzy_function(
+        "bell",
+        value,
+        1.0f,
+        30.0,
+        2.0,
+        50.0
+    );
+}
+
+static float fuzzy_demo_sigmoid(float value)
+{
+    return fuzzy_function(
+        "sigmoid",
+        value,
+        1.0f,
+        0.12,
+        50.0
+    );
+}
+
+typedef struct FuzzyDemoFunction {
+    const char *filename;
+    const char *title;
+    const char *name;
+    const char *color;
+    fuzzy_output_function_t function;
+} fuzzy_demo_function_t;
+
+bool fuzzy_demo(void)
+{
+    const fuzzy_demo_function_t demos[] = {
+        {
+            .filename = "svg/ramp",
+            .title = "Ramp Membership Function",
+            .name = "Ramp",
+            .color = "#ef4444",
+            .function = fuzzy_demo_ramp
+        },
+        {
+            .filename = "svg/triangle",
+            .title = "Triangular Membership Function",
+            .name = "Triangle",
+            .color = "#eab308",
+            .function = fuzzy_demo_triangle
+        },
+        {
+            .filename = "svg/trapezoid",
+            .title = "Trapezoidal Membership Function",
+            .name = "Trapezoid",
+            .color = "#f97316",
+            .function = fuzzy_demo_trapezoid
+        },
+        {
+            .filename = "svg/smf",
+            .title = "S-Shaped Membership Function",
+            .name = "SMF",
+            .color = "#22c55e",
+            .function = fuzzy_demo_smf
+        },
+        {
+            .filename = "svg/zmf",
+            .title = "Z-Shaped Membership Function",
+            .name = "ZMF",
+            .color = "#3b82f6",
+            .function = fuzzy_demo_zmf
+        },
+        {
+            .filename = "svg/gauss",
+            .title = "Gaussian Membership Function",
+            .name = "Gaussian",
+            .color = "#a855f7",
+            .function = fuzzy_demo_gauss
+        },
+        {
+            .filename = "svg/bell",
+            .title = "Generalized Bell Membership Function",
+            .name = "Bell",
+            .color = "#f97316",
+            .function = fuzzy_demo_bell
+        },
+        {
+            .filename = "svg/sigmoid",
+            .title = "Sigmoid Membership Function",
+            .name = "Sigmoid",
+            .color = "#06b6d4",
+            .function = fuzzy_demo_sigmoid
+        }
+    };
+
+    const size_t demo_count = sizeof(demos) / sizeof(demos[0]);
+
+    for (size_t i = 0; i < demo_count; i++) {
+        const fuzzy_plot_series_t series[] = {
+            {
+                .name = (char *)demos[i].name,
+                .color = (char *)demos[i].color,
+                .function = demos[i].function
+            }
+        };
+
+        if (!fuzzy_plot_many(
+            (char *)demos[i].filename,
+            (char *)demos[i].title,
+            0.0f,
+            100.0f,
+            1.0f,
+            series,
+            sizeof(series) / sizeof(series[0])
+        )) {
+            fprintf(
+                stderr,
+                "[FAILED] Could not generate %s.svg\n",
+                demos[i].filename
+            );
+
+            return false;
+        }
+
+        printf(
+            "[OK] Generated %s.svg\n",
+            demos[i].filename
+        );
+    }
+        if (!FUZZY_PLOT(
+        "svg/trapezoid_hedges",
+        "Trapezoidal Membership Function Hedges",
+        0.0f,
+        100.0f,
+        1.0f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Normal",
+            "#111827",
+            fuzzy_demo_trapezoid_normal
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Very",
+            "#ef4444",
+            fuzzy_demo_trapezoid_very
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Extremely",
+            "#a855f7",
+            fuzzy_demo_trapezoid_extremely
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Somewhat",
+            "#22c55e",
+            fuzzy_demo_trapezoid_somewhat
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Slightly",
+            "#3b82f6",
+            fuzzy_demo_trapezoid_slightly
+        )
+    )) {
+        fprintf(
+            stderr,
+            "[FAILED] Could not generate trapezoid_hedges.svg\n"
+        );
+
+        return false;
+    }
+
+    printf("[OK] Generated trapezoid_hedges.svg\n");
+
+    printf(
+        "\nGenerated all %zu membership-function SVG demos.\n",
+        demo_count
+    );
+
+    return true;
+}
+
+#endif /* FUZZY_DEMO */
 
 #endif /* FUZZY_IMPLEMENTATION_ONCE */
 #endif /* FUZZY_IMPLEMENTATION */
