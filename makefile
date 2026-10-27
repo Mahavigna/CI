@@ -23,9 +23,9 @@ run: $(TARGET)
 	./$(TARGET)
 
 demo: $(DEMO_TARGET)
-	mkdir -p svg
+	mkdir -p demo-svg
 	./$(DEMO_TARGET)
 
 clean:
 	rm -f $(TARGET) $(DEMO_TARGET)
-	rm -f svg/*.svg
+	rm -f demo-svg/*.svg && rm -f svg/*.svg

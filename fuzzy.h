@@ -1,7 +1,6 @@
 #ifndef FUZZY_H
 #define FUZZY_H
 
-#include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -210,6 +209,16 @@ float fuzzy_rules_cog(
 
 void fuzzy_rules_free(
     fuzzy_rules_t *rules
+);
+
+bool fuzzy_rules_plot_cog(
+    const fuzzy_rules_t *rules,
+    const char *filename,
+    const char *title,
+    float cog,
+    float lower,
+    float upper,
+    float step
 );
 
 #endif /* FUZZY_H */
@@ -975,6 +984,219 @@ float fuzzy_rules_cog(
     return weighted_sum / height_sum;
 }
 
+bool fuzzy_rules_plot_cog(
+    const fuzzy_rules_t *rules,
+    const char *filename,
+    const char *title,
+    float cog,
+    float lower,
+    float upper,
+    float step
+)
+{
+    if (
+        rules == NULL ||
+        filename == NULL ||
+        rules->count == 0 ||
+        lower >= upper ||
+        step <= 0.0f
+    ) {
+        return false;
+    }
+
+    char plot_filename[256];
+
+    int written = snprintf(
+        plot_filename,
+        sizeof(plot_filename),
+        "%s.svg",
+        filename
+    );
+
+    if (
+        written < 0 ||
+        (size_t)written >= sizeof(plot_filename)
+    ) {
+        return false;
+    }
+
+    fuzzy_plot_t plot;
+
+    if (!fuzzy_plot_begin(
+        &plot,
+        plot_filename,
+        title,
+        lower,
+        upper,
+        step
+    )) {
+        return false;
+    }
+
+    FILE *file = plot.file;
+
+    int left = plot.padding;
+    int right = plot.width - plot.padding;
+    int top = plot.padding;
+    int bottom = plot.height - plot.padding;
+
+    size_t sample_count = (size_t)ceilf(
+        (upper - lower) / step
+    );
+
+    /*
+     * Draw the aggregated Mamdani output.
+     */
+    fprintf(
+        file,
+        "<polyline fill=\"none\" stroke=\"#a855f7\" "
+        "stroke-width=\"3\" stroke-linejoin=\"round\" "
+        "stroke-linecap=\"round\" points=\""
+    );
+
+    for (size_t sample = 0; sample <= sample_count; sample++) {
+        float value =
+            lower + (float)sample * step;
+
+        if (value > upper) {
+            value = upper;
+        }
+
+        float aggregated_height = LEVEL_LO;
+
+        for (size_t i = 0; i < rules->count; i++) {
+            float output_membership =
+                rules->rules[i].output_function(value);
+
+            float clipped_height =
+                rules->rules[i].value < output_membership
+                    ? rules->rules[i].value
+                    : output_membership;
+
+            aggregated_height =
+                aggregated_height > clipped_height
+                    ? aggregated_height
+                    : clipped_height;
+        }
+
+        aggregated_height =
+            fuzzy_clamp(aggregated_height);
+
+        float ratio =
+            (value - lower) /
+            (upper - lower);
+
+        float x =
+            (float)left +
+            ratio * (float)(right - left);
+
+        float y =
+            (float)bottom -
+            aggregated_height *
+            (float)(bottom - top);
+
+        fprintf(
+            file,
+            "%.2f,%.2f",
+            x,
+            y
+        );
+
+        if (sample < sample_count) {
+            fputc(' ', file);
+        }
+    }
+
+    fprintf(file, "\" />\n");
+
+    /*
+     * Draw a vertical line at the calculated COG.
+     */
+    float cog_ratio =
+        (cog - lower) /
+        (upper - lower);
+
+    cog_ratio = fuzzy_clamp(cog_ratio);
+
+    float cog_x =
+        (float)left +
+        cog_ratio * (float)(right - left);
+
+    fprintf(
+        file,
+        "<line x1=\"%.2f\" y1=\"%d\" x2=\"%.2f\" y2=\"%d\" "
+        "stroke=\"#ef4444\" stroke-width=\"3\" "
+        "stroke-dasharray=\"8 5\" />\n",
+        cog_x,
+        top,
+        cog_x,
+        bottom
+    );
+
+    /*
+     * COG point on the horizontal axis.
+     */
+    fprintf(
+        file,
+        "<circle cx=\"%.2f\" cy=\"%d\" r=\"6\" "
+        "fill=\"#ef4444\" />\n",
+        cog_x,
+        bottom
+    );
+
+    /*
+     * Label the COG value.
+     */
+    fprintf(
+        file,
+        "<rect x=\"%.2f\" y=\"%d\" width=\"130\" height=\"28\" "
+        "rx=\"5\" fill=\"white\" stroke=\"#ef4444\" />\n",
+        cog_x + 8.0f,
+        top + 8
+    );
+
+    fprintf(
+        file,
+        "<text x=\"%.2f\" y=\"%d\" "
+        "font-family=\"sans-serif\" font-size=\"14\" "
+        "fill=\"#ef4444\">COG = %.5f</text>\n",
+        cog_x + 16.0f,
+        top + 27,
+        cog
+    );
+
+    /*
+     * Legend.
+     */
+    fprintf(
+        file,
+        "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
+        "stroke=\"#a855f7\" stroke-width=\"4\" />\n",
+        left + 15,
+        top + 20,
+        left + 45,
+        top + 20
+    );
+
+    fprintf(
+        file,
+        "<text x=\"%d\" y=\"%d\" dominant-baseline=\"middle\" "
+        "font-family=\"sans-serif\" font-size=\"14\" "
+        "fill=\"black\">Aggregated output</text>\n",
+        left + 55,
+        top + 20
+    );
+
+    fuzzy_plot_end(&plot);
+
+    printf(
+        "COG plot written to %s\n",
+        plot_filename
+    );
+
+    return true;
+}
+
 void fuzzy_rules_free(fuzzy_rules_t *rules)
 {
     if (rules == NULL) {
@@ -1602,56 +1824,56 @@ bool fuzzy_demo(void)
 {
     const fuzzy_demo_function_t demos[] = {
         {
-            .filename = "svg/ramp",
+            .filename = "demo-svg/ramp",
             .title = "Ramp Membership Function",
             .name = "Ramp",
             .color = "#ef4444",
             .function = fuzzy_demo_ramp
         },
         {
-            .filename = "svg/triangle",
+            .filename = "demo-svg/triangle",
             .title = "Triangular Membership Function",
             .name = "Triangle",
             .color = "#eab308",
             .function = fuzzy_demo_triangle
         },
         {
-            .filename = "svg/trapezoid",
+            .filename = "demo-svg/trapezoid",
             .title = "Trapezoidal Membership Function",
             .name = "Trapezoid",
             .color = "#f97316",
             .function = fuzzy_demo_trapezoid
         },
         {
-            .filename = "svg/smf",
+            .filename = "demo-svg/smf",
             .title = "S-Shaped Membership Function",
             .name = "SMF",
             .color = "#22c55e",
             .function = fuzzy_demo_smf
         },
         {
-            .filename = "svg/zmf",
+            .filename = "demo-svg/zmf",
             .title = "Z-Shaped Membership Function",
             .name = "ZMF",
             .color = "#3b82f6",
             .function = fuzzy_demo_zmf
         },
         {
-            .filename = "svg/gauss",
+            .filename = "demo-svg/gauss",
             .title = "Gaussian Membership Function",
             .name = "Gaussian",
             .color = "#a855f7",
             .function = fuzzy_demo_gauss
         },
         {
-            .filename = "svg/bell",
+            .filename = "demo-svg/bell",
             .title = "Generalized Bell Membership Function",
             .name = "Bell",
             .color = "#f97316",
             .function = fuzzy_demo_bell
         },
         {
-            .filename = "svg/sigmoid",
+            .filename = "demo-svg/sigmoid",
             .title = "Sigmoid Membership Function",
             .name = "Sigmoid",
             .color = "#06b6d4",
@@ -1694,7 +1916,7 @@ bool fuzzy_demo(void)
         );
     }
         if (!FUZZY_PLOT(
-        "svg/trapezoid_hedges",
+        "demo-svg/trapezoid_hedges",
         "Trapezoidal Membership Function Hedges",
         0.0f,
         100.0f,
@@ -1749,6 +1971,8 @@ bool fuzzy_demo(void)
 }
 
 #endif /* FUZZY_DEMO */
+
+
 
 #endif /* FUZZY_IMPLEMENTATION_ONCE */
 #endif /* FUZZY_IMPLEMENTATION */

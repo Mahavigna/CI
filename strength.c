@@ -232,9 +232,25 @@ static float evaluate_strength(
         step
     );
 
+    if (!fuzzy_rules_plot_cog(
+        &rules,
+        "svg/cog",
+        "Center of Gravity Defuzzification",
+        result,
+        30.0f,
+        100.0f,
+        step
+    )) {
+        fprintf(
+            stderr,
+            "Failed to generate COG plot.\n"
+        );
+    }
+
     fuzzy_rules_free(&rules);
 
     return result;
+
 }
 
 
@@ -358,7 +374,6 @@ static bool plot_membership_functions(void)
 
     return true;
 }
-
 
 /* ==========================================================
  * Program entry point
