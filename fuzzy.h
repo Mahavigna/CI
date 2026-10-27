@@ -1,6 +1,7 @@
 #ifndef FUZZY_H
 #define FUZZY_H
 
+#include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,14 @@
 
 #define LEVEL_HI 1.0f
 #define LEVEL_LO 0.0f
+
+#ifndef FUZZY_PRINTF
+#define FUZZY_PRINTF(...) printf(__VA_ARGS__)
+#endif
+
+#ifndef FUZZY_ERROR
+#define FUZZY_ERROR(...) fprintf(stderr, __VA_ARGS__)
+#endif
 
 /*
  * User-defined hedge exponents.
@@ -260,7 +269,7 @@ static float fuzzy_clamp(float value)
  * hedge > 1.0  -> concentration, such as "very"
  * hedge < 1.0  -> dilation, such as "somewhat"
  */
-static float fuzzy_apply_hedge(float membership, float hedge)
+static inline float fuzzy_apply_hedge(float membership, float hedge)
 {
     membership = fuzzy_clamp(membership);
 
@@ -274,7 +283,6 @@ static float fuzzy_apply_hedge(float membership, float hedge)
 
 
 
-
 /*
  * Fuzzy OR:
  * Returns the maximum of all supplied membership values.
@@ -283,7 +291,7 @@ static float fuzzy_apply_hedge(float membership, float hedge)
  *
  * fuzzy_or(3, value1, value2, value3);
  */
-float fuzzy_or(int count, ...)
+inline float fuzzy_or(int count, ...)
 {
     if (count <= 0) {
         return LEVEL_LO;
@@ -320,7 +328,7 @@ float fuzzy_or(int count, ...)
  *
  * fuzzy_and(3, value1, value2, value3);
  */
-float fuzzy_and(int count, ...)
+inline float fuzzy_and(int count, ...)
 {
     if (count <= 0) {
         return LEVEL_HI;
@@ -348,7 +356,7 @@ float fuzzy_and(int count, ...)
 /*
  * Linear ramp membership function.
  */
-float fuzzy_ramp(
+inline float fuzzy_ramp(
     const char *name,
     float lower_boundary,
     float upper_boundary,
@@ -431,7 +439,7 @@ float fuzzy_ramp(
  *     10.0
  * );
  */
-float fuzzy_function(
+inline float fuzzy_function(
     const char *shape,
     float value,
     float hedge,
@@ -837,7 +845,7 @@ void test_ramp(
             hedge
         );
 
-        printf(
+        FUZZY_PRINTF(
             "Value: %5.1f, Result: %.5f\n",
             value,
             result
@@ -915,7 +923,7 @@ void fuzzy_rules_print(const fuzzy_rules_t *rules)
     }
 
     for (size_t i = 0; i < rules->count; i++) {
-        printf(
+        FUZZY_PRINTF(
             "Rule %zu -> %s: %.5f\n",
             i + 1,
             rules->rules[i].name != NULL
@@ -967,7 +975,7 @@ float fuzzy_rules_cog(
                     : clipped_height;
         }
 
-        printf(
+        FUZZY_PRINTF(
             "Value: %5.1f, Aggregated height: %.5f\n",
             value,
             aggregated_height
@@ -1189,7 +1197,7 @@ bool fuzzy_rules_plot_cog(
 
     fuzzy_plot_end(&plot);
 
-    printf(
+    FUZZY_PRINTF(
         "COG plot written to %s\n",
         plot_filename
     );
@@ -1640,7 +1648,7 @@ bool fuzzy_plot_many(
 
     fuzzy_plot_end(&plot);
 
-    printf(
+    FUZZY_PRINTF(
         "Membership plot written to %s\n",
         plot_filename
     );
@@ -1910,7 +1918,7 @@ bool fuzzy_demo(void)
             return false;
         }
 
-        printf(
+        FUZZY_PRINTF(
             "[OK] Generated %s.svg\n",
             demos[i].filename
         );
@@ -1960,9 +1968,9 @@ bool fuzzy_demo(void)
         return false;
     }
 
-    printf("[OK] Generated trapezoid_hedges.svg\n");
+    FUZZY_PRINTF("[OK] Generated trapezoid_hedges.svg\n");
 
-    printf(
+    FUZZY_PRINTF(
         "\nGenerated all %zu membership-function SVG demos.\n",
         demo_count
     );

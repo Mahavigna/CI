@@ -230,10 +230,10 @@ static float evaluate_time(float temperature, float humidity, float step)
         return 0.0f;
     }
 
-    printf("\nRule activations:\n");
+    FUZZY_PRINTF("\nRule activations:\n");
     fuzzy_rules_print(&rules);
 
-    printf("\nAggregated output:\n");
+    FUZZY_PRINTF("\nAggregated output:\n");
 
     float result = fuzzy_rules_cog(
         &rules,
@@ -384,7 +384,7 @@ static bool plot_membership_functions(void)
         return false;
     }
 
-    printf(
+    FUZZY_PRINTF(
         "\nGenerated all water-time membership plots.\n"
     );
 
@@ -399,46 +399,66 @@ int main(void)
 {
     float temperature;
     float humidity;
+    char prompt;
+    float step = 0.01f;
+    do {
+        FUZZY_PRINTF("\nWater Time Fuzzy System\n");
+        FUZZY_PRINTF("=======================\n");
 
-    printf("\nWater Time Fuzzy System\n");
-    printf("===========================\n");
+        FUZZY_PRINTF("Enter the temperature (C): ");
 
-    printf("Enter the temperature (C): ");
+        if (scanf("%f", &temperature) != 1) {
+            fprintf(
+                stderr,
+                "Invalid temperature input.\n"
+            );
 
-    if (scanf("%f", &temperature) != 1) {
-        fprintf(
-            stderr,
-            "Invalid temperature input.\n"
+            return 1;
+        }
+
+        FUZZY_PRINTF("Enter the humidity (%%): ");
+
+        if (scanf("%f", &humidity) != 1) {
+            fprintf(
+                stderr,
+                "Invalid humidity input.\n"
+            );
+
+            return 1;
+        }
+
+        float time = evaluate_time(
+            temperature,
+            humidity,
+            step
         );
 
-        return 1;
-    }
-
-    printf("Enter the humidity (%): ");
-
-    if (scanf("%f", &humidity) != 1) {
-        fprintf(
-            stderr,
-            "Invalid humidity input.\n"
+        printf(
+            "\nWater time: %.5f\n",
+            time
         );
 
-        return 1;
-    }
+        if (!plot_membership_functions()) {
+            return 1;
+        }
 
-    float time = evaluate_time(
-        temperature,
-        humidity,  
-        10.0f
+        FUZZY_PRINTF("\nPress Q to exit or any other key to continue(): ");
+
+        if (scanf(" %c", &prompt) != 1) {
+            fprintf(
+                stderr,
+                "Invalid menu input.\n"
+            );
+
+            return 1;
+        }
+
+    } while (
+        prompt != 'q' &&
+        prompt != 'Q'
     );
 
-    printf(
-        "\nWater time: %.5f\n",
-        time
-    );
-
-    if (!plot_membership_functions()) {
-        return 1;
-    }
+    FUZZY_PRINTF("\nProgram closed.\n");
 
     return 0;
 }
