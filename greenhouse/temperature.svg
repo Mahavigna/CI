@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
 <rect x="0" y="0" width="900" height="600" fill="white" />
-<text x="450" y="35" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="black">Humidity Membership Functions</text>
+<text x="450" y="35" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="black">Temperature Membership Functions</text>
 <line x1="80" y1="520.00" x2="820" y2="520.00" stroke="#dddddd" stroke-width="1" />
 <text x="70" y="520.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.0</text>
 <line x1="80" y1="476.00" x2="820" y2="476.00" stroke="#dddddd" stroke-width="1" />
@@ -50,13 +50,13 @@
 <line x1="80" y1="80" x2="80" y2="520" stroke="black" stroke-width="2" />
 <text x="450" y="580" text-anchor="middle" font-family="sans-serif" font-size="15" fill="black">Input value</text>
 <text x="22" y="300" text-anchor="middle" font-family="sans-serif" font-size="15" fill="black" transform="rotate(-90 22 300)">Membership</text>
-<polyline fill="none" stroke="#ef4444" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,80.00 104.67,80.00 129.33,80.00 154.00,80.00 178.67,80.00 203.33,80.00 228.00,168.00 252.67,256.00 277.33,344.00 302.00,432.00 326.67,520.00 351.33,520.00 376.00,520.00 400.67,520.00 425.33,520.00 450.00,520.00 474.67,520.00 499.33,520.00 524.00,520.00 548.67,520.00 573.33,520.00 598.00,520.00 622.67,520.00 647.33,520.00 672.00,520.00 696.67,520.00 721.33,520.00 746.00,520.00 770.67,520.00 795.33,520.00 820.00,520.00" />
-<line x1="95" y1="100" x2="125" y2="100" stroke="#ef4444" stroke-width="4" />
-<text x="135" y="100" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Small</text>
-<polyline fill="none" stroke="#3b82f6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,520.00 104.67,520.00 129.33,520.00 154.00,520.00 178.67,520.00 203.33,520.00 228.00,432.00 252.67,344.00 277.33,256.00 302.00,168.00 326.67,80.00 351.33,80.00 376.00,80.00 400.67,80.00 425.33,80.00 450.00,80.00 474.67,80.00 499.33,80.00 524.00,80.00 548.67,80.00 573.33,80.00 598.00,168.00 622.67,256.00 647.33,344.00 672.00,432.00 696.67,520.00 721.33,520.00 746.00,520.00 770.67,520.00 795.33,520.00 820.00,520.00" />
-<line x1="95" y1="124" x2="125" y2="124" stroke="#3b82f6" stroke-width="4" />
-<text x="135" y="124" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Huge</text>
-<polyline fill="none" stroke="#70f63b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,520.00 104.67,520.00 129.33,520.00 154.00,520.00 178.67,520.00 203.33,520.00 228.00,520.00 252.67,520.00 277.33,520.00 302.00,520.00 326.67,520.00 351.33,520.00 376.00,520.00 400.67,520.00 425.33,520.00 450.00,520.00 474.67,476.00 499.33,432.00 524.00,388.00 548.67,344.00 573.33,300.00 598.00,256.00 622.67,212.00 647.33,168.00 672.00,124.00 696.67,80.00 721.33,80.00 746.00,80.00 770.67,80.00 795.33,80.00 820.00,80.00" />
-<line x1="95" y1="148" x2="125" y2="148" stroke="#70f63b" stroke-width="4" />
-<text x="135" y="148" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Huge</text>
+<polyline fill="none" stroke="#3b82f6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,80.00 104.67,80.00 129.33,80.00 154.00,80.00 178.67,80.00 203.33,80.00 228.00,80.00 252.67,80.00 277.33,80.00 302.00,80.00 326.67,80.00 351.33,168.00 376.00,256.00 400.67,344.00 425.33,432.00 450.00,520.00 474.67,520.00 499.33,520.00 524.00,520.00 548.67,520.00 573.33,520.00 598.00,520.00 622.67,520.00 647.33,520.00 672.00,520.00 696.67,520.00 721.33,520.00 746.00,520.00 770.67,520.00 795.33,520.00 820.00,520.00" />
+<line x1="95" y1="100" x2="125" y2="100" stroke="#3b82f6" stroke-width="4" />
+<text x="135" y="100" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Low</text>
+<polyline fill="none" stroke="#22c55e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,520.00 104.67,520.00 129.33,520.00 154.00,520.00 178.67,520.00 203.33,520.00 228.00,476.00 252.67,432.00 277.33,388.00 302.00,344.00 326.67,300.00 351.33,256.00 376.00,212.00 400.67,168.00 425.33,124.00 450.00,80.00 474.67,124.00 499.33,168.00 524.00,212.00 548.67,256.00 573.33,300.00 598.00,344.00 622.67,388.00 647.33,432.00 672.00,476.00 696.67,520.00 721.33,520.00 746.00,520.00 770.67,520.00 795.33,520.00 820.00,520.00" />
+<line x1="95" y1="124" x2="125" y2="124" stroke="#22c55e" stroke-width="4" />
+<text x="135" y="124" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Medium</text>
+<polyline fill="none" stroke="#ef4444" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,520.00 104.67,520.00 129.33,520.00 154.00,520.00 178.67,520.00 203.33,520.00 228.00,520.00 252.67,520.00 277.33,520.00 302.00,520.00 326.67,520.00 351.33,520.00 376.00,520.00 400.67,520.00 425.33,520.00 450.00,520.00 474.67,476.00 499.33,432.00 524.00,388.00 548.67,344.00 573.33,300.00 598.00,256.00 622.67,212.00 647.33,168.00 672.00,124.00 696.67,80.00 721.33,80.00 746.00,80.00 770.67,80.00 795.33,80.00 820.00,80.00" />
+<line x1="95" y1="148" x2="125" y2="148" stroke="#ef4444" stroke-width="4" />
+<text x="135" y="148" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">High</text>
 </svg>

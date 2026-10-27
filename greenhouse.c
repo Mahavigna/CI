@@ -1,12 +1,17 @@
 /*
- * Example application for the fuzzy logic library "fuzzy.h".
+ * Example greenhouse watering application for "fuzzy.h".
  *
- * This program determines paint strength from:
+ * This program determines watering time from:
  *
- * - Mixture content
  * - Temperature
+ * - Humidity
  *
- * Use this file as a template for developing other fuzzy systems.
+ * The application also generates:
+ *
+ * - Membership-function SVG plots
+ * - A selected COG SVG plot
+ * - An N-dimensional COG sweep CSV
+ * - An N-dimensional COG sweep SVG
  */
 
 #define FUZZY_IMPLEMENTATION
@@ -66,7 +71,7 @@ static float temp_high(float value)
 
 
 /* ==========================================================
- * Temperature membership functions
+ * Humidity membership functions
  * ========================================================== */
 
 static float humidity_low(float value)
@@ -149,91 +154,98 @@ static float time_long(float value)
     );
 }
 
-
 /* ==========================================================
- * Mamdani rule evaluation
+ * Mamdani rule construction
  * ========================================================== */
 
-static float evaluate_time(float temperature, float humidity, float step)
+static bool build_time_rules(
+    fuzzy_rules_t *rules,
+    float temperature,
+    float humidity
+)
 {
-    /*
-     * Rule 1:
-     *
-     * IF mixture content is small
-     * AND temperature is low
-     * THEN time is short.
-     */
+    if (rules == NULL) {
+        return false;
+    }
+
     float rule1 = fuzzy_or(
         2,
         temp_low(temperature),
         humidity_medium(humidity)
     );
 
-    /*
-     * Rule 2:
-     *
-     * IF mixture content is huge
-     * AND temperature is medium
-     * THEN time is medium. 
-     */
     float rule2 = fuzzy_and(
         2,
         humidity_medium(humidity),
         temp_medium(temperature)
     );
 
-    /*
-     * Rule 3:
-     *
-     * IF mixture content is huge
-     * OR temperature is high
-     * THEN time is long.
-     */
     float rule3 = fuzzy_or(
         2,
         humidity_low(humidity),
         temp_high(temperature)
     );
 
-    fuzzy_rules_t rules = fuzzy_rules_create();
-
     if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
+        rules,
         "Time: Short",
         rule1,
         time_short
     )) {
-        fprintf(stderr, "Failed to add Rule 1.\n");
-        fuzzy_rules_free(&rules);
-        return 0.0f;
+        return false;
     }
 
     if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
+        rules,
         "Time: Medium",
         rule2,
         time_medium
     )) {
-        fprintf(stderr, "Failed to add Rule 2.\n");
-        fuzzy_rules_free(&rules);
-        return 0.0f;
+        return false;
     }
 
     if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
+        rules,
         "Time: Long",
         rule3,
         time_long
     )) {
-        fprintf(stderr, "Failed to add Rule 3.\n");
-        fuzzy_rules_free(&rules);
-        return 0.0f;
+        return false;
     }
 
-    FUZZY_PRINTF("\nRule activations:\n");
-    fuzzy_rules_print(&rules);
+    return true;
+}
 
-    FUZZY_PRINTF("\nAggregated output:\n");
+
+/* ==========================================================
+ * Pure COG evaluation
+ *
+ * This function does not print rules and does not create SVG
+ * files, so it is safe to call repeatedly during a sweep.
+ * ========================================================== */
+
+static float evaluate_time(
+    float temperature,
+    float humidity,
+    float step
+)
+{
+    fuzzy_rules_t rules =
+        fuzzy_rules_create();
+
+    if (!build_time_rules(
+        &rules,
+        temperature,
+        humidity
+    )) {
+        FUZZY_ERROR(
+            "Failed to construct watering-time rules.\n"
+        );
+
+        fuzzy_rules_free(&rules);
+
+        return 0.0f;
+    }
 
     float result = fuzzy_rules_cog(
         &rules,
@@ -242,25 +254,72 @@ static float evaluate_time(float temperature, float humidity, float step)
         step
     );
 
-    if (!fuzzy_rules_plot_cog(
+    fuzzy_rules_free(&rules);
+
+    return result;
+}
+
+
+/* ==========================================================
+ * Plot one selected COG result
+ *
+ * This is called only for the values entered by the user.
+ * It is not called by the multidimensional sweep.
+ * ========================================================== */
+
+static bool plot_time_cog(
+    float temperature,
+    float humidity,
+    float step
+)
+{
+    fuzzy_rules_t rules =
+        fuzzy_rules_create();
+
+    if (!build_time_rules(
         &rules,
-        "svg/cog",
+        temperature,
+        humidity
+    )) {
+        FUZZY_ERROR(
+            "Failed to construct watering-time rules.\n"
+        );
+
+        fuzzy_rules_free(&rules);
+
+        return false;
+    }
+
+    FUZZY_PRINTF(
+        "\nRule activations:\n"
+    );
+
+    fuzzy_rules_print(
+        &rules
+    );
+
+    float result = fuzzy_rules_cog(
+        &rules,
+        0.0f,
+        60.0f,
+        step
+    );
+
+    bool success = fuzzy_rules_plot_cog(
+        &rules,
+        "greenhouse/cog",
         "Center of Gravity Defuzzification",
         result,
         0.0f,
         60.0f,
         step
-    )) {
-        fprintf(
-            stderr,
-            "Failed to generate COG plot.\n"
-        );
-    }
+    );
 
-    fuzzy_rules_free(&rules);
+    fuzzy_rules_free(
+        &rules
+    );
 
-    return result;
-
+    return success;
 }
 
 
@@ -271,26 +330,26 @@ static float evaluate_time(float temperature, float humidity, float step)
 static bool plot_humidity(void)
 {
     return FUZZY_PLOT(
-        "svg/humidity",
+        "greenhouse/humidity",
         "Humidity Membership Functions",
         0.0f,
         30.0f,
         1.0f,
 
         FUZZY_PLOT_FUNCTION_NAMED(
-            "Small",
+            "Low",
             "#ef4444",
             humidity_low
         ),
 
         FUZZY_PLOT_FUNCTION_NAMED(
-            "Huge",
+            "Medium",
             "#3b82f6",
             humidity_medium
         ),
 
         FUZZY_PLOT_FUNCTION_NAMED(
-            "Huge",
+            "High",
             "#70f63b",
             humidity_high
         )
@@ -300,7 +359,7 @@ static bool plot_humidity(void)
 static bool plot_temperature(void)
 {
     return FUZZY_PLOT(
-        "svg/temperature",
+        "greenhouse/temperature",
         "Temperature Membership Functions",
         0.0f,
         30.0f,
@@ -329,7 +388,7 @@ static bool plot_temperature(void)
 static bool plot_time(void)
 {
     return FUZZY_PLOT(
-        "svg/time",
+        "greenhouse/time",
         "Watering-Time Membership Functions",
         0.0f,
         60.0f,
@@ -391,62 +450,148 @@ static bool plot_membership_functions(void)
     return true;
 }
 
+static float evaluate_time_sweep(
+    const float inputs[],
+    size_t input_count,
+    float cog_step
+)
+{
+    if (
+        inputs == NULL ||
+        input_count != 2
+    ) {
+        return 0.0f;
+    }
+
+    return evaluate_time(
+        inputs[0],
+        inputs[1],
+        cog_step
+    );
+}
+
+static bool plot_sweep(void)
+{
+    return FUZZY_COG_SWEEP(
+        "greenhouse/greenhouse_cog_sweep",
+        "Greenhouse Watering-Time COG Sweep",
+        evaluate_time_sweep,
+        0.1f,
+
+        FUZZY_SWEEP_DIMENSION(
+            "Temperature",
+            0.0f,
+            30.0f,
+            1.0f
+        ),
+
+        FUZZY_SWEEP_DIMENSION(
+            "Humidity",
+            0.0f,
+            30.0f,
+            1.0f
+        )
+    );
+}
+
 /* ==========================================================
  * Program entry point
- * ========================================================== */
+ * ========================================================== 
+ * */
+
 
 int main(void)
 {
     float temperature;
     float humidity;
     char prompt;
-    float step = 0.01f;
-    do {
-        FUZZY_PRINTF("\nWater Time Fuzzy System\n");
-        FUZZY_PRINTF("=======================\n");
 
-        FUZZY_PRINTF("Enter the temperature (C): ");
+    const float step = 0.01f;
+
+    /*
+     * Generate the complete temperature/humidity sweep once.
+     */
+    if (!plot_sweep()) {
+        FUZZY_ERROR(
+            "Failed to generate greenhouse COG sweep.\n"
+        );
+
+        return 1;
+    }
+
+    /*
+     * Membership functions are fixed, so generate these
+     * plots once instead of rewriting them every loop.
+     */
+    if (!plot_membership_functions()) {
+        FUZZY_ERROR("Failed to generate greenhouse memebership fucntions`.\n");
+        return 1;
+    }
+
+    do {
+        FUZZY_PRINTF(
+            "\nWater Time Fuzzy System\n"
+            "=======================\n"
+        );
+
+        FUZZY_PRINTF(
+            "Enter the temperature (C): "
+        );
 
         if (scanf("%f", &temperature) != 1) {
-            fprintf(
-                stderr,
+            FUZZY_ERROR(
                 "Invalid temperature input.\n"
             );
 
             return 1;
         }
 
-        FUZZY_PRINTF("Enter the humidity (%%): ");
+        FUZZY_PRINTF(
+            "Enter the humidity (%%): "
+        );
 
         if (scanf("%f", &humidity) != 1) {
-            fprintf(
-                stderr,
+            FUZZY_ERROR(
                 "Invalid humidity input.\n"
             );
 
             return 1;
         }
 
-        float time = evaluate_time(
+        float watering_time = evaluate_time(
             temperature,
             humidity,
             step
         );
 
-        printf(
-            "\nWater time: %.5f\n",
-            time
+        FUZZY_PRINTF(
+            "\nWatering-time COG: %.5f\n",
+            watering_time
         );
 
-        if (!plot_membership_functions()) {
+        /*
+         * Generate one COG graph for the values entered
+         * by the user, not for every sweep point.
+         */
+        if (!plot_time_cog(
+            temperature,
+            humidity,
+            step
+        )) {
+            FUZZY_ERROR(
+                "Failed to generate COG plot.\n"
+            );
+
             return 1;
         }
 
-        FUZZY_PRINTF("\nPress Q to exit or any other key to continue(): ");
+        FUZZY_PRINTF(
+            "\nPress Q to exit or any other "
+            "character to continue: "
+        );
 
         if (scanf(" %c", &prompt) != 1) {
-            fprintf(
-                stderr,
+            FUZZY_ERROR(
                 "Invalid menu input.\n"
             );
 
@@ -458,7 +603,9 @@ int main(void)
         prompt != 'Q'
     );
 
-    FUZZY_PRINTF("\nProgram closed.\n");
+    FUZZY_PRINTF(
+        "\nProgram closed.\n"
+    );
 
     return 0;
 }

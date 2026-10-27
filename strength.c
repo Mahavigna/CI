@@ -1,16 +1,22 @@
 /*
- * Example application for the fuzzy logic library "fuzzy.h".
+ * Example paint-strength application for "fuzzy.h".
  *
  * This program determines paint strength from:
  *
  * - Mixture content
  * - Temperature
  *
- * Use this file as a template for developing other fuzzy systems.
+ * The application also generates:
+ *
+ * - Membership-function SVG plots
+ * - A selected COG SVG plot
+ * - An N-dimensional COG sweep CSV
+ * - An N-dimensional COG sweep SVG
  */
 
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
+
 
 /*
  * User-defined linguistic hedge exponents.
@@ -25,7 +31,7 @@ static const hedges_t hedges = {
 
 
 /* ==========================================================
- * Mixture content membership functions
+ * Mixture-content membership functions
  * ========================================================== */
 
 static float mixture_content_small(float value)
@@ -39,6 +45,7 @@ static float mixture_content_small(float value)
         false
     );
 }
+
 
 static float mixture_content_huge(float value)
 {
@@ -69,6 +76,7 @@ static float temperature_low(float value)
     );
 }
 
+
 static float temperature_medium(float value)
 {
     return fuzzy_function(
@@ -80,6 +88,7 @@ static float temperature_medium(float value)
         65.0
     );
 }
+
 
 static float temperature_high(float value)
 {
@@ -110,6 +119,7 @@ static float strength_little(float value)
     );
 }
 
+
 static float strength_fair(float value)
 {
     return fuzzy_function(
@@ -122,6 +132,7 @@ static float strength_fair(float value)
         80.0
     );
 }
+
 
 static float strength_massive(float value)
 {
@@ -137,15 +148,19 @@ static float strength_massive(float value)
 
 
 /* ==========================================================
- * Mamdani rule evaluation
+ * Mamdani rule construction
  * ========================================================== */
 
-static float evaluate_strength(
+static bool build_strength_rules(
+    fuzzy_rules_t *rules,
     float mixture_content,
-    float temperature,
-    float step
+    float temperature
 )
 {
+    if (rules == NULL) {
+        return false;
+    }
+
     /*
      * Rule 1:
      *
@@ -185,45 +200,66 @@ static float evaluate_strength(
         temperature_high(temperature)
     );
 
-    fuzzy_rules_t rules = fuzzy_rules_create();
-
     if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
+        rules,
         "Strength: Little",
         rule1,
         strength_little
     )) {
-        fprintf(stderr, "Failed to add Rule 1.\n");
-        fuzzy_rules_free(&rules);
-        return 0.0f;
+        return false;
     }
 
     if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
+        rules,
         "Strength: Fair",
         rule2,
         strength_fair
     )) {
-        fprintf(stderr, "Failed to add Rule 2.\n");
-        fuzzy_rules_free(&rules);
-        return 0.0f;
+        return false;
     }
 
     if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
+        rules,
         "Strength: Massive",
         rule3,
         strength_massive
     )) {
-        fprintf(stderr, "Failed to add Rule 3.\n");
-        fuzzy_rules_free(&rules);
-        return 0.0f;
+        return false;
     }
 
-    printf("\nRule activations:\n");
-    fuzzy_rules_print(&rules);
+    return true;
+}
 
-    printf("\nAggregated output:\n");
+
+/* ==========================================================
+ * Pure COG evaluation
+ *
+ * This function performs no printing and creates no files.
+ * It is safe for repeated use by FUZZY_COG_SWEEP().
+ * ========================================================== */
+
+static float evaluate_strength(
+    float mixture_content,
+    float temperature,
+    float step
+)
+{
+    fuzzy_rules_t rules =
+        fuzzy_rules_create();
+
+    if (!build_strength_rules(
+        &rules,
+        mixture_content,
+        temperature
+    )) {
+        FUZZY_ERROR(
+            "Failed to construct paint-strength rules.\n"
+        );
+
+        fuzzy_rules_free(&rules);
+
+        return 0.0f;
+    }
 
     float result = fuzzy_rules_cog(
         &rules,
@@ -232,30 +268,76 @@ static float evaluate_strength(
         step
     );
 
-    if (!fuzzy_rules_plot_cog(
-        &rules,
-        "svg/cog",
-        "Center of Gravity Defuzzification",
-        result,
-        30.0f,
-        100.0f,
-        step
-    )) {
-        fprintf(
-            stderr,
-            "Failed to generate COG plot.\n"
-        );
-    }
-
     fuzzy_rules_free(&rules);
 
     return result;
-
 }
 
 
 /* ==========================================================
- * Optional membership-function plots
+ * Plot one selected COG result
+ *
+ * This function is called only for the user's selected input.
+ * It is not called during the complete COG sweep.
+ * ========================================================== */
+
+static bool plot_strength_cog(
+    float mixture_content,
+    float temperature,
+    float step
+)
+{
+    fuzzy_rules_t rules = fuzzy_rules_create();
+
+    if (!build_strength_rules(
+        &rules,
+        mixture_content,
+        temperature
+    )) {
+        FUZZY_ERROR(
+            "Failed to construct paint-strength rules.\n"
+        );
+
+        fuzzy_rules_free(&rules);
+
+        return false;
+    }
+
+    FUZZY_PRINTF(
+        "\nRule activations:\n"
+    );
+
+    fuzzy_rules_print(
+        &rules
+    );
+
+    float result = fuzzy_rules_cog(
+        &rules,
+        30.0f,
+        100.0f,
+        step
+    );
+
+    bool success = fuzzy_rules_plot_cog(
+        &rules,
+        "svg/cog",
+        "Paint Strength COG Defuzzification",
+        result,
+        30.0f,
+        100.0f,
+        step
+    );
+
+    fuzzy_rules_free(
+        &rules
+    );
+
+    return success;
+}
+
+
+/* ==========================================================
+ * Membership-function plots
  * ========================================================== */
 
 static bool plot_mixture_content(void)
@@ -280,6 +362,7 @@ static bool plot_mixture_content(void)
         )
     );
 }
+
 
 static bool plot_temperature(void)
 {
@@ -310,6 +393,7 @@ static bool plot_temperature(void)
     );
 }
 
+
 static bool plot_strength(void)
 {
     return FUZZY_PLOT(
@@ -339,11 +423,11 @@ static bool plot_strength(void)
     );
 }
 
+
 static bool plot_membership_functions(void)
 {
     if (!plot_mixture_content()) {
-        fprintf(
-            stderr,
+        FUZZY_ERROR(
             "Failed to generate mixture-content plot.\n"
         );
 
@@ -351,8 +435,7 @@ static bool plot_membership_functions(void)
     }
 
     if (!plot_temperature()) {
-        fprintf(
-            stderr,
+        FUZZY_ERROR(
             "Failed to generate temperature plot.\n"
         );
 
@@ -360,20 +443,92 @@ static bool plot_membership_functions(void)
     }
 
     if (!plot_strength()) {
-        fprintf(
-            stderr,
+        FUZZY_ERROR(
             "Failed to generate strength plot.\n"
         );
 
         return false;
     }
 
-    printf(
+    FUZZY_PRINTF(
         "\nGenerated all paint-system membership plots.\n"
     );
 
     return true;
 }
+
+
+/* ==========================================================
+ * COG sweep evaluator
+ *
+ * The dimension order must match the order passed into
+ * FUZZY_COG_SWEEP().
+ *
+ * inputs[0] = mixture content
+ * inputs[1] = temperature
+ * ========================================================== */
+
+static float evaluate_strength_sweep(
+    const float inputs[],
+    size_t input_count,
+    float cog_step
+)
+{
+    if (
+        inputs == NULL ||
+        input_count != 2
+    ) {
+        return 0.0f;
+    }
+
+    return evaluate_strength(
+        inputs[0],
+        inputs[1],
+        cog_step
+    );
+}
+
+
+/* ==========================================================
+ * Complete COG sweep
+ * ========================================================== */
+
+static bool plot_strength_sweep(void)
+{
+    /*
+     * This single call generates:
+     *
+     * svg/paint_strength_cog_sweep.csv
+     * svg/paint_strength_cog_sweep.svg
+     *
+     * SVG heatmap:
+     *
+     * X axis = mixture content
+     * Y axis = temperature
+     * Colour = defuzzified paint strength
+     */
+    return FUZZY_COG_SWEEP(
+        "svg/paint_strength_cog_sweep",
+        "Paint Strength COG Sweep",
+        evaluate_strength_sweep,
+        1.0f,
+
+        FUZZY_SWEEP_DIMENSION(
+            "Mixture content",
+            0.0f,
+            100.0f,
+            2.0f
+        ),
+
+        FUZZY_SWEEP_DIMENSION(
+            "Temperature",
+            0.0f,
+            100.0f,
+            2.0f
+        )
+    );
+}
+
 
 /* ==========================================================
  * Program entry point
@@ -384,26 +539,69 @@ int main(void)
     float temperature;
     float mixture_content;
 
-    printf("\nPaint Strength Fuzzy System\n");
-    printf("===========================\n");
+    const float cog_step =
+        1.0f;
 
-    printf("Enter the temperature (C): ");
-
-    if (scanf("%f", &temperature) != 1) {
-        fprintf(
-            stderr,
-            "Invalid temperature input.\n"
+    /*
+     * Generate the complete paint-strength surface.
+     *
+     * With ranges 0-100 and sweep steps of 2:
+     *
+     * 51 mixture samples x 51 temperature samples
+     * = 2601 COG evaluations.
+     */
+    if (!plot_strength_sweep()) {
+        FUZZY_ERROR(
+            "Failed to generate paint-strength COG sweep.\n"
         );
 
         return 1;
     }
 
-    printf("Enter the mixture content: ");
+    FUZZY_PRINTF(
+        "\nGenerated paint-strength sweep files:\n"
+        "  svg/paint_strength_cog_sweep.csv\n"
+        "  svg/paint_strength_cog_sweep.svg\n"
+    );
 
-    if (scanf("%f", &mixture_content) != 1) {
-        fprintf(
-            stderr,
+    /*
+     * The membership functions are fixed, so their SVG files
+     * need to be generated only once.
+     */
+    if (!plot_membership_functions()) {
+        return 1;
+    }
+
+    FUZZY_PRINTF(
+        "\nPaint Strength Fuzzy System\n"
+        "===========================\n"
+    );
+
+    FUZZY_PRINTF(
+        "Enter the mixture content: "
+    );
+
+    if (scanf(
+        "%f",
+        &mixture_content
+    ) != 1) {
+        FUZZY_ERROR(
             "Invalid mixture-content input.\n"
+        );
+
+        return 1;
+    }
+
+    FUZZY_PRINTF(
+        "Enter the temperature (C): "
+    );
+
+    if (scanf(
+        "%f",
+        &temperature
+    ) != 1) {
+        FUZZY_ERROR(
+            "Invalid temperature input.\n"
         );
 
         return 1;
@@ -412,15 +610,27 @@ int main(void)
     float strength = evaluate_strength(
         mixture_content,
         temperature,
-        1.0f
+        cog_step
     );
 
-    printf(
+    FUZZY_PRINTF(
         "\nPaint strength: %.5f\n",
         strength
     );
 
-    if (!plot_membership_functions()) {
+    /*
+     * Generate one aggregated-output COG graph for the
+     * user's selected mixture and temperature values.
+     */
+    if (!plot_strength_cog(
+        mixture_content,
+        temperature,
+        cog_step
+    )) {
+        FUZZY_ERROR(
+            "Failed to generate selected COG plot.\n"
+        );
+
         return 1;
     }
 
