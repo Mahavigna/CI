@@ -25,7 +25,7 @@ static const hedges_t hedges = {
 
 
 /* ==========================================================
- * Mixture content membership functions
+ * Temperature membership functions
  * ========================================================== */
 
 static float temp_low(float value)
@@ -52,86 +52,100 @@ static float temp_medium(float value)
     );
 }
 
+static float temp_high(float value)
+{
+    return fuzzy_function(
+        "ramp",
+        value,
+        hedges.none,
+        15.0,
+        25.0,
+        true
+    );
+}
+
 
 /* ==========================================================
  * Temperature membership functions
  * ========================================================== */
 
-static float temperature_low(float value)
+static float humidity_low(float value)
 {
     return fuzzy_function(
         "ramp",
         value,
         hedges.none,
-        20.0,
-        30.0,
+        5.0,
+        10.0,
         false
     );
 }
 
-static float temperature_medium(float value)
+static float humidity_medium(float value)
 {
     return fuzzy_function(
-        "triangle",
+        "trapezoid",
         value,
         hedges.none,
+        5.0,
+        10.0,
         20.0,
-        35.0,
-        65.0
+        25.0
     );
 }
 
-static float temperature_high(float value)
+static float humidity_high(float value)
 {
     return fuzzy_function(
         "ramp",
         value,
         hedges.none,
-        40.0,
-        85.0,
+        15.0,
+        25.0,
         true
     );
 }
 
 
 /* ==========================================================
- * Strength membership functions
+ * Time membership functions
  * ========================================================== */
 
-static float strength_little(float value)
-{
-    return fuzzy_function(
-        "ramp",
-        value,
-        hedges.none,
-        10.0,
-        35.0,
-        false
-    );
-}
-
-static float strength_fair(float value)
+static float time_short(float value)
 {
     return fuzzy_function(
         "trapezoid",
         value,
         hedges.none,
+        0.0,
+        10.0,
         20.0,
-        40.0,
-        65.0,
-        80.0
+        30.0
     );
 }
 
-static float strength_massive(float value)
+static float time_medium(float value)
 {
     return fuzzy_function(
-        "ramp",
+        "triangle",
         value,
         hedges.none,
-        60.0,
-        85.0,
-        true
+        15.0,
+        30.0,
+        45.0
+    );
+}
+
+static float time_long(float value)
+{
+    return fuzzy_function(
+        "trapezoid",
+        value,
+        hedges.none,
+        30.0,
+        40.0,
+        50.0,
+        60.0
     );
 }
 
@@ -140,23 +154,19 @@ static float strength_massive(float value)
  * Mamdani rule evaluation
  * ========================================================== */
 
-static float evaluate_strength(
-    float mixture_content,
-    float temperature,
-    float step
-)
+static float evaluate_time(float temperature, float humidity, float step)
 {
     /*
      * Rule 1:
      *
      * IF mixture content is small
      * AND temperature is low
-     * THEN strength is little.
+     * THEN time is short.
      */
-    float rule1 = fuzzy_and(
+    float rule1 = fuzzy_or(
         2,
-        mixture_content_small(mixture_content),
-        temperature_low(temperature)
+        temp_low(temperature),
+        humidity_medium(humidity)
     );
 
     /*
@@ -164,12 +174,12 @@ static float evaluate_strength(
      *
      * IF mixture content is huge
      * AND temperature is medium
-     * THEN strength is fair.
+     * THEN time is medium. 
      */
     float rule2 = fuzzy_and(
         2,
-        mixture_content_huge(mixture_content),
-        temperature_medium(temperature)
+        humidity_medium(humidity),
+        temp_medium(temperature)
     );
 
     /*
@@ -177,21 +187,21 @@ static float evaluate_strength(
      *
      * IF mixture content is huge
      * OR temperature is high
-     * THEN strength is massive.
+     * THEN time is long.
      */
     float rule3 = fuzzy_or(
         2,
-        mixture_content_huge(mixture_content),
-        temperature_high(temperature)
+        humidity_low(humidity),
+        temp_high(temperature)
     );
 
     fuzzy_rules_t rules = fuzzy_rules_create();
 
     if (!FUZZY_RULE_ADD_NAMED(
         &rules,
-        "Strength: Little",
+        "Time: Short",
         rule1,
-        strength_little
+        time_short
     )) {
         fprintf(stderr, "Failed to add Rule 1.\n");
         fuzzy_rules_free(&rules);
@@ -200,9 +210,9 @@ static float evaluate_strength(
 
     if (!FUZZY_RULE_ADD_NAMED(
         &rules,
-        "Strength: Fair",
+        "Time: Medium",
         rule2,
-        strength_fair
+        time_medium
     )) {
         fprintf(stderr, "Failed to add Rule 2.\n");
         fuzzy_rules_free(&rules);
@@ -211,9 +221,9 @@ static float evaluate_strength(
 
     if (!FUZZY_RULE_ADD_NAMED(
         &rules,
-        "Strength: Massive",
+        "Time: Long",
         rule3,
-        strength_massive
+        time_long
     )) {
         fprintf(stderr, "Failed to add Rule 3.\n");
         fuzzy_rules_free(&rules);
@@ -227,8 +237,8 @@ static float evaluate_strength(
 
     float result = fuzzy_rules_cog(
         &rules,
-        30.0f,
-        100.0f,
+        0.0f,
+        60.0f,
         step
     );
 
@@ -237,8 +247,8 @@ static float evaluate_strength(
         "svg/cog",
         "Center of Gravity Defuzzification",
         result,
-        30.0f,
-        100.0f,
+        0.0f,
+        60.0f,
         step
     )) {
         fprintf(
@@ -258,13 +268,42 @@ static float evaluate_strength(
  * Optional membership-function plots
  * ========================================================== */
 
+static bool plot_humidity(void)
+{
+    return FUZZY_PLOT(
+        "svg/humidity",
+        "Humidity Membership Functions",
+        0.0f,
+        30.0f,
+        1.0f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Small",
+            "#ef4444",
+            humidity_low
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Huge",
+            "#3b82f6",
+            humidity_medium
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Huge",
+            "#70f63b",
+            humidity_high
+        )
+    );
+}
+
 static bool plot_temperature(void)
 {
     return FUZZY_PLOT(
         "svg/temperature",
         "Temperature Membership Functions",
         0.0f,
-        100.0f,
+        30.0f,
         1.0f,
 
         FUZZY_PLOT_FUNCTION_NAMED(
@@ -277,74 +316,51 @@ static bool plot_temperature(void)
             "Medium",
             "#22c55e",
             temp_medium
-        )
-    );
-}
-
-static bool plot_temperature(void)
-{
-    return FUZZY_PLOT(
-        "svg/temperature",
-        "Temperature Membership Functions",
-        0.0f,
-        100.0f,
-        1.0f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Low",
-            "#3b82f6",
-            temperature_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Medium",
-            "#22c55e",
-            temperature_medium
         ),
 
         FUZZY_PLOT_FUNCTION_NAMED(
             "High",
             "#ef4444",
-            temperature_high
+            temp_high
         )
     );
 }
 
-static bool plot_strength(void)
+static bool plot_time(void)
 {
     return FUZZY_PLOT(
-        "svg/strength",
-        "Paint Strength Membership Functions",
+        "svg/time",
+        "Watering-Time Membership Functions",
         0.0f,
-        100.0f,
+        60.0f,
         1.0f,
 
         FUZZY_PLOT_FUNCTION_NAMED(
-            "Little",
+            "Short",
             "#ef4444",
-            strength_little
+            time_short
         ),
 
         FUZZY_PLOT_FUNCTION_NAMED(
-            "Fair",
+            "Medium",
             "#22c55e",
-            strength_fair
+            time_medium
         ),
 
         FUZZY_PLOT_FUNCTION_NAMED(
-            "Massive",
+            "Long",
             "#3b82f6",
-            strength_massive
+            time_long
         )
     );
 }
 
 static bool plot_membership_functions(void)
 {
-    if (!plot_mixture_content()) {
+    if (!plot_humidity()) {
         fprintf(
             stderr,
-            "Failed to generate mixture-content plot.\n"
+            "Failed to generate humidity plot.\n"
         );
 
         return false;
@@ -359,17 +375,17 @@ static bool plot_membership_functions(void)
         return false;
     }
 
-    if (!plot_strength()) {
+    if (!plot_time()) {
         fprintf(
             stderr,
-            "Failed to generate strength plot.\n"
+            "Failed to generate time plot.\n"
         );
 
         return false;
     }
 
     printf(
-        "\nGenerated all paint-system membership plots.\n"
+        "\nGenerated all water-time membership plots.\n"
     );
 
     return true;
@@ -382,9 +398,9 @@ static bool plot_membership_functions(void)
 int main(void)
 {
     float temperature;
-    float mixture_content;
+    float humidity;
 
-    printf("\nPaint Strength Fuzzy System\n");
+    printf("\nWater Time Fuzzy System\n");
     printf("===========================\n");
 
     printf("Enter the temperature (C): ");
@@ -398,26 +414,26 @@ int main(void)
         return 1;
     }
 
-    printf("Enter the mixture content: ");
+    printf("Enter the humidity (%): ");
 
-    if (scanf("%f", &mixture_content) != 1) {
+    if (scanf("%f", &humidity) != 1) {
         fprintf(
             stderr,
-            "Invalid mixture-content input.\n"
+            "Invalid humidity input.\n"
         );
 
         return 1;
     }
 
-    float strength = evaluate_strength(
-        mixture_content,
+    float time = evaluate_time(
         temperature,
-        1.0f
+        humidity,  
+        10.0f
     );
 
     printf(
-        "\nPaint strength: %.5f\n",
-        strength
+        "\nWater time: %.5f\n",
+        time
     );
 
     if (!plot_membership_functions()) {

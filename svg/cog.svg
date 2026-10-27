@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
 <rect x="0" y="0" width="900" height="600" fill="white" />
-<text x="450" y="35" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="black">Generalized Bell Membership Function</text>
+<text x="450" y="35" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="black">Center of Gravity Defuzzification</text>
 <line x1="80" y1="520.00" x2="820" y2="520.00" stroke="#dddddd" stroke-width="1" />
 <text x="70" y="520.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.0</text>
 <line x1="80" y1="476.00" x2="820" y2="476.00" stroke="#dddddd" stroke-width="1" />
@@ -27,30 +27,34 @@
 <line x1="80.00" y1="80" x2="80.00" y2="520" stroke="#eeeeee" stroke-width="1" />
 <text x="80.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">0.0</text>
 <line x1="154.00" y1="80" x2="154.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="154.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">10.0</text>
+<text x="154.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">6.0</text>
 <line x1="228.00" y1="80" x2="228.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="228.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">20.0</text>
+<text x="228.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">12.0</text>
 <line x1="302.00" y1="80" x2="302.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="302.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">30.0</text>
+<text x="302.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">18.0</text>
 <line x1="376.00" y1="80" x2="376.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="376.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">40.0</text>
+<text x="376.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">24.0</text>
 <line x1="450.00" y1="80" x2="450.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="450.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">50.0</text>
+<text x="450.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">30.0</text>
 <line x1="524.00" y1="80" x2="524.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="524.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">60.0</text>
+<text x="524.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">36.0</text>
 <line x1="598.00" y1="80" x2="598.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="598.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">70.0</text>
+<text x="598.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">42.0</text>
 <line x1="672.00" y1="80" x2="672.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="672.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">80.0</text>
+<text x="672.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">48.0</text>
 <line x1="746.00" y1="80" x2="746.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="746.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">90.0</text>
+<text x="746.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">54.0</text>
 <line x1="820.00" y1="80" x2="820.00" y2="520" stroke="#eeeeee" stroke-width="1" />
-<text x="820.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">100.0</text>
+<text x="820.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">60.0</text>
 <line x1="80" y1="520" x2="820" y2="520" stroke="black" stroke-width="2" />
 <line x1="80" y1="80" x2="80" y2="520" stroke="black" stroke-width="2" />
 <text x="450" y="580" text-anchor="middle" font-family="sans-serif" font-size="15" fill="black">Input value</text>
 <text x="22" y="300" text-anchor="middle" font-family="sans-serif" font-size="15" fill="black" transform="rotate(-90 22 300)">Membership</text>
-<polyline fill="none" stroke="#f97316" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,516.46 87.40,516.17 94.80,515.84 102.20,515.48 109.60,515.08 117.00,514.63 124.40,514.14 131.80,513.58 139.20,512.96 146.60,512.26 154.00,511.47 161.40,510.58 168.80,509.57 176.20,508.43 183.60,507.13 191.00,505.64 198.40,503.94 205.80,501.99 213.20,499.74 220.60,497.13 228.00,494.12 235.40,490.61 242.80,486.52 250.20,481.73 257.60,476.12 265.00,469.52 272.40,461.75 279.80,452.60 287.20,441.81 294.60,429.12 302.00,414.24 309.40,396.90 316.80,376.85 324.20,353.95 331.60,328.24 339.00,300.00 346.40,269.83 353.80,238.70 361.20,207.85 368.60,178.70 376.00,152.58 383.40,130.48 390.80,112.94 398.20,99.92 405.60,90.98 413.00,85.37 420.40,82.21 427.80,80.70 435.20,80.14 442.60,80.01 450.00,80.00 457.40,80.01 464.80,80.14 472.20,80.70 479.60,82.21 487.00,85.37 494.40,90.98 501.80,99.92 509.20,112.94 516.60,130.48 524.00,152.58 531.40,178.70 538.80,207.85 546.20,238.70 553.60,269.83 561.00,300.00 568.40,328.24 575.80,353.95 583.20,376.85 590.60,396.90 598.00,414.24 605.40,429.12 612.80,441.81 620.20,452.60 627.60,461.75 635.00,469.52 642.40,476.12 649.80,481.73 657.20,486.52 664.60,490.61 672.00,494.12 679.40,497.13 686.80,499.74 694.20,501.99 701.60,503.94 709.00,505.64 716.40,507.13 723.80,508.43 731.20,509.57 738.60,510.58 746.00,511.47 753.40,512.26 760.80,512.96 768.20,513.58 775.60,514.14 783.00,514.63 790.40,515.08 797.80,515.48 805.20,515.84 812.60,516.17 820.00,516.46" />
-<line x1="95" y1="100" x2="125" y2="100" stroke="#f97316" stroke-width="4" />
-<text x="135" y="100" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Bell</text>
+<polyline fill="none" stroke="#a855f7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,520.00 203.33,256.00 326.67,256.00 450.00,300.00 573.33,300.00 696.67,300.00 820.00,520.00" />
+<line x1="436.30" y1="80" x2="436.30" y2="520" stroke="#ef4444" stroke-width="3" stroke-dasharray="8 5" />
+<circle cx="436.30" cy="520" r="6" fill="#ef4444" />
+<rect x="444.30" y="88" width="130" height="28" rx="5" fill="white" stroke="#ef4444" />
+<text x="452.30" y="107" font-family="sans-serif" font-size="14" fill="#ef4444">COG = 28.88889</text>
+<line x1="95" y1="100" x2="125" y2="100" stroke="#a855f7" stroke-width="4" />
+<text x="135" y="100" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="black">Aggregated output</text>
 </svg>

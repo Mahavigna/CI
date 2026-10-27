@@ -2,17 +2,46 @@
 
 A lightweight, single-header fuzzy-logic library written in C.
 
-`fuzzy.h` provides membership functions, linguistic hedges, fuzzy operators, dynamic Mamdani rule storage, output aggregation, sampled center-of-gravity defuzzification, and optional dependency-free SVG plotting.
+`fuzzy.h` provides membership functions, linguistic hedges, fuzzy operators, dynamic Mamdani rule storage, output aggregation, sampled center-of-gravity defuzzification, COG visualization, and optional dependency-free SVG plotting.
 
-No Python environment, MATLAB toolbox, external runtime, plotting framework, or dependency-heavy package chain is required.
+The fuzzy engine and SVG generator require no Python environment, MATLAB toolbox, plotting framework, external runtime, or dependency-heavy package chain. PNG and PDF conversion are available as optional Makefile conveniences through an external SVG converter.
 
-The complete implementation is readable, editable, and contained in one header.
+The complete fuzzy-logic implementation is readable, editable, and contained in one header.
 
 > Built partly to learn fuzzy logic, partly to explore AI-assisted low-level development, and partly to annoy Python users.
 
+## Contents
+
+- [Why?](#why)
+- [Current features](#current-features)
+- [Supported membership functions](#supported-membership-functions)
+- [Single-header setup](#single-header-setup)
+- [Linguistic hedges](#linguistic-hedges)
+- [Fuzzy operators](#fuzzy-operators)
+- [Dynamic Mamdani rule API](#dynamic-mamdani-rule-api)
+- [Complete rule example](#complete-rule-example)
+- [Center-of-gravity defuzzification](#center-of-gravity-defuzzification)
+- [COG visualization](#cog-visualization)
+- [Optional SVG plotting](#optional-svg-plotting)
+- [Built-in demonstration](#built-in-demonstration)
+- [Included examples](#included-examples)
+- [Building](#building)
+- [Command help](#command-help)
+- [Optional PNG and PDF conversion](#optional-png-and-pdf-conversion)
+- [Opening generated plots](#opening-generated-plots)
+- [Project flow](#project-flow)
+- [Project status](#project-status)
+- [Safety and limitations](#safety-and-limitations)
+- [Planned work](#planned-work)
+- [AI-assisted development](#ai-assisted-development)
+- [Joke](#joke)
+- [Contributing](#contributing)
+- [License](#license)
+- [Philosophy](#philosophy)
+
 ## Why?
 
-Many fuzzy-logic examples immediately reach for Python libraries or MATLAB toolboxes. Those tools are useful, but they can hide the actual calculations behind frameworks, objects, plotting environments, package managers, and large dependency chains.
+Many fuzzy-logic examples immediately reach for Python libraries or MATLAB toolboxes. Those tools are useful, but they can hide the calculations behind frameworks, objects, plotting environments, package managers, and large dependency chains.
 
 This project takes the opposite approach:
 
@@ -21,8 +50,8 @@ This project takes the opposite approach:
 - No external runtime
 - No Python environment
 - No MATLAB toolbox
-- No package manager
-- No external plotting library
+- No package manager for the core library
+- No external plotting library for SVG generation
 - User-defined membership functions
 - Direct access to every calculation
 - Optional SVG graph generation
@@ -30,7 +59,7 @@ This project takes the opposite approach:
 
 The objective is not to replace mature numerical-computing platforms. The objective is to make fuzzy-logic execution small, inspectable, modifiable, and easy to integrate into an ordinary C project.
 
-The numerical fuzzy system works without plotting. SVG generation is an optional API for visualizing membership functions.
+The numerical fuzzy system works without plotting. SVG generation is an optional API for visualizing membership functions and aggregated Mamdani outputs.
 
 ## Current features
 
@@ -54,13 +83,19 @@ The numerical fuzzy system works without plotting. SVG generation is an optional
 - Mamdani output clipping
 - Maximum output aggregation
 - Sampled center-of-gravity defuzzification
-- Optional multi-function SVG plotting
+- Multi-function SVG plotting
 - Automatic graph axes and grid lines
 - Colored curves and legends
-- Automatic SVG filename generation
 - XML-safe graph titles and labels
+- Aggregated Mamdani output plotting
+- COG marker and calculated-value label
 - Built-in SVG demonstration mode
-- No dependencies beyond the C standard library and `libm`
+- Paint-strength fuzzy-system example
+- Greenhouse watering-time example
+- Optional SVG-to-PNG conversion
+- Optional SVG-to-PDF conversion
+- Makefile automation for building, running, converting, and cleaning
+- No core dependencies beyond the C standard library and `libm`
 
 ## Supported membership functions
 
@@ -286,7 +321,7 @@ hedge > 1.0    membership becomes more restrictive
 hedge < 1.0    membership becomes less restrictive
 ```
 
-For example:
+Example:
 
 ```c
 static float temperature_very_high(float value)
@@ -302,9 +337,7 @@ static float temperature_very_high(float value)
 }
 ```
 
-Hedges can be applied to ramps, triangles, trapezoids, Gaussian functions, bell functions, sigmoids, and the other supported shapes.
-
-The hedge values are intentionally editable. Users may change the exponents or extend `hedges_t` to fit the linguistic interpretation required by a particular fuzzy system.
+The hedge values are intentionally editable. Users may change the exponents or extend `hedges_t` to match the linguistic interpretation required by a particular fuzzy system.
 
 ## Fuzzy operators
 
@@ -375,8 +408,6 @@ FUZZY_RULE_ADD_NAMED(
     strength_little
 );
 ```
-
-The internal rule array automatically allocates and expands as rules are added.
 
 Print the registered rules:
 
@@ -487,9 +518,9 @@ For every sampled output value, the library:
 The calculation is:
 
 ```text
-      Σ(value × aggregated membership)
-COG = --------------------------------
-          Σ(aggregated membership)
+      sum(value * aggregated membership)
+COG = ----------------------------------
+          sum(aggregated membership)
 ```
 
 The `step` argument controls the output sampling resolution:
@@ -502,11 +533,46 @@ fuzzy_rules_cog(&rules, 0.0f, 100.0f, 0.1f);
 
 A smaller step provides a finer approximation but performs more membership-function evaluations.
 
+The lower and upper bounds must cover the complete output universe. Incorrect bounds produce the centroid of a truncated output region.
+
+## COG visualization
+
+The library can generate an SVG containing the aggregated Mamdani output and the calculated center of gravity:
+
+```c
+float result = fuzzy_rules_cog(
+    &rules,
+    0.0f,
+    60.0f,
+    1.0f
+);
+
+if (!fuzzy_rules_plot_cog(
+    &rules,
+    "greenhouse-svg/cog",
+    "Watering-Time COG Defuzzification",
+    result,
+    0.0f,
+    60.0f,
+    1.0f
+)) {
+    fprintf(stderr, "Failed to generate COG plot.\n");
+}
+```
+
+The graph includes:
+
+- The clipped and aggregated Mamdani output
+- The complete output universe
+- A vertical COG marker
+- The calculated crisp output value
+- Axes, grid lines, title, and legend
+
+The rule collection must remain valid while the COG graph is generated. Call `fuzzy_rules_free()` only after plotting.
+
 ## Optional SVG plotting
 
-Plotting is optional. The fuzzy calculations continue to work normally without generating any graph.
-
-The core system can simply print numerical results:
+Plotting is optional. Applications that only need numerical output do not need to call any plotting function.
 
 ```c
 float output = evaluate_strength(
@@ -517,23 +583,22 @@ float output = evaluate_strength(
 printf("Output: %.5f\n", output);
 ```
 
-When visualization is useful, `fuzzy.h` can generate dependency-free SVG graphs using standard C file operations.
+When visualization is useful, `fuzzy.h` can generate SVG graphs using standard C file operations.
 
-The plotter supports:
+The SVG plotter supports:
 
 - Multiple membership functions per graph
 - Automatic input-axis scaling
 - Membership axis from `0.0` to `1.0`
-- Grid lines
-- Numeric tick labels
-- Graph titles
-- Axis labels
+- Grid lines and numeric tick labels
+- Graph titles and axis labels
 - Colored membership curves
 - Automatic legends
 - XML-safe graph titles and labels
-- SVG output viewable in a browser
+- Aggregated Mamdani output plotting
+- COG marker and calculated-value label
 
-No GUI, SVG, XML, plotting, or image library is required.
+No GUI, SVG, XML, plotting, or image library is required for SVG generation.
 
 ### Plot several functions at once
 
@@ -567,15 +632,9 @@ if (!FUZZY_PLOT(
 }
 ```
 
-This creates:
-
-```text
-strength.svg
-```
+This creates `strength.svg`.
 
 ### Automatic legend names
-
-The shorter macro uses the C function name as the legend label:
 
 ```c
 FUZZY_PLOT_FUNCTION(
@@ -586,8 +645,6 @@ FUZZY_PLOT_FUNCTION(
 
 ### Custom legend names
 
-Use the named form for a cleaner label:
-
 ```c
 FUZZY_PLOT_FUNCTION_NAMED(
     "Little",
@@ -596,87 +653,29 @@ FUZZY_PLOT_FUNCTION_NAMED(
 )
 ```
 
-### Visualizing hedges
-
-The built-in demo includes multiple hedged versions of the same trapezoidal membership function.
-
-For example:
-
-```c
-static float trapezoid_normal(float value)
-{
-    return fuzzy_function(
-        "trapezoid",
-        value,
-        1.0f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float trapezoid_very(float value)
-{
-    return fuzzy_function(
-        "trapezoid",
-        value,
-        2.0f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float trapezoid_somewhat(float value)
-{
-    return fuzzy_function(
-        "trapezoid",
-        value,
-        0.5f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-```
-
-These can be displayed on one SVG graph to compare the effect of each linguistic hedge.
-
 ## Built-in demonstration
 
-The header includes an optional demonstration mode that generates SVG examples for the supported membership functions.
-
-The demo currently generates:
+The header includes an optional demonstration mode that generates SVG examples for:
 
 ```text
-ramp.svg
-triangle.svg
-trapezoid.svg
-smf.svg
-zmf.svg
-gauss.svg
-bell.svg
-sigmoid.svg
-trapezoid_hedges.svg
+ramp
+triangle
+trapezoid
+smf
+zmf
+gauss
+bell
+sigmoid
+trapezoid hedges
 ```
 
-The hedge comparison includes:
+The hedge comparison includes normal, very, extremely, somewhat, and slightly.
 
-- Normal
-- Very
-- Extremely
-- Somewhat
-- Slightly
-
-To enable the built-in demo:
+Enable the built-in demo with:
 
 ```c
 #define FUZZY_IMPLEMENTATION
 #define FUZZY_DEMO
-
 #include "fuzzy.h"
 
 int main(void)
@@ -685,192 +684,353 @@ int main(void)
 }
 ```
 
+## Included examples
+
+### Paint-strength system
+
+`strength.c` demonstrates:
+
+- Mixture content as an input
+- Temperature as an input
+- Paint strength as the output
+- Dynamic rule registration
+- Sampled COG defuzzification
+- Membership-function SVG plots
+- Aggregated-output and COG visualization
+
+Run it with:
+
+```bash
+make run-strength
+```
+
+### Greenhouse watering-time system
+
+`greenhouse.c` demonstrates:
+
+- Temperature membership functions
+- Humidity membership functions
+- Watering-time output functions
+- Triangular and trapezoidal shapes
+- Mamdani rule aggregation
+- Watering-time COG calculation
+- Membership-function and COG plots
+
+Run it with:
+
+```bash
+make run-greenhouse
+```
+
+### Built-in shape demonstration
+
+`fuzzy.c` enables `FUZZY_DEMO` and generates the built-in shape graphs.
+
+Run it with:
+
+```bash
+make run-demo
+```
+
 ## Building
 
-The project is primarily developed and tested on Linux. Other platforms may work because the library mainly uses standard C facilities, but Linux is currently the preferred environment.
+The project is primarily developed and tested on Linux. Other platforms may work because the fuzzy engine mainly uses standard C facilities, but Linux is currently the preferred development environment.
 
-The library uses math functions such as:
+The library uses functions from `libm`, including `powf()`, `expf()`, `fabsf()`, and `ceilf()`.
 
-- `powf()`
-- `expf()`
-- `fabsf()`
-- `ceilf()`
-
-Link against `libm`:
+Build directly with GCC:
 
 ```bash
 gcc -O3 -Wall -Wextra -Wpedantic \
     strength.c -lm -o fuzzy
 ```
 
-The provided Makefile uses `ccache` and `mold`:
+The supplied Makefile builds three executables:
 
-```makefile
-CC       := ccache gcc
-CFLAGS   := -O3 -Wall -Wextra -Wpedantic
-LDFLAGS  := -fuse-ld=mold -s
-LDLIBS   := -lm
-
-TARGET      := fuzzy
-SOURCE      := strength.c
-DEMO_TARGET := fuzzy-demo
-DEMO_SOURCE := fuzzy.c
-
-.PHONY: all run demo clean
-
-all: $(TARGET)
-
-$(TARGET): $(SOURCE) fuzzy.h
-	$(CC) $(CFLAGS) $(SOURCE) $(LDFLAGS) -o $(TARGET) $(LDLIBS)
-
-$(DEMO_TARGET): $(DEMO_SOURCE) fuzzy.h
-	$(CC) $(CFLAGS) $(DEMO_SOURCE) $(LDFLAGS) -o $(DEMO_TARGET) $(LDLIBS)
-
-run: $(TARGET)
-	./$(TARGET)
-
-demo: $(DEMO_TARGET)
-	./$(DEMO_TARGET)
-
-clean:
-	rm -f $(TARGET) $(DEMO_TARGET) svg/*.svg
+```text
+fuzzy         Paint-strength example
+greenhouse    Greenhouse watering-time example
+fuzzy-demo    Built-in membership-function demonstration
 ```
 
-Makefile recipe lines must begin with a real tab.
-
-### Build the example fuzzy system
+Build all executables:
 
 ```bash
 make
 ```
 
-### Build and run the example
+Run each example:
 
 ```bash
-make run
+make run-strength
+make run-greenhouse
+make run-demo
 ```
 
-### Build and run the SVG demonstration
+Generated plots are placed in separate directories:
 
-```bash
-make demo
+```text
+svg/               Paint-strength plots
+greenhouse-svg/    Greenhouse plots
+demo-svg/          Built-in demonstrations
 ```
 
-### Remove generated executables and SVG plots
+Remove generated executables and plot files:
 
 ```bash
 make clean
 ```
 
-`ccache` and `mold` are optional. A normal GCC build is sufficient:
+The supplied Makefile uses `ccache` and `mold` for faster development builds. These are conveniences, not requirements. Makefile recipe lines must begin with a real tab.
+
+## Command help
+
+Display all available Makefile commands:
 
 ```bash
-gcc -O3 -Wall -Wextra -Wpedantic \
-    fuzzy.c -lm -o fuzzy-demo
+make help
 ```
+
+Common commands:
+
+```text
+make                  Build all executables
+
+make run-strength     Run the paint-strength example
+make run-greenhouse   Run the greenhouse example
+make run-demo         Run the built-in shape demo
+
+make png              Convert all generated SVG files to PNG
+make png-strength     Convert paint-strength SVG files to PNG
+make png-greenhouse   Convert greenhouse SVG files to PNG
+make png-demo         Convert demo SVG files to PNG
+
+make pdf              Convert all generated SVG files to PDF
+make pdf-strength     Convert paint-strength SVG files to PDF
+make pdf-greenhouse   Convert greenhouse SVG files to PDF
+make pdf-demo         Convert demo SVG files to PDF
+
+make check-converter  Check for rsvg-convert
+make install-converter
+                      Install librsvg2-bin on Debian/Ubuntu
+
+make clean            Remove executables and generated plots
+```
+
+## Optional PNG and PDF conversion
+
+`fuzzy.h` generates SVG files natively. Numerical fuzzy evaluation and SVG plotting do not depend on an external converter.
+
+Some native image viewers do not display SVG files directly. For convenience, the Makefile can optionally use `rsvg-convert` to create PNG and PDF copies.
+
+Check converter availability:
+
+```bash
+make check-converter
+```
+
+Install it on Debian or Ubuntu:
+
+```bash
+make install-converter
+```
+
+This runs:
+
+```bash
+sudo apt install librsvg2-bin
+```
+
+The user must authorize and complete the system package installation. The project does not silently install system software.
+
+Generate the SVG files first, then convert them:
+
+```bash
+make run-strength
+make run-greenhouse
+make run-demo
+make png
+make pdf
+```
+
+Convert only one group:
+
+```bash
+make png-strength
+make png-greenhouse
+make png-demo
+
+make pdf-strength
+make pdf-greenhouse
+make pdf-demo
+```
+
+Converted files are stored beside the original SVG files:
+
+```text
+svg/strength.svg
+svg/strength.png
+svg/strength.pdf
+
+greenhouse-svg/cog.svg
+greenhouse-svg/cog.png
+greenhouse-svg/cog.pdf
+
+demo-svg/trapezoid.svg
+demo-svg/trapezoid.png
+demo-svg/trapezoid.pdf
+```
+
+The conversion targets are quality-of-life shortcuts only. Users may modify the Makefile, replace `rsvg-convert`, or use any compatible SVG conversion tool.
 
 ## Opening generated plots
 
-Generated SVG files can be opened in Firefox, Chromium, Chrome, Edge, Inkscape, or another SVG-compatible application.
+SVG files can be opened in Firefox, Chromium, Chrome, Edge, Inkscape, VS Code, or another SVG-compatible application.
 
 From WSL:
 
 ```bash
-explorer.exe "$(wslpath -w "$PWD/svg/trapezoid_hedges.svg")"
+explorer.exe "$(wslpath -w "$PWD/greenhouse-svg/cog.svg")"
 ```
 
-Plot generation is separate from fuzzy evaluation. Applications that only need numerical output do not need to call any plotting function.
+Use the optional PNG conversion targets if the preferred native image viewer does not display SVG files.
 
-## Example project flow
+## Project flow
 
 ```text
 Input values
-    ↓
+    |
+    v
 Membership functions
-    ↓
+    |
+    v
 Fuzzification
-    ↓
+    |
+    v
 AND / OR rule evaluation
-    ↓
+    |
+    v
 Dynamic rule collection
-    ↓
+    |
+    v
 Mamdani clipping
-    ↓
+    |
+    v
 Maximum aggregation
-    ↓
+    |
+    v
 COG defuzzification
-    ↓
+    |
+    v
 Crisp numerical output
 ```
 
 Optional visualization:
 
 ```text
-Membership functions
-    ↓
+Membership functions / aggregated output
+    |
+    v
 SVG sampling
-    ↓
-Axes, labels, curves, and legends
-    ↓
-Browser-readable graph
+    |
+    v
+Axes, labels, curves, legends, and COG marker
+    |
+    v
+SVG graph
+    |
+    +--> Optional PNG conversion
+    +--> Optional PDF conversion
 ```
 
 ## Project status
 
-The core fuzzy-logic execution and SVG visualization paths are functional.
-
-Current capabilities include:
-
-- Defining input and output membership functions
-- Applying configurable linguistic hedges
-- Evaluating variable-length AND and OR expressions
-- Building dynamically sized Mamdani rule collections
-- Aggregating clipped output membership functions
-- Producing crisp outputs using sampled COG
-- Plotting one or more membership functions into SVG files
-- Generating built-in demonstration graphs
-
-The API remains experimental and may change as the project develops.
+The core fuzzy-logic execution and SVG visualization paths are functional. The API remains experimental and may change as the project develops.
 
 ## Safety and limitations
 
-This is a learning-focused side project, not a production-hardened fuzzy-control framework.
+This is a learning-focused side project, not a production-hardened or safety-certified fuzzy-control framework.
 
-The project is currently developed by an Electrical Engineering student exploring fuzzy logic, C programming, embedded-oriented design, visualization, and AI-assisted development.
+The project is developed by an Electrical Engineering student exploring fuzzy logic, C programming, embedded-oriented design, visualization, and AI-assisted development.
 
 Important limitations:
 
 - The string-based membership dispatcher uses variadic arguments.
 - Variadic calls are not type-safe.
 - A wrong shape name or incorrect argument list can produce invalid behavior.
-- The caller must provide arguments in the exact order expected by each shape.
-- The caller must ensure the count supplied to `fuzzy_and()` and `fuzzy_or()` matches the number of arguments.
-- The plotting API writes directly to files and is not hardened against every possible malformed input.
+- Arguments must be supplied in the exact order expected by each shape.
+- Counts supplied to `fuzzy_and()` and `fuzzy_or()` must match the supplied values.
+- The plotting API writes directly to files and is not hardened against every malformed input.
 - Dynamic rules use heap allocation through `realloc()`.
-- The current COG implementation uses sampled numerical approximation.
+- COG uses sampled numerical approximation.
+- COG bounds must cover the complete output universe.
 - The library has not undergone security auditing or formal verification.
 
 Use the project for learning, experimentation, assignments, prototypes, and controlled systems where the code can be reviewed and tested.
 
-Do not treat the current version as safety-certified control software.
-
 ## Planned work
+
+### Visualization and desktop tooling
 
 - Interactive graphical interface
 - Live input adjustment
 - Live membership-function updates
 - Rule activation visualization
-- Aggregated output graph
-- COG marker on output graphs
-- Custom graph dimensions and axis labels
-- Configurable plot themes
+- Configurable graph dimensions and axis labels
+- Additional plot themes and formats
+
+### Fuzzy engine
+
 - Additional defuzzification methods
 - Additional membership-function shapes
 - More input validation
-- Cleaner error reporting
-- Separate optional modules
-- Embedded-oriented build examples
-- Additional tests and validation
+- Cleaner diagnostics
+- Typed alternatives to the variadic API
+- Expanded automated testing
+- Numerical comparison against reference implementations
+
+### Embedded and microcontroller support
+
+A future objective is a reduced fuzzy core that does not require a hosted `libc` or full `libm` environment.
+
+Planned embedded work includes:
+
+- Compile-time feature selection
+- Plotting removal for firmware builds
+- Static-capacity rule storage
+- No mandatory `realloc()`
+- No mandatory file I/O
+- Replaceable allocation functions
+- Fixed-point membership calculations
+- Lookup tables or approximations for expensive math operations
+- Reduced floating-point dependence
+- Software-in-the-loop testing
+- Hardware-in-the-loop validation
+- ESP-class microcontroller support
+- Investigation of constrained 8-bit targets, including 8051-class systems
+
+The current version is a hosted C implementation and still uses `stdio`, heap allocation, floating-point math, `libc`, and `libm`. Supporting highly constrained systems will require separating the numerical core from plotting, file handling, and dynamic allocation.
+
+Intended development path:
+
+```text
+Linux simulation and testing
+    |
+    v
+Software-in-the-loop validation
+    |
+    v
+ESP firmware
+    |
+    v
+Hardware-in-the-loop testing
+    |
+    v
+Reduced freestanding fuzzy core
+    |
+    v
+Constrained 8-bit targets
+```
 
 ## AI-assisted development
 
@@ -880,11 +1040,40 @@ The goal is not to hide that fact. The project is also an experiment in whether 
 
 Every generated or suggested component remains ordinary C that can be read, tested, modified, profiled, and replaced by the user.
 
+# Joke
+Even this README is AI generated cuz I reaaaaaaalllllly couldnt be bothered to type english essays here!
+
+You guys are SWE know more than my attempt at low-level so any complaints do inform so I can take your ideas(❁´◡`❁)
+
+But thanks again for trying it out, and support to screw python!
+
+## Contributing
+
+The project is experimental and the API may change.
+
+Issues, bug reports, test cases, fixes, documentation improvements, embedded ports, and alternative implementations are welcome.
+
+Before submitting a change:
+
+1. Build all targets.
+2. Run the included examples.
+3. Confirm that the expected SVG files are generated.
+4. Compile with the warning flags supplied by the Makefile.
+5. Clearly describe any API or numerical-behavior changes.
+
+The implementation is intentionally visible and editable. Users are free to study the code, adapt it to their systems, replace components, or propose cleaner implementations, subject to the repository license.
+
+## License
+
+See the repository's `LICENSE` file for the terms under which this project may be copied, modified, and distributed.
+
+A permissive license such as MIT is a practical fit if the intended usage is to copy `fuzzy.h` directly into other projects.
+
 ## Philosophy
 
 Fuzzy logic and membership-function visualization do not inherently require a notebook, interpreter, virtual environment, hundreds of transitive dependencies, or proprietary software.
 
-Sometimes the complete fuzzy system and graphing interface can just be:
+Sometimes the complete hosted fuzzy system can just be:
 
 ```c
 #define FUZZY_IMPLEMENTATION
@@ -893,4 +1082,8 @@ Sometimes the complete fuzzy system and graphing interface can just be:
 
 No Python environment. No MATLAB toolbox. No plotting framework.
 
-Just C, `libm`, numerical output, and optional SVG graphs.
+Just C, `libm`, numerical output, and native SVG graphs.
+
+PNG and PDF copies are optional conveniences. Users may convert SVG files manually, use their preferred conversion software, or use the Makefile shortcuts supplied with the project.
+
+The longer-term objective is to reduce the core further so the same fuzzy-system logic can move from Linux simulations and test harnesses into ESP-class systems and, eventually, carefully configured 8-bit microcontroller targets.
