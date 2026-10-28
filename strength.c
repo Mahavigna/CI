@@ -244,8 +244,12 @@ static float evaluate_strength(
     float step
 )
 {
-    fuzzy_rules_t rules =
-        fuzzy_rules_create();
+    fuzzy_rules_t rules;
+    float result;
+
+    fuzzy_rules_create(
+        &rules
+    );
 
     if (!build_strength_rules(
         &rules,
@@ -256,23 +260,27 @@ static float evaluate_strength(
             "Failed to construct paint-strength rules.\n"
         );
 
-        fuzzy_rules_free(&rules);
+        fuzzy_rules_free(
+            &rules
+        );
 
         return 0.0f;
     }
 
-    float result = fuzzy_rules_cog(
-        &rules,
-        30.0f,
-        100.0f,
-        step
-    );
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            30.0f,
+            100.0f,
+            step
+        );
 
-    fuzzy_rules_free(&rules);
+    fuzzy_rules_free(
+        &rules
+    );
 
     return result;
 }
-
 
 /* ==========================================================
  * Plot one selected COG result
@@ -287,7 +295,13 @@ static bool plot_strength_cog(
     float step
 )
 {
-    fuzzy_rules_t rules = fuzzy_rules_create();
+    fuzzy_rules_t rules;
+    float result;
+    bool success;
+
+    fuzzy_rules_create(
+        &rules
+    );
 
     if (!build_strength_rules(
         &rules,
@@ -298,7 +312,9 @@ static bool plot_strength_cog(
             "Failed to construct paint-strength rules.\n"
         );
 
-        fuzzy_rules_free(&rules);
+        fuzzy_rules_free(
+            &rules
+        );
 
         return false;
     }
@@ -311,22 +327,24 @@ static bool plot_strength_cog(
         &rules
     );
 
-    float result = fuzzy_rules_cog(
-        &rules,
-        30.0f,
-        100.0f,
-        step
-    );
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            30.0f,
+            100.0f,
+            step
+        );
 
-    bool success = fuzzy_rules_plot_cog(
-        &rules,
-        "svg/cog",
-        "Paint Strength COG Defuzzification",
-        result,
-        30.0f,
-        100.0f,
-        step
-    );
+    success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            "svg/cog",
+            "Paint Strength COG Defuzzification",
+            result,
+            30.0f,
+            100.0f,
+            step
+        );
 
     fuzzy_rules_free(
         &rules
@@ -334,7 +352,6 @@ static bool plot_strength_cog(
 
     return success;
 }
-
 
 /* ==========================================================
  * Membership-function plots
@@ -538,6 +555,7 @@ int main(void)
 {
     float temperature;
     float mixture_content;
+    float strength;
 
     const float cog_step =
         1.0f;
@@ -607,7 +625,7 @@ int main(void)
         return 1;
     }
 
-    float strength = evaluate_strength(
+    strength = evaluate_strength(
         mixture_content,
         temperature,
         cog_step

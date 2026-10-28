@@ -56,7 +56,7 @@
 #define RESPONSE_UPPER              100.0f
 
 #define NORMAL_COG_STEP             0.1f
-#define SWEEP_COG_STEP              0.25f
+#define SWEEP_COG_STEP              1.0f
 
 
 /* ==========================================================
@@ -70,6 +70,83 @@ static const hedges_t hedges = {
     .somewhat  = 0.5f,
     .slightly  = 0.75f
 };
+
+/* ==========================================================
+ * Randomized membership-function parameters
+ *
+ * Parameters are generated once when the program starts.
+ * They remain fixed during plotting, rule evaluation,
+ * defuzzification, and the complete N-dimensional sweep.
+ * ========================================================== */
+
+typedef struct RandomFuzzyParameters {
+    /*
+     * Temperature.
+     */
+    float temperature_low[2];
+    float temperature_medium[2];
+    float temperature_high[2];
+
+    /*
+     * Humidity.
+     */
+    float humidity_low[2];
+    float humidity_medium[4];
+    float humidity_high[2];
+
+    /*
+     * Vibration.
+     */
+    float vibration_low[2];
+    float vibration_medium[3];
+    float vibration_high[2];
+
+    /*
+     * Pressure.
+     */
+    float pressure_low[2];
+    float pressure_normal[3];
+    float pressure_high[2];
+
+    /*
+     * Material quality.
+     */
+    float quality_poor[2];
+    float quality_average[2];
+    float quality_good[2];
+
+    /*
+     * Process response.
+     */
+    float response_minimal[2];
+    float response_low[3];
+    float response_moderate[4];
+    float response_high[3];
+    float response_critical[2];
+
+    /*
+     * Generic shape demonstration.
+     */
+    float shape_ramp[2];
+    float shape_triangle[3];
+    float shape_trapezoid[4];
+    float shape_smf[2];
+    float shape_zmf[2];
+    float shape_gauss[2];
+    float shape_bell[3];
+    float shape_sigmoid[2];
+
+    /*
+     * Shared randomized trapezoid for hedge comparison.
+     *
+     * Every hedge must use the same base function so the
+     * only visible difference is the hedge exponent.
+     */
+    float hedge_trapezoid[4];
+} random_fuzzy_parameters_t;
+
+
+static random_fuzzy_parameters_t parameters;
 
 
 /* ==========================================================
@@ -93,17 +170,358 @@ static float random_float(
         ratio * (upper - lower);
 }
 
+/*
+ * Generate two strictly ordered parameters:
+ *
+ * a < b
+ */
+static void random_ordered_2(
+    float output[2],
+    float lower,
+    float upper,
+    float minimum_gap
+)
+{
+    if (
+        output == NULL ||
+        upper - lower < minimum_gap
+    ) {
+        return;
+    }
+
+    output[0] = random_float(
+        lower,
+        upper - minimum_gap
+    );
+
+    output[1] = random_float(
+        output[0] + minimum_gap,
+        upper
+    );
+}
+
+
+/*
+ * Generate three strictly ordered parameters:
+ *
+ * a < b < c
+ */
+static void random_ordered_3(
+    float output[3],
+    float lower,
+    float upper,
+    float minimum_gap
+)
+{
+    if (
+        output == NULL ||
+        upper - lower < 2.0f * minimum_gap
+    ) {
+        return;
+    }
+
+    output[0] = random_float(
+        lower,
+        upper - 2.0f * minimum_gap
+    );
+
+    output[1] = random_float(
+        output[0] + minimum_gap,
+        upper - minimum_gap
+    );
+
+    output[2] = random_float(
+        output[1] + minimum_gap,
+        upper
+    );
+}
+
+
+/*
+ * Generate four strictly ordered parameters:
+ *
+ * a < b < c < d
+ */
+static void random_ordered_4(
+    float output[4],
+    float lower,
+    float upper,
+    float minimum_gap
+)
+{
+    if (
+        output == NULL ||
+        upper - lower < 3.0f * minimum_gap
+    ) {
+        return;
+    }
+
+    output[0] = random_float(
+        lower,
+        upper - 3.0f * minimum_gap
+    );
+
+    output[1] = random_float(
+        output[0] + minimum_gap,
+        upper - 2.0f * minimum_gap
+    );
+
+    output[2] = random_float(
+        output[1] + minimum_gap,
+        upper - minimum_gap
+    );
+
+    output[3] = random_float(
+        output[2] + minimum_gap,
+        upper
+    );
+}
+
+
+/*
+ * Generate all membership-function parameters once.
+ *
+ * The ranges are constrained so linguistic terms remain
+ * meaningful:
+ *
+ * - Low functions remain toward the lower region.
+ * - Medium functions remain around the middle region.
+ * - High functions remain toward the upper region.
+ * - Triangle and trapezoid points remain strictly ordered.
+ * - Gaussian deviation remains positive.
+ * - Bell width and slope remain positive.
+ */
+static void randomize_membership_parameters(void)
+{
+    /*
+     * Temperature: 0 to 100.
+     */
+    random_ordered_2(
+        parameters.temperature_low,
+        10.0f,
+        48.0f,
+        8.0f
+    );
+
+    parameters.temperature_medium[0] =
+        random_float(38.0f, 62.0f);
+
+    parameters.temperature_medium[1] =
+        random_float(8.0f, 20.0f);
+
+    random_ordered_2(
+        parameters.temperature_high,
+        52.0f,
+        95.0f,
+        8.0f
+    );
+
+    /*
+     * Humidity: 0 to 100.
+     */
+    random_ordered_2(
+        parameters.humidity_low,
+        10.0f,
+        48.0f,
+        8.0f
+    );
+
+    random_ordered_4(
+        parameters.humidity_medium,
+        18.0f,
+        82.0f,
+        8.0f
+    );
+
+    parameters.humidity_high[0] =
+        random_float(0.07f, 0.20f);
+
+    parameters.humidity_high[1] =
+        random_float(55.0f, 78.0f);
+
+    /*
+     * Vibration: 0 to 10.
+     */
+    random_ordered_2(
+        parameters.vibration_low,
+        0.5f,
+        4.8f,
+        1.0f
+    );
+
+    parameters.vibration_medium[0] =
+        random_float(3.0f, 6.5f);
+
+    parameters.vibration_medium[1] =
+        random_float(1.5f, 4.0f);
+
+    parameters.vibration_medium[2] =
+        random_float(3.5f, 6.5f);
+
+    random_ordered_2(
+        parameters.vibration_high,
+        5.0f,
+        9.8f,
+        1.0f
+    );
+
+    /*
+     * Pressure: 0 to 200.
+     */
+    random_ordered_2(
+        parameters.pressure_low,
+        20.0f,
+        95.0f,
+        20.0f
+    );
+
+    random_ordered_3(
+        parameters.pressure_normal,
+        45.0f,
+        175.0f,
+        25.0f
+    );
+
+    parameters.pressure_high[0] =
+        random_float(0.035f, 0.095f);
+
+    parameters.pressure_high[1] =
+        random_float(125.0f, 170.0f);
+
+    /*
+     * Material quality: 0 to 100.
+     */
+    random_ordered_2(
+        parameters.quality_poor,
+        10.0f,
+        52.0f,
+        10.0f
+    );
+
+    parameters.quality_average[0] =
+        random_float(42.0f, 65.0f);
+
+    parameters.quality_average[1] =
+        random_float(8.0f, 20.0f);
+
+    random_ordered_2(
+        parameters.quality_good,
+        50.0f,
+        96.0f,
+        10.0f
+    );
+
+    /*
+     * Process response: 0 to 100.
+     */
+    random_ordered_2(
+        parameters.response_minimal,
+        5.0f,
+        35.0f,
+        8.0f
+    );
+
+    random_ordered_3(
+        parameters.response_low,
+        5.0f,
+        55.0f,
+        10.0f
+    );
+
+    random_ordered_4(
+        parameters.response_moderate,
+        22.0f,
+        76.0f,
+        8.0f
+    );
+
+    random_ordered_3(
+        parameters.response_high,
+        48.0f,
+        95.0f,
+        8.0f
+    );
+
+    random_ordered_2(
+        parameters.response_critical,
+        68.0f,
+        99.0f,
+        7.0f
+    );
+
+    /*
+     * Generic shape demonstration: 0 to 100.
+     */
+    random_ordered_2(
+        parameters.shape_ramp,
+        10.0f,
+        90.0f,
+        20.0f
+    );
+
+    random_ordered_3(
+        parameters.shape_triangle,
+        5.0f,
+        95.0f,
+        15.0f
+    );
+
+    random_ordered_4(
+        parameters.shape_trapezoid,
+        5.0f,
+        95.0f,
+        12.0f
+    );
+
+    random_ordered_2(
+        parameters.shape_smf,
+        10.0f,
+        90.0f,
+        20.0f
+    );
+
+    random_ordered_2(
+        parameters.shape_zmf,
+        10.0f,
+        90.0f,
+        20.0f
+    );
+
+    parameters.shape_gauss[0] =
+        random_float(30.0f, 70.0f);
+
+    parameters.shape_gauss[1] =
+        random_float(8.0f, 22.0f);
+
+    parameters.shape_bell[0] =
+        random_float(20.0f, 55.0f);
+
+    parameters.shape_bell[1] =
+        random_float(1.5f, 4.0f);
+
+    parameters.shape_bell[2] =
+        random_float(30.0f, 70.0f);
+
+    parameters.shape_sigmoid[0] =
+        random_float(0.06f, 0.20f);
+
+    parameters.shape_sigmoid[1] =
+        random_float(30.0f, 70.0f);
+
+    /*
+     * Shared hedge demonstration trapezoid.
+     */
+    random_ordered_4(
+        parameters.hedge_trapezoid,
+        5.0f,
+        95.0f,
+        12.0f
+    );
+}
+
 
 /* ==========================================================
- * Temperature membership functions
- *
- * Range: 0 to 100 degrees Celsius
- *
- * Shapes demonstrated:
- *
- * - ZMF
- * - Gaussian
- * - SMF
+ * Randomized temperature membership functions
  * ========================================================== */
 
 static float temperature_low(float value)
@@ -112,8 +530,8 @@ static float temperature_low(float value)
         "zmf",
         value,
         hedges.none,
-        20.0,
-        45.0
+        (double)parameters.temperature_low[0],
+        (double)parameters.temperature_low[1]
     );
 }
 
@@ -124,8 +542,8 @@ static float temperature_medium(float value)
         "gauss",
         value,
         hedges.none,
-        50.0,
-        14.0
+        (double)parameters.temperature_medium[0],
+        (double)parameters.temperature_medium[1]
     );
 }
 
@@ -136,22 +554,14 @@ static float temperature_high(float value)
         "smf",
         value,
         hedges.none,
-        55.0,
-        85.0
+        (double)parameters.temperature_high[0],
+        (double)parameters.temperature_high[1]
     );
 }
 
 
 /* ==========================================================
- * Humidity membership functions
- *
- * Range: 0 to 100 percent
- *
- * Shapes demonstrated:
- *
- * - Ramp
- * - Trapezoid
- * - Sigmoid
+ * Randomized humidity membership functions
  * ========================================================== */
 
 static float humidity_low(float value)
@@ -160,8 +570,8 @@ static float humidity_low(float value)
         "ramp",
         value,
         hedges.none,
-        20.0,
-        45.0,
+        (double)parameters.humidity_low[0],
+        (double)parameters.humidity_low[1],
         false
     );
 }
@@ -173,10 +583,10 @@ static float humidity_medium(float value)
         "trapezoid",
         value,
         hedges.none,
-        25.0,
-        40.0,
-        60.0,
-        75.0
+        (double)parameters.humidity_medium[0],
+        (double)parameters.humidity_medium[1],
+        (double)parameters.humidity_medium[2],
+        (double)parameters.humidity_medium[3]
     );
 }
 
@@ -187,22 +597,14 @@ static float humidity_high(float value)
         "sigmoid",
         value,
         hedges.none,
-        0.14,
-        65.0
+        (double)parameters.humidity_high[0],
+        (double)parameters.humidity_high[1]
     );
 }
 
 
 /* ==========================================================
- * Vibration membership functions
- *
- * Range: 0 to 10 arbitrary vibration units
- *
- * Shapes demonstrated:
- *
- * - ZMF
- * - Generalized bell
- * - SMF
+ * Randomized vibration membership functions
  * ========================================================== */
 
 static float vibration_low(float value)
@@ -211,8 +613,8 @@ static float vibration_low(float value)
         "zmf",
         value,
         hedges.none,
-        1.0,
-        4.0
+        (double)parameters.vibration_low[0],
+        (double)parameters.vibration_low[1]
     );
 }
 
@@ -223,9 +625,9 @@ static float vibration_medium(float value)
         "bell",
         value,
         hedges.none,
-        5.0,
-        2.5,
-        5.0
+        (double)parameters.vibration_medium[0],
+        (double)parameters.vibration_medium[1],
+        (double)parameters.vibration_medium[2]
     );
 }
 
@@ -236,22 +638,14 @@ static float vibration_high(float value)
         "smf",
         value,
         hedges.none,
-        5.5,
-        9.0
+        (double)parameters.vibration_high[0],
+        (double)parameters.vibration_high[1]
     );
 }
 
 
 /* ==========================================================
- * Pressure membership functions
- *
- * Range: 0 to 200 pressure units
- *
- * Shapes demonstrated:
- *
- * - Ramp
- * - Triangle
- * - Sigmoid
+ * Randomized pressure membership functions
  * ========================================================== */
 
 static float pressure_low(float value)
@@ -260,8 +654,8 @@ static float pressure_low(float value)
         "ramp",
         value,
         hedges.none,
-        40.0,
-        90.0,
+        (double)parameters.pressure_low[0],
+        (double)parameters.pressure_low[1],
         false
     );
 }
@@ -273,9 +667,9 @@ static float pressure_normal(float value)
         "triangle",
         value,
         hedges.none,
-        60.0,
-        110.0,
-        160.0
+        (double)parameters.pressure_normal[0],
+        (double)parameters.pressure_normal[1],
+        (double)parameters.pressure_normal[2]
     );
 }
 
@@ -286,22 +680,14 @@ static float pressure_high(float value)
         "sigmoid",
         value,
         hedges.none,
-        0.07,
-        145.0
+        (double)parameters.pressure_high[0],
+        (double)parameters.pressure_high[1]
     );
 }
 
 
 /* ==========================================================
- * Material-quality membership functions
- *
- * Range: 0 to 100 quality units
- *
- * Shapes demonstrated:
- *
- * - ZMF
- * - Gaussian
- * - SMF
+ * Randomized quality membership functions
  * ========================================================== */
 
 static float quality_poor(float value)
@@ -310,8 +696,8 @@ static float quality_poor(float value)
         "zmf",
         value,
         hedges.none,
-        20.0,
-        50.0
+        (double)parameters.quality_poor[0],
+        (double)parameters.quality_poor[1]
     );
 }
 
@@ -322,8 +708,8 @@ static float quality_average(float value)
         "gauss",
         value,
         hedges.none,
-        55.0,
-        15.0
+        (double)parameters.quality_average[0],
+        (double)parameters.quality_average[1]
     );
 }
 
@@ -334,18 +720,14 @@ static float quality_good(float value)
         "smf",
         value,
         hedges.none,
-        55.0,
-        90.0
+        (double)parameters.quality_good[0],
+        (double)parameters.quality_good[1]
     );
 }
 
 
 /* ==========================================================
- * Process-response output membership functions
- *
- * Range: 0 to 100 response units
- *
- * These functions are used as Mamdani consequents.
+ * Randomized response membership functions
  * ========================================================== */
 
 static float response_minimal(float value)
@@ -354,8 +736,8 @@ static float response_minimal(float value)
         "zmf",
         value,
         hedges.none,
-        10.0,
-        30.0
+        (double)parameters.response_minimal[0],
+        (double)parameters.response_minimal[1]
     );
 }
 
@@ -366,9 +748,9 @@ static float response_low(float value)
         "triangle",
         value,
         hedges.none,
-        10.0,
-        30.0,
-        50.0
+        (double)parameters.response_low[0],
+        (double)parameters.response_low[1],
+        (double)parameters.response_low[2]
     );
 }
 
@@ -379,10 +761,10 @@ static float response_moderate(float value)
         "trapezoid",
         value,
         hedges.none,
-        30.0,
-        45.0,
-        55.0,
-        70.0
+        (double)parameters.response_moderate[0],
+        (double)parameters.response_moderate[1],
+        (double)parameters.response_moderate[2],
+        (double)parameters.response_moderate[3]
     );
 }
 
@@ -393,9 +775,9 @@ static float response_high(float value)
         "triangle",
         value,
         hedges.none,
-        55.0,
-        75.0,
-        90.0
+        (double)parameters.response_high[0],
+        (double)parameters.response_high[1],
+        (double)parameters.response_high[2]
     );
 }
 
@@ -406,17 +788,14 @@ static float response_critical(float value)
         "smf",
         value,
         hedges.none,
-        75.0,
-        95.0
+        (double)parameters.response_critical[0],
+        (double)parameters.response_critical[1]
     );
 }
 
 
 /* ==========================================================
- * Hedge demonstration functions
- *
- * All five curves use the same trapezoidal membership
- * function with different linguistic hedge exponents.
+ * Randomized hedge demonstration
  * ========================================================== */
 
 static float hedge_none_demo(float value)
@@ -425,10 +804,10 @@ static float hedge_none_demo(float value)
         "trapezoid",
         value,
         hedges.none,
-        10.0,
-        30.0,
-        70.0,
-        90.0
+        (double)parameters.hedge_trapezoid[0],
+        (double)parameters.hedge_trapezoid[1],
+        (double)parameters.hedge_trapezoid[2],
+        (double)parameters.hedge_trapezoid[3]
     );
 }
 
@@ -439,10 +818,10 @@ static float hedge_very_demo(float value)
         "trapezoid",
         value,
         hedges.very,
-        10.0,
-        30.0,
-        70.0,
-        90.0
+        (double)parameters.hedge_trapezoid[0],
+        (double)parameters.hedge_trapezoid[1],
+        (double)parameters.hedge_trapezoid[2],
+        (double)parameters.hedge_trapezoid[3]
     );
 }
 
@@ -453,10 +832,10 @@ static float hedge_extremely_demo(float value)
         "trapezoid",
         value,
         hedges.extremely,
-        10.0,
-        30.0,
-        70.0,
-        90.0
+        (double)parameters.hedge_trapezoid[0],
+        (double)parameters.hedge_trapezoid[1],
+        (double)parameters.hedge_trapezoid[2],
+        (double)parameters.hedge_trapezoid[3]
     );
 }
 
@@ -467,10 +846,10 @@ static float hedge_somewhat_demo(float value)
         "trapezoid",
         value,
         hedges.somewhat,
-        10.0,
-        30.0,
-        70.0,
-        90.0
+        (double)parameters.hedge_trapezoid[0],
+        (double)parameters.hedge_trapezoid[1],
+        (double)parameters.hedge_trapezoid[2],
+        (double)parameters.hedge_trapezoid[3]
     );
 }
 
@@ -481,13 +860,12 @@ static float hedge_slightly_demo(float value)
         "trapezoid",
         value,
         hedges.slightly,
-        10.0,
-        30.0,
-        70.0,
-        90.0
+        (double)parameters.hedge_trapezoid[0],
+        (double)parameters.hedge_trapezoid[1],
+        (double)parameters.hedge_trapezoid[2],
+        (double)parameters.hedge_trapezoid[3]
     );
 }
-
 
 /* ==========================================================
  * Individual membership-shape demonstration functions
@@ -939,8 +1317,12 @@ static float evaluate_process_response(
     float cog_step
 )
 {
-    fuzzy_rules_t rules =
-        fuzzy_rules_create();
+    fuzzy_rules_t rules;
+    float result;
+
+    fuzzy_rules_create(
+        &rules
+    );
 
     if (!build_process_rules(
         &rules,
@@ -961,12 +1343,13 @@ static float evaluate_process_response(
         return 0.0f;
     }
 
-    float result = fuzzy_rules_cog(
-        &rules,
-        RESPONSE_LOWER,
-        RESPONSE_UPPER,
-        cog_step
-    );
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            cog_step
+        );
 
     fuzzy_rules_free(
         &rules
@@ -974,7 +1357,6 @@ static float evaluate_process_response(
 
     return result;
 }
-
 
 /* ==========================================================
  * Plot one selected process-response COG
@@ -989,8 +1371,13 @@ static bool plot_selected_process_cog(
     float cog_step
 )
 {
-    fuzzy_rules_t rules =
-        fuzzy_rules_create();
+    fuzzy_rules_t rules;
+    float result;
+    bool success;
+
+    fuzzy_rules_create(
+        &rules
+    );
 
     if (!build_process_rules(
         &rules,
@@ -1019,22 +1406,24 @@ static bool plot_selected_process_cog(
         &rules
     );
 
-    float result = fuzzy_rules_cog(
-        &rules,
-        RESPONSE_LOWER,
-        RESPONSE_UPPER,
-        cog_step
-    );
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            cog_step
+        );
 
-    bool success = fuzzy_rules_plot_cog(
-        &rules,
-        DEMO_DIRECTORY "/selected_cog",
-        "Selected Process-Response COG",
-        result,
-        RESPONSE_LOWER,
-        RESPONSE_UPPER,
-        cog_step
-    );
+    success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            DEMO_DIRECTORY "/selected_cog",
+            "Selected Process-Response COG",
+            result,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            cog_step
+        );
 
     fuzzy_rules_free(
         &rules
@@ -1042,7 +1431,6 @@ static bool plot_selected_process_cog(
 
     return success;
 }
-
 
 /* ==========================================================
  * Membership-function plot helpers
@@ -1657,6 +2045,14 @@ int main(void)
     srand(
         (unsigned int)time(NULL)
     );
+
+    /*
+    * Generate one randomized fuzzy system for this run.
+    *
+    * All subsequent plots, rules, COG evaluations, and sweep
+    * points use these same parameters.
+    */
+    randomize_membership_parameters();
 
     FUZZY_PRINTF(
         "\nfuzzy.h Complete API Demonstration\n"

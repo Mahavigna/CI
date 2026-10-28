@@ -1,16 +1,49 @@
 #ifndef FUZZY_H
 #define FUZZY_H
 
-#include <stdbool.h>
+#include <stddef.h>
 #include <stdarg.h>
+#include <string.h>
+
+#ifdef __C51__
+
+typedef unsigned char bool;
+typedef unsigned char uint8_t;
+
+#ifndef false
+#define false 0
+#endif
+
+#ifndef true
+#define true 1
+#endif
+
+#else
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#endif
+
+/*
+ * Desktop simulation dependencies.
+ *
+ * These headers are completely excluded from FUZZY_8051
+ * builds.
+ */
+#ifndef FUZZY_8051
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
-#include <stdint.h>
+
+#endif /* FUZZY_8051 */
+
 
 #define LEVEL_HI 1.0f
 #define LEVEL_LO 0.0f
+
+#ifndef FUZZY_8051
 
 #ifndef FUZZY_PRINTF
 #define FUZZY_PRINTF(...) printf(__VA_ARGS__)
@@ -19,6 +52,8 @@
 #ifndef FUZZY_ERROR
 #define FUZZY_ERROR(...) fprintf(stderr, __VA_ARGS__)
 #endif
+
+#endif /* FUZZY_8051 */
 
 /*
  * User-defined hedge exponents.
@@ -36,172 +71,77 @@
  *     .slightly  = 0.75f
  * };
  */
+#ifndef FUZZY_8051
+
+typedef float fuzzy_hedge_t;
+
 typedef struct Hedges {
-    float none;
-    float very;
-    float extremely;
-    float somewhat;
-    float slightly;
+    fuzzy_hedge_t none;
+    fuzzy_hedge_t very;
+    fuzzy_hedge_t extremely;
+    fuzzy_hedge_t somewhat;
+    fuzzy_hedge_t slightly;
 } hedges_t;
+
+#else
+
+/*
+ * Integer-only hedge powers for the 8051 backend.
+ *
+ * Examples:
+ *
+ * none      = 1
+ * very      = 2
+ * extremely = 3
+ *
+ * Fractional hedges are unavailable because they require
+ * roots or general exponentiation.
+ */
+typedef uint8_t fuzzy_hedge_t;
+
+typedef struct Hedges {
+    fuzzy_hedge_t none;
+    fuzzy_hedge_t very;
+    fuzzy_hedge_t extremely;
+} hedges_t;
+
+#endif /* FUZZY_8051 */
 
 typedef float (*fuzzy_output_function_t)(float);
 
+
 typedef struct FuzzyRule {
+#ifndef FUZZY_8051
     const char *name;
+#endif
+
     float value;
     fuzzy_output_function_t output_function;
 } fuzzy_rule_t;
 
+
+#ifndef FUZZY_MAX_RULES
+
+#ifdef FUZZY_8051
+#define FUZZY_MAX_RULES 8u
+#else
+#define FUZZY_MAX_RULES 32u
+#endif
+
+#endif /* FUZZY_MAX_RULES */
+
+
 typedef struct FuzzyRules {
-    fuzzy_rule_t *rules;
+    fuzzy_rule_t rules[FUZZY_MAX_RULES];
     size_t count;
-    size_t capacity;
 } fuzzy_rules_t;
 
-typedef struct FuzzyPlot {
-    FILE *file;
 
-    float lower;
-    float upper;
-    float step;
+/* ==========================================================
+ * Rule-addition macros
+ * ========================================================== */
 
-    int width;
-    int height;
-    int padding;
-
-    int plot_count;
-} fuzzy_plot_t;
-
-typedef struct FuzzyPlotSeries {
-    char *name;
-    char *color;
-    fuzzy_output_function_t function;
-} fuzzy_plot_series_t;
-
-typedef struct FuzzySweepDimension {
-    const char *name;
-
-    float lower;
-    float upper;
-    float step;
-} fuzzy_sweep_dimension_t;
-
-typedef float (*fuzzy_sweep_evaluator_t)(
-    const float inputs[],
-    size_t input_count,
-    float cog_step
-);
-
-typedef struct FuzzyCogSweep {
-    const char *filename;
-    const char *title;
-
-    const fuzzy_sweep_dimension_t *dimensions;
-    size_t dimension_count;
-
-    float cog_step;
-
-    fuzzy_sweep_evaluator_t evaluate;
-} fuzzy_cog_sweep_t;
-
-
-bool fuzzy_plot_many(
-    char *filename,
-    char *title,
-    float lower,
-    float upper,
-    float step,
-    const fuzzy_plot_series_t series[],
-    size_t series_count
-);
-
-#define FUZZY_PLOT_FUNCTION(function_arg, color_arg)        \
-    (fuzzy_plot_series_t) {                                 \
-        .name = #function_arg,                              \
-        .color = (color_arg),                               \
-        .function = (function_arg)                          \
-    }
-
-#define FUZZY_PLOT_FUNCTION_NAMED(                          \
-    name_arg, color_arg, function_arg                       \
-)                                                           \
-    (fuzzy_plot_series_t) {                                 \
-        .name = (name_arg),                                 \
-        .color = (color_arg),                               \
-        .function = (function_arg)                          \
-    }
-
-#define FUZZY_PLOT(                                         \
-    filename_arg, title_arg, lower_arg, upper_arg,           \
-    step_arg, ...                                           \
-)                                                           \
-    fuzzy_plot_many(                                        \
-        (filename_arg),                                     \
-        (title_arg),                                        \
-        (lower_arg),                                        \
-        (upper_arg),                                        \
-        (step_arg),                                         \
-        (const fuzzy_plot_series_t[]) { __VA_ARGS__ },      \
-        sizeof((const fuzzy_plot_series_t[]) {               \
-            __VA_ARGS__                                     \
-        }) / sizeof(fuzzy_plot_series_t)                    \
-    )
-
-#define FUZZY_SWEEP_DIMENSION(                          \
-    name_arg, lower_arg, upper_arg, step_arg            \
-)                                                       \
-    (fuzzy_sweep_dimension_t) {                         \
-        .name = (name_arg),                             \
-        .lower = (lower_arg),                           \
-        .upper = (upper_arg),                           \
-        .step = (step_arg)                              \
-    }
-
-#define FUZZY_COG_SWEEP(                                \
-    filename_arg,                                      \
-    title_arg,                                         \
-    evaluator_arg,                                     \
-    cog_step_arg,                                      \
-    ...                                                \
-)                                                       \
-    fuzzy_cog_sweep(                                   \
-        &(const fuzzy_cog_sweep_t) {                   \
-            .filename = (filename_arg),                \
-            .title = (title_arg),                      \
-            .dimensions =                              \
-                (const fuzzy_sweep_dimension_t[]) {    \
-                    __VA_ARGS__                        \
-                },                                     \
-            .dimension_count =                         \
-                sizeof(                                \
-                    (const fuzzy_sweep_dimension_t[]) {\
-                        __VA_ARGS__                    \
-                    }                                  \
-                ) / sizeof(fuzzy_sweep_dimension_t),   \
-            .cog_step = (cog_step_arg),                \
-            .evaluate = (evaluator_arg)                \
-        }                                              \
-    )
-
-bool fuzzy_plot_begin(
-    fuzzy_plot_t *plot,
-    const char *filename,
-    const char *title,
-    float lower,
-    float upper,
-    float step
-);
-
-bool fuzzy_plot_add(
-    fuzzy_plot_t *plot,
-    char *name,
-    char *color,
-    fuzzy_output_function_t function
-);
-
-void fuzzy_plot_end(
-    fuzzy_plot_t *plot
-);
+#ifndef FUZZY_8051
 
 #define FUZZY_RULE_ADD(rules, value, output_function) \
     fuzzy_rules_add(                                  \
@@ -221,13 +161,48 @@ void fuzzy_plot_end(
         (output_function)                             \
     )
 
-/* Public declarations */
+#else
 
-bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep);
+#define FUZZY_RULE_ADD(rules, value, output_function) \
+    fuzzy_rules_add(                                  \
+        (rules),                                      \
+        NULL,                                         \
+        (value),                                      \
+        (output_function)                             \
+    )
 
-float fuzzy_or(int count, ...);
+#define FUZZY_RULE_ADD_NAMED(                         \
+    rules, name, value, output_function               \
+)                                                     \
+    fuzzy_rules_add(                                  \
+        (rules),                                      \
+        NULL,                                         \
+        (value),                                      \
+        (output_function)                             \
+    )
 
-float fuzzy_and(int count, ...);
+#endif /* FUZZY_8051 */
+
+
+/* ==========================================================
+ * Core inference API
+ *
+ * Available on desktop and 8051.
+ * ========================================================== */
+
+#ifndef FUZZY_8051_MINIMAL
+
+float fuzzy_or(
+    int count,
+    ...
+);
+
+float fuzzy_and(
+    int count,
+    ...
+);
+
+#endif
 
 float fuzzy_ramp(
     const char *name,
@@ -235,44 +210,29 @@ float fuzzy_ramp(
     float upper_boundary,
     float value,
     bool ramp_up,
-    float hedge
+    fuzzy_hedge_t hedge
 );
+
+#ifndef FUZZY_8051_MINIMAL
 
 float fuzzy_function(
     const char *shape,
     float value,
-    float hedge,
+    fuzzy_hedge_t hedge,
     ...
 );
 
-void test_ramp(
-    float (*function)(
-        const char *,
-        float,
-        float,
-        float,
-        bool,
-        float
-    ),
-    const char *name,
-    float lower,
-    float upper,
-    bool ramp_up,
-    float hedge,
-    int run
-);
+#endif
 
-fuzzy_rules_t fuzzy_rules_create(void);
+void fuzzy_rules_create(
+    fuzzy_rules_t *rules
+);
 
 bool fuzzy_rules_add(
     fuzzy_rules_t *rules,
     const char *name,
     float value,
     fuzzy_output_function_t output_function
-);
-
-void fuzzy_rules_print(
-    const fuzzy_rules_t *rules
 );
 
 float fuzzy_rules_cog(
@@ -286,6 +246,171 @@ void fuzzy_rules_free(
     fuzzy_rules_t *rules
 );
 
+
+/* ==========================================================
+ * Desktop simulation and visualization API
+ * ========================================================== */
+
+#ifndef FUZZY_8051
+
+typedef struct FuzzyPlot {
+    FILE *file;
+
+    float lower;
+    float upper;
+    float step;
+
+    int width;
+    int height;
+    int padding;
+
+    int plot_count;
+} fuzzy_plot_t;
+
+
+typedef struct FuzzyPlotSeries {
+    const char *name;
+    const char *color;
+    fuzzy_output_function_t function;
+} fuzzy_plot_series_t;
+
+
+typedef struct FuzzySweepDimension {
+    const char *name;
+
+    float lower;
+    float upper;
+    float step;
+} fuzzy_sweep_dimension_t;
+
+
+typedef float (*fuzzy_sweep_evaluator_t)(
+    const float inputs[],
+    size_t input_count,
+    float cog_step
+);
+
+
+typedef struct FuzzyCogSweep {
+    const char *filename;
+    const char *title;
+
+    const fuzzy_sweep_dimension_t *dimensions;
+    size_t dimension_count;
+
+    float cog_step;
+
+    fuzzy_sweep_evaluator_t evaluate;
+} fuzzy_cog_sweep_t;
+
+
+#define FUZZY_PLOT_FUNCTION(function_arg, color_arg)   \
+    (fuzzy_plot_series_t) {                            \
+        .name = #function_arg,                         \
+        .color = (color_arg),                          \
+        .function = (function_arg)                     \
+    }
+
+
+#define FUZZY_PLOT_FUNCTION_NAMED(                     \
+    name_arg, color_arg, function_arg                  \
+)                                                      \
+    (fuzzy_plot_series_t) {                            \
+        .name = (name_arg),                            \
+        .color = (color_arg),                          \
+        .function = (function_arg)                     \
+    }
+
+
+#define FUZZY_PLOT(                                    \
+    filename_arg, title_arg, lower_arg, upper_arg,     \
+    step_arg, ...                                      \
+)                                                      \
+    fuzzy_plot_many(                                   \
+        (filename_arg),                                \
+        (title_arg),                                   \
+        (lower_arg),                                   \
+        (upper_arg),                                   \
+        (step_arg),                                    \
+        (const fuzzy_plot_series_t[]) { __VA_ARGS__ }, \
+        sizeof((const fuzzy_plot_series_t[]) {          \
+            __VA_ARGS__                                \
+        }) / sizeof(fuzzy_plot_series_t)               \
+    )
+
+
+#define FUZZY_SWEEP_DIMENSION(                         \
+    name_arg, lower_arg, upper_arg, step_arg           \
+)                                                      \
+    (fuzzy_sweep_dimension_t) {                        \
+        .name = (name_arg),                            \
+        .lower = (lower_arg),                          \
+        .upper = (upper_arg),                          \
+        .step = (step_arg)                             \
+    }
+
+
+#define FUZZY_COG_SWEEP(                               \
+    filename_arg,                                     \
+    title_arg,                                        \
+    evaluator_arg,                                    \
+    cog_step_arg,                                     \
+    ...                                               \
+)                                                      \
+    fuzzy_cog_sweep(                                  \
+        &(const fuzzy_cog_sweep_t) {                  \
+            .filename = (filename_arg),               \
+            .title = (title_arg),                     \
+            .dimensions =                             \
+                (const fuzzy_sweep_dimension_t[]) {   \
+                    __VA_ARGS__                       \
+                },                                    \
+            .dimension_count =                        \
+                sizeof(                               \
+                    (const fuzzy_sweep_dimension_t[]) { \
+                        __VA_ARGS__                    \
+                    }                                 \
+                ) / sizeof(fuzzy_sweep_dimension_t),  \
+            .cog_step = (cog_step_arg),               \
+            .evaluate = (evaluator_arg)               \
+        }                                             \
+    )
+
+
+bool fuzzy_plot_many(
+    const char *filename,
+    const char *title,
+    float lower,
+    float upper,
+    float step,
+    const fuzzy_plot_series_t series[],
+    size_t series_count
+);
+
+bool fuzzy_plot_begin(
+    fuzzy_plot_t *plot,
+    const char *filename,
+    const char *title,
+    float lower,
+    float upper,
+    float step
+);
+
+bool fuzzy_plot_add(
+    fuzzy_plot_t *plot,
+    const char *name,
+    const char *color,
+    fuzzy_output_function_t function
+);
+
+void fuzzy_plot_end(
+    fuzzy_plot_t *plot
+);
+
+void fuzzy_rules_print(
+    const fuzzy_rules_t *rules
+);
+
 bool fuzzy_rules_plot_cog(
     const fuzzy_rules_t *rules,
     const char *filename,
@@ -295,6 +420,29 @@ bool fuzzy_rules_plot_cog(
     float upper,
     float step
 );
+
+bool fuzzy_cog_sweep(
+    const fuzzy_cog_sweep_t *sweep
+);
+
+void test_ramp(
+    float (*function)(
+        const char *,
+        float,
+        float,
+        float,
+        bool,
+        fuzzy_hedge_t
+    ),
+    const char *name,
+    float lower,
+    float upper,
+    bool ramp_up,
+    fuzzy_hedge_t hedge,
+    int run
+);
+
+#endif /* FUZZY_8051 */
 
 #endif /* FUZZY_H */
 
@@ -335,20 +483,52 @@ static float fuzzy_clamp(float value)
  * hedge > 1.0  -> concentration, such as "very"
  * hedge < 1.0  -> dilation, such as "somewhat"
  */
-static inline float fuzzy_apply_hedge(float membership, float hedge)
+static float fuzzy_apply_hedge(
+    float membership,
+    fuzzy_hedge_t hedge
+)
 {
-    membership = fuzzy_clamp(membership);
+#ifdef FUZZY_8051
+
+    float result;
+
+#endif
+
+    membership =
+        fuzzy_clamp(membership);
+
+#ifndef FUZZY_8051
 
     if (hedge <= 0.0f) {
         hedge = 1.0f;
     }
 
-    return powf(membership, hedge);
+    return powf(
+        membership,
+        hedge
+    );
+
+#else
+
+    if (hedge == 0u) {
+        hedge = 1u;
+    }
+
+    result = LEVEL_HI;
+
+    while (hedge > 0u) {
+        result *= membership;
+        hedge--;
+    }
+
+    return fuzzy_clamp(
+        result
+    );
+
+#endif
 }
 
-
-
-
+#ifndef FUZZY_8051_MINIMAL
 /*
  * Fuzzy OR:
  * Returns the maximum of all supplied membership values.
@@ -357,34 +537,36 @@ static inline float fuzzy_apply_hedge(float membership, float hedge)
  *
  * fuzzy_or(3, value1, value2, value3);
  */
-inline float fuzzy_or(int count, ...)
+float fuzzy_or(int count, ...)
 {
+    va_list args;
+    float result;
+    float next;
+    int i;
+
     if (count <= 0) {
         return LEVEL_LO;
     }
 
-    va_list args;
     va_start(args, count);
 
-    /*
-     * Values passed through ... are promoted from float
-     * to double.
-     */
-    float result = (float)va_arg(args, double);
+    result =
+        (float)va_arg(args, double);
 
-    for (int i = 1; i < count; i++) {
-        float next = (float)va_arg(args, double);
+    for (i = 1; i < count; i++) {
+        next =
+            (float)va_arg(args, double);
 
-        result = (result > next)
-            ? result
-            : next;
+        result =
+            result > next
+                ? result
+                : next;
     }
 
     va_end(args);
 
     return result;
 }
-
 
 /*
  * Fuzzy AND:
@@ -394,23 +576,30 @@ inline float fuzzy_or(int count, ...)
  *
  * fuzzy_and(3, value1, value2, value3);
  */
-inline float fuzzy_and(int count, ...)
+float fuzzy_and(int count, ...)
 {
+    va_list args;
+    float result;
+    float next;
+    int i;
+
     if (count <= 0) {
         return LEVEL_HI;
     }
 
-    va_list args;
     va_start(args, count);
 
-    float result = (float)va_arg(args, double);
+    result =
+        (float)va_arg(args, double);
 
-    for (int i = 1; i < count; i++) {
-        float next = (float)va_arg(args, double);
+    for (i = 1; i < count; i++) {
+        next =
+            (float)va_arg(args, double);
 
-        result = (result < next)
-            ? result
-            : next;
+        result =
+            result < next
+                ? result
+                : next;
     }
 
     va_end(args);
@@ -419,49 +608,57 @@ inline float fuzzy_and(int count, ...)
 }
 
 
+#endif /* FUZZY_8051_MINIMAL */
+
 /*
  * Linear ramp membership function.
  */
-inline float fuzzy_ramp(
+float fuzzy_ramp(
     const char *name,
     float lower_boundary,
     float upper_boundary,
     float value,
     bool ramp_up,
-    float hedge
+    fuzzy_hedge_t hedge
 )
 {
+    float result;
+    float normalized;
+
     (void)name;
 
     if (lower_boundary >= upper_boundary) {
         return LEVEL_LO;
     }
 
-    float result;
-
     if (value <= lower_boundary) {
-        result = ramp_up
-            ? LEVEL_LO
-            : LEVEL_HI;
+        result =
+            ramp_up
+                ? LEVEL_LO
+                : LEVEL_HI;
     }
     else if (value >= upper_boundary) {
-        result = ramp_up
-            ? LEVEL_HI
-            : LEVEL_LO;
+        result =
+            ramp_up
+                ? LEVEL_HI
+                : LEVEL_LO;
     }
     else {
-        float normalized =
+        normalized =
             (value - lower_boundary) /
             (upper_boundary - lower_boundary);
 
-        result = ramp_up
-            ? normalized
-            : LEVEL_HI - normalized;
+        result =
+            ramp_up
+                ? normalized
+                : LEVEL_HI - normalized;
     }
 
-    return fuzzy_apply_hedge(result, hedge);
+    return fuzzy_apply_hedge(
+        result,
+        hedge
+    );
 }
-
 
 /*
  * Generic membership-function wrapper.
@@ -505,182 +702,170 @@ inline float fuzzy_ramp(
  *     10.0
  * );
  */
-inline float fuzzy_function(
+#ifndef FUZZY_8051_MINIMAL
+
+float fuzzy_function(
     const char *shape,
     float value,
-    float hedge,
+    fuzzy_hedge_t hedge,
     ...
 )
 {
+    va_list args;
+    float result;
+
+    float parameter_1;
+    float parameter_2;
+    float parameter_3;
+    float parameter_4;
+
+    bool ramp_up;
+
+#ifndef FUZZY_8051
+
+    float middle;
+    float normalized;
+    float difference;
+    float exponent;
+
+#endif /* FUZZY_8051 */
+
     if (shape == NULL) {
         return LEVEL_LO;
     }
 
-    va_list args;
     va_start(args, hedge);
 
-    float result = LEVEL_LO;
+    result = LEVEL_LO;
 
-
-    /*
-     * Linear ramp
-     *
-     * Arguments:
-     * double lower
-     * double upper
-     * int ramp_up
-     */
     if (strcmp(shape, "ramp") == 0) {
-        float lower = (float)va_arg(args, double);
+        parameter_1 =
+            (float)va_arg(args, double);
 
-        float upper = (float)va_arg(args, double);
+        parameter_2 =
+            (float)va_arg(args, double);
 
-        bool ramp_up = (bool)va_arg(args, int);
+        ramp_up =
+            (bool)va_arg(args, int);
 
         va_end(args);
 
-        /*
-         * fuzzy_ramp() already applies the hedge.
-         */
         return fuzzy_ramp(
             shape,
-            lower,
-            upper,
+            parameter_1,
+            parameter_2,
             value,
             ramp_up,
             hedge
         );
     }
-
-    /*
-    * Triangular membership function.
-    *
-    * Arguments:
-    * double left
-    * double peak
-    * double right
-    */
     else if (strcmp(shape, "triangle") == 0) {
-        float left =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        float peak =
+        parameter_2 =
             (float)va_arg(args, double);
 
-        float right =
+        parameter_3 =
             (float)va_arg(args, double);
 
         if (
-            left >= peak ||
-            peak >= right
+            parameter_1 >= parameter_2 ||
+            parameter_2 >= parameter_3
         ) {
             result = LEVEL_LO;
         }
         else if (
-            value <= left ||
-            value >= right
+            value <= parameter_1 ||
+            value >= parameter_3
         ) {
             result = LEVEL_LO;
         }
-        else if (value == peak) {
+        else if (value == parameter_2) {
             result = LEVEL_HI;
         }
-        else if (value < peak) {
+        else if (value < parameter_2) {
             result =
-                (value - left) /
-                (peak - left);
+                (value - parameter_1) /
+                (parameter_2 - parameter_1);
         }
         else {
             result =
-                (right - value) /
-                (right - peak);
+                (parameter_3 - value) /
+                (parameter_3 - parameter_2);
         }
     }
-
-    /*
-    * Trapezoidal membership function.
-    *
-    * Arguments:
-    * double left
-    * double top_left
-    * double top_right
-    * double right
-    */
     else if (strcmp(shape, "trapezoid") == 0) {
-        float left =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        float top_left =
+        parameter_2 =
             (float)va_arg(args, double);
 
-        float top_right =
+        parameter_3 =
             (float)va_arg(args, double);
 
-        float right =
+        parameter_4 =
             (float)va_arg(args, double);
 
         if (
-            left >= top_left ||
-            top_left > top_right ||
-            top_right >= right
+            parameter_1 >= parameter_2 ||
+            parameter_2 > parameter_3 ||
+            parameter_3 >= parameter_4
         ) {
             result = LEVEL_LO;
         }
         else if (
-            value <= left ||
-            value >= right
+            value <= parameter_1 ||
+            value >= parameter_4
         ) {
             result = LEVEL_LO;
         }
         else if (
-            value >= top_left &&
-            value <= top_right
+            value >= parameter_2 &&
+            value <= parameter_3
         ) {
             result = LEVEL_HI;
         }
-        else if (value < top_left) {
+        else if (value < parameter_2) {
             result =
-                (value - left) /
-                (top_left - left);
+                (value - parameter_1) /
+                (parameter_2 - parameter_1);
         }
         else {
             result =
-                (right - value) /
-                (right - top_right);
+                (parameter_4 - value) /
+                (parameter_4 - parameter_3);
         }
     }
 
+#ifndef FUZZY_8051
 
-    /*
-     * S-shaped membership function.
-     *
-     * Arguments:
-     * double lower
-     * double upper
-     */
     else if (strcmp(shape, "smf") == 0) {
-        float lower =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        float upper = (float)va_arg(args, double);
+        parameter_2 =
+            (float)va_arg(args, double);
 
-        if (lower >= upper) {
+        if (parameter_1 >= parameter_2) {
             result = LEVEL_LO;
         }
-        else if (value <= lower) {
+        else if (value <= parameter_1) {
             result = LEVEL_LO;
         }
-        else if (value >= upper) {
+        else if (value >= parameter_2) {
             result = LEVEL_HI;
         }
         else {
-            float middle =
-                (lower + upper) / 2.0f;
+            middle =
+                (parameter_1 + parameter_2) /
+                2.0f;
 
             if (value <= middle) {
-                float normalized =
-                    (value - lower) /
-                    (upper - lower);
+                normalized =
+                    (value - parameter_1) /
+                    (parameter_2 - parameter_1);
 
                 result =
                     2.0f *
@@ -688,9 +873,9 @@ inline float fuzzy_function(
                     normalized;
             }
             else {
-                float normalized =
-                    (upper - value) /
-                    (upper - lower);
+                normalized =
+                    (parameter_2 - value) /
+                    (parameter_2 - parameter_1);
 
                 result =
                     LEVEL_HI -
@@ -700,39 +885,31 @@ inline float fuzzy_function(
             }
         }
     }
-
-
-    /*
-     * Z-shaped membership function.
-     *
-     * Arguments:
-     * double lower
-     * double upper
-     */
     else if (strcmp(shape, "zmf") == 0) {
-        float lower =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        float upper =
+        parameter_2 =
             (float)va_arg(args, double);
 
-        if (lower >= upper) {
+        if (parameter_1 >= parameter_2) {
             result = LEVEL_LO;
         }
-        else if (value <= lower) {
+        else if (value <= parameter_1) {
             result = LEVEL_HI;
         }
-        else if (value >= upper) {
+        else if (value >= parameter_2) {
             result = LEVEL_LO;
         }
         else {
-            float middle =
-                (lower + upper) / 2.0f;
+            middle =
+                (parameter_1 + parameter_2) /
+                2.0f;
 
             if (value <= middle) {
-                float normalized =
-                    (value - lower) /
-                    (upper - lower);
+                normalized =
+                    (value - parameter_1) /
+                    (parameter_2 - parameter_1);
 
                 result =
                     LEVEL_HI -
@@ -741,9 +918,9 @@ inline float fuzzy_function(
                     normalized;
             }
             else {
-                float normalized =
-                    (upper - value) /
-                    (upper - lower);
+                normalized =
+                    (parameter_2 - value) /
+                    (parameter_2 - parameter_1);
 
                 result =
                     2.0f *
@@ -752,67 +929,50 @@ inline float fuzzy_function(
             }
         }
     }
-
-
-    /*
-     * Gaussian membership function.
-     *
-     * Arguments:
-     * double mean
-     * double standard_deviation
-     */
     else if (strcmp(shape, "gauss") == 0) {
-        float mean = (float)va_arg(args, double);
-
-        float standard_deviation =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        if (standard_deviation <= 0.0f) {
+        parameter_2 =
+            (float)va_arg(args, double);
+
+        if (parameter_2 <= 0.0f) {
             result = LEVEL_LO;
         }
         else {
-            float difference =
-                value - mean;
+            difference =
+                value - parameter_1;
 
-            float exponent =
+            exponent =
                 -(difference * difference) /
                 (
                     2.0f *
-                    standard_deviation *
-                    standard_deviation
+                    parameter_2 *
+                    parameter_2
                 );
 
-            result = expf(exponent);
+            result =
+                expf(exponent);
         }
     }
-
-
-    /*
-     * Generalized bell membership function.
-     *
-     * Arguments:
-     * double width
-     * double slope
-     * double center
-     */
     else if (strcmp(shape, "bell") == 0) {
-        float width =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        float slope =
+        parameter_2 =
             (float)va_arg(args, double);
 
-        float center =
+        parameter_3 =
             (float)va_arg(args, double);
 
-        if (width == 0.0f) {
+        if (parameter_1 == 0.0f) {
             result = LEVEL_LO;
         }
         else {
-            float normalized =
+            normalized =
                 fabsf(
-                    (value - center) /
-                    (width/2.0f)
+                    (value - parameter_3) /
+                    (parameter_1 / 2.0f)
                 );
 
             result =
@@ -821,28 +981,16 @@ inline float fuzzy_function(
                     LEVEL_HI +
                     powf(
                         normalized,
-                        2.0f * slope
+                        2.0f * parameter_2
                     )
                 );
         }
     }
-
-
-    /*
-     * Sigmoid membership function.
-     *
-     * Arguments:
-     * double slope
-     * double center
-     *
-     * Positive slope produces a rising sigmoid.
-     * Negative slope produces a falling sigmoid.
-     */
     else if (strcmp(shape, "sigmoid") == 0) {
-        float slope =
+        parameter_1 =
             (float)va_arg(args, double);
 
-        float center =
+        parameter_2 =
             (float)va_arg(args, double);
 
         result =
@@ -850,22 +998,24 @@ inline float fuzzy_function(
             (
                 LEVEL_HI +
                 expf(
-                    -slope *
-                    (value - center)
+                    -parameter_1 *
+                    (value - parameter_2)
                 )
             );
     }
 
+#endif /* FUZZY_8051 */
 
-    /*
-     * Unknown shape name.
-     */
     else {
-        fprintf(
-            stderr,
+
+#ifndef FUZZY_8051
+
+        FUZZY_ERROR(
             "Unknown fuzzy shape: %s\n",
             shape
         );
+
+#endif /* FUZZY_8051 */
 
         result = LEVEL_LO;
     }
@@ -878,10 +1028,11 @@ inline float fuzzy_function(
     );
 }
 
+#endif /* FUZZY_8051_MINIMAL */
 
-/*
- * Test a linear ramp over integer values. Deprecated, but useful for debugging.
- */
+
+#ifndef FUZZY_8051
+
 void test_ramp(
     float (*function)(
         const char *,
@@ -889,27 +1040,31 @@ void test_ramp(
         float,
         float,
         bool,
-        float
+        fuzzy_hedge_t
     ),
     const char *name,
     float lower,
     float upper,
     bool ramp_up,
-    float hedge,
+    fuzzy_hedge_t hedge,
     int run
 )
 {
-    for (int i = 0; i < run; i++) {
-        float value = (float)i;
+    int i;
 
-        float result = function(
-            name,
-            lower,
-            upper,
-            value,
-            ramp_up,
-            hedge
-        );
+    for (i = 0; i < run; i++) {
+        float value =
+            (float)i;
+
+        float result =
+            function(
+                name,
+                lower,
+                upper,
+                value,
+                ramp_up,
+                hedge
+            );
 
         FUZZY_PRINTF(
             "Value: %5.1f, Result: %.5f\n",
@@ -919,36 +1074,19 @@ void test_ramp(
     }
 }
 
-fuzzy_rules_t fuzzy_rules_create(void)
-{
-    fuzzy_rules_t rules = {
-        .rules = NULL,
-        .count = 0,
-        .capacity = 0
-    };
+#endif /* FUZZY_8051 */
 
-    return rules;
-}
-
-static bool fuzzy_rules_resize(
-    fuzzy_rules_t *rules,
-    size_t new_capacity
+void fuzzy_rules_create(
+    fuzzy_rules_t *rules
 )
 {
-    fuzzy_rule_t *new_rules = realloc(
-        rules->rules,
-        new_capacity * sizeof(*new_rules)
-    );
-
-    if (new_rules == NULL) {
-        return false;
+    if (rules == NULL) {
+        return;
     }
 
-    rules->rules = new_rules;
-    rules->capacity = new_capacity;
-
-    return true;
+    rules->count = 0;
 }
+
 
 bool fuzzy_rules_add(
     fuzzy_rules_t *rules,
@@ -957,38 +1095,70 @@ bool fuzzy_rules_add(
     fuzzy_output_function_t output_function
 )
 {
-    if (rules == NULL || output_function == NULL) {
+    size_t index;
+
+    if (
+        rules == NULL ||
+        output_function == NULL
+    ) {
         return false;
     }
 
-    if (rules->count == rules->capacity) {
-        size_t new_capacity = rules->capacity == 0
-            ? 4
-            : rules->capacity * 2;
+    if (rules->count >= FUZZY_MAX_RULES) {
+    #ifndef FUZZY_8051
 
-        if (!fuzzy_rules_resize(rules, new_capacity)) {
-            return false;
-        }
+        FUZZY_ERROR(
+            "Maximum fuzzy rule count exceeded.\n"
+        );
+
+    #endif
+
+        return false;
     }
 
-    rules->rules[rules->count] = (fuzzy_rule_t) {
-        .name = name,
-        .value = fuzzy_clamp(value),
-        .output_function = output_function
-    };
+    index =
+        rules->count;
+
+#ifndef FUZZY_8051
+
+    rules->rules[index].name =
+        name;
+
+#else
+
+    (void)name;
+
+#endif /* FUZZY_8051 */
+
+    rules->rules[index].value =
+        fuzzy_clamp(value);
+
+    rules->rules[index].output_function =
+        output_function;
 
     rules->count++;
 
     return true;
 }
 
-void fuzzy_rules_print(const fuzzy_rules_t *rules)
+
+#ifndef FUZZY_8051
+
+void fuzzy_rules_print(
+    const fuzzy_rules_t *rules
+)
 {
+    size_t i;
+
     if (rules == NULL) {
         return;
     }
 
-    for (size_t i = 0; i < rules->count; i++) {
+    for (
+        i = 0;
+        i < rules->count;
+        i++
+    ) {
         FUZZY_PRINTF(
             "Rule %zu -> %s: %.5f\n",
             i + 1,
@@ -1000,6 +1170,8 @@ void fuzzy_rules_print(const fuzzy_rules_t *rules)
     }
 }
 
+#endif /* FUZZY_8051 */
+
 float fuzzy_rules_cog(
     const fuzzy_rules_t *rules,
     float lower,
@@ -1007,6 +1179,14 @@ float fuzzy_rules_cog(
     float step
 )
 {
+    float weighted_sum;
+    float height_sum;
+    float value;
+    float aggregated_height;
+    float output_membership;
+    float clipped_height;
+    size_t i;
+
     if (
         rules == NULL ||
         rules->count == 0 ||
@@ -1016,47 +1196,76 @@ float fuzzy_rules_cog(
         return 0.0f;
     }
 
-    float weighted_sum = 0.0f;
-    float height_sum = 0.0f;
+    weighted_sum = 0.0f;
+    height_sum = 0.0f;
 
     for (
-        float value = lower;
+        value = lower;
         value <= upper;
         value += step
     ) {
-        float aggregated_height = LEVEL_LO;
+        aggregated_height =
+            LEVEL_LO;
 
-        for (size_t i = 0; i < rules->count; i++) {
-            float output_membership =
-                rules->rules[i].output_function(value);
+        for (
+            i = 0;
+            i < rules->count;
+            i++
+        ) {
+            output_membership =
+                rules->rules[i]
+                    .output_function(value);
 
-            float clipped_height =
-                rules->rules[i].value < output_membership
+            clipped_height =
+                rules->rules[i].value <
+                output_membership
                     ? rules->rules[i].value
                     : output_membership;
 
             aggregated_height =
-                aggregated_height > clipped_height
+                aggregated_height >
+                clipped_height
                     ? aggregated_height
                     : clipped_height;
         }
 
-        // FUZZY_PRINTF(
-        //     "Value: %5.1f, Aggregated height: %.5f\n",
-        //     value,
-        //     aggregated_height
-        // );
+        weighted_sum +=
+            value *
+            aggregated_height;
 
-        weighted_sum += value * aggregated_height;
-        height_sum += aggregated_height;
+        height_sum +=
+            aggregated_height;
     }
 
     if (height_sum == 0.0f) {
         return 0.0f;
     }
 
-    return weighted_sum / height_sum;
+    return weighted_sum /
+        height_sum;
 }
+
+void fuzzy_rules_free(
+    fuzzy_rules_t *rules
+)
+{
+    if (rules == NULL) {
+        return;
+    }
+
+    /*
+     * Static storage requires no deallocation.
+     *
+     * Resetting count makes the container reusable.
+     */
+    rules->count = 0;
+}
+
+#ifndef FUZZY_8051
+
+/* ==========================================================
+ * Desktop simulation and visualization implementation
+ * ========================================================== */
 
 bool fuzzy_rules_plot_cog(
     const fuzzy_rules_t *rules,
@@ -1269,19 +1478,6 @@ bool fuzzy_rules_plot_cog(
     );
 
     return true;
-}
-
-void fuzzy_rules_free(fuzzy_rules_t *rules)
-{
-    if (rules == NULL) {
-        return;
-    }
-
-    free(rules->rules);
-
-    rules->rules = NULL;
-    rules->count = 0;
-    rules->capacity = 0;
 }
 
 static void fuzzy_plot_write_text(
@@ -1500,8 +1696,8 @@ bool fuzzy_plot_begin(
 
 bool fuzzy_plot_add(
     fuzzy_plot_t *plot,
-    char *name,
-    char *color,
+    const char *name,
+    const char *color,
     fuzzy_output_function_t function
 )
 {
@@ -1640,8 +1836,8 @@ void fuzzy_plot_end(
 }
 
 bool fuzzy_plot_many(
-    char *filename,
-    char *title,
+    const char *filename,
+    const char *title,
     float lower,
     float upper,
     float step,
@@ -1960,15 +2156,15 @@ bool fuzzy_demo(void)
     for (size_t i = 0; i < demo_count; i++) {
         const fuzzy_plot_series_t series[] = {
             {
-                .name = (char *)demos[i].name,
-                .color = (char *)demos[i].color,
+                .name = demos[i].name,
+                .color = demos[i].color,
                 .function = demos[i].function
             }
         };
 
         if (!fuzzy_plot_many(
-            (char *)demos[i].filename,
-            (char *)demos[i].title,
+            demos[i].filename,
+            demos[i].title,
             0.0f,
             100.0f,
             1.0f,
@@ -2985,7 +3181,7 @@ static bool fuzzy_sweep_write_svg(
                     "<input id=\"slice-slider-%zu\" "
                     "type=\"range\" "
                     "min=\"0\" max=\"%zu\" "
-                    "step=\"1\" value=\"0\" />"
+                    "step=\"0.01\" value=\"0\" />"
                     "</label>\n",
                     dimension,
                     sweep->dimensions[dimension].lower,
@@ -3247,59 +3443,183 @@ static bool fuzzy_sweep_write_svg(
             "}\n"
         );
 
+            /*
+         * Interpolate continuously across dimensions 2..N-1.
+         *
+         * Dimensions 0 and 1 remain the heatmap X/Y indices.
+         * Every slider dimension may contain a fractional
+         * sample position.
+         *
+         * For three slider dimensions, this combines the
+         * eight surrounding sweep points using trilinear
+         * interpolation.
+         */
+        fprintf(
+            file,
+            "function fuzzyInterpolatedCog(x,y,positions){\n"
+            "  const sliderDimensions="
+            "fuzzyDimensionCount-2;\n"
+            "\n"
+            "  if(sliderDimensions<=0){\n"
+            "    return fuzzyCogValues["
+            "fuzzyPointIndex([x,y])];\n"
+            "  }\n"
+            "\n"
+            "  const lowerIndices=[];\n"
+            "  const upperIndices=[];\n"
+            "  const fractions=[];\n"
+            "\n"
+            "  for(let local=0;"
+            "local<sliderDimensions;"
+            "local++){\n"
+            "    const dimension=local+2;\n"
+            "    const maximum="
+            "fuzzySampleCounts[dimension]-1;\n"
+            "    const position=Math.max("
+            "0,Math.min(maximum,positions[local]));\n"
+            "\n"
+            "    const lower=Math.floor(position);\n"
+            "    const upper=Math.min(lower+1,maximum);\n"
+            "\n"
+            "    lowerIndices.push(lower);\n"
+            "    upperIndices.push(upper);\n"
+            "    fractions.push(position-lower);\n"
+            "  }\n"
+            "\n"
+            "  const cornerCount="
+            "Math.pow(2,sliderDimensions);\n"
+            "  let result=0;\n"
+            "\n"
+            "  for(let corner=0;"
+            "corner<cornerCount;"
+            "corner++){\n"
+            "    const indices="
+            "new Array(fuzzyDimensionCount).fill(0);\n"
+            "\n"
+            "    indices[0]=x;\n"
+            "    indices[1]=y;\n"
+            "\n"
+            "    let weight=1;\n"
+            "\n"
+            "    for(let local=0;"
+            "local<sliderDimensions;"
+            "local++){\n"
+            "      const useUpper="
+            "((corner>>local)&1)!==0;\n"
+            "      const fraction=fractions[local];\n"
+            "      const dimension=local+2;\n"
+            "\n"
+            "      if(useUpper){\n"
+            "        indices[dimension]="
+            "upperIndices[local];\n"
+            "        weight*=fraction;\n"
+            "      }else{\n"
+            "        indices[dimension]="
+            "lowerIndices[local];\n"
+            "        weight*=1-fraction;\n"
+            "      }\n"
+            "    }\n"
+            "\n"
+            "    result+=weight*fuzzyCogValues["
+            "fuzzyPointIndex(indices)];\n"
+            "  }\n"
+            "\n"
+            "  return result;\n"
+            "}\n"
+        );
+
+
         /*
          * Repaint one reusable heatmap grid.
+         */
+        /*
+         * Repaint one reusable heatmap using continuous
+         * interpolation between precomputed sweep samples.
          */
         fprintf(
             file,
             "function fuzzyRenderHeatmap(){\n"
-            "  const indices=new Array(fuzzyDimensionCount).fill(0);\n"
+            "  const positions=[];\n"
+            "  const physicalValues=[];\n"
             "\n"
-            "  for(let d=2;d<fuzzyDimensionCount;d++){\n"
+            "  for(let d=2;"
+            "d<fuzzyDimensionCount;"
+            "d++){\n"
             "    const slider=document.getElementById("
             "'slice-slider-'+d);\n"
+            "\n"
+            "    let position=0;\n"
+            "\n"
             "    if(slider){\n"
-            "      indices[d]=Number(slider.value);\n"
-            "      const value=fuzzyLowers[d]+"
-            "indices[d]*fuzzySteps[d];\n"
-            "      const label=document.getElementById("
+            "      position=Number(slider.value);\n"
+            "    }\n"
+            "\n"
+            "    const maximum="
+            "fuzzySampleCounts[d]-1;\n"
+            "\n"
+            "    position=Math.max("
+            "0,Math.min(maximum,position));\n"
+            "\n"
+            "    const value="
+            "fuzzyLowers[d]+"
+            "position*fuzzySteps[d];\n"
+            "\n"
+            "    positions.push(position);\n"
+            "    physicalValues.push(value);\n"
+            "\n"
+            "    const label=document.getElementById("
             "'slice-value-'+d);\n"
-            "      if(label){label.textContent=value.toFixed(4);}\n"
+            "\n"
+            "    if(label){\n"
+            "      label.textContent=value.toFixed(4);\n"
             "    }\n"
             "  }\n"
             "\n"
-            "  for(let x=0;x<fuzzyXCount;x++){\n"
-            "    indices[0]=x;\n"
+            "  for(let x=0;"
+            "x<fuzzyXCount;"
+            "x++){\n"
+            "    for(let y=0;"
+            "y<fuzzyYCount;"
+            "y++){\n"
+            "      const cell="
+            "x*fuzzyYCount+y;\n"
             "\n"
-            "    for(let y=0;y<fuzzyYCount;y++){\n"
-            "      indices[1]=y;\n"
+            "      const cog=fuzzyInterpolatedCog("
+            "x,y,positions);\n"
             "\n"
-            "      const cell=x*fuzzyYCount+y;\n"
-            "      const point=fuzzyPointIndex(indices);\n"
-            "      const cog=fuzzyCogValues[point];\n"
             "      const rect=document.getElementById("
             "'fuzzy-cell-'+cell);\n"
+            "\n"
             "      const title=document.getElementById("
             "'fuzzy-title-'+cell);\n"
             "\n"
-            "      if(rect){rect.setAttribute("
-            "'fill',fuzzyColour(cog));}\n"
+            "      if(rect){\n"
+            "        rect.setAttribute("
+            "'fill',fuzzyColour(cog));\n"
+            "      }\n"
             "\n"
             "      if(title){\n"
             "        let text="
             "fuzzyNames[0]+' = '+"
-            "(fuzzyLowers[0]+x*fuzzySteps[0]).toFixed(4)+"
-            "', '+fuzzyNames[1]+' = '+"
-            "(fuzzyLowers[1]+y*fuzzySteps[1]).toFixed(4);\n"
+            "(fuzzyLowers[0]+"
+            "x*fuzzySteps[0]).toFixed(4)+"
+            "', '+"
+            "fuzzyNames[1]+' = '+"
+            "(fuzzyLowers[1]+"
+            "y*fuzzySteps[1]).toFixed(4);\n"
             "\n"
-            "        for(let d=2;d<fuzzyDimensionCount;d++){\n"
-            "          text+=', '+fuzzyNames[d]+' = '+"
-            "(fuzzyLowers[d]+indices[d]*fuzzySteps[d])"
-            ".toFixed(4);\n"
+            "        for(let local=0;"
+            "local<physicalValues.length;"
+            "local++){\n"
+            "          const d=local+2;\n"
+            "\n"
+            "          text+=', '+"
+            "fuzzyNames[d]+' = '+"
+            "physicalValues[local].toFixed(4);\n"
             "        }\n"
             "\n"
-            "        title.textContent=text+', COG = '+"
-            "cog.toFixed(5);\n"
+            "        title.textContent="
+            "text+', COG = '+cog.toFixed(5);\n"
             "      }\n"
             "    }\n"
             "  }\n"
@@ -3765,5 +4085,6 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
     return true;
 }
 
+#endif /* FUZZY_8051 */
 #endif /* FUZZY_IMPLEMENTATION_ONCE */
 #endif /* FUZZY_IMPLEMENTATION */

@@ -1,250 +1,95 @@
-CC       := ccache gcc
-CFLAGS   := -O3 -Wall -Wextra -Wpedantic
-LDFLAGS  := -fuse-ld=mold -s
-LDLIBS   := -lm
+SHELL := /usr/bin/env bash
 
-STRENGTH_TARGET   := fuzzy
-STRENGTH_SOURCE   := strength.c
-STRENGTH_OUTPUT   := svg
+BUILD_SCRIPT := scripts/build.sh
 
-GREENHOUSE_TARGET := greenhouse-app
-GREENHOUSE_SOURCE := greenhouse.c
-GREENHOUSE_OUTPUT := greenhouse
+.PHONY: all desktop embedded test \
+	run-strength run-greenhouse run-demo run-sim-8051 \
+	build-8051 simulate-8051 debug-8051 test-8051 \
+	check-dependencies install-dependencies \
+	png png-strength png-greenhouse png-demo png-sim-8051 \
+	pdf pdf-strength pdf-greenhouse pdf-demo pdf-sim-8051 \
+	clean clean-desktop clean-embedded help
 
-DEMO_TARGET       := fuzzy-demo
-DEMO_SOURCE       := demo_all.c
-DEMO_OUTPUT       := demo-all
+all:
+	./$(BUILD_SCRIPT) all
 
-SVG_CONVERTER     := rsvg-convert
+desktop:
+	./$(BUILD_SCRIPT) desktop
 
+embedded:
+	./$(BUILD_SCRIPT) embedded
 
-.PHONY: all help \
-	run-strength run-greenhouse run-demo \
-	png png-strength png-greenhouse png-demo \
-	pdf pdf-strength pdf-greenhouse pdf-demo \
-	check-converter install-converter clean
+test:
+	./$(BUILD_SCRIPT) test
 
+run-strength:
+	./$(BUILD_SCRIPT) run-strength
 
-all: $(STRENGTH_TARGET) $(GREENHOUSE_TARGET) $(DEMO_TARGET)
+run-greenhouse:
+	./$(BUILD_SCRIPT) run-greenhouse
 
+run-demo:
+	./$(BUILD_SCRIPT) run-demo
 
-$(STRENGTH_TARGET): $(STRENGTH_SOURCE) fuzzy.h
-	$(CC) $(CFLAGS) $(STRENGTH_SOURCE) \
-		$(LDFLAGS) -o $(STRENGTH_TARGET) $(LDLIBS)
+run-sim-8051:
+	./$(BUILD_SCRIPT) run-sim-8051
 
+build-8051:
+	./$(BUILD_SCRIPT) embedded
 
-$(GREENHOUSE_TARGET): $(GREENHOUSE_SOURCE) fuzzy.h
-	$(CC) $(CFLAGS) $(GREENHOUSE_SOURCE) \
-		$(LDFLAGS) -o $(GREENHOUSE_TARGET) $(LDLIBS)
+simulate-8051:
+	./$(BUILD_SCRIPT) simulate-8051
 
+debug-8051:
+	./$(BUILD_SCRIPT) debug-8051
 
-$(DEMO_TARGET): $(DEMO_SOURCE) fuzzy.h
-	$(CC) $(CFLAGS) $(DEMO_SOURCE) \
-		$(LDFLAGS) -o $(DEMO_TARGET) $(LDLIBS)
+test-8051:
+	./$(BUILD_SCRIPT) test-8051
 
+check-dependencies:
+	./$(BUILD_SCRIPT) check-dependencies
 
-run-strength: $(STRENGTH_TARGET)
-	mkdir -p $(STRENGTH_OUTPUT)
-	./$(STRENGTH_TARGET)
+install-dependencies:
+	./$(BUILD_SCRIPT) install-dependencies
 
+png:
+	./$(BUILD_SCRIPT) png
 
-run-greenhouse: $(GREENHOUSE_TARGET)
-	mkdir -p $(GREENHOUSE_OUTPUT)
-	./$(GREENHOUSE_TARGET)
+png-strength:
+	./$(BUILD_SCRIPT) png-strength
 
+png-greenhouse:
+	./$(BUILD_SCRIPT) png-greenhouse
 
-run-demo: $(DEMO_TARGET)
-	mkdir -p $(DEMO_OUTPUT)
-	./$(DEMO_TARGET)
+png-demo:
+	./$(BUILD_SCRIPT) png-demo
 
+png-sim-8051:
+	./$(BUILD_SCRIPT) png-sim-8051
 
-check-converter:
-	@command -v $(SVG_CONVERTER) >/dev/null 2>&1 || { \
-		echo "Optional SVG converter not found: $(SVG_CONVERTER)"; \
-		echo "Install on Debian/Ubuntu with:"; \
-		echo "  sudo apt install librsvg2-bin"; \
-		echo ""; \
-		echo "SVG generation itself still works without this tool."; \
-		exit 1; \
-	}
+pdf:
+	./$(BUILD_SCRIPT) pdf
 
+pdf-strength:
+	./$(BUILD_SCRIPT) pdf-strength
 
-install-converter:
-	sudo apt install librsvg2-bin
+pdf-greenhouse:
+	./$(BUILD_SCRIPT) pdf-greenhouse
 
+pdf-demo:
+	./$(BUILD_SCRIPT) pdf-demo
 
-png: png-strength png-greenhouse png-demo
-
-
-png-strength: check-converter
-	@set -e; \
-	found=0; \
-	for file in $(STRENGTH_OUTPUT)/*.svg; do \
-		[ -e "$$file" ] || continue; \
-		found=1; \
-		output="$${file%.svg}.png"; \
-		echo "[PNG] $$file -> $$output"; \
-		$(SVG_CONVERTER) --output="$$output" "$$file"; \
-	done; \
-	if [ "$$found" -eq 0 ]; then \
-		echo "No strength SVG files found."; \
-		echo "Run: make run-strength"; \
-	fi
-
-
-png-greenhouse: check-converter
-	@set -e; \
-	found=0; \
-	for file in $(GREENHOUSE_OUTPUT)/*.svg; do \
-		[ -e "$$file" ] || continue; \
-		found=1; \
-		output="$${file%.svg}.png"; \
-		echo "[PNG] $$file -> $$output"; \
-		$(SVG_CONVERTER) --output="$$output" "$$file"; \
-	done; \
-	if [ "$$found" -eq 0 ]; then \
-		echo "No greenhouse SVG files found."; \
-		echo "Run: make run-greenhouse"; \
-	fi
-
-
-png-demo: check-converter
-	@set -e; \
-	found=0; \
-	for file in $(DEMO_OUTPUT)/*.svg; do \
-		[ -e "$$file" ] || continue; \
-		found=1; \
-		output="$${file%.svg}.png"; \
-		echo "[PNG] $$file -> $$output"; \
-		$(SVG_CONVERTER) --output="$$output" "$$file"; \
-	done; \
-	if [ "$$found" -eq 0 ]; then \
-		echo "No complete-demo SVG files found."; \
-		echo "Run: make run-demo"; \
-	fi
-
-
-pdf: pdf-strength pdf-greenhouse pdf-demo
-
-
-pdf-strength: check-converter
-	@set -e; \
-	found=0; \
-	for file in $(STRENGTH_OUTPUT)/*.svg; do \
-		[ -e "$$file" ] || continue; \
-		found=1; \
-		output="$${file%.svg}.pdf"; \
-		echo "[PDF] $$file -> $$output"; \
-		$(SVG_CONVERTER) \
-			--format=pdf \
-			--output="$$output" \
-			"$$file"; \
-	done; \
-	if [ "$$found" -eq 0 ]; then \
-		echo "No strength SVG files found."; \
-		echo "Run: make run-strength"; \
-	fi
-
-
-pdf-greenhouse: check-converter
-	@set -e; \
-	found=0; \
-	for file in $(GREENHOUSE_OUTPUT)/*.svg; do \
-		[ -e "$$file" ] || continue; \
-		found=1; \
-		output="$${file%.svg}.pdf"; \
-		echo "[PDF] $$file -> $$output"; \
-		$(SVG_CONVERTER) \
-			--format=pdf \
-			--output="$$output" \
-			"$$file"; \
-	done; \
-	if [ "$$found" -eq 0 ]; then \
-		echo "No greenhouse SVG files found."; \
-		echo "Run: make run-greenhouse"; \
-	fi
-
-
-pdf-demo: check-converter
-	@set -e; \
-	found=0; \
-	for file in $(DEMO_OUTPUT)/*.svg; do \
-		[ -e "$$file" ] || continue; \
-		found=1; \
-		output="$${file%.svg}.pdf"; \
-		echo "[PDF] $$file -> $$output"; \
-		$(SVG_CONVERTER) \
-			--format=pdf \
-			--output="$$output" \
-			"$$file"; \
-	done; \
-	if [ "$$found" -eq 0 ]; then \
-		echo "No complete-demo SVG files found."; \
-		echo "Run: make run-demo"; \
-	fi
-
+pdf-sim-8051:
+	./$(BUILD_SCRIPT) pdf-sim-8051
 
 clean:
-	rm -f \
-		$(STRENGTH_TARGET) \
-		$(GREENHOUSE_TARGET) \
-		$(DEMO_TARGET)
+	./$(BUILD_SCRIPT) clean
 
-	rm -f \
-		$(STRENGTH_OUTPUT)/*.svg \
-		$(STRENGTH_OUTPUT)/*.png \
-		$(STRENGTH_OUTPUT)/*.pdf \
-		$(STRENGTH_OUTPUT)/*.csv
+clean-desktop:
+	./$(BUILD_SCRIPT) clean-desktop
 
-	rm -f \
-		$(GREENHOUSE_OUTPUT)/*.svg \
-		$(GREENHOUSE_OUTPUT)/*.png \
-		$(GREENHOUSE_OUTPUT)/*.pdf \
-		$(GREENHOUSE_OUTPUT)/*.csv
-
-	rm -f \
-		$(DEMO_OUTPUT)/*.svg \
-		$(DEMO_OUTPUT)/*.png \
-		$(DEMO_OUTPUT)/*.pdf \
-		$(DEMO_OUTPUT)/*.csv
-
+clean-embedded:
+	./$(BUILD_SCRIPT) clean-embedded
 
 help:
-	@echo "fuzzy.h build commands"
-	@echo ""
-	@echo "Build commands:"
-	@echo "  make                  Build all executables"
-	@echo "  make fuzzy            Build the paint-strength example"
-	@echo "  make greenhouse-app   Build the greenhouse example"
-	@echo "  make fuzzy-demo       Build the complete API demonstration"
-	@echo ""
-	@echo "Run commands:"
-	@echo "  make run-strength     Run the paint-strength example"
-	@echo "  make run-greenhouse   Run the greenhouse example"
-	@echo "  make run-demo         Run demo_all.c"
-	@echo ""
-	@echo "PNG conversion:"
-	@echo "  make png              Convert all generated SVG files"
-	@echo "  make png-strength     Convert paint-strength SVG files"
-	@echo "  make png-greenhouse   Convert greenhouse SVG files"
-	@echo "  make png-demo         Convert demo-all SVG files"
-	@echo ""
-	@echo "PDF conversion:"
-	@echo "  make pdf              Convert all generated SVG files"
-	@echo "  make pdf-strength     Convert paint-strength SVG files"
-	@echo "  make pdf-greenhouse   Convert greenhouse SVG files"
-	@echo "  make pdf-demo         Convert demo-all SVG files"
-	@echo ""
-	@echo "Utility commands:"
-	@echo "  make check-converter  Check for rsvg-convert"
-	@echo "  make install-converter"
-	@echo "                        Install librsvg2-bin"
-	@echo "  make clean            Remove executables and generated files"
-	@echo ""
-	@echo "Output directories:"
-	@echo "  Paint strength:       $(STRENGTH_OUTPUT)/"
-	@echo "  Greenhouse:           $(GREENHOUSE_OUTPUT)/"
-	@echo "  Complete demo:        $(DEMO_OUTPUT)/"
-	@echo ""
-	@echo "SVG generation and numerical fuzzy evaluation do not require"
-	@echo "the optional SVG converter."
+	./$(BUILD_SCRIPT) help

@@ -223,15 +223,18 @@ static bool build_time_rules(
  * This function does not print rules and does not create SVG
  * files, so it is safe to call repeatedly during a sweep.
  * ========================================================== */
-
 static float evaluate_time(
     float temperature,
     float humidity,
     float step
 )
 {
-    fuzzy_rules_t rules =
-        fuzzy_rules_create();
+    fuzzy_rules_t rules;
+    float result;
+
+    fuzzy_rules_create(
+        &rules
+    );
 
     if (!build_time_rules(
         &rules,
@@ -242,23 +245,27 @@ static float evaluate_time(
             "Failed to construct watering-time rules.\n"
         );
 
-        fuzzy_rules_free(&rules);
+        fuzzy_rules_free(
+            &rules
+        );
 
         return 0.0f;
     }
 
-    float result = fuzzy_rules_cog(
-        &rules,
-        0.0f,
-        60.0f,
-        step
-    );
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            0.0f,
+            60.0f,
+            step
+        );
 
-    fuzzy_rules_free(&rules);
+    fuzzy_rules_free(
+        &rules
+    );
 
     return result;
 }
-
 
 /* ==========================================================
  * Plot one selected COG result
@@ -266,15 +273,19 @@ static float evaluate_time(
  * This is called only for the values entered by the user.
  * It is not called by the multidimensional sweep.
  * ========================================================== */
-
 static bool plot_time_cog(
     float temperature,
     float humidity,
     float step
 )
 {
-    fuzzy_rules_t rules =
-        fuzzy_rules_create();
+    fuzzy_rules_t rules;
+    float result;
+    bool success;
+
+    fuzzy_rules_create(
+        &rules
+    );
 
     if (!build_time_rules(
         &rules,
@@ -285,7 +296,9 @@ static bool plot_time_cog(
             "Failed to construct watering-time rules.\n"
         );
 
-        fuzzy_rules_free(&rules);
+        fuzzy_rules_free(
+            &rules
+        );
 
         return false;
     }
@@ -298,22 +311,24 @@ static bool plot_time_cog(
         &rules
     );
 
-    float result = fuzzy_rules_cog(
-        &rules,
-        0.0f,
-        60.0f,
-        step
-    );
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            0.0f,
+            60.0f,
+            step
+        );
 
-    bool success = fuzzy_rules_plot_cog(
-        &rules,
-        "greenhouse/cog",
-        "Center of Gravity Defuzzification",
-        result,
-        0.0f,
-        60.0f,
-        step
-    );
+    success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            "greenhouse/cog",
+            "Center of Gravity Defuzzification",
+            result,
+            0.0f,
+            60.0f,
+            step
+        );
 
     fuzzy_rules_free(
         &rules
@@ -321,7 +336,6 @@ static bool plot_time_cog(
 
     return success;
 }
-
 
 /* ==========================================================
  * Optional membership-function plots
@@ -504,6 +518,7 @@ int main(void)
 {
     float temperature;
     float humidity;
+    float watering_time;
     char prompt;
 
     const float step = 0.01f;
