@@ -148,6 +148,29 @@ typedef struct RandomFuzzyParameters {
 
 static random_fuzzy_parameters_t parameters;
 
+/* ==========================================================
+ * Randomized fuzzy-NOT rule
+ *
+ * One NOT-based rule is selected when the application starts.
+ * The selection remains fixed throughout plotting, normal
+ * evaluation, and the complete five-dimensional sweep.
+ *
+ * Random selection must not occur inside build_process_rules()
+ * because every sweep point must use the same fuzzy system.
+ * ========================================================== */
+
+typedef enum RandomNotRule {
+    RANDOM_NOT_TEMPERATURE_HIGH = 0,
+    RANDOM_NOT_HUMIDITY_LOW,
+    RANDOM_NOT_VIBRATION_LOW,
+    RANDOM_NOT_PRESSURE_HIGH,
+    RANDOM_NOT_QUALITY_GOOD,
+
+    RANDOM_NOT_RULE_COUNT
+} random_not_rule_t;
+
+
+static random_not_rule_t random_not_rule = RANDOM_NOT_TEMPERATURE_HIGH;
 
 /* ==========================================================
  * Random-number helper
@@ -332,6 +355,12 @@ static void randomize_membership_parameters(void)
         82.0f,
         8.0f
     );
+
+    random_not_rule =
+        (random_not_rule_t)(
+            rand() %
+            (int)RANDOM_NOT_RULE_COUNT
+        );
 
     parameters.humidity_high[0] =
         random_float(0.07f, 0.20f);
@@ -973,6 +1002,164 @@ static float shape_sigmoid_demo(float value)
     );
 }
 
+/* ==========================================================
+ * Randomized fuzzy-NOT rule evaluation
+ *
+ * The selected rule remains fixed for the complete run.
+ *
+ * Possible rules:
+ *
+ * 1. IF temperature is NOT high
+ *    AND pressure is normal
+ *    THEN response is low.
+ *
+ * 2. IF humidity is NOT low
+ *    AND vibration is medium
+ *    THEN response is moderate.
+ *
+ * 3. IF vibration is NOT low
+ *    AND pressure is high
+ *    THEN response is high.
+ *
+ * 4. IF pressure is NOT high
+ *    AND quality is good
+ *    THEN response is minimal.
+ *
+ * 5. IF quality is NOT good
+ *    OR temperature is high
+ *    THEN response is high.
+ * ========================================================== */
+
+static float evaluate_random_not_rule(
+    float temperature,
+    float humidity,
+    float vibration,
+    float pressure,
+    float quality
+)
+{
+    switch (random_not_rule) {
+        case RANDOM_NOT_TEMPERATURE_HIGH:
+            return fuzzy_and(
+                2,
+                fuzzy_not(
+                    temperature_high(
+                        temperature
+                    )
+                ),
+                pressure_normal(
+                    pressure
+                )
+            );
+
+        case RANDOM_NOT_HUMIDITY_LOW:
+            return fuzzy_and(
+                2,
+                fuzzy_not(
+                    humidity_low(
+                        humidity
+                    )
+                ),
+                vibration_medium(
+                    vibration
+                )
+            );
+
+        case RANDOM_NOT_VIBRATION_LOW:
+            return fuzzy_and(
+                2,
+                fuzzy_not(
+                    vibration_low(
+                        vibration
+                    )
+                ),
+                pressure_high(
+                    pressure
+                )
+            );
+
+        case RANDOM_NOT_PRESSURE_HIGH:
+            return fuzzy_and(
+                2,
+                fuzzy_not(
+                    pressure_high(
+                        pressure
+                    )
+                ),
+                quality_good(
+                    quality
+                )
+            );
+
+        case RANDOM_NOT_QUALITY_GOOD:
+            return fuzzy_or(
+                2,
+                fuzzy_not(
+                    quality_good(
+                        quality
+                    )
+                ),
+                temperature_high(
+                    temperature
+                )
+            );
+
+        default:
+            return LEVEL_LO;
+    }
+}
+
+static const char *random_not_rule_name(void)
+{
+    switch (random_not_rule) {
+        case RANDOM_NOT_TEMPERATURE_HIGH:
+            return
+                "Rule 11: NOT high temperature response";
+
+        case RANDOM_NOT_HUMIDITY_LOW:
+            return
+                "Rule 11: NOT low humidity response";
+
+        case RANDOM_NOT_VIBRATION_LOW:
+            return
+                "Rule 11: NOT low vibration response";
+
+        case RANDOM_NOT_PRESSURE_HIGH:
+            return
+                "Rule 11: NOT high pressure response";
+
+        case RANDOM_NOT_QUALITY_GOOD:
+            return
+                "Rule 11: NOT good quality response";
+
+        default:
+            return
+                "Rule 11: Random fuzzy-NOT response";
+    }
+}
+
+static fuzzy_output_function_t random_not_output(void)
+{
+    switch (random_not_rule) {
+        case RANDOM_NOT_TEMPERATURE_HIGH:
+            return response_low;
+
+        case RANDOM_NOT_HUMIDITY_LOW:
+            return response_moderate;
+
+        case RANDOM_NOT_VIBRATION_LOW:
+            return response_high;
+
+        case RANDOM_NOT_PRESSURE_HIGH:
+            return response_minimal;
+
+        case RANDOM_NOT_QUALITY_GOOD:
+            return response_high;
+
+        default:
+            return response_moderate;
+    }
+}
 
 /* ==========================================================
  * Complex Mamdani rule construction
@@ -1208,6 +1395,15 @@ static bool build_process_rules(
         quality_poor(quality)
     );
 
+    float rule11 =
+        evaluate_random_not_rule(
+            temperature,
+            humidity,
+            vibration,
+            pressure,
+            quality
+        );
+
     if (!FUZZY_RULE_ADD_NAMED(
         rules,
         "Rule 1: Minimal response",
@@ -1294,6 +1490,15 @@ static bool build_process_rules(
         "Rule 10: Critical combined response",
         rule10,
         response_critical
+    )) {
+        return false;
+    }
+
+    if (!fuzzy_rules_add(
+        rules,
+        random_not_rule_name(),
+        rule11,
+        random_not_output()
     )) {
         return false;
     }
@@ -1900,6 +2105,7 @@ static bool plot_process_sweep(void)
      *     - COG evaluation
      *     - CSV generation
      *     - CSV parsing
+     *     - A randomly selected but deterministic fuzzy-NOT rule
      *     - SVG generation
      *     - Interactive SVG slice selection
      *     - Internal allocation and cleanup
@@ -2032,6 +2238,66 @@ static bool run_random_demonstration(void)
     return true;
 }
 
+/* ==========================================================
+ * Print the randomly selected NOT rule
+ * ========================================================== */
+
+static void print_random_not_rule(void)
+{
+    FUZZY_PRINTF(
+        "\nRandomized fuzzy-NOT rule\n"
+        "=========================\n"
+    );
+
+    switch (random_not_rule) {
+        case RANDOM_NOT_TEMPERATURE_HIGH:
+            FUZZY_PRINTF(
+                "IF temperature is NOT high\n"
+                "AND pressure is normal\n"
+                "THEN response is low.\n"
+            );
+            break;
+
+        case RANDOM_NOT_HUMIDITY_LOW:
+            FUZZY_PRINTF(
+                "IF humidity is NOT low\n"
+                "AND vibration is medium\n"
+                "THEN response is moderate.\n"
+            );
+            break;
+
+        case RANDOM_NOT_VIBRATION_LOW:
+            FUZZY_PRINTF(
+                "IF vibration is NOT low\n"
+                "AND pressure is high\n"
+                "THEN response is high.\n"
+            );
+            break;
+
+        case RANDOM_NOT_PRESSURE_HIGH:
+            FUZZY_PRINTF(
+                "IF pressure is NOT high\n"
+                "AND material quality is good\n"
+                "THEN response is minimal.\n"
+            );
+            break;
+
+        case RANDOM_NOT_QUALITY_GOOD:
+            FUZZY_PRINTF(
+                "IF material quality is NOT good\n"
+                "OR temperature is high\n"
+                "THEN response is high.\n"
+            );
+            break;
+
+        default:
+            FUZZY_PRINTF(
+                "No valid fuzzy-NOT rule selected.\n"
+            );
+            break;
+    }
+}
+
 
 /* ==========================================================
  * Program entry point
@@ -2058,6 +2324,8 @@ int main(void)
         "\nfuzzy.h Complete API Demonstration\n"
         "==================================\n"
     );
+
+    print_random_not_rule();
 
     /*
      * Generate plots for every supported membership shape,

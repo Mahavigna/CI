@@ -87,7 +87,7 @@ DEMO_SOURCE="demo_all.c"
 DEMO_OUTPUT="demo-all"
 
 SIM_8051_TARGET="sim-8051-app"
-SIM_8051_SOURCE="sim_8051.c"
+SIM_8051_SOURCE="controller_8051.c"
 SIM_8051_ROOT="sim-8051"
 SIM_8051_OUTPUT="${SIM_8051_ROOT}/desktop"
 
@@ -379,9 +379,23 @@ build_demo()
 
 build_sim_8051()
 {
-    build_desktop_target \
+    require_command "${CC}"
+    require_file "${SIM_8051_SOURCE}"
+    require_file "fuzzy.h"
+
+    echo
+    echo "Building ${SIM_8051_TARGET} from ${SIM_8051_SOURCE}..."
+    echo "Desktop simulation mode: -DSIMULATION"
+
+    "${COMPILER_COMMAND[@]}" \
+        "${COMMON_CFLAGS[@]}" \
+        -DSIMULATION \
         "${SIM_8051_SOURCE}" \
-        "${SIM_8051_TARGET}"
+        "${COMMON_LDFLAGS[@]}" \
+        -o "${SIM_8051_TARGET}" \
+        "${COMMON_LDLIBS[@]}"
+
+    echo "[OK] Built ${SIM_8051_TARGET}"
 }
 
 

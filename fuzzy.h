@@ -190,6 +190,10 @@ typedef struct FuzzyRules {
  * Available on desktop and 8051.
  * ========================================================== */
 
+float fuzzy_not(
+    float membership
+);
+
 #ifndef FUZZY_8051_MINIMAL
 
 float fuzzy_or(
@@ -202,7 +206,33 @@ float fuzzy_and(
     ...
 );
 
-#endif
+#endif /* FUZZY_8051_MINIMAL */
+
+
+/*
+ * Sugeno weighted-average output.
+ *
+ * Arguments:
+ *
+ *     firing_strength_1, consequent_1,
+ *     firing_strength_2, consequent_2,
+ *     ...
+ */
+float fuzzy_sugeno_weighted_average(
+    int rule_count,
+    ...
+);
+
+
+/*
+ * Sugeno weighted-sum output.
+ *
+ * Arguments use the same firing-strength/consequent pairs.
+ */
+float fuzzy_sugeno_weighted_sum(
+    int rule_count,
+    ...
+);
 
 float fuzzy_ramp(
     const char *name,
@@ -458,7 +488,6 @@ void test_ramp(
 #ifndef FUZZY_IMPLEMENTATION_ONCE
 #define FUZZY_IMPLEMENTATION_ONCE
 
-
 /*
  * Keep a membership value inside the valid fuzzy range.
  */
@@ -473,6 +502,19 @@ static float fuzzy_clamp(float value)
     }
 
     return value;
+}
+
+/*
+ * Keep a membership value inside the valid fuzzy range.
+ */
+float fuzzy_not(
+    float membership
+)
+{
+    return LEVEL_HI -
+        fuzzy_clamp(
+            membership
+        );
 }
 
 
@@ -609,6 +651,152 @@ float fuzzy_and(int count, ...)
 
 
 #endif /* FUZZY_8051_MINIMAL */
+
+
+/*
+ * Sugeno weighted-average inference.
+ */
+float fuzzy_sugeno_weighted_average(
+    int rule_count,
+    ...
+)
+{
+    va_list args;
+    float weighted_sum;
+    float firing_sum;
+    float firing_strength;
+    float consequent;
+    int i;
+
+    if (rule_count <= 0) {
+        return 0.0f;
+    }
+
+    weighted_sum =
+        0.0f;
+
+    firing_sum =
+        0.0f;
+
+    va_start(
+        args,
+        rule_count
+    );
+
+    for (
+        i = 0;
+        i < rule_count;
+        i++
+    ) {
+        firing_strength =
+            (float)va_arg(
+                args,
+                double
+            );
+
+        consequent =
+            (float)va_arg(
+                args,
+                double
+            );
+
+        firing_strength =
+            fuzzy_clamp(
+                firing_strength
+            );
+
+#ifndef FUZZY_8051
+
+        if (!isfinite(consequent)) {
+            continue;
+        }
+
+#endif /* FUZZY_8051 */
+
+        weighted_sum +=
+            firing_strength *
+            consequent;
+
+        firing_sum +=
+            firing_strength;
+    }
+
+    va_end(args);
+
+    if (firing_sum <= LEVEL_LO) {
+        return 0.0f;
+    }
+
+    return weighted_sum /
+        firing_sum;
+}
+
+
+/*
+ * Sugeno weighted-sum inference.
+ */
+float fuzzy_sugeno_weighted_sum(
+    int rule_count,
+    ...
+)
+{
+    va_list args;
+    float weighted_sum;
+    float firing_strength;
+    float consequent;
+    int i;
+
+    if (rule_count <= 0) {
+        return 0.0f;
+    }
+
+    weighted_sum =
+        0.0f;
+
+    va_start(
+        args,
+        rule_count
+    );
+
+    for (
+        i = 0;
+        i < rule_count;
+        i++
+    ) {
+        firing_strength =
+            (float)va_arg(
+                args,
+                double
+            );
+
+        consequent =
+            (float)va_arg(
+                args,
+                double
+            );
+
+        firing_strength =
+            fuzzy_clamp(
+                firing_strength
+            );
+
+#ifndef FUZZY_8051
+
+        if (!isfinite(consequent)) {
+            continue;
+        }
+
+#endif /* FUZZY_8051 */
+
+        weighted_sum +=
+            firing_strength *
+            consequent;
+    }
+
+    va_end(args);
+
+    return weighted_sum;
+}
 
 /*
  * Linear ramp membership function.
@@ -3134,7 +3322,7 @@ static bool fuzzy_sweep_write_svg(
             fprintf(
                 file,
                 "<foreignObject "
-                "x=\"%d\" y=\"650\" "
+                "x=\"%d\" y=\"700\" "
                 "width=\"%d\" height=\"%d\">\n",
                 left,
                 right - left,
