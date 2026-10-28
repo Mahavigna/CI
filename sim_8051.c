@@ -1,22 +1,28 @@
 /*
- * PC simulation harness for the Keil 8051 fan controller.
+ * Desktop simulation and visualization harness for the
+ * AT89S52/8052 fuzzy fan controller.
  *
- * This example demonstrates how an embedded fuzzy controller
- * can be copied into a desktop test harness before flashing
- * the target microcontroller.
+ * This file preserves the embedded controller's:
  *
- * The membership functions, rules, COG range, and COG step
- * match the Keil 8051 example.
+ * - Membership boundaries
+ * - Hedge value
+ * - Mamdani rules
+ * - COG output range
+ * - COG sampling step
+ * - PWM conversion
+ * - Fixed verification input
  *
- * The desktop-only fuzzy.h tooling generates:
+ * The desktop-only API additionally generates:
  *
- * - Input membership-function SVG
- * - Output membership-function SVG
- * - Controller sweep CSV
- * - Controller sweep SVG
+ * - Temperature membership-function SVG
+ * - Fan membership-function SVG
+ * - Selected COG SVG for temperature 42
+ * - Full temperature sweep CSV
+ * - Full temperature sweep SVG
  *
- * FUZZY_8051 is intentionally not defined because the
- * plotting and sweep API is available only on desktop builds.
+ * FUZZY_8051 and FUZZY_8051_MINIMAL are intentionally not
+ * defined because plotting, CSV output, named rules, and
+ * multidimensional sweeps are desktop-only features.
  */
 
 
@@ -28,23 +34,41 @@
 
 /* ==========================================================
  * Controller configuration
+ *
+ * These values match controller_8051.c.
  * ========================================================== */
 
-#define FAN_OUTPUT_LOWER  0.0f
-#define FAN_OUTPUT_UPPER  100.0f
-#define FAN_COG_STEP      10.0f
+#define FAN_OUTPUT_LOWER       0.0f
+#define FAN_OUTPUT_UPPER       100.0f
+#define FAN_COG_STEP           10.0f
+#define VERIFICATION_INPUT     42.0f
 
 
-/*
- * Desktop hedge configuration.
+/* ==========================================================
+ * Values retained for comparison with embedded firmware
+ * ========================================================== */
+
+static float test_temperature =
+    VERIFICATION_INPUT;
+
+static unsigned char test_pwm =
+    0u;
+
+static float test_fan_speed =
+    0.0f;
+
+
+/* ==========================================================
+ * Hedge exponents
  *
- * The Keil 8051 example uses integer hedge powers:
+ * The embedded implementation uses:
  *
- *     1, 2, 3
+ *     1u, 2u, 3u
  *
- * The desktop implementation additionally supports
- * fractional hedge exponents.
- */
+ * The desktop structure contains additional fractional
+ * hedges, but this controller uses only hedges.none.
+ * ========================================================== */
+
 static const hedges_t hedges = {
     .none      = 1.0f,
     .very      = 2.0f,
@@ -55,22 +79,22 @@ static const hedges_t hedges = {
 
 
 /* ==========================================================
- * Input membership functions
+ * Temperature membership functions
  *
- * These match the Keil 8051 controller.
+ * These calls intentionally match controller_8051.c.
  * ========================================================== */
 
 static float temperature_low(
     float value
 )
 {
-    return fuzzy_function(
-        "ramp",
+    return fuzzy_ramp(
+        NULL,
+        20.0f,
+        40.0f,
         value,
-        hedges.none,
-        20.0,
-        40.0,
-        false
+        false,
+        hedges.none
     );
 }
 
@@ -79,34 +103,34 @@ static float temperature_high(
     float value
 )
 {
-    return fuzzy_function(
-        "ramp",
+    return fuzzy_ramp(
+        NULL,
+        30.0f,
+        60.0f,
         value,
-        hedges.none,
-        30.0,
-        60.0,
-        true
+        true,
+        hedges.none
     );
 }
 
 
 /* ==========================================================
- * Output membership functions
+ * Fan-output membership functions
  *
- * These match the Keil 8051 controller.
+ * These calls intentionally match controller_8051.c.
  * ========================================================== */
 
 static float fan_slow(
     float value
 )
 {
-    return fuzzy_function(
-        "ramp",
+    return fuzzy_ramp(
+        NULL,
+        20.0f,
+        50.0f,
         value,
-        hedges.none,
-        20.0,
-        50.0,
-        false
+        false,
+        hedges.none
     );
 }
 
@@ -115,19 +139,19 @@ static float fan_fast(
     float value
 )
 {
-    return fuzzy_function(
-        "ramp",
+    return fuzzy_ramp(
+        NULL,
+        40.0f,
+        80.0f,
         value,
-        hedges.none,
-        40.0,
-        80.0,
-        true
+        true,
+        hedges.none
     );
 }
 
 
 /* ==========================================================
- * Fuzzy fan controller
+ * Rule construction
  *
  * Rule 1:
  *
@@ -139,7 +163,46 @@ static float fan_fast(
  *     IF temperature is high
  *     THEN fan is fast.
  *
- * This is the same rule structure used by the Keil example.
+ * The activation values and output functions match the
+ * embedded controller exactly.
+ * ========================================================== */
+
+static bool build_fan_rules(
+    fuzzy_rules_t *rules,
+    float temperature
+)
+{
+    if (rules == NULL) {
+        return false;
+    }
+
+    if (!FUZZY_RULE_ADD_NAMED(
+        rules,
+        "Low temperature produces slow fan",
+        temperature_low(temperature),
+        fan_slow
+    )) {
+        return false;
+    }
+
+    if (!FUZZY_RULE_ADD_NAMED(
+        rules,
+        "High temperature produces fast fan",
+        temperature_high(temperature),
+        fan_fast
+    )) {
+        return false;
+    }
+
+    return true;
+}
+
+
+/* ==========================================================
+ * Pure fuzzy-controller calculation
+ *
+ * This function performs no printing and creates no files.
+ * It is safe to call repeatedly during the sweep.
  * ========================================================== */
 
 static float calculate_fan_speed(
@@ -154,21 +217,14 @@ static float calculate_fan_speed(
         &rules
     );
 
-    if (!FUZZY_RULE_ADD_NAMED(
+    if (!build_fan_rules(
         &rules,
-        "Low temperature produces slow fan",
-        temperature_low(temperature),
-        fan_slow
+        temperature
     )) {
-        return 0.0f;
-    }
+        fuzzy_rules_free(
+            &rules
+        );
 
-    if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
-        "High temperature produces fast fan",
-        temperature_high(temperature),
-        fan_fast
-    )) {
         return 0.0f;
     }
 
@@ -189,21 +245,20 @@ static float calculate_fan_speed(
 
 
 /* ==========================================================
- * Convert the fuzzy output to an integer PWM percentage
+ * Convert fuzzy output to PWM percentage
  *
- * This matches the conversion performed by the embedded
- * controller after COG defuzzification.
+ * This function matches controller_8051.c exactly.
  * ========================================================== */
 
 static unsigned char fan_speed_to_pwm(
     float fan_speed
 )
 {
-    if (fan_speed <= FAN_OUTPUT_LOWER) {
+    if (fan_speed <= 0.0f) {
         return 0u;
     }
 
-    if (fan_speed >= FAN_OUTPUT_UPPER) {
+    if (fan_speed >= 100.0f) {
         return 100u;
     }
 
@@ -214,17 +269,82 @@ static unsigned char fan_speed_to_pwm(
 
 
 /* ==========================================================
+ * Selected-input COG plot
+ *
+ * This generates the aggregated Mamdani output for one input.
+ *
+ * For the default verification:
+ *
+ *     temperature = 42
+ *
+ * Output:
+ *
+ *     sim_8051_selected_cog.svg
+ * ========================================================== */
+
+static bool plot_selected_cog(
+    float temperature,
+    float cog_step
+)
+{
+    fuzzy_rules_t rules;
+    float result;
+    bool success;
+
+    fuzzy_rules_create(
+        &rules
+    );
+
+    if (!build_fan_rules(
+        &rules,
+        temperature
+    )) {
+        fuzzy_rules_free(
+            &rules
+        );
+
+        return false;
+    }
+
+    FUZZY_PRINTF(
+        "\nSelected-input rule activations:\n"
+    );
+
+    fuzzy_rules_print(
+        &rules
+    );
+
+    result =
+        fuzzy_rules_cog(
+            &rules,
+            FAN_OUTPUT_LOWER,
+            FAN_OUTPUT_UPPER,
+            cog_step
+        );
+
+    success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            "sim_8051_selected_cog",
+            "8051 Fan Controller: Selected COG Output",
+            result,
+            FAN_OUTPUT_LOWER,
+            FAN_OUTPUT_UPPER,
+            cog_step
+        );
+
+    fuzzy_rules_free(
+        &rules
+    );
+
+    return success;
+}
+
+
+/* ==========================================================
  * Sweep adapter
  *
- * FUZZY_COG_SWEEP requires an evaluator with this signature:
- *
- *     float evaluator(
- *         const float inputs[],
- *         size_t input_count,
- *         float cog_step
- *     );
- *
- * This controller has one input:
+ * FUZZY_COG_SWEEP requires:
  *
  *     inputs[0] = temperature
  * ========================================================== */
@@ -250,10 +370,97 @@ static float evaluate_fan_sweep(
 
 
 /* ==========================================================
- * Console demonstration
+ * Embedded-verification result
  *
- * This allows users to compare the fuzzy COG result against
- * the integer PWM value that would be used by the 8051.
+ * This performs the equivalent of the embedded main():
+ *
+ *     P2 = temperature input
+ *     P1 = rounded PWM output
+ *     P0 = 0xAA when complete
+ *
+ * The desktop harness prints equivalent values.
+ * ========================================================== */
+
+static void run_embedded_verification(void)
+{
+    unsigned char simulated_p0;
+    unsigned char simulated_p1;
+    unsigned char simulated_p2;
+
+    simulated_p0 =
+        0x55u;
+
+    test_temperature =
+        VERIFICATION_INPUT;
+
+    simulated_p2 =
+        (unsigned char)test_temperature;
+
+    test_fan_speed =
+        calculate_fan_speed(
+            test_temperature,
+            FAN_COG_STEP
+        );
+
+    test_pwm =
+        fan_speed_to_pwm(
+            test_fan_speed
+        );
+
+    simulated_p1 =
+        test_pwm;
+
+    simulated_p0 =
+        0xAAu;
+
+    FUZZY_PRINTF(
+        "\nEmbedded verification\n"
+        "=====================\n"
+    );
+
+    FUZZY_PRINTF(
+        "Temperature input: %.0f\n",
+        test_temperature
+    );
+
+    FUZZY_PRINTF(
+        "Fuzzy fan speed:   %.5f\n",
+        test_fan_speed
+    );
+
+    FUZZY_PRINTF(
+        "Rounded PWM:       %u%%\n",
+        (unsigned int)test_pwm
+    );
+
+    FUZZY_PRINTF(
+        "\nExpected embedded ports:\n"
+    );
+
+    FUZZY_PRINTF(
+        "P0 = 0x%02X  status complete\n",
+        (unsigned int)simulated_p0
+    );
+
+    FUZZY_PRINTF(
+        "P1 = 0x%02X  PWM output = %u\n",
+        (unsigned int)simulated_p1,
+        (unsigned int)simulated_p1
+    );
+
+    FUZZY_PRINTF(
+        "P2 = 0x%02X  temperature input = %u\n",
+        (unsigned int)simulated_p2,
+        (unsigned int)simulated_p2
+    );
+}
+
+
+/* ==========================================================
+ * Complete console table
+ *
+ * This prints the controller response over the complete
+ * temperature universe.
  * ========================================================== */
 
 static void print_controller_results(void)
@@ -298,7 +505,11 @@ static void print_controller_results(void)
 
 
 /* ==========================================================
- * Input membership-function plot
+ * Temperature membership-function plot
+ *
+ * Output:
+ *
+ *     sim_8051_temperature.svg
  * ========================================================== */
 
 static bool plot_temperature_functions(void)
@@ -326,7 +537,11 @@ static bool plot_temperature_functions(void)
 
 
 /* ==========================================================
- * Output membership-function plot
+ * Fan membership-function plot
+ *
+ * Output:
+ *
+ *     sim_8051_fan.svg
  * ========================================================== */
 
 static bool plot_fan_functions(void)
@@ -354,16 +569,22 @@ static bool plot_fan_functions(void)
 
 
 /* ==========================================================
- * Complete controller sweep
+ * Complete temperature-to-fan sweep
  *
  * Outputs:
  *
  *     sim_8051.csv
  *     sim_8051.svg
  *
- * The temperature sweep uses one-degree input increments.
- * Each controller evaluation uses the same 10-unit COG step
- * as the Keil example.
+ * Sweep input step:
+ *
+ *     1 degree
+ *
+ * COG output step:
+ *
+ *     10 units
+ *
+ * These settings match the embedded controller.
  * ========================================================== */
 
 static bool plot_fan_controller_sweep(void)
@@ -391,8 +612,13 @@ static bool plot_fan_controller_sweep(void)
 int main(void)
 {
     /*
-     * Show the numerical COG and PWM results directly in the
-     * terminal.
+     * Perform the direct equivalent of the embedded
+     * verification build.
+     */
+    run_embedded_verification();
+
+    /*
+     * Print the complete temperature response table.
      */
     print_controller_results();
 
@@ -427,6 +653,23 @@ int main(void)
     /*
      * Generate:
      *
+     *     sim_8051_selected_cog.svg
+     */
+    if (!plot_selected_cog(
+        VERIFICATION_INPUT,
+        FAN_COG_STEP
+    )) {
+        FUZZY_ERROR(
+            "Failed to generate "
+            "sim_8051_selected_cog.svg\n"
+        );
+
+        return 1;
+    }
+
+    /*
+     * Generate:
+     *
      *     sim_8051.csv
      *     sim_8051.svg
      */
@@ -444,6 +687,7 @@ int main(void)
         "\nGenerated files:\n"
         "  sim_8051_temperature.svg\n"
         "  sim_8051_fan.svg\n"
+        "  sim_8051_selected_cog.svg\n"
         "  sim_8051.csv\n"
         "  sim_8051.svg\n"
     );
