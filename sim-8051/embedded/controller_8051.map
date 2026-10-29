@@ -792,7 +792,7 @@ C:   000001EF  A$controller_8051$837              controller_8051
 C:   000001EF  C$fuzzy.h$599$1_1$22               controller_8051
 C:   000001EF  XFcontroller_8051$fuzzy_apply_he   controller_8051
 C:   000001F0  A$controller_8051$857              controller_8051
-C:   000001F0  C$fuzzy.h$614$1_1$27               controller_8051
+C:   000001F0  C$fuzzy.h$613$1_1$27               controller_8051
 C:   000001F0  G$fuzzy_and_array$0$0              controller_8051
 C:   000001F0  _fuzzy_and_array                   controller_8051
 C:   000001F2  A$controller_8051$858              controller_8051
@@ -810,7 +810,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   000001FC  A$controller_8051$865              controller_8051
-C:   000001FC  C$fuzzy.h$625$1_0$27               controller_8051
+C:   000001FC  C$fuzzy.h$624$1_0$27               controller_8051
 C:   000001FE  A$controller_8051$866              controller_8051
 C:   00000200  A$controller_8051$867              controller_8051
 C:   00000201  A$controller_8051$868              controller_8051
@@ -818,7 +818,7 @@ C:   00000202  A$controller_8051$869              controller_8051
 C:   00000203  A$controller_8051$870              controller_8051
 C:   00000204  A$controller_8051$871              controller_8051
 C:   00000206  A$controller_8051$874              controller_8051
-C:   00000206  C$fuzzy.h$626$1_0$27               controller_8051
+C:   00000206  C$fuzzy.h$625$1_0$27               controller_8051
 C:   00000208  A$controller_8051$875              controller_8051
 C:   0000020A  A$controller_8051$876              controller_8051
 C:   0000020B  A$controller_8051$877              controller_8051
@@ -826,26 +826,26 @@ C:   0000020C  A$controller_8051$878              controller_8051
 C:   0000020D  A$controller_8051$879              controller_8051
 C:   0000020E  A$controller_8051$880              controller_8051
 C:   00000210  A$controller_8051$884              controller_8051
-C:   00000210  C$fuzzy.h$628$2_0$28               controller_8051
+C:   00000210  C$fuzzy.h$627$2_0$28               controller_8051
 C:   00000213  A$controller_8051$885              controller_8051
 C:   00000216  A$controller_8051$886              controller_8051
 C:   00000218  A$controller_8051$887              controller_8051
 C:   0000021B  A$controller_8051$891              controller_8051
-C:   0000021B  C$fuzzy.h$632$1_0$27               controller_8051
+C:   0000021B  C$fuzzy.h$631$1_0$27               controller_8051
 C:   0000021C  A$controller_8051$892              controller_8051
 C:   0000021E  A$controller_8051$895              controller_8051
-C:   0000021E  C$fuzzy.h$633$1_0$27               controller_8051
+C:   0000021E  C$fuzzy.h$632$1_0$27               controller_8051
 C:   00000221  A$controller_8051$896              controller_8051
 C:   00000223  A$controller_8051$900              controller_8051
-C:   00000223  C$fuzzy.h$635$1_0$27               controller_8051
+C:   00000223  C$fuzzy.h$634$1_0$27               controller_8051
 C:   00000226  A$controller_8051$901              controller_8051
 C:   00000228  A$controller_8051$905              controller_8051
-C:   00000228  C$fuzzy.h$636$2_0$29               controller_8051
+C:   00000228  C$fuzzy.h$635$2_0$29               controller_8051
 C:   0000022B  A$controller_8051$906              controller_8051
 C:   0000022C  A$controller_8051$907              controller_8051
 C:   0000022E  A$controller_8051$908              controller_8051
 C:   00000231  A$controller_8051$912              controller_8051
-C:   00000231  C$fuzzy.h$641$1_0$27               controller_8051
+C:   00000231  C$fuzzy.h$640$1_0$27               controller_8051
 C:   00000233  A$controller_8051$913              controller_8051
 C:   00000235  A$controller_8051$914              controller_8051
 C:   00000236  A$controller_8051$915              controller_8051
@@ -904,7 +904,7 @@ C:   00000279  A$controller_8051$958              controller_8051
 C:   0000027A  A$controller_8051$959              controller_8051
 C:   0000027B  A$controller_8051$960              controller_8051
 C:   0000027D  A$controller_8051$963              controller_8051
-C:   0000027D  C$fuzzy.h$645$3_0$31               controller_8051
+C:   0000027D  C$fuzzy.h$644$3_0$31               controller_8051
 C:   0000027E  A$controller_8051$964              controller_8051
 C:   00000281  A$controller_8051$965              controller_8051
 C:   00000282  A$controller_8051$967              controller_8051
@@ -936,7 +936,7 @@ C:   0000029B  A$controller_8051$986              controller_8051
 C:   0000029D  A$controller_8051$987              controller_8051
 C:   0000029E  A$controller_8051$988              controller_8051
 C:   000002A0  A$controller_8051$992              controller_8051
-C:   000002A0  C$fuzzy.h$646$2_0$30               controller_8051
+C:   000002A0  C$fuzzy.h$645$2_0$30               controller_8051
 C:   000002A2  A$controller_8051$993              controller_8051
 C:   000002A4  A$controller_8051$994              controller_8051
 C:   000002A5  A$controller_8051$995              controller_8051
@@ -952,7 +952,7 @@ C:   000002B0  A$controller_8051$1004             controller_8051
 C:   000002B1  A$controller_8051$1005             controller_8051
 C:   000002B3  A$controller_8051$1006             controller_8051
 C:   000002B6  A$controller_8051$1010             controller_8051
-C:   000002B6  C$fuzzy.h$651$1_0$27               controller_8051
+C:   000002B6  C$fuzzy.h$650$1_0$27               controller_8051
 C:   000002B8  A$controller_8051$1011             controller_8051
 C:   000002BA  A$controller_8051$1012             controller_8051
 C:   000002BC  A$controller_8051$1013             controller_8051
@@ -1022,7 +1022,7 @@ C:   0000030B  A$controller_8051$1067             controller_8051
 C:   0000030C  A$controller_8051$1068             controller_8051
 C:   0000030E  A$controller_8051$1069             controller_8051
 C:   00000310  A$controller_8051$1072             controller_8051
-C:   00000310  C$fuzzy.h$654$1_0$27               controller_8051
+C:   00000310  C$fuzzy.h$653$1_0$27               controller_8051
 C:   00000312  A$controller_8051$1073             controller_8051
 C:   00000313  A$controller_8051$1074             controller_8051
 C:   00000315  A$controller_8051$1075             controller_8051
@@ -1035,8 +1035,8 @@ C:   0000031E  A$controller_8051$1081             controller_8051
 C:   00000320  A$controller_8051$1082             controller_8051
 C:   00000323  A$controller_8051$1084             controller_8051
 C:   00000326  A$controller_8051$1090             controller_8051
-C:   00000326  C$fuzzy.h$655$4_0$32               controller_8051
-C:   00000326  C$fuzzy.h$656$1_0$27               controller_8051
+C:   00000326  C$fuzzy.h$654$4_0$32               controller_8051
+C:   00000326  C$fuzzy.h$655$1_0$27               controller_8051
 C:   00000328  A$controller_8051$1091             controller_8051
 C:   0000032A  A$controller_8051$1092             controller_8051
 C:   0000032C  A$controller_8051$1093             controller_8051
@@ -1082,7 +1082,7 @@ C:   0000035C  A$controller_8051$1123             controller_8051
 C:   0000035D  A$controller_8051$1124             controller_8051
 C:   0000035F  A$controller_8051$1125             controller_8051
 C:   00000362  A$controller_8051$1129             controller_8051
-C:   00000362  C$fuzzy.h$657$5_0$33               controller_8051
+C:   00000362  C$fuzzy.h$656$5_0$33               controller_8051
 C:   00000364  A$controller_8051$1130             controller_8051
 C:   00000366  A$controller_8051$1131             controller_8051
 C:   00000367  A$controller_8051$1132             controller_8051
@@ -1112,10 +1112,10 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   00000378  A$controller_8051$1147             controller_8051
 C:   00000379  A$controller_8051$1148             controller_8051
 C:   0000037A  A$controller_8051$1151             controller_8051
-C:   0000037A  C$fuzzy.h$659$4_0$32               controller_8051
+C:   0000037A  C$fuzzy.h$658$4_0$32               controller_8051
 C:   0000037D  A$controller_8051$1157             controller_8051
-C:   0000037D  C$fuzzy.h$661$4_0$32               controller_8051
-C:   0000037D  C$fuzzy.h$663$1_0$27               controller_8051
+C:   0000037D  C$fuzzy.h$660$4_0$32               controller_8051
+C:   0000037D  C$fuzzy.h$662$1_0$27               controller_8051
 C:   0000037F  A$controller_8051$1158             controller_8051
 C:   00000381  A$controller_8051$1159             controller_8051
 C:   00000383  A$controller_8051$1160             controller_8051
@@ -1132,7 +1132,7 @@ C:   00000391  A$controller_8051$1170             controller_8051
 C:   00000392  A$controller_8051$1171             controller_8051
 C:   00000393  A$controller_8051$1172             controller_8051
 C:   00000395  A$controller_8051$1175             controller_8051
-C:   00000395  C$fuzzy.h$664$1_0$27               controller_8051
+C:   00000395  C$fuzzy.h$663$1_0$27               controller_8051
 C:   00000397  A$controller_8051$1176             controller_8051
 C:   00000399  A$controller_8051$1177             controller_8051
 C:   0000039A  A$controller_8051$1178             controller_8051
@@ -1170,8 +1170,8 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   000003C4  A$controller_8051$1208             controller_8051
-C:   000003C4  C$fuzzy.h$666$4_0$32               controller_8051
-C:   000003C4  C$fuzzy.h$669$1_0$27               controller_8051
+C:   000003C4  C$fuzzy.h$665$4_0$32               controller_8051
+C:   000003C4  C$fuzzy.h$668$1_0$27               controller_8051
 C:   000003C6  A$controller_8051$1209             controller_8051
 C:   000003C8  A$controller_8051$1210             controller_8051
 C:   000003CA  A$controller_8051$1211             controller_8051
@@ -1213,7 +1213,7 @@ C:   00000402  A$controller_8051$1246             controller_8051
 C:   00000404  A$controller_8051$1247             controller_8051
 C:   00000406  A$controller_8051$1248             controller_8051
 C:   00000408  A$controller_8051$1251             controller_8051
-C:   00000408  C$fuzzy.h$672$1_0$27               controller_8051
+C:   00000408  C$fuzzy.h$671$1_0$27               controller_8051
 C:   0000040A  A$controller_8051$1252             controller_8051
 C:   0000040C  A$controller_8051$1253             controller_8051
 C:   0000040E  A$controller_8051$1254             controller_8051
@@ -1266,7 +1266,7 @@ C:   0000044D  A$controller_8051$1291             controller_8051
 C:   0000044F  A$controller_8051$1292             controller_8051
 C:   00000450  A$controller_8051$1293             controller_8051
 C:   00000452  A$controller_8051$1296             controller_8051
-C:   00000452  C$fuzzy.h$673$5_0$34               controller_8051
+C:   00000452  C$fuzzy.h$672$5_0$34               controller_8051
 C:   00000454  A$controller_8051$1297             controller_8051
 C:   00000456  A$controller_8051$1298             controller_8051
 C:   00000457  A$controller_8051$1299             controller_8051
@@ -1278,8 +1278,8 @@ C:   0000045C  A$controller_8051$1304             controller_8051
 C:   0000045D  A$controller_8051$1305             controller_8051
 C:   0000045E  A$controller_8051$1306             controller_8051
 C:   0000045F  A$controller_8051$1311             controller_8051
-C:   0000045F  C$fuzzy.h$675$4_0$32               controller_8051
-C:   0000045F  C$fuzzy.h$677$4_0$32               controller_8051
+C:   0000045F  C$fuzzy.h$674$4_0$32               controller_8051
+C:   0000045F  C$fuzzy.h$676$4_0$32               controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 32.
 Hexadecimal  [32-Bits]
 
@@ -1290,13 +1290,13 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000461  A$controller_8051$1315             controller_8051
-C:   00000461  C$fuzzy.h$678$4_0$32               controller_8051
+C:   00000461  C$fuzzy.h$677$4_0$32               controller_8051
 C:   00000464  A$controller_8051$1316             controller_8051
 C:   00000465  A$controller_8051$1317             controller_8051
 C:   00000467  A$controller_8051$1320             controller_8051
-C:   00000467  C$fuzzy.h$679$3_0$31               controller_8051
+C:   00000467  C$fuzzy.h$678$3_0$31               controller_8051
 C:   00000469  A$controller_8051$1324             controller_8051
-C:   00000469  C$fuzzy.h$647$2_0$30               controller_8051
+C:   00000469  C$fuzzy.h$646$2_0$30               controller_8051
 C:   0000046B  A$controller_8051$1325             controller_8051
 C:   0000046D  A$controller_8051$1326             controller_8051
 C:   0000046E  A$controller_8051$1327             controller_8051
@@ -1305,7 +1305,7 @@ C:   00000472  A$controller_8051$1329             controller_8051
 C:   00000473  A$controller_8051$1330             controller_8051
 C:   00000474  A$controller_8051$1332             controller_8051
 C:   00000477  A$controller_8051$1336             controller_8051
-C:   00000477  C$fuzzy.h$683$1_0$27               controller_8051
+C:   00000477  C$fuzzy.h$682$1_0$27               controller_8051
 C:   00000479  A$controller_8051$1337             controller_8051
 C:   0000047B  A$controller_8051$1338             controller_8051
 C:   0000047C  A$controller_8051$1339             controller_8051
@@ -1319,10 +1319,10 @@ C:   00000486  A$controller_8051$1346             controller_8051
 C:   00000489  A$controller_8051$1350             controller_8051
 C:   0000048C  A$controller_8051$1351             controller_8051
 C:   0000048E  A$controller_8051$1354             controller_8051
-C:   0000048E  C$fuzzy.h$685$1_0$27               controller_8051
+C:   0000048E  C$fuzzy.h$684$1_0$27               controller_8051
 C:   0000048E  XG$fuzzy_and_array$0$0             controller_8051
 C:   0000048F  A$controller_8051$1376             controller_8051
-C:   0000048F  C$fuzzy.h$700$1_0$36               controller_8051
+C:   0000048F  C$fuzzy.h$699$1_0$36               controller_8051
 C:   0000048F  G$fuzzy_or_array$0$0               controller_8051
 C:   0000048F  _fuzzy_or_array                    controller_8051
 C:   00000491  A$controller_8051$1377             controller_8051
@@ -1331,7 +1331,7 @@ C:   00000495  A$controller_8051$1379             controller_8051
 C:   00000497  A$controller_8051$1380             controller_8051
 C:   00000499  A$controller_8051$1381             controller_8051
 C:   0000049B  A$controller_8051$1384             controller_8051
-C:   0000049B  C$fuzzy.h$711$1_0$36               controller_8051
+C:   0000049B  C$fuzzy.h$710$1_0$36               controller_8051
 C:   0000049D  A$controller_8051$1385             controller_8051
 C:   0000049F  A$controller_8051$1386             controller_8051
 C:   000004A0  A$controller_8051$1387             controller_8051
@@ -1339,7 +1339,7 @@ C:   000004A1  A$controller_8051$1388             controller_8051
 C:   000004A2  A$controller_8051$1389             controller_8051
 C:   000004A3  A$controller_8051$1390             controller_8051
 C:   000004A5  A$controller_8051$1393             controller_8051
-C:   000004A5  C$fuzzy.h$712$1_0$36               controller_8051
+C:   000004A5  C$fuzzy.h$711$1_0$36               controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 33.
 Hexadecimal  [32-Bits]
 
@@ -1356,26 +1356,26 @@ C:   000004AB  A$controller_8051$1397             controller_8051
 C:   000004AC  A$controller_8051$1398             controller_8051
 C:   000004AD  A$controller_8051$1399             controller_8051
 C:   000004AF  A$controller_8051$1403             controller_8051
-C:   000004AF  C$fuzzy.h$714$2_0$37               controller_8051
+C:   000004AF  C$fuzzy.h$713$2_0$37               controller_8051
 C:   000004B2  A$controller_8051$1404             controller_8051
 C:   000004B3  A$controller_8051$1405             controller_8051
 C:   000004B5  A$controller_8051$1406             controller_8051
 C:   000004B8  A$controller_8051$1410             controller_8051
-C:   000004B8  C$fuzzy.h$718$1_0$36               controller_8051
+C:   000004B8  C$fuzzy.h$717$1_0$36               controller_8051
 C:   000004B9  A$controller_8051$1411             controller_8051
 C:   000004BB  A$controller_8051$1414             controller_8051
-C:   000004BB  C$fuzzy.h$719$1_0$36               controller_8051
+C:   000004BB  C$fuzzy.h$718$1_0$36               controller_8051
 C:   000004BE  A$controller_8051$1415             controller_8051
 C:   000004C0  A$controller_8051$1419             controller_8051
-C:   000004C0  C$fuzzy.h$721$1_0$36               controller_8051
+C:   000004C0  C$fuzzy.h$720$1_0$36               controller_8051
 C:   000004C3  A$controller_8051$1420             controller_8051
 C:   000004C5  A$controller_8051$1424             controller_8051
-C:   000004C5  C$fuzzy.h$722$2_0$38               controller_8051
+C:   000004C5  C$fuzzy.h$721$2_0$38               controller_8051
 C:   000004C8  A$controller_8051$1425             controller_8051
 C:   000004C9  A$controller_8051$1426             controller_8051
 C:   000004CB  A$controller_8051$1427             controller_8051
 C:   000004CE  A$controller_8051$1431             controller_8051
-C:   000004CE  C$fuzzy.h$727$1_0$36               controller_8051
+C:   000004CE  C$fuzzy.h$726$1_0$36               controller_8051
 C:   000004D0  A$controller_8051$1432             controller_8051
 C:   000004D2  A$controller_8051$1433             controller_8051
 C:   000004D3  A$controller_8051$1434             controller_8051
@@ -1434,7 +1434,7 @@ C:   00000516  A$controller_8051$1477             controller_8051
 C:   00000517  A$controller_8051$1478             controller_8051
 C:   00000518  A$controller_8051$1479             controller_8051
 C:   0000051A  A$controller_8051$1482             controller_8051
-C:   0000051A  C$fuzzy.h$731$3_0$40               controller_8051
+C:   0000051A  C$fuzzy.h$730$3_0$40               controller_8051
 C:   0000051C  A$controller_8051$1483             controller_8051
 C:   0000051E  A$controller_8051$1484             controller_8051
 C:   0000051F  A$controller_8051$1485             controller_8051
@@ -1469,7 +1469,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   00000542  C$fuzzy.h$732$2_0$39               controller_8051
+C:   00000542  C$fuzzy.h$731$2_0$39               controller_8051
 C:   00000544  A$controller_8051$1515             controller_8051
 C:   00000546  A$controller_8051$1516             controller_8051
 C:   00000547  A$controller_8051$1517             controller_8051
@@ -1485,7 +1485,7 @@ C:   00000552  A$controller_8051$1526             controller_8051
 C:   00000553  A$controller_8051$1527             controller_8051
 C:   00000555  A$controller_8051$1528             controller_8051
 C:   00000558  A$controller_8051$1532             controller_8051
-C:   00000558  C$fuzzy.h$737$1_0$36               controller_8051
+C:   00000558  C$fuzzy.h$736$1_0$36               controller_8051
 C:   0000055A  A$controller_8051$1533             controller_8051
 C:   0000055C  A$controller_8051$1534             controller_8051
 C:   0000055E  A$controller_8051$1535             controller_8051
@@ -1546,7 +1546,7 @@ C:   000005A0  A$controller_8051$1580             controller_8051
 C:   000005A2  A$controller_8051$1581             controller_8051
 C:   000005A3  A$controller_8051$1582             controller_8051
 C:   000005A5  A$controller_8051$1585             controller_8051
-C:   000005A5  C$fuzzy.h$740$1_0$36               controller_8051
+C:   000005A5  C$fuzzy.h$739$1_0$36               controller_8051
 C:   000005A7  A$controller_8051$1586             controller_8051
 C:   000005A9  A$controller_8051$1587             controller_8051
 C:   000005AB  A$controller_8051$1588             controller_8051
@@ -1562,8 +1562,8 @@ C:   000005B8  A$controller_8051$1597             controller_8051
 C:   000005BA  A$controller_8051$1598             controller_8051
 C:   000005BD  A$controller_8051$1600             controller_8051
 C:   000005C0  A$controller_8051$1606             controller_8051
-C:   000005C0  C$fuzzy.h$741$4_0$41               controller_8051
-C:   000005C0  C$fuzzy.h$742$1_0$36               controller_8051
+C:   000005C0  C$fuzzy.h$740$4_0$41               controller_8051
+C:   000005C0  C$fuzzy.h$741$1_0$36               controller_8051
 C:   000005C2  A$controller_8051$1607             controller_8051
 C:   000005C4  A$controller_8051$1608             controller_8051
 C:   000005C6  A$controller_8051$1609             controller_8051
@@ -1605,7 +1605,7 @@ C:   000005F6  A$controller_8051$1635             controller_8051
 C:   000005F7  A$controller_8051$1636             controller_8051
 C:   000005F9  A$controller_8051$1637             controller_8051
 C:   000005FC  A$controller_8051$1641             controller_8051
-C:   000005FC  C$fuzzy.h$743$5_0$42               controller_8051
+C:   000005FC  C$fuzzy.h$742$5_0$42               controller_8051
 C:   000005FE  A$controller_8051$1642             controller_8051
 C:   00000600  A$controller_8051$1643             controller_8051
 C:   00000601  A$controller_8051$1644             controller_8051
@@ -1616,10 +1616,10 @@ C:   00000607  A$controller_8051$1648             controller_8051
 C:   00000609  A$controller_8051$1649             controller_8051
 C:   0000060A  A$controller_8051$1650             controller_8051
 C:   0000060C  A$controller_8051$1653             controller_8051
-C:   0000060C  C$fuzzy.h$745$4_0$41               controller_8051
+C:   0000060C  C$fuzzy.h$744$4_0$41               controller_8051
 C:   0000060F  A$controller_8051$1659             controller_8051
-C:   0000060F  C$fuzzy.h$747$4_0$41               controller_8051
-C:   0000060F  C$fuzzy.h$750$1_0$36               controller_8051
+C:   0000060F  C$fuzzy.h$746$4_0$41               controller_8051
+C:   0000060F  C$fuzzy.h$749$1_0$36               controller_8051
 C:   00000611  A$controller_8051$1660             controller_8051
 C:   00000613  A$controller_8051$1661             controller_8051
 C:   00000615  A$controller_8051$1662             controller_8051
@@ -1630,7 +1630,7 @@ C:   0000061D  A$controller_8051$1666             controller_8051
 C:   0000061F  A$controller_8051$1667             controller_8051
 C:   00000621  A$controller_8051$1668             controller_8051
 C:   00000623  A$controller_8051$1671             controller_8051
-C:   00000623  C$fuzzy.h$751$1_0$36               controller_8051
+C:   00000623  C$fuzzy.h$750$1_0$36               controller_8051
 C:   00000625  A$controller_8051$1672             controller_8051
 C:   00000627  A$controller_8051$1673             controller_8051
 C:   00000628  A$controller_8051$1674             controller_8051
@@ -1697,7 +1697,7 @@ C:   00000680  A$controller_8051$1725             controller_8051
 C:   00000682  A$controller_8051$1726             controller_8051
 C:   00000684  A$controller_8051$1727             controller_8051
 C:   00000686  A$controller_8051$1730             controller_8051
-C:   00000686  C$fuzzy.h$752$1_0$36               controller_8051
+C:   00000686  C$fuzzy.h$751$1_0$36               controller_8051
 C:   00000688  A$controller_8051$1731             controller_8051
 C:   0000068A  A$controller_8051$1732             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 39.
@@ -1734,15 +1734,15 @@ C:   000006AC  A$controller_8051$1754             controller_8051
 C:   000006AE  A$controller_8051$1755             controller_8051
 C:   000006B0  A$controller_8051$1756             controller_8051
 C:   000006B2  A$controller_8051$1759             controller_8051
-C:   000006B2  C$fuzzy.h$754$4_0$41               controller_8051
+C:   000006B2  C$fuzzy.h$753$4_0$41               controller_8051
 C:   000006B4  A$controller_8051$1763             controller_8051
-C:   000006B4  C$fuzzy.h$756$1_0$36               controller_8051
+C:   000006B4  C$fuzzy.h$755$1_0$36               controller_8051
 C:   000006B6  A$controller_8051$1764             controller_8051
 C:   000006B8  A$controller_8051$1765             controller_8051
 C:   000006BA  A$controller_8051$1766             controller_8051
 C:   000006BC  A$controller_8051$1767             controller_8051
 C:   000006BE  A$controller_8051$1770             controller_8051
-C:   000006BE  C$fuzzy.h$758$1_0$36               controller_8051
+C:   000006BE  C$fuzzy.h$757$1_0$36               controller_8051
 C:   000006C0  A$controller_8051$1771             controller_8051
 C:   000006C2  A$controller_8051$1772             controller_8051
 C:   000006C3  A$controller_8051$1773             controller_8051
@@ -1802,7 +1802,7 @@ C:   0000070D  A$controller_8051$1817             controller_8051
 C:   0000070F  A$controller_8051$1818             controller_8051
 C:   00000710  A$controller_8051$1819             controller_8051
 C:   00000712  A$controller_8051$1822             controller_8051
-C:   00000712  C$fuzzy.h$759$5_0$43               controller_8051
+C:   00000712  C$fuzzy.h$758$5_0$43               controller_8051
 C:   00000714  A$controller_8051$1823             controller_8051
 C:   00000716  A$controller_8051$1824             controller_8051
 C:   00000717  A$controller_8051$1825             controller_8051
@@ -1814,10 +1814,10 @@ C:   0000071C  A$controller_8051$1830             controller_8051
 C:   0000071E  A$controller_8051$1831             controller_8051
 C:   0000071F  A$controller_8051$1832             controller_8051
 C:   00000721  A$controller_8051$1837             controller_8051
-C:   00000721  C$fuzzy.h$761$4_0$41               controller_8051
-C:   00000721  C$fuzzy.h$763$4_0$41               controller_8051
+C:   00000721  C$fuzzy.h$760$4_0$41               controller_8051
+C:   00000721  C$fuzzy.h$762$4_0$41               controller_8051
 C:   00000723  A$controller_8051$1841             controller_8051
-C:   00000723  C$fuzzy.h$764$4_0$41               controller_8051
+C:   00000723  C$fuzzy.h$763$4_0$41               controller_8051
 C:   00000726  A$controller_8051$1842             controller_8051
 C:   00000727  A$controller_8051$1843             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 41.
@@ -1830,9 +1830,9 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000729  A$controller_8051$1846             controller_8051
-C:   00000729  C$fuzzy.h$765$3_0$40               controller_8051
+C:   00000729  C$fuzzy.h$764$3_0$40               controller_8051
 C:   0000072B  A$controller_8051$1850             controller_8051
-C:   0000072B  C$fuzzy.h$733$2_0$39               controller_8051
+C:   0000072B  C$fuzzy.h$732$2_0$39               controller_8051
 C:   0000072D  A$controller_8051$1851             controller_8051
 C:   0000072F  A$controller_8051$1852             controller_8051
 C:   00000730  A$controller_8051$1853             controller_8051
@@ -1841,7 +1841,7 @@ C:   00000734  A$controller_8051$1855             controller_8051
 C:   00000735  A$controller_8051$1856             controller_8051
 C:   00000736  A$controller_8051$1858             controller_8051
 C:   00000739  A$controller_8051$1862             controller_8051
-C:   00000739  C$fuzzy.h$769$1_0$36               controller_8051
+C:   00000739  C$fuzzy.h$768$1_0$36               controller_8051
 C:   0000073B  A$controller_8051$1863             controller_8051
 C:   0000073D  A$controller_8051$1864             controller_8051
 C:   0000073E  A$controller_8051$1865             controller_8051
@@ -1855,10 +1855,10 @@ C:   00000748  A$controller_8051$1872             controller_8051
 C:   0000074B  A$controller_8051$1876             controller_8051
 C:   0000074E  A$controller_8051$1877             controller_8051
 C:   00000750  A$controller_8051$1880             controller_8051
-C:   00000750  C$fuzzy.h$771$1_0$36               controller_8051
+C:   00000750  C$fuzzy.h$770$1_0$36               controller_8051
 C:   00000750  XG$fuzzy_or_array$0$0              controller_8051
 C:   00000751  A$controller_8051$1899             controller_8051
-C:   00000751  C$fuzzy.h$782$1_0$45               controller_8051
+C:   00000751  C$fuzzy.h$781$1_0$45               controller_8051
 C:   00000751  G$fuzzy_sugeno_weighted_average_   controller_8051
 C:   00000751  _fuzzy_sugeno_weighted_average_a   controller_8051
 C:   00000753  A$controller_8051$1900             controller_8051
@@ -1868,7 +1868,7 @@ C:   0000075A  A$controller_8051$1903             controller_8051
 C:   0000075C  A$controller_8051$1904             controller_8051
 C:   0000075E  A$controller_8051$1905             controller_8051
 C:   00000760  A$controller_8051$1908             controller_8051
-C:   00000760  C$fuzzy.h$795$1_0$45               controller_8051
+C:   00000760  C$fuzzy.h$794$1_0$45               controller_8051
 C:   00000762  A$controller_8051$1909             controller_8051
 C:   00000764  A$controller_8051$1910             controller_8051
 C:   00000765  A$controller_8051$1911             controller_8051
@@ -1876,7 +1876,7 @@ C:   00000766  A$controller_8051$1912             controller_8051
 C:   00000767  A$controller_8051$1913             controller_8051
 C:   00000768  A$controller_8051$1914             controller_8051
 C:   0000076A  A$controller_8051$1917             controller_8051
-C:   0000076A  C$fuzzy.h$796$1_0$45               controller_8051
+C:   0000076A  C$fuzzy.h$795$1_0$45               controller_8051
 C:   0000076C  A$controller_8051$1918             controller_8051
 C:   0000076D  A$controller_8051$1919             controller_8051
 C:   0000076E  A$controller_8051$1920             controller_8051
@@ -1892,17 +1892,17 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   0000076F  A$controller_8051$1921             controller_8051
 C:   00000770  A$controller_8051$1922             controller_8051
 C:   00000772  A$controller_8051$1925             controller_8051
-C:   00000772  C$fuzzy.h$797$1_0$45               controller_8051
+C:   00000772  C$fuzzy.h$796$1_0$45               controller_8051
 C:   00000774  A$controller_8051$1926             controller_8051
 C:   00000775  A$controller_8051$1927             controller_8051
 C:   00000776  A$controller_8051$1928             controller_8051
 C:   00000779  A$controller_8051$1932             controller_8051
-C:   00000779  C$fuzzy.h$799$2_0$46               controller_8051
+C:   00000779  C$fuzzy.h$798$2_0$46               controller_8051
 C:   0000077C  A$controller_8051$1933             controller_8051
 C:   0000077D  A$controller_8051$1934             controller_8051
 C:   0000077F  A$controller_8051$1935             controller_8051
 C:   00000782  A$controller_8051$1939             controller_8051
-C:   00000782  C$fuzzy.h$803$1_0$45               controller_8051
+C:   00000782  C$fuzzy.h$802$1_0$45               controller_8051
 C:   00000784  A$controller_8051$1940             controller_8051
 C:   00000786  A$controller_8051$1941             controller_8051
 C:   00000787  A$controller_8051$1942             controller_8051
@@ -1914,7 +1914,7 @@ C:   0000078C  A$controller_8051$1947             controller_8051
 C:   0000078D  A$controller_8051$1948             controller_8051
 C:   0000078E  A$controller_8051$1949             controller_8051
 C:   0000078F  A$controller_8051$1952             controller_8051
-C:   0000078F  C$fuzzy.h$806$1_0$45               controller_8051
+C:   0000078F  C$fuzzy.h$805$1_0$45               controller_8051
 C:   00000791  A$controller_8051$1953             controller_8051
 C:   00000793  A$controller_8051$1954             controller_8051
 C:   00000794  A$controller_8051$1955             controller_8051
@@ -1926,10 +1926,10 @@ C:   00000799  A$controller_8051$1960             controller_8051
 C:   0000079A  A$controller_8051$1961             controller_8051
 C:   0000079B  A$controller_8051$1962             controller_8051
 C:   0000079C  A$controller_8051$1965             controller_8051
-C:   0000079C  C$fuzzy.h$809$1_0$45               controller_8051
+C:   0000079C  C$fuzzy.h$808$1_0$45               controller_8051
 C:   0000079D  A$controller_8051$1966             controller_8051
 C:   0000079E  A$controller_8051$1970             controller_8051
-C:   0000079E  C$fuzzy.h$810$2_0$47               controller_8051
+C:   0000079E  C$fuzzy.h$809$2_0$47               controller_8051
 C:   000007A0  A$controller_8051$1971             controller_8051
 C:   000007A1  A$controller_8051$1972             controller_8051
 C:   000007A2  A$controller_8051$1973             controller_8051
@@ -1949,7 +1949,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   000007AC  C$fuzzy.h$815$3_0$48               controller_8051
+C:   000007AC  C$fuzzy.h$814$3_0$48               controller_8051
 C:   000007AD  A$controller_8051$1984             controller_8051
 C:   000007AE  A$controller_8051$1985             controller_8051
 C:   000007AF  A$controller_8051$1986             controller_8051
@@ -2015,7 +2015,7 @@ C:   000007FB  A$controller_8051$2036             controller_8051
 C:   000007FC  A$controller_8051$2037             controller_8051
 C:   000007FE  A$controller_8051$2038             controller_8051
 C:   00000800  A$controller_8051$2041             controller_8051
-C:   00000800  C$fuzzy.h$819$3_0$48               controller_8051
+C:   00000800  C$fuzzy.h$818$3_0$48               controller_8051
 C:   00000802  A$controller_8051$2042             controller_8051
 C:   00000803  A$controller_8051$2043             controller_8051
 C:   00000804  A$controller_8051$2044             controller_8051
@@ -2069,7 +2069,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   0000083B  C$fuzzy.h$824$1_0$45               controller_8051
+C:   0000083B  C$fuzzy.h$823$1_0$45               controller_8051
 C:   0000083D  A$controller_8051$2088             controller_8051
 C:   0000083F  A$controller_8051$2089             controller_8051
 C:   00000841  A$controller_8051$2090             controller_8051
@@ -2098,7 +2098,7 @@ C:   00000868  A$controller_8051$2112             controller_8051
 C:   0000086A  A$controller_8051$2113             controller_8051
 C:   0000086C  A$controller_8051$2114             controller_8051
 C:   0000086E  A$controller_8051$2117             controller_8051
-C:   0000086E  C$fuzzy.h$827$1_0$45               controller_8051
+C:   0000086E  C$fuzzy.h$826$1_0$45               controller_8051
 C:   00000870  A$controller_8051$2118             controller_8051
 C:   00000872  A$controller_8051$2119             controller_8051
 C:   00000873  A$controller_8051$2120             controller_8051
@@ -2147,7 +2147,7 @@ C:   000008A5  A$controller_8051$2153             controller_8051
 C:   000008A6  A$controller_8051$2154             controller_8051
 C:   000008A7  A$controller_8051$2155             controller_8051
 C:   000008A9  A$controller_8051$2158             controller_8051
-C:   000008A9  C$fuzzy.h$812$1_0$45               controller_8051
+C:   000008A9  C$fuzzy.h$811$1_0$45               controller_8051
 C:   000008AB  A$controller_8051$2159             controller_8051
 C:   000008AD  A$controller_8051$2160             controller_8051
 C:   000008AE  A$controller_8051$2161             controller_8051
@@ -2191,7 +2191,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       -----  --------------------------------   ------------------------
 C:   000008DC  A$controller_8051$2191             controller_8051
 C:   000008DF  A$controller_8051$2195             controller_8051
-C:   000008DF  C$fuzzy.h$830$1_0$45               controller_8051
+C:   000008DF  C$fuzzy.h$829$1_0$45               controller_8051
 C:   000008E1  A$controller_8051$2196             controller_8051
 C:   000008E3  A$controller_8051$2197             controller_8051
 C:   000008E4  A$controller_8051$2198             controller_8051
@@ -2217,12 +2217,12 @@ C:   00000904  A$controller_8051$2217             controller_8051
 C:   00000906  A$controller_8051$2218             controller_8051
 C:   00000908  A$controller_8051$2219             controller_8051
 C:   0000090A  A$controller_8051$2222             controller_8051
-C:   0000090A  C$fuzzy.h$831$2_0$49               controller_8051
+C:   0000090A  C$fuzzy.h$830$2_0$49               controller_8051
 C:   0000090D  A$controller_8051$2223             controller_8051
 C:   0000090E  A$controller_8051$2224             controller_8051
 C:   00000910  A$controller_8051$2225             controller_8051
 C:   00000912  A$controller_8051$2229             controller_8051
-C:   00000912  C$fuzzy.h$835$1_0$45               controller_8051
+C:   00000912  C$fuzzy.h$834$1_0$45               controller_8051
 C:   00000914  A$controller_8051$2230             controller_8051
 C:   00000916  A$controller_8051$2231             controller_8051
 C:   00000917  A$controller_8051$2232             controller_8051
@@ -2270,10 +2270,10 @@ C:   0000094B  A$controller_8051$2264             controller_8051
 C:   0000094C  A$controller_8051$2268             controller_8051
 C:   0000094F  A$controller_8051$2269             controller_8051
 C:   00000951  A$controller_8051$2272             controller_8051
-C:   00000951  C$fuzzy.h$836$1_0$45               controller_8051
+C:   00000951  C$fuzzy.h$835$1_0$45               controller_8051
 C:   00000951  XG$fuzzy_sugeno_weighted_average   controller_8051
 C:   00000952  A$controller_8051$2290             controller_8051
-C:   00000952  C$fuzzy.h$846$1_0$51               controller_8051
+C:   00000952  C$fuzzy.h$845$1_0$51               controller_8051
 C:   00000952  G$fuzzy_sugeno_weighted_sum_arra   controller_8051
 C:   00000952  _fuzzy_sugeno_weighted_sum_array   controller_8051
 C:   00000954  A$controller_8051$2291             controller_8051
@@ -2283,7 +2283,7 @@ C:   0000095A  A$controller_8051$2294             controller_8051
 C:   0000095C  A$controller_8051$2295             controller_8051
 C:   0000095E  A$controller_8051$2296             controller_8051
 C:   00000960  A$controller_8051$2299             controller_8051
-C:   00000960  C$fuzzy.h$858$1_0$51               controller_8051
+C:   00000960  C$fuzzy.h$857$1_0$51               controller_8051
 C:   00000962  A$controller_8051$2300             controller_8051
 C:   00000964  A$controller_8051$2301             controller_8051
 C:   00000965  A$controller_8051$2302             controller_8051
@@ -2291,14 +2291,14 @@ C:   00000966  A$controller_8051$2303             controller_8051
 C:   00000967  A$controller_8051$2304             controller_8051
 C:   00000968  A$controller_8051$2305             controller_8051
 C:   0000096A  A$controller_8051$2308             controller_8051
-C:   0000096A  C$fuzzy.h$859$1_0$51               controller_8051
+C:   0000096A  C$fuzzy.h$858$1_0$51               controller_8051
 C:   0000096B  A$controller_8051$2309             controller_8051
 C:   0000096C  A$controller_8051$2310             controller_8051
 C:   0000096E  A$controller_8051$2313             controller_8051
-C:   0000096E  C$fuzzy.h$860$1_0$51               controller_8051
+C:   0000096E  C$fuzzy.h$859$1_0$51               controller_8051
 C:   0000096F  A$controller_8051$2314             controller_8051
 C:   00000972  A$controller_8051$2318             controller_8051
-C:   00000972  C$fuzzy.h$862$2_0$52               controller_8051
+C:   00000972  C$fuzzy.h$861$2_0$52               controller_8051
 C:   00000975  A$controller_8051$2319             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 49.
 Hexadecimal  [32-Bits]
@@ -2312,7 +2312,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   00000976  A$controller_8051$2320             controller_8051
 C:   00000978  A$controller_8051$2321             controller_8051
 C:   0000097B  A$controller_8051$2325             controller_8051
-C:   0000097B  C$fuzzy.h$866$1_0$51               controller_8051
+C:   0000097B  C$fuzzy.h$865$1_0$51               controller_8051
 C:   0000097D  A$controller_8051$2326             controller_8051
 C:   0000097E  A$controller_8051$2327             controller_8051
 C:   0000097F  A$controller_8051$2328             controller_8051
@@ -2323,10 +2323,10 @@ C:   00000983  A$controller_8051$2332             controller_8051
 C:   00000984  A$controller_8051$2333             controller_8051
 C:   00000985  A$controller_8051$2334             controller_8051
 C:   00000986  A$controller_8051$2337             controller_8051
-C:   00000986  C$fuzzy.h$869$1_0$51               controller_8051
+C:   00000986  C$fuzzy.h$868$1_0$51               controller_8051
 C:   00000987  A$controller_8051$2338             controller_8051
 C:   00000988  A$controller_8051$2342             controller_8051
-C:   00000988  C$fuzzy.h$870$2_0$53               controller_8051
+C:   00000988  C$fuzzy.h$869$2_0$53               controller_8051
 C:   00000989  A$controller_8051$2343             controller_8051
 C:   0000098A  A$controller_8051$2344             controller_8051
 C:   0000098B  A$controller_8051$2345             controller_8051
@@ -2334,7 +2334,7 @@ C:   0000098C  A$controller_8051$2346             controller_8051
 C:   0000098D  A$controller_8051$2347             controller_8051
 C:   0000098F  A$controller_8051$2348             controller_8051
 C:   00000992  A$controller_8051$2352             controller_8051
-C:   00000992  C$fuzzy.h$875$1_0$51               controller_8051
+C:   00000992  C$fuzzy.h$874$1_0$51               controller_8051
 C:   00000994  A$controller_8051$2353             controller_8051
 C:   00000996  A$controller_8051$2354             controller_8051
 C:   00000997  A$controller_8051$2355             controller_8051
@@ -2407,7 +2407,7 @@ C:   000009ED  A$controller_8051$2412             controller_8051
 C:   000009EF  A$controller_8051$2413             controller_8051
 C:   000009F1  A$controller_8051$2414             controller_8051
 C:   000009F3  A$controller_8051$2417             controller_8051
-C:   000009F3  C$fuzzy.h$879$3_0$54               controller_8051
+C:   000009F3  C$fuzzy.h$878$3_0$54               controller_8051
 C:   000009F5  A$controller_8051$2418             controller_8051
 C:   000009F6  A$controller_8051$2419             controller_8051
 C:   000009F7  A$controller_8051$2420             controller_8051
@@ -2461,7 +2461,7 @@ C:   00000A29  A$controller_8051$2458             controller_8051
 C:   00000A2A  A$controller_8051$2459             controller_8051
 C:   00000A2D  A$controller_8051$2460             controller_8051
 C:   00000A2E  A$controller_8051$2463             controller_8051
-C:   00000A2E  C$fuzzy.h$884$1_0$51               controller_8051
+C:   00000A2E  C$fuzzy.h$883$1_0$51               controller_8051
 C:   00000A30  A$controller_8051$2464             controller_8051
 C:   00000A32  A$controller_8051$2465             controller_8051
 C:   00000A34  A$controller_8051$2466             controller_8051
@@ -2505,7 +2505,7 @@ C:   00000A67  A$controller_8051$2494             controller_8051
 C:   00000A69  A$controller_8051$2495             controller_8051
 C:   00000A6B  A$controller_8051$2496             controller_8051
 C:   00000A6D  A$controller_8051$2499             controller_8051
-C:   00000A6D  C$fuzzy.h$872$1_0$51               controller_8051
+C:   00000A6D  C$fuzzy.h$871$1_0$51               controller_8051
 C:   00000A6F  A$controller_8051$2500             controller_8051
 C:   00000A70  A$controller_8051$2501             controller_8051
 C:   00000A72  A$controller_8051$2502             controller_8051
@@ -2550,7 +2550,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000AA6  A$controller_8051$2537             controller_8051
-C:   00000AA6  C$fuzzy.h$887$1_0$51               controller_8051
+C:   00000AA6  C$fuzzy.h$886$1_0$51               controller_8051
 C:   00000AA8  A$controller_8051$2538             controller_8051
 C:   00000AA9  A$controller_8051$2539             controller_8051
 C:   00000AAB  A$controller_8051$2540             controller_8051
@@ -2562,10 +2562,10 @@ C:   00000AB2  A$controller_8051$2545             controller_8051
 C:   00000AB3  A$controller_8051$2549             controller_8051
 C:   00000AB6  A$controller_8051$2550             controller_8051
 C:   00000AB8  A$controller_8051$2553             controller_8051
-C:   00000AB8  C$fuzzy.h$888$1_0$51               controller_8051
+C:   00000AB8  C$fuzzy.h$887$1_0$51               controller_8051
 C:   00000AB8  XG$fuzzy_sugeno_weighted_sum_arr   controller_8051
 C:   00000AB9  A$controller_8051$2574             controller_8051
-C:   00000AB9  C$fuzzy.h$894$1_0$56               controller_8051
+C:   00000AB9  C$fuzzy.h$893$1_0$56               controller_8051
 C:   00000AB9  G$fuzzy_ramp$0$0                   controller_8051
 C:   00000AB9  _fuzzy_ramp                        controller_8051
 C:   00000ABB  A$controller_8051$2575             controller_8051
@@ -2577,7 +2577,7 @@ C:   00000AC5  A$controller_8051$2580             controller_8051
 C:   00000AC7  A$controller_8051$2581             controller_8051
 C:   00000AC9  A$controller_8051$2582             controller_8051
 C:   00000ACB  A$controller_8051$2585             controller_8051
-C:   00000ACB  C$fuzzy.h$905$1_0$56               controller_8051
+C:   00000ACB  C$fuzzy.h$904$1_0$56               controller_8051
 C:   00000ACD  A$controller_8051$2586             controller_8051
 C:   00000ACF  A$controller_8051$2587             controller_8051
 C:   00000AD1  A$controller_8051$2588             controller_8051
@@ -2621,12 +2621,12 @@ C:   00000B01  A$controller_8051$2616             controller_8051
 C:   00000B03  A$controller_8051$2617             controller_8051
 C:   00000B05  A$controller_8051$2618             controller_8051
 C:   00000B07  A$controller_8051$2621             controller_8051
-C:   00000B07  C$fuzzy.h$906$2_0$57               controller_8051
+C:   00000B07  C$fuzzy.h$905$2_0$57               controller_8051
 C:   00000B0A  A$controller_8051$2622             controller_8051
 C:   00000B0B  A$controller_8051$2623             controller_8051
 C:   00000B0D  A$controller_8051$2624             controller_8051
 C:   00000B10  A$controller_8051$2628             controller_8051
-C:   00000B10  C$fuzzy.h$909$1_0$56               controller_8051
+C:   00000B10  C$fuzzy.h$908$1_0$56               controller_8051
 C:   00000B12  A$controller_8051$2629             controller_8051
 C:   00000B14  A$controller_8051$2630             controller_8051
 C:   00000B16  A$controller_8051$2631             controller_8051
@@ -2670,13 +2670,13 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000B4C  A$controller_8051$2664             controller_8051
-C:   00000B4C  C$fuzzy.h$911$2_0$58               controller_8051
+C:   00000B4C  C$fuzzy.h$910$2_0$58               controller_8051
 C:   00000B4E  A$controller_8051$2665             controller_8051
 C:   00000B50  A$controller_8051$2666             controller_8051
 C:   00000B51  A$controller_8051$2667             controller_8051
 C:   00000B52  A$controller_8051$2668             controller_8051
 C:   00000B54  A$controller_8051$2671             controller_8051
-C:   00000B54  C$fuzzy.h$912$2_0$58               controller_8051
+C:   00000B54  C$fuzzy.h$911$2_0$58               controller_8051
 C:   00000B56  A$controller_8051$2672             controller_8051
 C:   00000B58  A$controller_8051$2673             controller_8051
 C:   00000B59  A$controller_8051$2674             controller_8051
@@ -2689,7 +2689,7 @@ C:   00000B5F  A$controller_8051$2680             controller_8051
 C:   00000B60  A$controller_8051$2681             controller_8051
 C:   00000B61  A$controller_8051$2682             controller_8051
 C:   00000B63  A$controller_8051$2686             controller_8051
-C:   00000B63  C$fuzzy.h$913$2_0$58               controller_8051
+C:   00000B63  C$fuzzy.h$912$2_0$58               controller_8051
 C:   00000B65  A$controller_8051$2687             controller_8051
 C:   00000B67  A$controller_8051$2688             controller_8051
 C:   00000B68  A$controller_8051$2689             controller_8051
@@ -2712,7 +2712,7 @@ C:   00000B7F  A$controller_8051$2706             controller_8051
 C:   00000B80  A$controller_8051$2707             controller_8051
 C:   00000B82  A$controller_8051$2708             controller_8051
 C:   00000B85  A$controller_8051$2712             controller_8051
-C:   00000B85  C$fuzzy.h$915$1_0$56               controller_8051
+C:   00000B85  C$fuzzy.h$914$1_0$56               controller_8051
 C:   00000B87  A$controller_8051$2713             controller_8051
 C:   00000B89  A$controller_8051$2714             controller_8051
 C:   00000B8B  A$controller_8051$2715             controller_8051
@@ -2762,13 +2762,13 @@ C:   00000BC3  A$controller_8051$2749             controller_8051
 C:   00000BC5  A$controller_8051$2750             controller_8051
 C:   00000BC7  A$controller_8051$2751             controller_8051
 C:   00000BC9  A$controller_8051$2754             controller_8051
-C:   00000BC9  C$fuzzy.h$917$2_0$59               controller_8051
+C:   00000BC9  C$fuzzy.h$916$2_0$59               controller_8051
 C:   00000BCB  A$controller_8051$2755             controller_8051
 C:   00000BCD  A$controller_8051$2756             controller_8051
 C:   00000BCE  A$controller_8051$2757             controller_8051
 C:   00000BCF  A$controller_8051$2758             controller_8051
 C:   00000BD1  A$controller_8051$2761             controller_8051
-C:   00000BD1  C$fuzzy.h$918$2_0$59               controller_8051
+C:   00000BD1  C$fuzzy.h$917$2_0$59               controller_8051
 C:   00000BD3  A$controller_8051$2762             controller_8051
 C:   00000BD5  A$controller_8051$2763             controller_8051
 C:   00000BD6  A$controller_8051$2764             controller_8051
@@ -2790,7 +2790,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000BE2  A$controller_8051$2776             controller_8051
-C:   00000BE2  C$fuzzy.h$919$2_0$59               controller_8051
+C:   00000BE2  C$fuzzy.h$918$2_0$59               controller_8051
 C:   00000BE4  A$controller_8051$2777             controller_8051
 C:   00000BE6  A$controller_8051$2778             controller_8051
 C:   00000BE7  A$controller_8051$2779             controller_8051
@@ -2813,7 +2813,7 @@ C:   00000BFC  A$controller_8051$2796             controller_8051
 C:   00000BFD  A$controller_8051$2797             controller_8051
 C:   00000BFF  A$controller_8051$2798             controller_8051
 C:   00000C02  A$controller_8051$2802             controller_8051
-C:   00000C02  C$fuzzy.h$923$1_0$56               controller_8051
+C:   00000C02  C$fuzzy.h$922$1_0$56               controller_8051
 C:   00000C04  A$controller_8051$2803             controller_8051
 C:   00000C06  A$controller_8051$2804             controller_8051
 C:   00000C08  A$controller_8051$2805             controller_8051
@@ -2822,7 +2822,7 @@ C:   00000C0C  A$controller_8051$2807             controller_8051
 C:   00000C0E  A$controller_8051$2808             controller_8051
 C:   00000C10  A$controller_8051$2809             controller_8051
 C:   00000C12  A$controller_8051$2812             controller_8051
-C:   00000C12  C$fuzzy.h$924$1_0$56               controller_8051
+C:   00000C12  C$fuzzy.h$923$1_0$56               controller_8051
 C:   00000C14  A$controller_8051$2813             controller_8051
 C:   00000C16  A$controller_8051$2814             controller_8051
 C:   00000C17  A$controller_8051$2815             controller_8051
@@ -2877,7 +2877,7 @@ C:   00000C58  A$controller_8051$2854             controller_8051
 C:   00000C5A  A$controller_8051$2855             controller_8051
 C:   00000C5C  A$controller_8051$2856             controller_8051
 C:   00000C5E  A$controller_8051$2859             controller_8051
-C:   00000C5E  C$fuzzy.h$927$1_0$56               controller_8051
+C:   00000C5E  C$fuzzy.h$926$1_0$56               controller_8051
 C:   00000C60  A$controller_8051$2860             controller_8051
 C:   00000C61  A$controller_8051$2861             controller_8051
 C:   00000C63  A$controller_8051$2862             controller_8051
@@ -2909,7 +2909,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   00000C83  C$fuzzy.h$928$2_0$60               controller_8051
+C:   00000C83  C$fuzzy.h$927$2_0$60               controller_8051
 C:   00000C85  A$controller_8051$2884             controller_8051
 C:   00000C87  A$controller_8051$2885             controller_8051
 C:   00000C88  A$controller_8051$2886             controller_8051
@@ -2921,7 +2921,7 @@ C:   00000C90  A$controller_8051$2891             controller_8051
 C:   00000C91  A$controller_8051$2892             controller_8051
 C:   00000C93  A$controller_8051$2893             controller_8051
 C:   00000C95  A$controller_8051$2897             controller_8051
-C:   00000C95  C$fuzzy.h$929$1_0$56               controller_8051
+C:   00000C95  C$fuzzy.h$928$1_0$56               controller_8051
 C:   00000C97  A$controller_8051$2898             controller_8051
 C:   00000C99  A$controller_8051$2899             controller_8051
 C:   00000C9B  A$controller_8051$2900             controller_8051
@@ -2954,7 +2954,7 @@ C:   00000CC9  A$controller_8051$2927             controller_8051
 C:   00000CCB  A$controller_8051$2928             controller_8051
 C:   00000CCC  A$controller_8051$2929             controller_8051
 C:   00000CCE  A$controller_8051$2933             controller_8051
-C:   00000CCE  C$fuzzy.h$933$1_0$56               controller_8051
+C:   00000CCE  C$fuzzy.h$932$1_0$56               controller_8051
 C:   00000CD0  A$controller_8051$2934             controller_8051
 C:   00000CD2  A$controller_8051$2935             controller_8051
 C:   00000CD3  A$controller_8051$2936             controller_8051
@@ -2985,10 +2985,10 @@ C:   00000CEF  A$controller_8051$2951             controller_8051
 C:   00000CF0  A$controller_8051$2955             controller_8051
 C:   00000CF3  A$controller_8051$2956             controller_8051
 C:   00000CF5  A$controller_8051$2959             controller_8051
-C:   00000CF5  C$fuzzy.h$936$1_0$56               controller_8051
+C:   00000CF5  C$fuzzy.h$935$1_0$56               controller_8051
 C:   00000CF5  XG$fuzzy_ramp$0$0                  controller_8051
 C:   00000CF6  A$controller_8051$2987             controller_8051
-C:   00000CF6  C$fuzzy.h$973$1_0$62               controller_8051
+C:   00000CF6  C$fuzzy.h$972$1_0$62               controller_8051
 C:   00000CF6  G$fuzzy_function_array$0$0         controller_8051
 C:   00000CF6  _fuzzy_function_array              controller_8051
 C:   00000CF8  A$controller_8051$2988             controller_8051
@@ -2997,7 +2997,7 @@ C:   00000CFC  A$controller_8051$2990             controller_8051
 C:   00000CFE  A$controller_8051$2991             controller_8051
 C:   00000D00  A$controller_8051$2992             controller_8051
 C:   00000D02  A$controller_8051$2995             controller_8051
-C:   00000D02  C$fuzzy.h$995$1_0$62               controller_8051
+C:   00000D02  C$fuzzy.h$994$1_0$62               controller_8051
 C:   00000D04  A$controller_8051$2996             controller_8051
 C:   00000D06  A$controller_8051$2997             controller_8051
 C:   00000D07  A$controller_8051$2998             controller_8051
@@ -3005,12 +3005,12 @@ C:   00000D08  A$controller_8051$2999             controller_8051
 C:   00000D09  A$controller_8051$3000             controller_8051
 C:   00000D0A  A$controller_8051$3001             controller_8051
 C:   00000D0C  A$controller_8051$3004             controller_8051
-C:   00000D0C  C$fuzzy.h$996$2_0$63               controller_8051
+C:   00000D0C  C$fuzzy.h$995$2_0$63               controller_8051
 C:   00000D0F  A$controller_8051$3005             controller_8051
 C:   00000D10  A$controller_8051$3006             controller_8051
 C:   00000D12  A$controller_8051$3007             controller_8051
 C:   00000D15  A$controller_8051$3011             controller_8051
-C:   00000D15  C$fuzzy.h$999$1_0$62               controller_8051
+C:   00000D15  C$fuzzy.h$998$1_0$62               controller_8051
 C:   00000D16  A$controller_8051$3012             controller_8051
 C:   00000D18  A$controller_8051$3013             controller_8051
 C:   00000D1A  A$controller_8051$3014             controller_8051
@@ -3035,7 +3035,7 @@ C:   00000D29  A$controller_8051$3024             controller_8051
 C:   00000D2A  A$controller_8051$3025             controller_8051
 C:   00000D3B  A$controller_8051$3049             controller_8051
 C:   00000D3B  C$fuzzy.h$1000$2_0$64              controller_8051
-C:   00000D3B  C$fuzzy.h$1001$2_0$64              controller_8051
+C:   00000D3B  C$fuzzy.h$999$2_0$64               controller_8051
 C:   00000D3D  A$controller_8051$3050             controller_8051
 C:   00000D3F  A$controller_8051$3051             controller_8051
 C:   00000D40  A$controller_8051$3052             controller_8051
@@ -3043,12 +3043,12 @@ C:   00000D43  A$controller_8051$3053             controller_8051
 C:   00000D44  A$controller_8051$3054             controller_8051
 C:   00000D47  A$controller_8051$3055             controller_8051
 C:   00000D49  A$controller_8051$3059             controller_8051
-C:   00000D49  C$fuzzy.h$1002$3_0$65              controller_8051
+C:   00000D49  C$fuzzy.h$1001$3_0$65              controller_8051
 C:   00000D4C  A$controller_8051$3060             controller_8051
 C:   00000D4D  A$controller_8051$3061             controller_8051
 C:   00000D4F  A$controller_8051$3062             controller_8051
 C:   00000D52  A$controller_8051$3066             controller_8051
-C:   00000D52  C$fuzzy.h$1005$2_0$64              controller_8051
+C:   00000D52  C$fuzzy.h$1004$2_0$64              controller_8051
 C:   00000D54  A$controller_8051$3067             controller_8051
 C:   00000D56  A$controller_8051$3068             controller_8051
 C:   00000D57  A$controller_8051$3069             controller_8051
@@ -3076,7 +3076,7 @@ C:   00000D79  A$controller_8051$3090             controller_8051
 C:   00000D7C  A$controller_8051$3091             controller_8051
 C:   00000D7D  A$controller_8051$3092             controller_8051
 C:   00000D7E  A$controller_8051$3095             controller_8051
-C:   00000D7E  C$fuzzy.h$1006$2_0$64              controller_8051
+C:   00000D7E  C$fuzzy.h$1005$2_0$64              controller_8051
 C:   00000D80  A$controller_8051$3096             controller_8051
 C:   00000D81  A$controller_8051$3097             controller_8051
 C:   00000D82  A$controller_8051$3098             controller_8051
@@ -3113,7 +3113,7 @@ C:   00000DA3  A$controller_8051$3119             controller_8051
 C:   00000DA6  A$controller_8051$3120             controller_8051
 C:   00000DA7  A$controller_8051$3121             controller_8051
 C:   00000DA8  A$controller_8051$3124             controller_8051
-C:   00000DA8  C$fuzzy.h$1007$2_0$64              controller_8051
+C:   00000DA8  C$fuzzy.h$1006$2_0$64              controller_8051
 C:   00000DAA  A$controller_8051$3125             controller_8051
 C:   00000DAB  A$controller_8051$3126             controller_8051
 C:   00000DAC  A$controller_8051$3127             controller_8051
@@ -3158,7 +3158,7 @@ C:   00000DDD  A$controller_8051$3157             controller_8051
 C:   00000DDE  A$controller_8051$3158             controller_8051
 C:   00000DDF  A$controller_8051$3159             controller_8051
 C:   00000DE0  A$controller_8051$3162             controller_8051
-C:   00000DE0  C$fuzzy.h$1010$2_0$64              controller_8051
+C:   00000DE0  C$fuzzy.h$1009$2_0$64              controller_8051
 C:   00000DE2  A$controller_8051$3163             controller_8051
 C:   00000DE4  A$controller_8051$3164             controller_8051
 C:   00000DE5  A$controller_8051$3165             controller_8051
@@ -3224,8 +3224,8 @@ C:   00000E33  A$controller_8051$3215             controller_8051
 C:   00000E35  A$controller_8051$3216             controller_8051
 C:   00000E36  A$controller_8051$3217             controller_8051
 C:   00000E39  A$controller_8051$3223             controller_8051
+C:   00000E39  C$fuzzy.h$1016$2_0$64              controller_8051
 C:   00000E39  C$fuzzy.h$1017$2_0$64              controller_8051
-C:   00000E39  C$fuzzy.h$1018$2_0$64              controller_8051
 C:   00000E3B  A$controller_8051$3224             controller_8051
 C:   00000E3D  A$controller_8051$3225             controller_8051
 C:   00000E3E  A$controller_8051$3226             controller_8051
@@ -3233,12 +3233,12 @@ C:   00000E41  A$controller_8051$3227             controller_8051
 C:   00000E42  A$controller_8051$3228             controller_8051
 C:   00000E45  A$controller_8051$3229             controller_8051
 C:   00000E47  A$controller_8051$3233             controller_8051
-C:   00000E47  C$fuzzy.h$1019$3_0$66              controller_8051
+C:   00000E47  C$fuzzy.h$1018$3_0$66              controller_8051
 C:   00000E4A  A$controller_8051$3234             controller_8051
 C:   00000E4B  A$controller_8051$3235             controller_8051
 C:   00000E4D  A$controller_8051$3236             controller_8051
 C:   00000E50  A$controller_8051$3240             controller_8051
-C:   00000E50  C$fuzzy.h$1022$2_0$64              controller_8051
+C:   00000E50  C$fuzzy.h$1021$2_0$64              controller_8051
 C:   00000E52  A$controller_8051$3241             controller_8051
 C:   00000E54  A$controller_8051$3242             controller_8051
 C:   00000E55  A$controller_8051$3243             controller_8051
@@ -3276,7 +3276,7 @@ C:   00000E79  A$controller_8051$3265             controller_8051
 C:   00000E7C  A$controller_8051$3266             controller_8051
 C:   00000E7D  A$controller_8051$3267             controller_8051
 C:   00000E7E  A$controller_8051$3270             controller_8051
-C:   00000E7E  C$fuzzy.h$1023$2_0$64              controller_8051
+C:   00000E7E  C$fuzzy.h$1022$2_0$64              controller_8051
 C:   00000E80  A$controller_8051$3271             controller_8051
 C:   00000E81  A$controller_8051$3272             controller_8051
 C:   00000E82  A$controller_8051$3273             controller_8051
@@ -3304,7 +3304,7 @@ C:   00000EA3  A$controller_8051$3294             controller_8051
 C:   00000EA6  A$controller_8051$3295             controller_8051
 C:   00000EA7  A$controller_8051$3296             controller_8051
 C:   00000EA8  A$controller_8051$3299             controller_8051
-C:   00000EA8  C$fuzzy.h$1024$2_0$64              controller_8051
+C:   00000EA8  C$fuzzy.h$1023$2_0$64              controller_8051
 C:   00000EAA  A$controller_8051$3300             controller_8051
 C:   00000EAB  A$controller_8051$3301             controller_8051
 C:   00000EAC  A$controller_8051$3302             controller_8051
@@ -3335,7 +3335,7 @@ C:   00000EC5  A$controller_8051$3317             controller_8051
 C:   00000EC6  A$controller_8051$3318             controller_8051
 C:   00000EC9  A$controller_8051$3319             controller_8051
 C:   00000ECA  A$controller_8051$3322             controller_8051
-C:   00000ECA  C$fuzzy.h$1027$1_0$62              controller_8051
+C:   00000ECA  C$fuzzy.h$1026$1_0$62              controller_8051
 C:   00000ECC  A$controller_8051$3323             controller_8051
 C:   00000ECE  A$controller_8051$3324             controller_8051
 C:   00000ED0  A$controller_8051$3325             controller_8051
@@ -3377,7 +3377,7 @@ C:   00000F0A  A$controller_8051$3360             controller_8051
 C:   00000F0C  A$controller_8051$3361             controller_8051
 C:   00000F0E  A$controller_8051$3362             controller_8051
 C:   00000F11  A$controller_8051$3366             controller_8051
-C:   00000F11  C$fuzzy.h$1028$1_0$62              controller_8051
+C:   00000F11  C$fuzzy.h$1027$1_0$62              controller_8051
 C:   00000F13  A$controller_8051$3367             controller_8051
 C:   00000F15  A$controller_8051$3368             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 67.
@@ -3417,7 +3417,7 @@ C:   00000F43  A$controller_8051$3393             controller_8051
 C:   00000F45  A$controller_8051$3394             controller_8051
 C:   00000F47  A$controller_8051$3395             controller_8051
 C:   00000F49  A$controller_8051$3398             controller_8051
-C:   00000F49  C$fuzzy.h$1029$1_0$62              controller_8051
+C:   00000F49  C$fuzzy.h$1028$1_0$62              controller_8051
 C:   00000F4B  A$controller_8051$3399             controller_8051
 C:   00000F4D  A$controller_8051$3400             controller_8051
 C:   00000F4F  A$controller_8051$3401             controller_8051
@@ -3467,7 +3467,7 @@ C:   00000F87  A$controller_8051$3435             controller_8051
 C:   00000F89  A$controller_8051$3436             controller_8051
 C:   00000F8B  A$controller_8051$3437             controller_8051
 C:   00000F8D  A$controller_8051$3440             controller_8051
-C:   00000F8D  C$fuzzy.h$1031$1_0$62              controller_8051
+C:   00000F8D  C$fuzzy.h$1030$1_0$62              controller_8051
 C:   00000F8F  A$controller_8051$3441             controller_8051
 C:   00000F91  A$controller_8051$3442             controller_8051
 C:   00000F93  A$controller_8051$3443             controller_8051
@@ -3498,7 +3498,7 @@ C:   00000FBF  A$controller_8051$3467             controller_8051
 C:   00000FC1  A$controller_8051$3468             controller_8051
 C:   00000FC3  A$controller_8051$3469             controller_8051
 C:   00000FC5  A$controller_8051$3473             controller_8051
-C:   00000FC5  C$fuzzy.h$1032$3_0$67              controller_8051
+C:   00000FC5  C$fuzzy.h$1031$3_0$67              controller_8051
 C:   00000FC7  A$controller_8051$3474             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 69.
 Hexadecimal  [32-Bits]
@@ -3520,7 +3520,7 @@ C:   00000FD0  A$controller_8051$3482             controller_8051
 C:   00000FD1  A$controller_8051$3483             controller_8051
 C:   00000FD2  A$controller_8051$3484             controller_8051
 C:   00000FD5  A$controller_8051$3488             controller_8051
-C:   00000FD5  C$fuzzy.h$1034$1_0$62              controller_8051
+C:   00000FD5  C$fuzzy.h$1033$1_0$62              controller_8051
 C:   00000FD7  A$controller_8051$3489             controller_8051
 C:   00000FD9  A$controller_8051$3490             controller_8051
 C:   00000FDB  A$controller_8051$3491             controller_8051
@@ -3569,7 +3569,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   00001016  C$fuzzy.h$1035$3_0$68              controller_8051
+C:   00001016  C$fuzzy.h$1034$3_0$68              controller_8051
 C:   00001018  A$controller_8051$3530             controller_8051
 C:   0000101A  A$controller_8051$3531             controller_8051
 C:   0000101B  A$controller_8051$3532             controller_8051
@@ -3582,7 +3582,7 @@ C:   00001022  A$controller_8051$3538             controller_8051
 C:   00001023  A$controller_8051$3539             controller_8051
 C:   00001025  A$controller_8051$3540             controller_8051
 C:   00001028  A$controller_8051$3544             controller_8051
-C:   00001028  C$fuzzy.h$1037$1_0$62              controller_8051
+C:   00001028  C$fuzzy.h$1036$1_0$62              controller_8051
 C:   0000102A  A$controller_8051$3545             controller_8051
 C:   0000102C  A$controller_8051$3546             controller_8051
 C:   0000102E  A$controller_8051$3547             controller_8051
@@ -3632,7 +3632,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   00001067  A$controller_8051$3582             controller_8051
 C:   00001069  A$controller_8051$3583             controller_8051
 C:   0000106C  A$controller_8051$3587             controller_8051
-C:   0000106C  C$fuzzy.h$1039$1_0$62              controller_8051
+C:   0000106C  C$fuzzy.h$1038$1_0$62              controller_8051
 C:   0000106E  A$controller_8051$3588             controller_8051
 C:   00001070  A$controller_8051$3589             controller_8051
 C:   00001071  A$controller_8051$3590             controller_8051
@@ -3647,7 +3647,7 @@ C:   0000107C  A$controller_8051$3598             controller_8051
 C:   0000107D  A$controller_8051$3599             controller_8051
 C:   0000107E  A$controller_8051$3600             controller_8051
 C:   00001080  A$controller_8051$3603             controller_8051
-C:   00001080  C$fuzzy.h$1040$1_0$62              controller_8051
+C:   00001080  C$fuzzy.h$1039$1_0$62              controller_8051
 C:   00001082  A$controller_8051$3604             controller_8051
 C:   00001084  A$controller_8051$3605             controller_8051
 C:   00001085  A$controller_8051$3606             controller_8051
@@ -3765,7 +3765,7 @@ C:   0000111B  A$controller_8051$3699             controller_8051
 C:   0000111D  A$controller_8051$3700             controller_8051
 C:   0000111F  A$controller_8051$3701             controller_8051
 C:   00001122  A$controller_8051$3705             controller_8051
-C:   00001122  C$fuzzy.h$1044$1_0$62              controller_8051
+C:   00001122  C$fuzzy.h$1043$1_0$62              controller_8051
 C:   00001124  A$controller_8051$3706             controller_8051
 C:   00001126  A$controller_8051$3707             controller_8051
 C:   00001128  A$controller_8051$3708             controller_8051
@@ -3784,7 +3784,7 @@ C:   0000113A  A$controller_8051$3720             controller_8051
 C:   0000113B  A$controller_8051$3721             controller_8051
 C:   0000113C  A$controller_8051$3722             controller_8051
 C:   0000113E  A$controller_8051$3725             controller_8051
-C:   0000113E  C$fuzzy.h$1045$1_0$62              controller_8051
+C:   0000113E  C$fuzzy.h$1044$1_0$62              controller_8051
 C:   00001140  A$controller_8051$3726             controller_8051
 C:   00001142  A$controller_8051$3727             controller_8051
 C:   00001144  A$controller_8051$3728             controller_8051
@@ -3845,7 +3845,7 @@ C:   00001190  A$controller_8051$3773             controller_8051
 C:   00001192  A$controller_8051$3774             controller_8051
 C:   00001194  A$controller_8051$3775             controller_8051
 C:   00001196  A$controller_8051$3778             controller_8051
-C:   00001196  C$fuzzy.h$1047$1_0$62              controller_8051
+C:   00001196  C$fuzzy.h$1046$1_0$62              controller_8051
 C:   00001198  A$controller_8051$3779             controller_8051
 C:   00001199  A$controller_8051$3780             controller_8051
 C:   0000119B  A$controller_8051$3781             controller_8051
@@ -3880,8 +3880,8 @@ C:   000011B8  A$controller_8051$3800             controller_8051
 C:   000011BA  A$controller_8051$3801             controller_8051
 C:   000011BC  A$controller_8051$3802             controller_8051
 C:   000011BF  A$controller_8051$3808             controller_8051
+C:   000011BF  C$fuzzy.h$1048$2_0$64              controller_8051
 C:   000011BF  C$fuzzy.h$1049$2_0$64              controller_8051
-C:   000011BF  C$fuzzy.h$1050$2_0$64              controller_8051
 C:   000011C1  A$controller_8051$3809             controller_8051
 C:   000011C3  A$controller_8051$3810             controller_8051
 C:   000011C4  A$controller_8051$3811             controller_8051
@@ -3889,12 +3889,12 @@ C:   000011C7  A$controller_8051$3812             controller_8051
 C:   000011C8  A$controller_8051$3813             controller_8051
 C:   000011CB  A$controller_8051$3814             controller_8051
 C:   000011CD  A$controller_8051$3818             controller_8051
-C:   000011CD  C$fuzzy.h$1051$3_0$71              controller_8051
+C:   000011CD  C$fuzzy.h$1050$3_0$71              controller_8051
 C:   000011D0  A$controller_8051$3819             controller_8051
 C:   000011D1  A$controller_8051$3820             controller_8051
 C:   000011D3  A$controller_8051$3821             controller_8051
 C:   000011D6  A$controller_8051$3825             controller_8051
-C:   000011D6  C$fuzzy.h$1054$2_0$64              controller_8051
+C:   000011D6  C$fuzzy.h$1053$2_0$64              controller_8051
 C:   000011D8  A$controller_8051$3826             controller_8051
 C:   000011DA  A$controller_8051$3827             controller_8051
 C:   000011DB  A$controller_8051$3828             controller_8051
@@ -3932,7 +3932,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   00001202  A$controller_8051$3851             controller_8051
 C:   00001203  A$controller_8051$3852             controller_8051
 C:   00001204  A$controller_8051$3855             controller_8051
-C:   00001204  C$fuzzy.h$1055$2_0$64              controller_8051
+C:   00001204  C$fuzzy.h$1054$2_0$64              controller_8051
 C:   00001206  A$controller_8051$3856             controller_8051
 C:   00001207  A$controller_8051$3857             controller_8051
 C:   00001208  A$controller_8051$3858             controller_8051
@@ -3959,7 +3959,7 @@ C:   00001227  A$controller_8051$3878             controller_8051
 C:   0000122A  A$controller_8051$3879             controller_8051
 C:   0000122B  A$controller_8051$3880             controller_8051
 C:   0000122C  A$controller_8051$3883             controller_8051
-C:   0000122C  C$fuzzy.h$1056$2_0$64              controller_8051
+C:   0000122C  C$fuzzy.h$1055$2_0$64              controller_8051
 C:   0000122E  A$controller_8051$3884             controller_8051
 C:   0000122F  A$controller_8051$3885             controller_8051
 C:   00001230  A$controller_8051$3886             controller_8051
@@ -3996,7 +3996,7 @@ C:   00001251  A$controller_8051$3907             controller_8051
 C:   00001254  A$controller_8051$3908             controller_8051
 C:   00001255  A$controller_8051$3909             controller_8051
 C:   00001256  A$controller_8051$3912             controller_8051
-C:   00001256  C$fuzzy.h$1057$2_0$64              controller_8051
+C:   00001256  C$fuzzy.h$1056$2_0$64              controller_8051
 C:   00001258  A$controller_8051$3913             controller_8051
 C:   00001259  A$controller_8051$3914             controller_8051
 C:   0000125A  A$controller_8051$3915             controller_8051
@@ -4017,7 +4017,7 @@ C:   00001271  A$controller_8051$3929             controller_8051
 C:   00001272  A$controller_8051$3930             controller_8051
 C:   00001275  A$controller_8051$3931             controller_8051
 C:   00001276  A$controller_8051$3934             controller_8051
-C:   00001276  C$fuzzy.h$1060$1_0$62              controller_8051
+C:   00001276  C$fuzzy.h$1059$1_0$62              controller_8051
 C:   00001278  A$controller_8051$3935             controller_8051
 C:   0000127A  A$controller_8051$3936             controller_8051
 C:   0000127C  A$controller_8051$3937             controller_8051
@@ -4067,7 +4067,7 @@ C:   000012B4  A$controller_8051$3971             controller_8051
 C:   000012B6  A$controller_8051$3972             controller_8051
 C:   000012B8  A$controller_8051$3973             controller_8051
 C:   000012BB  A$controller_8051$3977             controller_8051
-C:   000012BB  C$fuzzy.h$1061$1_0$62              controller_8051
+C:   000012BB  C$fuzzy.h$1060$1_0$62              controller_8051
 C:   000012BD  A$controller_8051$3978             controller_8051
 C:   000012BF  A$controller_8051$3979             controller_8051
 C:   000012C1  A$controller_8051$3980             controller_8051
@@ -4116,7 +4116,7 @@ C:   000012F7  A$controller_8051$4013             controller_8051
 C:   000012F8  A$controller_8051$4014             controller_8051
 C:   000012FA  A$controller_8051$4015             controller_8051
 C:   000012FD  A$controller_8051$4019             controller_8051
-C:   000012FD  C$fuzzy.h$1062$1_0$62              controller_8051
+C:   000012FD  C$fuzzy.h$1061$1_0$62              controller_8051
 C:   000012FF  A$controller_8051$4020             controller_8051
 C:   00001301  A$controller_8051$4021             controller_8051
 C:   00001303  A$controller_8051$4022             controller_8051
@@ -4147,7 +4147,7 @@ C:   0000132F  A$controller_8051$4046             controller_8051
 C:   00001331  A$controller_8051$4047             controller_8051
 C:   00001333  A$controller_8051$4048             controller_8051
 C:   00001335  A$controller_8051$4051             controller_8051
-C:   00001335  C$fuzzy.h$1063$1_0$62              controller_8051
+C:   00001335  C$fuzzy.h$1062$1_0$62              controller_8051
 C:   00001337  A$controller_8051$4052             controller_8051
 C:   00001339  A$controller_8051$4053             controller_8051
 C:   0000133B  A$controller_8051$4054             controller_8051
@@ -4197,7 +4197,7 @@ C:   00001373  A$controller_8051$4088             controller_8051
 C:   00001375  A$controller_8051$4089             controller_8051
 C:   00001377  A$controller_8051$4090             controller_8051
 C:   00001379  A$controller_8051$4093             controller_8051
-C:   00001379  C$fuzzy.h$1065$1_0$62              controller_8051
+C:   00001379  C$fuzzy.h$1064$1_0$62              controller_8051
 C:   0000137B  A$controller_8051$4094             controller_8051
 C:   0000137D  A$controller_8051$4095             controller_8051
 C:   0000137F  A$controller_8051$4096             controller_8051
@@ -4237,7 +4237,7 @@ C:   000013AB  A$controller_8051$4120             controller_8051
 C:   000013AD  A$controller_8051$4121             controller_8051
 C:   000013AF  A$controller_8051$4122             controller_8051
 C:   000013B1  A$controller_8051$4126             controller_8051
-C:   000013B1  C$fuzzy.h$1066$3_0$72              controller_8051
+C:   000013B1  C$fuzzy.h$1065$3_0$72              controller_8051
 C:   000013B3  A$controller_8051$4127             controller_8051
 C:   000013B5  A$controller_8051$4128             controller_8051
 C:   000013B6  A$controller_8051$4129             controller_8051
@@ -4250,7 +4250,7 @@ C:   000013BC  A$controller_8051$4135             controller_8051
 C:   000013BD  A$controller_8051$4136             controller_8051
 C:   000013BE  A$controller_8051$4137             controller_8051
 C:   000013C1  A$controller_8051$4141             controller_8051
-C:   000013C1  C$fuzzy.h$1069$1_0$62              controller_8051
+C:   000013C1  C$fuzzy.h$1068$1_0$62              controller_8051
 C:   000013C3  A$controller_8051$4142             controller_8051
 C:   000013C5  A$controller_8051$4143             controller_8051
 C:   000013C7  A$controller_8051$4144             controller_8051
@@ -4299,7 +4299,7 @@ C:   000013FD  A$controller_8051$4177             controller_8051
 C:   000013FF  A$controller_8051$4178             controller_8051
 C:   00001401  A$controller_8051$4179             controller_8051
 C:   00001403  A$controller_8051$4182             controller_8051
-C:   00001403  C$fuzzy.h$1071$1_0$62              controller_8051
+C:   00001403  C$fuzzy.h$1070$1_0$62              controller_8051
 C:   00001405  A$controller_8051$4183             controller_8051
 C:   00001407  A$controller_8051$4184             controller_8051
 C:   00001409  A$controller_8051$4185             controller_8051
@@ -4349,7 +4349,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   00001447  C$fuzzy.h$1072$3_0$73              controller_8051
+C:   00001447  C$fuzzy.h$1071$3_0$73              controller_8051
 C:   00001449  A$controller_8051$4225             controller_8051
 C:   0000144B  A$controller_8051$4226             controller_8051
 C:   0000144C  A$controller_8051$4227             controller_8051
@@ -4362,7 +4362,7 @@ C:   00001453  A$controller_8051$4233             controller_8051
 C:   00001454  A$controller_8051$4234             controller_8051
 C:   00001456  A$controller_8051$4235             controller_8051
 C:   00001459  A$controller_8051$4239             controller_8051
-C:   00001459  C$fuzzy.h$1074$1_0$62              controller_8051
+C:   00001459  C$fuzzy.h$1073$1_0$62              controller_8051
 C:   0000145B  A$controller_8051$4240             controller_8051
 C:   0000145D  A$controller_8051$4241             controller_8051
 C:   0000145F  A$controller_8051$4242             controller_8051
@@ -4411,7 +4411,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       -----  --------------------------------   ------------------------
 C:   00001498  A$controller_8051$4277             controller_8051
 C:   0000149B  A$controller_8051$4281             controller_8051
-C:   0000149B  C$fuzzy.h$1076$1_0$62              controller_8051
+C:   0000149B  C$fuzzy.h$1075$1_0$62              controller_8051
 C:   0000149D  A$controller_8051$4282             controller_8051
 C:   0000149F  A$controller_8051$4283             controller_8051
 C:   000014A0  A$controller_8051$4284             controller_8051
@@ -4426,7 +4426,7 @@ C:   000014AB  A$controller_8051$4292             controller_8051
 C:   000014AC  A$controller_8051$4293             controller_8051
 C:   000014AD  A$controller_8051$4294             controller_8051
 C:   000014AF  A$controller_8051$4297             controller_8051
-C:   000014AF  C$fuzzy.h$1077$1_0$62              controller_8051
+C:   000014AF  C$fuzzy.h$1076$1_0$62              controller_8051
 C:   000014B1  A$controller_8051$4298             controller_8051
 C:   000014B3  A$controller_8051$4299             controller_8051
 C:   000014B4  A$controller_8051$4300             controller_8051
@@ -4543,7 +4543,7 @@ C:   00001548  A$controller_8051$4392             controller_8051
 C:   0000154A  A$controller_8051$4393             controller_8051
 C:   0000154C  A$controller_8051$4394             controller_8051
 C:   0000154F  A$controller_8051$4398             controller_8051
-C:   0000154F  C$fuzzy.h$1081$1_0$62              controller_8051
+C:   0000154F  C$fuzzy.h$1080$1_0$62              controller_8051
 C:   00001551  A$controller_8051$4399             controller_8051
 C:   00001553  A$controller_8051$4400             controller_8051
 C:   00001555  A$controller_8051$4401             controller_8051
@@ -4562,7 +4562,7 @@ C:   00001567  A$controller_8051$4413             controller_8051
 C:   00001568  A$controller_8051$4414             controller_8051
 C:   00001569  A$controller_8051$4415             controller_8051
 C:   0000156B  A$controller_8051$4418             controller_8051
-C:   0000156B  C$fuzzy.h$1082$1_0$62              controller_8051
+C:   0000156B  C$fuzzy.h$1081$1_0$62              controller_8051
 C:   0000156D  A$controller_8051$4419             controller_8051
 C:   0000156F  A$controller_8051$4420             controller_8051
 C:   00001571  A$controller_8051$4421             controller_8051
@@ -4625,7 +4625,7 @@ C:   000015C0  A$controller_8051$4468             controller_8051
 C:   000015C2  A$controller_8051$4469             controller_8051
 C:   000015C4  A$controller_8051$4470             controller_8051
 C:   000015C6  A$controller_8051$4473             controller_8051
-C:   000015C6  C$fuzzy.h$1084$1_0$62              controller_8051
+C:   000015C6  C$fuzzy.h$1083$1_0$62              controller_8051
 C:   000015C8  A$controller_8051$4474             controller_8051
 C:   000015CA  A$controller_8051$4475             controller_8051
 C:   000015CB  A$controller_8051$4476             controller_8051
@@ -4660,21 +4660,21 @@ C:   000015E8  A$controller_8051$4495             controller_8051
 C:   000015EA  A$controller_8051$4496             controller_8051
 C:   000015EC  A$controller_8051$4497             controller_8051
 C:   000015EE  A$controller_8051$4500             controller_8051
-C:   000015EE  C$fuzzy.h$1230$2_0$64              controller_8051
+C:   000015EE  C$fuzzy.h$1229$2_0$64              controller_8051
 C:   000015F0  A$controller_8051$4504             controller_8051
-C:   000015F0  C$fuzzy.h$1231$2_0$64              controller_8051
+C:   000015F0  C$fuzzy.h$1230$2_0$64              controller_8051
 C:   000015F3  A$controller_8051$4505             controller_8051
 C:   000015F4  A$controller_8051$4506             controller_8051
 C:   000015F6  A$controller_8051$4509             controller_8051
-C:   000015F6  C$fuzzy.h$1235$2_0$64              controller_8051
+C:   000015F6  C$fuzzy.h$1234$2_0$64              controller_8051
 C:   000015F8  A$controller_8051$4513             controller_8051
-C:   000015F8  C$fuzzy.h$1236$2_0$64              controller_8051
+C:   000015F8  C$fuzzy.h$1235$2_0$64              controller_8051
 C:   000015FB  A$controller_8051$4514             controller_8051
 C:   000015FC  A$controller_8051$4515             controller_8051
 C:   000015FE  A$controller_8051$4518             controller_8051
-C:   000015FE  C$fuzzy.h$1237$1_0$62              controller_8051
+C:   000015FE  C$fuzzy.h$1236$1_0$62              controller_8051
 C:   00001600  A$controller_8051$4522             controller_8051
-C:   00001600  C$fuzzy.h$1240$1_0$62              controller_8051
+C:   00001600  C$fuzzy.h$1239$1_0$62              controller_8051
 C:   00001602  A$controller_8051$4523             controller_8051
 C:   00001604  A$controller_8051$4524             controller_8051
 C:   00001605  A$controller_8051$4525             controller_8051
@@ -4711,22 +4711,22 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       -----  --------------------------------   ------------------------
 C:   0000162D  A$controller_8051$4551             controller_8051
 C:   0000162F  A$controller_8051$4554             controller_8051
-C:   0000162F  C$fuzzy.h$1243$1_0$62              controller_8051
+C:   0000162F  C$fuzzy.h$1242$1_0$62              controller_8051
 C:   0000162F  XG$fuzzy_function_array$0$0        controller_8051
 C:   00001630  A$controller_8051$4567             controller_8051
-C:   00001630  C$fuzzy.h$1246$1_0$77              controller_8051
+C:   00001630  C$fuzzy.h$1245$1_0$77              controller_8051
 C:   00001630  G$fuzzy_rules_create$0$0           controller_8051
 C:   00001630  _fuzzy_rules_create                controller_8051
 C:   00001632  A$controller_8051$4568             controller_8051
 C:   00001634  A$controller_8051$4569             controller_8051
 C:   00001636  A$controller_8051$4572             controller_8051
-C:   00001636  C$fuzzy.h$1250$1_0$77              controller_8051
+C:   00001636  C$fuzzy.h$1249$1_0$77              controller_8051
 C:   00001637  A$controller_8051$4573             controller_8051
 C:   00001638  A$controller_8051$4574             controller_8051
 C:   0000163A  A$controller_8051$4577             controller_8051
-C:   0000163A  C$fuzzy.h$1251$2_0$78              controller_8051
+C:   0000163A  C$fuzzy.h$1250$2_0$78              controller_8051
 C:   0000163C  A$controller_8051$4581             controller_8051
-C:   0000163C  C$fuzzy.h$1254$1_0$77              controller_8051
+C:   0000163C  C$fuzzy.h$1253$1_0$77              controller_8051
 C:   0000163E  A$controller_8051$4582             controller_8051
 C:   0000163F  A$controller_8051$4583             controller_8051
 C:   00001640  A$controller_8051$4584             controller_8051
@@ -4740,10 +4740,10 @@ C:   0000164A  A$controller_8051$4591             controller_8051
 C:   0000164D  A$controller_8051$4592             controller_8051
 C:   0000164E  A$controller_8051$4593             controller_8051
 C:   00001651  A$controller_8051$4599             controller_8051
-C:   00001651  C$fuzzy.h$1255$1_0$77              controller_8051
+C:   00001651  C$fuzzy.h$1254$1_0$77              controller_8051
 C:   00001651  XG$fuzzy_rules_create$0$0          controller_8051
 C:   00001652  A$controller_8051$4620             controller_8051
-C:   00001652  C$fuzzy.h$1258$1_0$80              controller_8051
+C:   00001652  C$fuzzy.h$1257$1_0$80              controller_8051
 C:   00001652  G$fuzzy_rules_add$0$0              controller_8051
 C:   00001652  _fuzzy_rules_add                   controller_8051
 C:   00001654  A$controller_8051$4621             controller_8051
@@ -4754,11 +4754,11 @@ C:   0000165C  A$controller_8051$4625             controller_8051
 C:   0000165E  A$controller_8051$4626             controller_8051
 C:   00001660  A$controller_8051$4627             controller_8051
 C:   00001662  A$controller_8051$4630             controller_8051
-C:   00001662  C$fuzzy.h$1268$1_0$80              controller_8051
+C:   00001662  C$fuzzy.h$1267$1_0$80              controller_8051
 C:   00001663  A$controller_8051$4631             controller_8051
 C:   00001664  A$controller_8051$4632             controller_8051
 C:   00001666  A$controller_8051$4635             controller_8051
-C:   00001666  C$fuzzy.h$1269$1_0$80              controller_8051
+C:   00001666  C$fuzzy.h$1268$1_0$80              controller_8051
 C:   00001668  A$controller_8051$4636             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 90.
 Hexadecimal  [32-Bits]
@@ -4775,10 +4775,10 @@ C:   0000166C  A$controller_8051$4639             controller_8051
 C:   0000166D  A$controller_8051$4640             controller_8051
 C:   0000166E  A$controller_8051$4641             controller_8051
 C:   00001670  A$controller_8051$4645             controller_8051
-C:   00001670  C$fuzzy.h$1271$2_0$81              controller_8051
+C:   00001670  C$fuzzy.h$1270$2_0$81              controller_8051
 C:   00001673  A$controller_8051$4646             controller_8051
 C:   00001676  A$controller_8051$4650             controller_8051
-C:   00001676  C$fuzzy.h$1274$1_0$80              controller_8051
+C:   00001676  C$fuzzy.h$1273$1_0$80              controller_8051
 C:   00001678  A$controller_8051$4651             controller_8051
 C:   0000167A  A$controller_8051$4652             controller_8051
 C:   0000167B  A$controller_8051$4653             controller_8051
@@ -4810,10 +4810,10 @@ C:   000016A0  A$controller_8051$4678             controller_8051
 C:   000016A1  A$controller_8051$4679             controller_8051
 C:   000016A3  A$controller_8051$4680             controller_8051
 C:   000016A5  A$controller_8051$4683             controller_8051
-C:   000016A5  C$fuzzy.h$1275$2_0$82              controller_8051
+C:   000016A5  C$fuzzy.h$1274$2_0$82              controller_8051
 C:   000016A8  A$controller_8051$4684             controller_8051
 C:   000016AB  A$controller_8051$4688             controller_8051
-C:   000016AB  C$fuzzy.h$1281$1_0$80              controller_8051
+C:   000016AB  C$fuzzy.h$1280$1_0$80              controller_8051
 C:   000016AD  A$controller_8051$4689             controller_8051
 C:   000016AF  A$controller_8051$4690             controller_8051
 C:   000016B1  A$controller_8051$4691             controller_8051
@@ -4866,7 +4866,7 @@ C:   000016EF  A$controller_8051$4728             controller_8051
 C:   000016F0  A$controller_8051$4729             controller_8051
 C:   000016F1  A$controller_8051$4730             controller_8051
 C:   000016F4  A$controller_8051$4733             controller_8051
-C:   000016F4  C$fuzzy.h$1284$1_0$80              controller_8051
+C:   000016F4  C$fuzzy.h$1283$1_0$80              controller_8051
 C:   000016F6  A$controller_8051$4734             controller_8051
 C:   000016F7  A$controller_8051$4735             controller_8051
 C:   000016F9  A$controller_8051$4736             controller_8051
@@ -4909,7 +4909,7 @@ C:   0000171B  A$controller_8051$4763             controller_8051
 C:   0000171C  A$controller_8051$4764             controller_8051
 C:   0000171D  A$controller_8051$4765             controller_8051
 C:   0000171E  A$controller_8051$4768             controller_8051
-C:   0000171E  C$fuzzy.h$1285$1_0$80              controller_8051
+C:   0000171E  C$fuzzy.h$1284$1_0$80              controller_8051
 C:   00001720  A$controller_8051$4769             controller_8051
 C:   00001722  A$controller_8051$4770             controller_8051
 C:   00001723  A$controller_8051$4771             controller_8051
@@ -4953,7 +4953,7 @@ C:   00001752  A$controller_8051$4799             controller_8051
 C:   00001753  A$controller_8051$4800             controller_8051
 C:   00001754  A$controller_8051$4801             controller_8051
 C:   00001757  A$controller_8051$4804             controller_8051
-C:   00001757  C$fuzzy.h$1287$1_0$80              controller_8051
+C:   00001757  C$fuzzy.h$1286$1_0$80              controller_8051
 C:   00001759  A$controller_8051$4805             controller_8051
 C:   0000175B  A$controller_8051$4806             controller_8051
 C:   0000175C  A$controller_8051$4807             controller_8051
@@ -4978,7 +4978,7 @@ C:   00001777  A$controller_8051$4825             controller_8051
 C:   00001778  A$controller_8051$4826             controller_8051
 C:   00001779  A$controller_8051$4827             controller_8051
 C:   0000177C  A$controller_8051$4830             controller_8051
-C:   0000177C  C$fuzzy.h$1290$1_0$80              controller_8051
+C:   0000177C  C$fuzzy.h$1289$1_0$80              controller_8051
 C:   0000177E  A$controller_8051$4831             controller_8051
 C:   00001780  A$controller_8051$4832             controller_8051
 C:   00001781  A$controller_8051$4833             controller_8051
@@ -5017,14 +5017,14 @@ C:   000017A8  A$controller_8051$4857             controller_8051
 C:   000017A9  A$controller_8051$4858             controller_8051
 C:   000017AA  A$controller_8051$4859             controller_8051
 C:   000017AD  A$controller_8051$4862             controller_8051
-C:   000017AD  C$fuzzy.h$1292$1_0$80              controller_8051
+C:   000017AD  C$fuzzy.h$1291$1_0$80              controller_8051
 C:   000017B0  A$controller_8051$4866             controller_8051
 C:   000017B3  A$controller_8051$4867             controller_8051
 C:   000017B5  A$controller_8051$4870             controller_8051
-C:   000017B5  C$fuzzy.h$1293$1_0$80              controller_8051
+C:   000017B5  C$fuzzy.h$1292$1_0$80              controller_8051
 C:   000017B5  XG$fuzzy_rules_add$0$0             controller_8051
 C:   000017B6  A$controller_8051$4905             controller_8051
-C:   000017B6  C$fuzzy.h$1341$1_0$84              controller_8051
+C:   000017B6  C$fuzzy.h$1340$1_0$84              controller_8051
 C:   000017B6  G$fuzzy_rules_defuzzify$0$0        controller_8051
 C:   000017B6  _fuzzy_rules_defuzzify             controller_8051
 C:   000017B8  A$controller_8051$4906             controller_8051
@@ -5035,7 +5035,7 @@ C:   000017C1  A$controller_8051$4910             controller_8051
 C:   000017C3  A$controller_8051$4911             controller_8051
 C:   000017C5  A$controller_8051$4912             controller_8051
 C:   000017C7  A$controller_8051$4915             controller_8051
-C:   000017C7  C$fuzzy.h$1369$1_0$84              controller_8051
+C:   000017C7  C$fuzzy.h$1368$1_0$84              controller_8051
 C:   000017C9  A$controller_8051$4916             controller_8051
 C:   000017CA  A$controller_8051$4917             controller_8051
 C:   000017CB  A$controller_8051$4918             controller_8051
@@ -5043,7 +5043,7 @@ C:   000017CC  A$controller_8051$4919             controller_8051
 C:   000017CD  A$controller_8051$4920             controller_8051
 C:   000017CF  A$controller_8051$4921             controller_8051
 C:   000017D2  A$controller_8051$4925             controller_8051
-C:   000017D2  C$fuzzy.h$1370$1_0$84              controller_8051
+C:   000017D2  C$fuzzy.h$1369$1_0$84              controller_8051
 C:   000017D4  A$controller_8051$4926             controller_8051
 C:   000017D5  A$controller_8051$4927             controller_8051
 C:   000017D7  A$controller_8051$4928             controller_8051
@@ -5084,7 +5084,7 @@ C:   000017F9  A$controller_8051$4953             controller_8051
 C:   000017FC  A$controller_8051$4954             controller_8051
 C:   000017FD  A$controller_8051$4955             controller_8051
 C:   000017FF  A$controller_8051$4958             controller_8051
-C:   000017FF  C$fuzzy.h$1371$1_0$84              controller_8051
+C:   000017FF  C$fuzzy.h$1370$1_0$84              controller_8051
 C:   00001801  A$controller_8051$4959             controller_8051
 C:   00001803  A$controller_8051$4960             controller_8051
 C:   00001804  A$controller_8051$4961             controller_8051
@@ -5116,7 +5116,7 @@ C:   0000182B  A$controller_8051$4986             controller_8051
 C:   0000182D  A$controller_8051$4987             controller_8051
 C:   0000182E  A$controller_8051$4988             controller_8051
 C:   00001830  A$controller_8051$4991             controller_8051
-C:   00001830  C$fuzzy.h$1373$1_0$84              controller_8051
+C:   00001830  C$fuzzy.h$1372$1_0$84              controller_8051
 C:   00001832  A$controller_8051$4992             controller_8051
 C:   00001834  A$controller_8051$4993             controller_8051
 C:   00001835  A$controller_8051$4994             controller_8051
@@ -5151,30 +5151,30 @@ C:   00001855  A$controller_8051$5013             controller_8051
 C:   00001857  A$controller_8051$5014             controller_8051
 C:   00001859  A$controller_8051$5015             controller_8051
 C:   0000185B  A$controller_8051$5019             controller_8051
-C:   0000185B  C$fuzzy.h$1374$2_0$85              controller_8051
+C:   0000185B  C$fuzzy.h$1373$2_0$85              controller_8051
 C:   0000185E  A$controller_8051$5020             controller_8051
 C:   0000185F  A$controller_8051$5021             controller_8051
 C:   00001861  A$controller_8051$5022             controller_8051
 C:   00001864  A$controller_8051$5026             controller_8051
-C:   00001864  C$fuzzy.h$1378$1_0$84              controller_8051
+C:   00001864  C$fuzzy.h$1377$1_0$84              controller_8051
 C:   00001866  A$controller_8051$5027             controller_8051
 C:   00001868  A$controller_8051$5028             controller_8051
 C:   00001869  A$controller_8051$5029             controller_8051
 C:   0000186A  A$controller_8051$5030             controller_8051
 C:   0000186C  A$controller_8051$5033             controller_8051
-C:   0000186C  C$fuzzy.h$1379$1_0$84              controller_8051
+C:   0000186C  C$fuzzy.h$1378$1_0$84              controller_8051
 C:   0000186E  A$controller_8051$5034             controller_8051
 C:   00001870  A$controller_8051$5035             controller_8051
 C:   00001871  A$controller_8051$5036             controller_8051
 C:   00001874  A$controller_8051$5037             controller_8051
 C:   00001876  A$controller_8051$5041             controller_8051
-C:   00001876  C$fuzzy.h$1380$1_0$84              controller_8051
+C:   00001876  C$fuzzy.h$1379$1_0$84              controller_8051
 C:   00001878  A$controller_8051$5042             controller_8051
 C:   0000187A  A$controller_8051$5043             controller_8051
 C:   0000187B  A$controller_8051$5044             controller_8051
 C:   0000187E  A$controller_8051$5045             controller_8051
 C:   00001880  A$controller_8051$5049             controller_8051
-C:   00001880  C$fuzzy.h$1382$1_0$84              controller_8051
+C:   00001880  C$fuzzy.h$1381$1_0$84              controller_8051
 C:   00001882  A$controller_8051$5050             controller_8051
 C:   00001884  A$controller_8051$5051             controller_8051
 C:   00001885  A$controller_8051$5052             controller_8051
@@ -5189,12 +5189,12 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   0000188A  C$fuzzy.h$1383$2_0$86              controller_8051
+C:   0000188A  C$fuzzy.h$1382$2_0$86              controller_8051
 C:   0000188D  A$controller_8051$5058             controller_8051
 C:   0000188E  A$controller_8051$5059             controller_8051
 C:   00001890  A$controller_8051$5060             controller_8051
 C:   00001893  A$controller_8051$5064             controller_8051
-C:   00001893  C$fuzzy.h$1387$1_0$84              controller_8051
+C:   00001893  C$fuzzy.h$1386$1_0$84              controller_8051
 C:   00001895  A$controller_8051$5065             controller_8051
 C:   00001897  A$controller_8051$5066             controller_8051
 C:   00001898  A$controller_8051$5067             controller_8051
@@ -5206,7 +5206,7 @@ C:   0000189D  A$controller_8051$5072             controller_8051
 C:   0000189E  A$controller_8051$5073             controller_8051
 C:   0000189F  A$controller_8051$5074             controller_8051
 C:   000018A0  A$controller_8051$5077             controller_8051
-C:   000018A0  C$fuzzy.h$1390$1_0$84              controller_8051
+C:   000018A0  C$fuzzy.h$1389$1_0$84              controller_8051
 C:   000018A2  A$controller_8051$5078             controller_8051
 C:   000018A4  A$controller_8051$5079             controller_8051
 C:   000018A5  A$controller_8051$5080             controller_8051
@@ -5218,7 +5218,7 @@ C:   000018AA  A$controller_8051$5085             controller_8051
 C:   000018AB  A$controller_8051$5086             controller_8051
 C:   000018AC  A$controller_8051$5087             controller_8051
 C:   000018AD  A$controller_8051$5090             controller_8051
-C:   000018AD  C$fuzzy.h$1393$1_0$84              controller_8051
+C:   000018AD  C$fuzzy.h$1392$1_0$84              controller_8051
 C:   000018AF  A$controller_8051$5091             controller_8051
 C:   000018B1  A$controller_8051$5092             controller_8051
 C:   000018B2  A$controller_8051$5093             controller_8051
@@ -5230,7 +5230,7 @@ C:   000018B7  A$controller_8051$5098             controller_8051
 C:   000018B8  A$controller_8051$5099             controller_8051
 C:   000018B9  A$controller_8051$5100             controller_8051
 C:   000018BA  A$controller_8051$5103             controller_8051
-C:   000018BA  C$fuzzy.h$1396$1_0$84              controller_8051
+C:   000018BA  C$fuzzy.h$1395$1_0$84              controller_8051
 C:   000018BC  A$controller_8051$5104             controller_8051
 C:   000018BE  A$controller_8051$5105             controller_8051
 C:   000018BF  A$controller_8051$5106             controller_8051
@@ -5251,7 +5251,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       -----  --------------------------------   ------------------------
 C:   000018C6  A$controller_8051$5113             controller_8051
 C:   000018C7  A$controller_8051$5116             controller_8051
-C:   000018C7  C$fuzzy.h$1399$1_0$84              controller_8051
+C:   000018C7  C$fuzzy.h$1398$1_0$84              controller_8051
 C:   000018C9  A$controller_8051$5117             controller_8051
 C:   000018CB  A$controller_8051$5118             controller_8051
 C:   000018CC  A$controller_8051$5119             controller_8051
@@ -5272,7 +5272,7 @@ C:   000018DC  A$controller_8051$5133             controller_8051
 C:   000018DD  A$controller_8051$5134             controller_8051
 C:   000018DE  A$controller_8051$5135             controller_8051
 C:   000018DF  A$controller_8051$5138             controller_8051
-C:   000018DF  C$fuzzy.h$1402$1_0$84              controller_8051
+C:   000018DF  C$fuzzy.h$1401$1_0$84              controller_8051
 C:   000018E1  A$controller_8051$5139             controller_8051
 C:   000018E3  A$controller_8051$5140             controller_8051
 C:   000018E4  A$controller_8051$5141             controller_8051
@@ -5293,7 +5293,7 @@ C:   000018F4  A$controller_8051$5155             controller_8051
 C:   000018F5  A$controller_8051$5156             controller_8051
 C:   000018F6  A$controller_8051$5157             controller_8051
 C:   000018F7  A$controller_8051$5160             controller_8051
-C:   000018F7  C$fuzzy.h$1405$1_0$84              controller_8051
+C:   000018F7  C$fuzzy.h$1404$1_0$84              controller_8051
 C:   000018F9  A$controller_8051$5161             controller_8051
 C:   000018FB  A$controller_8051$5162             controller_8051
 C:   000018FC  A$controller_8051$5163             controller_8051
@@ -5310,12 +5310,12 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00001900  A$controller_8051$5169             controller_8051
-C:   00001900  C$fuzzy.h$1408$1_0$84              controller_8051
+C:   00001900  C$fuzzy.h$1407$1_0$84              controller_8051
 C:   00001902  A$controller_8051$5170             controller_8051
 C:   00001904  A$controller_8051$5171             controller_8051
 C:   00001905  A$controller_8051$5172             controller_8051
 C:   00001907  A$controller_8051$5175             controller_8051
-C:   00001907  C$fuzzy.h$1411$2_0$87              controller_8051
+C:   00001907  C$fuzzy.h$1410$2_0$87              controller_8051
 C:   00001909  A$controller_8051$5176             controller_8051
 C:   0000190B  A$controller_8051$5177             controller_8051
 C:   0000190C  A$controller_8051$5178             controller_8051
@@ -5351,7 +5351,7 @@ C:   0000192E  A$controller_8051$5207             controller_8051
 C:   0000192F  A$controller_8051$5208             controller_8051
 C:   00001930  A$controller_8051$5209             controller_8051
 C:   00001931  A$controller_8051$5213             controller_8051
-C:   00001931  C$fuzzy.h$1412$1_0$84              controller_8051
+C:   00001931  C$fuzzy.h$1411$1_0$84              controller_8051
 C:   00001933  A$controller_8051$5214             controller_8051
 C:   00001935  A$controller_8051$5215             controller_8051
 C:   00001936  A$controller_8051$5216             controller_8051
@@ -5394,7 +5394,7 @@ C:   00001961  A$controller_8051$5243             controller_8051
 C:   00001963  A$controller_8051$5244             controller_8051
 C:   00001965  A$controller_8051$5245             controller_8051
 C:   00001968  A$controller_8051$5249             controller_8051
-C:   00001968  C$fuzzy.h$1416$3_0$88              controller_8051
+C:   00001968  C$fuzzy.h$1415$3_0$88              controller_8051
 C:   0000196A  A$controller_8051$5250             controller_8051
 C:   0000196C  A$controller_8051$5251             controller_8051
 C:   0000196D  A$controller_8051$5252             controller_8051
@@ -5406,7 +5406,7 @@ C:   00001972  A$controller_8051$5257             controller_8051
 C:   00001973  A$controller_8051$5258             controller_8051
 C:   00001974  A$controller_8051$5259             controller_8051
 C:   00001975  A$controller_8051$5262             controller_8051
-C:   00001975  C$fuzzy.h$1425$1_0$84              controller_8051
+C:   00001975  C$fuzzy.h$1424$1_0$84              controller_8051
 C:   00001977  A$controller_8051$5263             controller_8051
 C:   00001979  A$controller_8051$5264             controller_8051
 C:   0000197A  A$controller_8051$5265             controller_8051
@@ -5430,7 +5430,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00001987  A$controller_8051$5279             controller_8051
-C:   00001987  C$fuzzy.h$1426$1_0$84              controller_8051
+C:   00001987  C$fuzzy.h$1425$1_0$84              controller_8051
 C:   00001989  A$controller_8051$5280             controller_8051
 C:   0000198B  A$controller_8051$5281             controller_8051
 C:   0000198C  A$controller_8051$5282             controller_8051
@@ -5455,7 +5455,7 @@ C:   000019A7  A$controller_8051$5300             controller_8051
 C:   000019A8  A$controller_8051$5301             controller_8051
 C:   000019AA  A$controller_8051$5302             controller_8051
 C:   000019AD  A$controller_8051$5306             controller_8051
-C:   000019AD  C$fuzzy.h$1430$1_0$84              controller_8051
+C:   000019AD  C$fuzzy.h$1429$1_0$84              controller_8051
 C:   000019AF  A$controller_8051$5307             controller_8051
 C:   000019B1  A$controller_8051$5308             controller_8051
 C:   000019B2  A$controller_8051$5309             controller_8051
@@ -5495,7 +5495,7 @@ C:   000019D3  A$controller_8051$5333             controller_8051
 C:   000019D4  A$controller_8051$5334             controller_8051
 C:   000019D7  A$controller_8051$5335             controller_8051
 C:   000019D8  A$controller_8051$5338             controller_8051
-C:   000019D8  C$fuzzy.h$1432$5_0$90              controller_8051
+C:   000019D8  C$fuzzy.h$1431$5_0$90              controller_8051
 C:   000019DB  A$controller_8051$5339             controller_8051
 C:   000019DD  A$controller_8051$5341             controller_8051
 C:   000019DF  A$controller_8051$5342             controller_8051
@@ -5511,7 +5511,7 @@ C:   000019EE  A$controller_8051$5351             controller_8051
 C:   000019EF  A$controller_8051$5352             controller_8051
 C:   000019F0  A$controller_8051$5353             controller_8051
 C:   000019F1  A$controller_8051$5357             controller_8051
-C:   000019F1  C$fuzzy.h$1437$5_0$90              controller_8051
+C:   000019F1  C$fuzzy.h$1436$5_0$90              controller_8051
 C:   000019F4  A$controller_8051$5358             controller_8051
 C:   000019F5  A$controller_8051$5359             controller_8051
 C:   000019F7  A$controller_8051$5360             controller_8051
@@ -5524,7 +5524,7 @@ C:   00001A00  A$controller_8051$5366             controller_8051
 C:   00001A02  A$controller_8051$5367             controller_8051
 C:   00001A03  A$controller_8051$5368             controller_8051
 C:   00001A04  A$controller_8051$5371             controller_8051
-C:   00001A04  C$fuzzy.h$1441$5_0$90              controller_8051
+C:   00001A04  C$fuzzy.h$1440$5_0$90              controller_8051
 C:   00001A06  A$controller_8051$5372             controller_8051
 C:   00001A07  A$controller_8051$5373             controller_8051
 C:   00001A09  A$controller_8051$5374             controller_8051
@@ -5615,7 +5615,7 @@ C:   00001A6B  A$controller_8051$5440             controller_8051
 C:   00001A6D  A$controller_8051$5441             controller_8051
 C:   00001A6E  A$controller_8051$5442             controller_8051
 C:   00001A70  A$controller_8051$5445             controller_8051
-C:   00001A70  C$fuzzy.h$1443$5_0$90              controller_8051
+C:   00001A70  C$fuzzy.h$1442$5_0$90              controller_8051
 C:   00001A72  A$controller_8051$5446             controller_8051
 C:   00001A74  A$controller_8051$5447             controller_8051
 C:   00001A75  A$controller_8051$5448             controller_8051
@@ -5627,7 +5627,7 @@ C:   00001A7D  A$controller_8051$5453             controller_8051
 C:   00001A7E  A$controller_8051$5454             controller_8051
 C:   00001A80  A$controller_8051$5455             controller_8051
 C:   00001A82  A$controller_8051$5459             controller_8051
-C:   00001A82  C$fuzzy.h$1444$5_0$90              controller_8051
+C:   00001A82  C$fuzzy.h$1443$5_0$90              controller_8051
 C:   00001A84  A$controller_8051$5460             controller_8051
 C:   00001A86  A$controller_8051$5461             controller_8051
 C:   00001A87  A$controller_8051$5462             controller_8051
@@ -5638,7 +5638,7 @@ C:   00001A8D  A$controller_8051$5466             controller_8051
 C:   00001A8F  A$controller_8051$5467             controller_8051
 C:   00001A90  A$controller_8051$5468             controller_8051
 C:   00001A92  A$controller_8051$5472             controller_8051
-C:   00001A92  C$fuzzy.h$1449$1_0$84              controller_8051
+C:   00001A92  C$fuzzy.h$1448$1_0$84              controller_8051
 C:   00001A94  A$controller_8051$5473             controller_8051
 C:   00001A96  A$controller_8051$5474             controller_8051
 C:   00001A98  A$controller_8051$5475             controller_8051
@@ -5702,7 +5702,7 @@ C:   00001AE1  A$controller_8051$5523             controller_8051
 C:   00001AE2  A$controller_8051$5524             controller_8051
 C:   00001AE3  A$controller_8051$5525             controller_8051
 C:   00001AE5  A$controller_8051$5529             controller_8051
-C:   00001AE5  C$fuzzy.h$1450$5_0$90              controller_8051
+C:   00001AE5  C$fuzzy.h$1449$5_0$90              controller_8051
 C:   00001AE7  A$controller_8051$5530             controller_8051
 C:   00001AE9  A$controller_8051$5531             controller_8051
 C:   00001AEA  A$controller_8051$5532             controller_8051
@@ -5742,7 +5742,7 @@ C:   00001B0A  A$controller_8051$5557             controller_8051
 C:   00001B0B  A$controller_8051$5558             controller_8051
 C:   00001B0C  A$controller_8051$5559             controller_8051
 C:   00001B0D  A$controller_8051$5562             controller_8051
-C:   00001B0D  C$fuzzy.h$1427$1_0$84              controller_8051
+C:   00001B0D  C$fuzzy.h$1426$1_0$84              controller_8051
 C:   00001B0F  A$controller_8051$5563             controller_8051
 C:   00001B11  A$controller_8051$5564             controller_8051
 C:   00001B12  A$controller_8051$5565             controller_8051
@@ -5761,7 +5761,7 @@ C:   00001B23  A$controller_8051$5577             controller_8051
 C:   00001B24  A$controller_8051$5578             controller_8051
 C:   00001B25  A$controller_8051$5580             controller_8051
 C:   00001B28  A$controller_8051$5584             controller_8051
-C:   00001B28  C$fuzzy.h$1455$3_0$88              controller_8051
+C:   00001B28  C$fuzzy.h$1454$3_0$88              controller_8051
 C:   00001B2A  A$controller_8051$5585             controller_8051
 C:   00001B2C  A$controller_8051$5586             controller_8051
 C:   00001B2D  A$controller_8051$5587             controller_8051
@@ -5793,7 +5793,7 @@ C:   00001B46  A$controller_8051$5603             controller_8051
 C:   00001B48  A$controller_8051$5604             controller_8051
 C:   00001B49  A$controller_8051$5605             controller_8051
 C:   00001B4A  A$controller_8051$5608             controller_8051
-C:   00001B4A  C$fuzzy.h$1463$1_0$84              controller_8051
+C:   00001B4A  C$fuzzy.h$1462$1_0$84              controller_8051
 C:   00001B4C  A$controller_8051$5609             controller_8051
 C:   00001B4E  A$controller_8051$5610             controller_8051
 C:   00001B4F  A$controller_8051$5611             controller_8051
@@ -5830,7 +5830,7 @@ C:   00001B7F  A$controller_8051$5641             controller_8051
 C:   00001B81  A$controller_8051$5642             controller_8051
 C:   00001B83  A$controller_8051$5643             controller_8051
 C:   00001B85  A$controller_8051$5646             controller_8051
-C:   00001B85  C$fuzzy.h$1466$1_0$84              controller_8051
+C:   00001B85  C$fuzzy.h$1465$1_0$84              controller_8051
 C:   00001B87  A$controller_8051$5647             controller_8051
 C:   00001B89  A$controller_8051$5648             controller_8051
 C:   00001B8A  A$controller_8051$5649             controller_8051
@@ -5879,7 +5879,7 @@ C:   00001BBD  A$controller_8051$5682             controller_8051
 C:   00001BBE  A$controller_8051$5683             controller_8051
 C:   00001BBF  A$controller_8051$5684             controller_8051
 C:   00001BC1  A$controller_8051$5687             controller_8051
-C:   00001BC1  C$fuzzy.h$1474$1_0$84              controller_8051
+C:   00001BC1  C$fuzzy.h$1473$1_0$84              controller_8051
 C:   00001BC3  A$controller_8051$5688             controller_8051
 C:   00001BC5  A$controller_8051$5689             controller_8051
 C:   00001BC6  A$controller_8051$5690             controller_8051
@@ -5919,7 +5919,7 @@ C:   00001BED  A$controller_8051$5714             controller_8051
 C:   00001BEE  A$controller_8051$5715             controller_8051
 C:   00001BEF  A$controller_8051$5716             controller_8051
 C:   00001BF1  A$controller_8051$5719             controller_8051
-C:   00001BF1  C$fuzzy.h$1476$1_0$84              controller_8051
+C:   00001BF1  C$fuzzy.h$1475$1_0$84              controller_8051
 C:   00001BF3  A$controller_8051$5720             controller_8051
 C:   00001BF5  A$controller_8051$5721             controller_8051
 C:   00001BF6  A$controller_8051$5722             controller_8051
@@ -5951,7 +5951,7 @@ C:   00001C1D  A$controller_8051$5747             controller_8051
 C:   00001C1F  A$controller_8051$5748             controller_8051
 C:   00001C20  A$controller_8051$5749             controller_8051
 C:   00001C22  A$controller_8051$5753             controller_8051
-C:   00001C22  C$fuzzy.h$1478$4_0$91              controller_8051
+C:   00001C22  C$fuzzy.h$1477$4_0$91              controller_8051
 C:   00001C24  A$controller_8051$5754             controller_8051
 C:   00001C26  A$controller_8051$5755             controller_8051
 C:   00001C27  A$controller_8051$5756             controller_8051
@@ -5981,7 +5981,7 @@ C:   00001C37  A$controller_8051$5770             controller_8051
 C:   00001C38  A$controller_8051$5771             controller_8051
 C:   00001C39  A$controller_8051$5772             controller_8051
 C:   00001C3A  A$controller_8051$5775             controller_8051
-C:   00001C3A  C$fuzzy.h$1481$4_0$91              controller_8051
+C:   00001C3A  C$fuzzy.h$1480$4_0$91              controller_8051
 C:   00001C3C  A$controller_8051$5776             controller_8051
 C:   00001C3E  A$controller_8051$5777             controller_8051
 C:   00001C3F  A$controller_8051$5778             controller_8051
@@ -6002,7 +6002,7 @@ C:   00001C4F  A$controller_8051$5792             controller_8051
 C:   00001C50  A$controller_8051$5793             controller_8051
 C:   00001C51  A$controller_8051$5794             controller_8051
 C:   00001C52  A$controller_8051$5797             controller_8051
-C:   00001C52  C$fuzzy.h$1484$4_0$91              controller_8051
+C:   00001C52  C$fuzzy.h$1483$4_0$91              controller_8051
 C:   00001C54  A$controller_8051$5798             controller_8051
 C:   00001C56  A$controller_8051$5799             controller_8051
 C:   00001C57  A$controller_8051$5800             controller_8051
@@ -6032,7 +6032,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   00001C68  A$controller_8051$5815             controller_8051
 C:   00001C69  A$controller_8051$5816             controller_8051
 C:   00001C6A  A$controller_8051$5819             controller_8051
-C:   00001C6A  C$fuzzy.h$1487$4_0$91              controller_8051
+C:   00001C6A  C$fuzzy.h$1486$4_0$91              controller_8051
 C:   00001C6C  A$controller_8051$5820             controller_8051
 C:   00001C6E  A$controller_8051$5821             controller_8051
 C:   00001C6F  A$controller_8051$5822             controller_8051
@@ -6053,20 +6053,20 @@ C:   00001C7F  A$controller_8051$5836             controller_8051
 C:   00001C80  A$controller_8051$5837             controller_8051
 C:   00001C81  A$controller_8051$5838             controller_8051
 C:   00001C82  A$controller_8051$5841             controller_8051
-C:   00001C82  C$fuzzy.h$1490$4_0$91              controller_8051
+C:   00001C82  C$fuzzy.h$1489$4_0$91              controller_8051
 C:   00001C84  A$controller_8051$5842             controller_8051
 C:   00001C86  A$controller_8051$5843             controller_8051
 C:   00001C87  A$controller_8051$5844             controller_8051
 C:   00001C89  A$controller_8051$5845             controller_8051
 C:   00001C8A  A$controller_8051$5846             controller_8051
 C:   00001C8C  A$controller_8051$5849             controller_8051
-C:   00001C8C  C$fuzzy.h$1493$4_0$91              controller_8051
+C:   00001C8C  C$fuzzy.h$1492$4_0$91              controller_8051
 C:   00001C8E  A$controller_8051$5850             controller_8051
 C:   00001C90  A$controller_8051$5851             controller_8051
 C:   00001C91  A$controller_8051$5852             controller_8051
 C:   00001C93  A$controller_8051$5853             controller_8051
 C:   00001C96  A$controller_8051$5857             controller_8051
-C:   00001C96  C$fuzzy.h$1497$1_0$84              controller_8051
+C:   00001C96  C$fuzzy.h$1496$1_0$84              controller_8051
 C:   00001C98  A$controller_8051$5858             controller_8051
 C:   00001C9A  A$controller_8051$5859             controller_8051
 C:   00001C9B  A$controller_8051$5860             controller_8051
@@ -6107,7 +6107,7 @@ C:   00001CC2  A$controller_8051$5885             controller_8051
 C:   00001CC4  A$controller_8051$5886             controller_8051
 C:   00001CC5  A$controller_8051$5887             controller_8051
 C:   00001CC7  A$controller_8051$5890             controller_8051
-C:   00001CC7  C$fuzzy.h$1499$4_0$92              controller_8051
+C:   00001CC7  C$fuzzy.h$1498$4_0$92              controller_8051
 C:   00001CC9  A$controller_8051$5891             controller_8051
 C:   00001CCB  A$controller_8051$5892             controller_8051
 C:   00001CCC  A$controller_8051$5893             controller_8051
@@ -6128,7 +6128,7 @@ C:   00001CDC  A$controller_8051$5907             controller_8051
 C:   00001CDD  A$controller_8051$5908             controller_8051
 C:   00001CDE  A$controller_8051$5909             controller_8051
 C:   00001CDF  A$controller_8051$5912             controller_8051
-C:   00001CDF  C$fuzzy.h$1502$1_0$84              controller_8051
+C:   00001CDF  C$fuzzy.h$1501$1_0$84              controller_8051
 C:   00001CE1  A$controller_8051$5913             controller_8051
 C:   00001CE3  A$controller_8051$5914             controller_8051
 C:   00001CE4  A$controller_8051$5915             controller_8051
@@ -6152,7 +6152,7 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
 C:   00001CF0  A$controller_8051$5924             controller_8051
 C:   00001CF1  A$controller_8051$5925             controller_8051
 C:   00001CF3  A$controller_8051$5928             controller_8051
-C:   00001CF3  C$fuzzy.h$1504$1_0$84              controller_8051
+C:   00001CF3  C$fuzzy.h$1503$1_0$84              controller_8051
 C:   00001CF5  A$controller_8051$5929             controller_8051
 C:   00001CF7  A$controller_8051$5930             controller_8051
 C:   00001CF8  A$controller_8051$5931             controller_8051
@@ -6185,7 +6185,7 @@ C:   00001D21  A$controller_8051$5957             controller_8051
 C:   00001D24  A$controller_8051$5958             controller_8051
 C:   00001D25  A$controller_8051$5959             controller_8051
 C:   00001D26  A$controller_8051$5964             controller_8051
-C:   00001D26  C$fuzzy.h$1414$1_0$84              controller_8051
+C:   00001D26  C$fuzzy.h$1413$1_0$84              controller_8051
 C:   00001D28  A$controller_8051$5965             controller_8051
 C:   00001D2A  A$controller_8051$5966             controller_8051
 C:   00001D2B  A$controller_8051$5967             controller_8051
@@ -6235,13 +6235,13 @@ C:   00001D5E  A$controller_8051$6001             controller_8051
 C:   00001D60  A$controller_8051$6002             controller_8051
 C:   00001D62  A$controller_8051$6003             controller_8051
 C:   00001D65  A$controller_8051$6007             controller_8051
-C:   00001D65  C$fuzzy.h$1512$1_0$84              controller_8051
+C:   00001D65  C$fuzzy.h$1511$1_0$84              controller_8051
 C:   00001D67  A$controller_8051$6008             controller_8051
 C:   00001D69  A$controller_8051$6009             controller_8051
 C:   00001D6A  A$controller_8051$6010             controller_8051
 C:   00001D6B  A$controller_8051$6011             controller_8051
 C:   00001D6D  A$controller_8051$6014             controller_8051
-C:   00001D6D  C$fuzzy.h$1513$1_0$84              controller_8051
+C:   00001D6D  C$fuzzy.h$1512$1_0$84              controller_8051
 C:   00001D6F  A$controller_8051$6015             controller_8051
 C:   00001D71  A$controller_8051$6016             controller_8051
 C:   00001D72  A$controller_8051$6017             controller_8051
@@ -6276,7 +6276,7 @@ C:   00001D92  A$controller_8051$6036             controller_8051
 C:   00001D94  A$controller_8051$6037             controller_8051
 C:   00001D96  A$controller_8051$6038             controller_8051
 C:   00001D98  A$controller_8051$6041             controller_8051
-C:   00001D98  C$fuzzy.h$1515$1_0$84              controller_8051
+C:   00001D98  C$fuzzy.h$1514$1_0$84              controller_8051
 C:   00001D9A  A$controller_8051$6042             controller_8051
 C:   00001D9C  A$controller_8051$6043             controller_8051
 C:   00001D9D  A$controller_8051$6044             controller_8051
@@ -6302,12 +6302,12 @@ C:   00001DBD  A$controller_8051$6063             controller_8051
 C:   00001DBF  A$controller_8051$6064             controller_8051
 C:   00001DC1  A$controller_8051$6065             controller_8051
 C:   00001DC3  A$controller_8051$6069             controller_8051
-C:   00001DC3  C$fuzzy.h$1516$2_0$93              controller_8051
+C:   00001DC3  C$fuzzy.h$1515$2_0$93              controller_8051
 C:   00001DC6  A$controller_8051$6070             controller_8051
 C:   00001DC7  A$controller_8051$6071             controller_8051
 C:   00001DC9  A$controller_8051$6072             controller_8051
 C:   00001DCC  A$controller_8051$6076             controller_8051
-C:   00001DCC  C$fuzzy.h$1519$1_0$84              controller_8051
+C:   00001DCC  C$fuzzy.h$1518$1_0$84              controller_8051
 C:   00001DCE  A$controller_8051$6077             controller_8051
 C:   00001DD0  A$controller_8051$6078             controller_8051
 C:   00001DD1  A$controller_8051$6079             controller_8051
@@ -6336,8 +6336,8 @@ C:   00001DE8  A$controller_8051$6094             controller_8051
 C:   00001DEB  A$controller_8051$6095             controller_8051
 C:   00001DEE  A$controller_8051$6096             controller_8051
 C:   00001DF1  A$controller_8051$6102             controller_8051
-C:   00001DF1  C$fuzzy.h$1520$2_0$94              controller_8051
-C:   00001DF1  C$fuzzy.h$1522$1_0$84              controller_8051
+C:   00001DF1  C$fuzzy.h$1519$2_0$94              controller_8051
+C:   00001DF1  C$fuzzy.h$1521$1_0$84              controller_8051
 C:   00001DF3  A$controller_8051$6103             controller_8051
 C:   00001DF5  A$controller_8051$6104             controller_8051
 C:   00001DF6  A$controller_8051$6105             controller_8051
@@ -6375,8 +6375,8 @@ C:   00001E28  A$controller_8051$6136             controller_8051
 C:   00001E2A  A$controller_8051$6137             controller_8051
 C:   00001E2B  A$controller_8051$6138             controller_8051
 C:   00001E2E  A$controller_8051$6144             controller_8051
+C:   00001E2E  C$fuzzy.h$1523$2_0$94              controller_8051
 C:   00001E2E  C$fuzzy.h$1524$2_0$94              controller_8051
-C:   00001E2E  C$fuzzy.h$1525$2_0$94              controller_8051
 C:   00001E30  A$controller_8051$6145             controller_8051
 C:   00001E32  A$controller_8051$6146             controller_8051
 C:   00001E33  A$controller_8051$6147             controller_8051
@@ -6393,12 +6393,12 @@ C:   00001E34  A$controller_8051$6148             controller_8051
 C:   00001E35  A$controller_8051$6149             controller_8051
 C:   00001E36  A$controller_8051$6150             controller_8051
 C:   00001E38  A$controller_8051$6153             controller_8051
-C:   00001E38  C$fuzzy.h$1526$3_0$95              controller_8051
+C:   00001E38  C$fuzzy.h$1525$3_0$95              controller_8051
 C:   00001E3B  A$controller_8051$6154             controller_8051
 C:   00001E3C  A$controller_8051$6155             controller_8051
 C:   00001E3E  A$controller_8051$6156             controller_8051
 C:   00001E40  A$controller_8051$6160             controller_8051
-C:   00001E40  C$fuzzy.h$1530$1_0$84              controller_8051
+C:   00001E40  C$fuzzy.h$1529$1_0$84              controller_8051
 C:   00001E42  A$controller_8051$6161             controller_8051
 C:   00001E44  A$controller_8051$6162             controller_8051
 C:   00001E45  A$controller_8051$6163             controller_8051
@@ -6436,9 +6436,9 @@ C:   00001E7D  A$controller_8051$6194             controller_8051
 C:   00001E7F  A$controller_8051$6195             controller_8051
 C:   00001E81  A$controller_8051$6196             controller_8051
 C:   00001E82  A$controller_8051$6199             controller_8051
-C:   00001E82  C$fuzzy.h$1532$2_0$94              controller_8051
+C:   00001E82  C$fuzzy.h$1531$2_0$94              controller_8051
 C:   00001E84  A$controller_8051$6203             controller_8051
-C:   00001E84  C$fuzzy.h$1533$2_0$94              controller_8051
+C:   00001E84  C$fuzzy.h$1532$2_0$94              controller_8051
 C:   00001E86  A$controller_8051$6204             controller_8051
 ASxxxx Linker V03.00/V05.40 + sdld,  page 118.
 Hexadecimal  [32-Bits]
@@ -6458,9 +6458,9 @@ C:   00001E8F  A$controller_8051$6210             controller_8051
 C:   00001E91  A$controller_8051$6211             controller_8051
 C:   00001E92  A$controller_8051$6212             controller_8051
 C:   00001E93  A$controller_8051$6215             controller_8051
-C:   00001E93  C$fuzzy.h$1535$2_0$94              controller_8051
+C:   00001E93  C$fuzzy.h$1534$2_0$94              controller_8051
 C:   00001E95  A$controller_8051$6219             controller_8051
-C:   00001E95  C$fuzzy.h$1536$2_0$94              controller_8051
+C:   00001E95  C$fuzzy.h$1535$2_0$94              controller_8051
 C:   00001E97  A$controller_8051$6220             controller_8051
 C:   00001E99  A$controller_8051$6221             controller_8051
 C:   00001E9A  A$controller_8051$6222             controller_8051
@@ -6471,19 +6471,19 @@ C:   00001EA0  A$controller_8051$6226             controller_8051
 C:   00001EA2  A$controller_8051$6227             controller_8051
 C:   00001EA3  A$controller_8051$6228             controller_8051
 C:   00001EA4  A$controller_8051$6231             controller_8051
-C:   00001EA4  C$fuzzy.h$1538$2_0$94              controller_8051
+C:   00001EA4  C$fuzzy.h$1537$2_0$94              controller_8051
 C:   00001EA6  A$controller_8051$6235             controller_8051
-C:   00001EA6  C$fuzzy.h$1539$2_0$94              controller_8051
+C:   00001EA6  C$fuzzy.h$1538$2_0$94              controller_8051
 C:   00001EA9  A$controller_8051$6236             controller_8051
 C:   00001EAA  A$controller_8051$6237             controller_8051
 C:   00001EAC  A$controller_8051$6243             controller_8051
-C:   00001EAC  C$fuzzy.h$1540$1_0$84              controller_8051
+C:   00001EAC  C$fuzzy.h$1539$1_0$84              controller_8051
 C:   00001EAF  A$controller_8051$6244             controller_8051
 C:   00001EB1  A$controller_8051$6247             controller_8051
-C:   00001EB1  C$fuzzy.h$1541$1_0$84              controller_8051
+C:   00001EB1  C$fuzzy.h$1540$1_0$84              controller_8051
 C:   00001EB1  XG$fuzzy_rules_defuzzify$0$0       controller_8051
 C:   00001EB2  A$controller_8051$6263             controller_8051
-C:   00001EB2  C$fuzzy.h$1547$1_0$97              controller_8051
+C:   00001EB2  C$fuzzy.h$1546$1_0$97              controller_8051
 C:   00001EB2  G$fuzzy_rules_cog$0$0              controller_8051
 C:   00001EB2  _fuzzy_rules_cog                   controller_8051
 C:   00001EB4  A$controller_8051$6264             controller_8051
@@ -6491,7 +6491,7 @@ C:   00001EB7  A$controller_8051$6265             controller_8051
 C:   00001EB9  A$controller_8051$6266             controller_8051
 C:   00001EBB  A$controller_8051$6267             controller_8051
 C:   00001EBD  A$controller_8051$6270             controller_8051
-C:   00001EBD  C$fuzzy.h$1555$1_0$97              controller_8051
+C:   00001EBD  C$fuzzy.h$1554$1_0$97              controller_8051
 C:   00001EBE  A$controller_8051$6271             controller_8051
 C:   00001EC0  A$controller_8051$6272             controller_8051
 C:   00001EC2  A$controller_8051$6273             controller_8051
@@ -6570,22 +6570,22 @@ CSEG                                000000B7    0000263E =        9790. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00001F1B  A$controller_8051$6334             controller_8051
-C:   00001F1B  C$fuzzy.h$1561$1_0$97              controller_8051
+C:   00001F1B  C$fuzzy.h$1560$1_0$97              controller_8051
 C:   00001F1B  XG$fuzzy_rules_cog$0$0             controller_8051
 C:   00001F1C  A$controller_8051$6347             controller_8051
-C:   00001F1C  C$fuzzy.h$1563$1_0$99              controller_8051
+C:   00001F1C  C$fuzzy.h$1562$1_0$99              controller_8051
 C:   00001F1C  G$fuzzy_rules_free$0$0             controller_8051
 C:   00001F1C  _fuzzy_rules_free                  controller_8051
 C:   00001F1E  A$controller_8051$6348             controller_8051
 C:   00001F20  A$controller_8051$6349             controller_8051
 C:   00001F22  A$controller_8051$6352             controller_8051
-C:   00001F22  C$fuzzy.h$1567$1_0$99              controller_8051
+C:   00001F22  C$fuzzy.h$1566$1_0$99              controller_8051
 C:   00001F23  A$controller_8051$6353             controller_8051
 C:   00001F24  A$controller_8051$6354             controller_8051
 C:   00001F26  A$controller_8051$6357             controller_8051
-C:   00001F26  C$fuzzy.h$1568$2_0$100             controller_8051
+C:   00001F26  C$fuzzy.h$1567$2_0$100             controller_8051
 C:   00001F28  A$controller_8051$6361             controller_8051
-C:   00001F28  C$fuzzy.h$1576$1_0$99              controller_8051
+C:   00001F28  C$fuzzy.h$1575$1_0$99              controller_8051
 C:   00001F2A  A$controller_8051$6362             controller_8051
 C:   00001F2B  A$controller_8051$6363             controller_8051
 C:   00001F2C  A$controller_8051$6364             controller_8051
@@ -6599,7 +6599,7 @@ C:   00001F36  A$controller_8051$6371             controller_8051
 C:   00001F39  A$controller_8051$6372             controller_8051
 C:   00001F3A  A$controller_8051$6373             controller_8051
 C:   00001F3D  A$controller_8051$6379             controller_8051
-C:   00001F3D  C$fuzzy.h$1577$1_0$99              controller_8051
+C:   00001F3D  C$fuzzy.h$1576$1_0$99              controller_8051
 C:   00001F3D  XG$fuzzy_rules_free$0$0            controller_8051
 C:   00001F3E  A$controller_8051$6392             controller_8051
 C:   00001F3E  C$controller_8051.c$59$1_0$102     controller_8051

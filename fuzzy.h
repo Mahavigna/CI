@@ -15,7 +15,7 @@ typedef unsigned char uint8_t;
 #define false 0u
 #define true  1u
 
-#define FUZZY_MAX_RULES 8u
+#define FUZZY_MAX_RULES 16u
 
 typedef uint8_t fuzzy_hedge_t;
 
@@ -55,6 +55,10 @@ typedef struct FuzzyHedges {
 #define LEVEL_HI 1.0f
 #define LEVEL_LO 0.0f
 
+#define FUZZY_MAX_VALUES 16u
+
+#ifndef FUZZY_8051
+
 #define FUZZY_VALUES(...)                             \
     ((const float[]) { __VA_ARGS__ })
 
@@ -64,6 +68,162 @@ typedef struct FuzzyHedges {
         sizeof(float)                                 \
     )
 
+#else
+
+/*
+ * Count between 1 and 16 supplied values.
+ */
+#define FUZZY_VALUE_COUNT_PRIVATE(                    \
+    _1, _2, _3, _4, _5, _6, _7, _8,                 \
+    _9, _10, _11, _12, _13, _14, _15, _16,          \
+    count, ...                                        \
+)                                                     \
+    count
+
+#define FUZZY_VALUE_COUNT(...)                        \
+    FUZZY_VALUE_COUNT_PRIVATE(                        \
+        __VA_ARGS__,                                  \
+        16u, 15u, 14u, 13u,                          \
+        12u, 11u, 10u, 9u,                           \
+        8u, 7u, 6u, 5u,                              \
+        4u, 3u, 2u, 1u                               \
+    )
+
+
+/*
+ * Monolithic fixed buffer.
+ */
+static float fuzzy_values_buffer[FUZZY_MAX_VALUES];
+
+
+/*
+ * Initialize the complete buffer to zero.
+ */
+static float *fuzzy_values_initialize(void)
+{
+    size_t index;
+
+    for (
+        index = 0u;
+        index < FUZZY_MAX_VALUES;
+        index++
+    ) {
+        fuzzy_values_buffer[index] =
+            0.0f;
+    }
+
+    return fuzzy_values_buffer;
+}
+
+
+/*
+ * Fixed-arity initializers write only the supplied values.
+ *
+ * The monolithic initializer clears all remaining entries.
+ */
+#define FUZZY_VALUES_1(v1)                            \
+    (                                                 \
+        fuzzy_values_initialize(),                    \
+        fuzzy_values_buffer[0] = (float)(v1),         \
+        fuzzy_values_buffer                           \
+    )
+
+#define FUZZY_VALUES_2(v1, v2)                        \
+    (                                                 \
+        fuzzy_values_initialize(),                    \
+        fuzzy_values_buffer[0] = (float)(v1),         \
+        fuzzy_values_buffer[1] = (float)(v2),         \
+        fuzzy_values_buffer                           \
+    )
+
+#define FUZZY_VALUES_3(v1, v2, v3)                    \
+    (                                                 \
+        fuzzy_values_initialize(),                    \
+        fuzzy_values_buffer[0] = (float)(v1),         \
+        fuzzy_values_buffer[1] = (float)(v2),         \
+        fuzzy_values_buffer[2] = (float)(v3),         \
+        fuzzy_values_buffer                           \
+    )
+
+#define FUZZY_VALUES_4(v1, v2, v3, v4)                \
+    (                                                 \
+        fuzzy_values_initialize(),                    \
+        fuzzy_values_buffer[0] = (float)(v1),         \
+        fuzzy_values_buffer[1] = (float)(v2),         \
+        fuzzy_values_buffer[2] = (float)(v3),         \
+        fuzzy_values_buffer[3] = (float)(v4),         \
+        fuzzy_values_buffer                           \
+    )
+
+#define FUZZY_VALUES_5(v1, v2, v3, v4, v5)            \
+    (                                                 \
+        fuzzy_values_initialize(),                    \
+        fuzzy_values_buffer[0] = (float)(v1),         \
+        fuzzy_values_buffer[1] = (float)(v2),         \
+        fuzzy_values_buffer[2] = (float)(v3),         \
+        fuzzy_values_buffer[3] = (float)(v4),         \
+        fuzzy_values_buffer[4] = (float)(v5),         \
+        fuzzy_values_buffer                           \
+    )
+
+#define FUZZY_VALUES_12(                              \
+    v1, v2, v3, v4, v5, v6,                          \
+    v7, v8, v9, v10, v11, v12                        \
+)                                                     \
+    (                                                 \
+        fuzzy_values_initialize(),                    \
+        fuzzy_values_buffer[0] = (float)(v1),         \
+        fuzzy_values_buffer[1] = (float)(v2),         \
+        fuzzy_values_buffer[2] = (float)(v3),         \
+        fuzzy_values_buffer[3] = (float)(v4),         \
+        fuzzy_values_buffer[4] = (float)(v5),         \
+        fuzzy_values_buffer[5] = (float)(v6),         \
+        fuzzy_values_buffer[6] = (float)(v7),         \
+        fuzzy_values_buffer[7] = (float)(v8),         \
+        fuzzy_values_buffer[8] = (float)(v9),         \
+        fuzzy_values_buffer[9] = (float)(v10),        \
+        fuzzy_values_buffer[10] = (float)(v11),       \
+        fuzzy_values_buffer[11] = (float)(v12),       \
+        fuzzy_values_buffer                           \
+    )
+
+
+#define FUZZY_VALUES_SELECT_PRIVATE(                  \
+    _1, _2, _3, _4, _5, _6, _7, _8,                 \
+    _9, _10, _11, _12, _13, _14, _15, _16,          \
+    selected, ...                                     \
+)                                                     \
+    selected
+
+
+#define FUZZY_VALUES_UNSUPPORTED(...)                 \
+    fuzzy_values_unsupported_argument_count
+
+
+#define FUZZY_VALUES(...)                             \
+    FUZZY_VALUES_SELECT_PRIVATE(                      \
+        __VA_ARGS__,                                  \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_12,                              \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_UNSUPPORTED,                     \
+        FUZZY_VALUES_5,                               \
+        FUZZY_VALUES_4,                               \
+        FUZZY_VALUES_3,                               \
+        FUZZY_VALUES_2,                               \
+        FUZZY_VALUES_1                                \
+    )(                                                \
+        __VA_ARGS__                                   \
+    )
+
+#endif /* FUZZY_8051 */
 
 typedef float (*fuzzy_output_function_t)(float);
 
@@ -598,7 +758,6 @@ static float fuzzy_apply_hedge(
 #endif /* FUZZY_8051 */
 }
 
-
 /*
  * Internal fuzzy AND implementation.
  *
@@ -938,9 +1097,12 @@ float fuzzy_ramp(
 /*
  * Generic membership-function wrapper.
  *
- * The public fuzzy_function() macro converts its parameters
- * into a temporary float array and automatically calculates
- * the number of parameters.
+ * The public fuzzy_function() macro collects its parameters
+ * into a float buffer and automatically calculates the
+ * number of supplied parameters.
+ *
+ * Desktop builds use a temporary compound-literal array.
+ * FUZZY_8051 builds use the shared fixed-value buffer.
  *
  * Supported shapes and parameter layouts:
  *

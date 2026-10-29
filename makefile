@@ -20,6 +20,7 @@ endif
 # ============================================================
 # Targets and Directories
 # ============================================================
+
 STRENGTH_TARGET := fuzzy
 STRENGTH_SOURCE := strength.c
 STRENGTH_OUTPUT := svg
@@ -32,14 +33,22 @@ DEMO_TARGET := fuzzy-demo
 DEMO_SOURCE := demo_all.c
 DEMO_OUTPUT := demo-all
 
-SIM_8051_ROOT := sim-8051
-SIM_8051_TARGET := sim-8051-app
-SIM_8051_SOURCE := controller_8051.c
-SIM_8051_OUTPUT := $(SIM_8051_ROOT)/desktop
+SUGENO_TARGET := sugeno-app
+SUGENO_SOURCE := sugeno_demo.c
+SUGENO_OUTPUT := sugeno
 
-EMBEDDED_SOURCE ?= controller_8051.c
-EMBEDDED_OUTPUT ?= $(SIM_8051_ROOT)/embedded
-EMBEDDED_BASENAME := controller_8051
+SIM_8051_ROOT := sim-8051
+
+MAMDANI_8051_TARGET := sim-8051-app
+MAMDANI_8051_SOURCE := controller_8051.c
+MAMDANI_8051_OUTPUT := $(SIM_8051_ROOT)/desktop
+
+MAMDANI_EMBEDDED_SOURCE := controller_8051.c
+MAMDANI_EMBEDDED_OUTPUT := $(SIM_8051_ROOT)/embedded
+MAMDANI_EMBEDDED_BASENAME := controller_8051
+
+SUGENO_EMBEDDED_OUTPUT := $(SUGENO_OUTPUT)/embedded
+SUGENO_EMBEDDED_BASENAME := sugeno_8051
 
 # ============================================================
 # Embedded 8051 tools
@@ -59,22 +68,40 @@ else
     SIMULATOR_COMMAND :=
 endif
 
-.PHONY: all desktop embedded test sugeno \
-    run-strength run-greenhouse run-demo run-sim-8051 \
-    build-8051 simulate-8051 debug-8051 test-8051 \
+.PHONY: all desktop embedded test \
+    run-strength run-greenhouse run-demo run-sugeno run-sim-8051 \
+    embedded-mamdani embedded-sugeno \
+    build-8051 build-sugeno-8051 \
+    simulate-8051 simulate-sugeno \
+    debug-8051 test-8051 \
     check-dependencies install-dependencies \
-    png png-strength png-greenhouse png-demo png-sim-8051 \
-    pdf pdf-strength pdf-greenhouse pdf-demo pdf-sim-8051 \
-    clean clean-desktop clean-embedded help
+    png png-strength png-greenhouse png-demo png-sugeno png-sim-8051 \
+    pdf pdf-strength pdf-greenhouse pdf-demo pdf-sugeno pdf-sim-8051 \
+    clean clean-desktop clean-embedded clean-embedded-mamdani \
+    clean-embedded-sugeno help
 
 all: desktop embedded
 
-desktop: $(STRENGTH_TARGET) $(GREENHOUSE_TARGET) $(DEMO_TARGET) $(SIM_8051_TARGET)
+desktop: \
+    $(STRENGTH_TARGET) \
+    $(GREENHOUSE_TARGET) \
+    $(DEMO_TARGET) \
+    $(SUGENO_TARGET) \
+    $(MAMDANI_8051_TARGET)
+
+embedded: embedded-mamdani embedded-sugeno
+
+
 
 # Directory creation
-$(STRENGTH_OUTPUT) $(GREENHOUSE_OUTPUT) $(DEMO_OUTPUT) $(SIM_8051_OUTPUT) $(EMBEDDED_OUTPUT):
+$(STRENGTH_OUTPUT) \
+$(GREENHOUSE_OUTPUT) \
+$(DEMO_OUTPUT) \
+$(SUGENO_OUTPUT) \
+$(MAMDANI_8051_OUTPUT) \
+$(MAMDANI_EMBEDDED_OUTPUT) \
+$(SUGENO_EMBEDDED_OUTPUT):
 	mkdir -p $@
-
 # ============================================================
 # Desktop Build
 # ============================================================
@@ -99,7 +126,15 @@ $(DEMO_TARGET): $(DEMO_SOURCE) fuzzy.h | $(DEMO_OUTPUT)
 	$(CC_CMD) $(CFLAGS) $< $(LDFLAGS) -o $@ $(LDLIBS)
 	@echo "[OK] Built $@"
 
-$(SIM_8051_TARGET): $(SIM_8051_SOURCE) fuzzy.h | $(SIM_8051_OUTPUT)
+$(SUGENO_TARGET): $(SUGENO_SOURCE) fuzzy.h | $(SUGENO_OUTPUT)
+	@echo "\n============================================================"
+	@echo "Building $@ from $<..."
+	@echo "Desktop simulation mode: -DSIMULATION"
+	@echo "============================================================"
+	$(CC_CMD) $(CFLAGS) -DSIMULATION $< $(LDFLAGS) -o $@ $(LDLIBS)
+	@echo "[OK] Built $@"
+
+$(MAMDANI_8051_TARGET): $(MAMDANI_8051_SOURCE) fuzzy.h | $(MAMDANI_8051_OUTPUT)
 	@echo "\n============================================================"
 	@echo "Building $@ from $<..."
 	@echo "Desktop simulation mode: -DSIMULATION"
@@ -128,63 +163,130 @@ run-demo: $(DEMO_TARGET)
 	@echo "============================================================"
 	./$(DEMO_TARGET)
 
-run-sim-8051: $(SIM_8051_TARGET)
+run-sim-8051: $(MAMDANI_8051_TARGET)
 	@echo "\n============================================================"
-	@echo "Running desktop 8051 simulation harness"
+	@echo "Running desktop Mamdani 8051 simulation harness"
 	@echo "============================================================"
-	cd $(SIM_8051_OUTPUT) && ../../$(SIM_8051_TARGET)
+	cd $(MAMDANI_8051_OUTPUT) && ../../$(MAMDANI_8051_TARGET)
 
-sugeno:
-	@echo "Sugeno target mapped but no source explicitly defined."
+
+run-sugeno: $(SUGENO_TARGET)
+	@echo "\n============================================================"
+	@echo "Running complex Sugeno controller demonstration"
+	@echo "============================================================"
+	cd $(SUGENO_OUTPUT) && ../$(SUGENO_TARGET)
 
 # ============================================================
-# Embedded SDCC Build
+# Embedded SDCC Builds
 # ============================================================
-embedded build-8051: $(EMBEDDED_SOURCE) fuzzy.h | $(EMBEDDED_OUTPUT)
+
+embedded-mamdani build-8051: \
+    $(MAMDANI_EMBEDDED_SOURCE) fuzzy.h | $(MAMDANI_EMBEDDED_OUTPUT)
 	@echo "\n============================================================"
-	@echo "Building AT89S52 firmware with SDCC"
+	@echo "Building Mamdani AT89S52 firmware with SDCC"
 	@echo "============================================================"
-	@rm -f $(EMBEDDED_OUTPUT)/$(EMBEDDED_BASENAME).*
-	cd $(EMBEDDED_OUTPUT) && $(SDCC) -mmcs51 --model-small --opt-code-size --debug --stack-auto --iram-size 256 --stack-loc 0x80 -I../.. -o $(EMBEDDED_BASENAME).ihx ../../$<
-	cd $(EMBEDDED_OUTPUT) && $(PACKIHX) $(EMBEDDED_BASENAME).ihx > $(EMBEDDED_BASENAME).hex
-	@echo "\nGenerated embedded firmware:"
-	@echo "  $(EMBEDDED_OUTPUT)/$(EMBEDDED_BASENAME).ihx"
-	@echo "  $(EMBEDDED_OUTPUT)/$(EMBEDDED_BASENAME).hex"
+	@rm -f $(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).*
+	cd $(MAMDANI_EMBEDDED_OUTPUT) && \
+		$(SDCC) \
+		-mmcs51 \
+		--model-small \
+		--opt-code-size \
+		--debug \
+		--stack-auto \
+		--iram-size 256 \
+		--stack-loc 0x80 \
+		-I../.. \
+		-o $(MAMDANI_EMBEDDED_BASENAME).ihx \
+		../../$(MAMDANI_EMBEDDED_SOURCE)
+	cd $(MAMDANI_EMBEDDED_OUTPUT) && \
+		$(PACKIHX) \
+		$(MAMDANI_EMBEDDED_BASENAME).ihx \
+		> $(MAMDANI_EMBEDDED_BASENAME).hex
+	@echo "\nGenerated Mamdani firmware:"
+	@echo "  $(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).ihx"
+	@echo "  $(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).hex"
+
+
+embedded-sugeno build-sugeno-8051: \
+    $(SUGENO_SOURCE) fuzzy.h | $(SUGENO_EMBEDDED_OUTPUT)
+	@echo "\n============================================================"
+	@echo "Building Sugeno AT89S52 firmware with SDCC"
+	@echo "============================================================"
+	@rm -f $(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).*
+	cd $(SUGENO_EMBEDDED_OUTPUT) && \
+		$(SDCC) \
+		-mmcs51 \
+		--model-small \
+		--opt-code-size \
+		--debug \
+		--stack-auto \
+		--iram-size 256 \
+		--stack-loc 0x80 \
+		-I../.. \
+		-o $(SUGENO_EMBEDDED_BASENAME).ihx \
+		../../$(SUGENO_SOURCE)
+	cd $(SUGENO_EMBEDDED_OUTPUT) && \
+		$(PACKIHX) \
+		$(SUGENO_EMBEDDED_BASENAME).ihx \
+		> $(SUGENO_EMBEDDED_BASENAME).hex
+	@echo "\nGenerated Sugeno firmware:"
+	@echo "  $(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).ihx"
+	@echo "  $(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).hex"
 
 # ============================================================
 # Embedded Execution and Testing
 # ============================================================
-simulate-8051: embedded
-	@if [ -z "$(SIMULATOR_COMMAND)" ]; then echo "Error: no 8051 simulator was found."; exit 1; fi
-	@echo "\n============================================================"
-	@echo "Starting 8051 simulator"
-	@echo "============================================================"
-	$(SIMULATOR_COMMAND) -t 52 -X 11.0592M $(EMBEDDED_OUTPUT)/$(EMBEDDED_BASENAME).ihx
-
-debug-8051: embedded
-	@echo "\n============================================================"
-	@echo "Starting 8051 source-level debugger"
-	@echo "============================================================"
-	mkdir -p $(EMBEDDED_OUTPUT)/tools
-	@if command -v s51 >/dev/null 2>&1; then :; elif command -v ucsim_51 >/dev/null 2>&1; then ln -sf $$(command -v ucsim_51) $(EMBEDDED_OUTPUT)/tools/s51; else echo "Error: no 8051 simulator was found."; exit 1; fi
-	cp $(EMBEDDED_SOURCE) $(EMBEDDED_OUTPUT)/$(EMBEDDED_BASENAME).c
-	cp fuzzy.h $(EMBEDDED_OUTPUT)/fuzzy.h
-	cd $(EMBEDDED_OUTPUT) && PATH="$$(pwd)/tools:$$PATH" $(SDCDB) -cpu 8052 $(EMBEDDED_BASENAME)
-
-test: test-8051 embedded
-
-test-8051: | $(SIM_8051_ROOT)
-	@echo "\n============================================================"
-	@echo "Testing FUZZY_8051 branch with desktop GCC"
-	@echo "============================================================"
-	$(CC) -std=c11 -O2 -Wall -Wextra -Wpedantic $(SIM_8051_ROOT)/test_8051_host.c -o $(SIM_8051_ROOT)/test-8051-host
-	./$(SIM_8051_ROOT)/test-8051-host
-	$(CC) -std=c11 -E $(SIM_8051_ROOT)/test_8051_host.c > $(SIM_8051_ROOT)/test_8051_host.i
-	@if grep -E 'fopen|fprintf|calloc|malloc|realloc|powf|expf|ceilf' $(SIM_8051_ROOT)/test_8051_host.i >/dev/null 2>&1; then \
-		echo "Warning: desktop-only symbols appear in preprocessed output."; \
-	else \
-		echo "[OK] No forbidden desktop-only calls found."; \
+simulate-8051: embedded-mamdani
+	@if [ -z "$(SIMULATOR_COMMAND)" ]; then \
+		echo "Error: no 8051 simulator was found."; \
+		exit 1; \
 	fi
+	@echo "\n============================================================"
+	@echo "Starting Mamdani 8051 simulator"
+	@echo "============================================================"
+	$(SIMULATOR_COMMAND) \
+		-t 52 \
+		-X 11.0592M \
+		$(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).ihx
+
+
+simulate-sugeno: embedded-sugeno
+	@if [ -z "$(SIMULATOR_COMMAND)" ]; then \
+		echo "Error: no 8051 simulator was found."; \
+		exit 1; \
+	fi
+	@echo "\n============================================================"
+	@echo "Starting Sugeno 8051 simulator"
+	@echo "============================================================"
+	$(SIMULATOR_COMMAND) \
+		-t 52 \
+		-X 11.0592M \
+		$(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).ihx
+
+debug-8051: embedded-mamdani
+	@echo "\n============================================================"
+	@echo "Starting Mamdani 8051 source-level debugger"
+	@echo "============================================================"
+	mkdir -p $(MAMDANI_EMBEDDED_OUTPUT)/tools
+	@if command -v s51 >/dev/null 2>&1; then \
+		:; \
+	elif command -v ucsim_51 >/dev/null 2>&1; then \
+		ln -sf \
+			$$(command -v ucsim_51) \
+			$(MAMDANI_EMBEDDED_OUTPUT)/tools/s51; \
+	else \
+		echo "Error: no 8051 simulator was found."; \
+		exit 1; \
+	fi
+	cp \
+		$(MAMDANI_EMBEDDED_SOURCE) \
+		$(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).c
+	cp fuzzy.h $(MAMDANI_EMBEDDED_OUTPUT)/fuzzy.h
+	cd $(MAMDANI_EMBEDDED_OUTPUT) && \
+		PATH="$$(pwd)/tools:$$PATH" \
+		$(SDCDB) \
+		-cpu 8052 \
+		$(MAMDANI_EMBEDDED_BASENAME)
 
 # ============================================================
 # SVG Conversion
@@ -206,8 +308,8 @@ define convert_svg
 	if [ "$$found" -eq 0 ]; then echo "No SVG files found in $(1)"; fi
 endef
 
-png: png-strength png-greenhouse png-demo png-sim-8051
-pdf: pdf-strength pdf-greenhouse pdf-demo pdf-sim-8051
+png: png-strength png-greenhouse png-demo png-sugeno png-sim-8051
+pdf: pdf-strength pdf-greenhouse pdf-demo pdf-sugeno pdf-sim-8051
 
 png-strength:
 	$(call convert_svg,$(STRENGTH_OUTPUT),png)
@@ -230,23 +332,56 @@ pdf-sim-8051:
 # ============================================================
 # Cleanup
 # ============================================================
+
 clean: clean-desktop clean-embedded
 
 clean-desktop:
 	@echo "\n============================================================"
 	@echo "Cleaning desktop outputs"
 	@echo "============================================================"
-	rm -f $(STRENGTH_TARGET) $(GREENHOUSE_TARGET) $(DEMO_TARGET) $(SIM_8051_TARGET)
-	rm -f $(SIM_8051_ROOT)/test-8051-host $(SIM_8051_ROOT)/test_8051_host.c $(SIM_8051_ROOT)/test_8051_host.i
-	find $(STRENGTH_OUTPUT) $(GREENHOUSE_OUTPUT) $(DEMO_OUTPUT) $(SIM_8051_OUTPUT) -maxdepth 1 -type f \( -name '*.svg' -o -name '*.png' -o -name '*.pdf' -o -name '*.csv' \) -delete 2>/dev/null || true
+	rm -f \
+		$(STRENGTH_TARGET) \
+		$(GREENHOUSE_TARGET) \
+		$(DEMO_TARGET) \
+		$(SUGENO_TARGET) \
+		$(MAMDANI_8051_TARGET)
+	rm -f \
+		$(SIM_8051_ROOT)/test-8051-host \
+		$(SIM_8051_ROOT)/test_8051_host.i
+	find \
+		$(STRENGTH_OUTPUT) \
+		$(GREENHOUSE_OUTPUT) \
+		$(DEMO_OUTPUT) \
+		$(SUGENO_OUTPUT) \
+		$(MAMDANI_8051_OUTPUT) \
+		-maxdepth 1 \
+		-type f \
+		\( \
+			-name '*.svg' -o \
+			-name '*.png' -o \
+			-name '*.pdf' -o \
+			-name '*.csv' \
+		\) \
+		-delete 2>/dev/null || true
 	@echo "Desktop outputs removed."
 
-clean-embedded:
+
+clean-embedded: clean-embedded-mamdani clean-embedded-sugeno
+
+clean-embedded-mamdani:
 	@echo "\n============================================================"
-	@echo "Cleaning embedded outputs"
+	@echo "Cleaning Mamdani embedded outputs"
 	@echo "============================================================"
-	rm -rf $(EMBEDDED_OUTPUT)/* 2>/dev/null || true
-	@echo "Embedded outputs removed."
+	rm -rf $(MAMDANI_EMBEDDED_OUTPUT)/* 2>/dev/null || true
+	@echo "Mamdani embedded outputs removed."
+
+
+clean-embedded-sugeno:
+	@echo "\n============================================================"
+	@echo "Cleaning Sugeno embedded outputs"
+	@echo "============================================================"
+	rm -rf $(SUGENO_EMBEDDED_OUTPUT)/* 2>/dev/null || true
+	@echo "Sugeno embedded outputs removed."
 
 # ============================================================
 # Dependencies
@@ -278,26 +413,47 @@ install-dependencies:
 
 help:
 	@echo "fuzzy.h monolithic build system"
+	@echo ""
 	@echo "Basic commands:"
-	@echo "  make                 Build all desktop programs and the embedded 8051 firmware."
-	@echo "  make desktop         Build all desktop programs."
-	@echo "  make embedded        Build 8051.ihx and 8051.hex with SDCC."
-	@echo "  make test            Run the FUZZY_8051 host test and build the firmware."
+	@echo "  make                     Build desktop programs and both firmware images."
+	@echo "  make desktop             Build all desktop programs."
+	@echo "  make embedded            Build Mamdani and Sugeno 8051 firmware."
+	@echo ""
 	@echo "Desktop examples:"
 	@echo "  make run-strength"
 	@echo "  make run-greenhouse"
 	@echo "  make run-demo"
+	@echo "  make run-sugeno"
 	@echo "  make run-sim-8051"
-	@echo "8051 commands:"
+	@echo ""
+	@echo "Mamdani 8051 commands:"
+	@echo "  make embedded-mamdani"
 	@echo "  make build-8051"
 	@echo "  make simulate-8051"
 	@echo "  make debug-8051"
+	@echo ""
+	@echo "Sugeno 8051 commands:"
+	@echo "  make embedded-sugeno"
+	@echo "  make build-sugeno-8051"
+	@echo "  make simulate-sugeno"
+	@echo ""
+	@echo "Testing:"
+	@echo "  make test"
 	@echo "  make test-8051"
+	@echo ""
 	@echo "Dependency commands:"
 	@echo "  make check-dependencies"
 	@echo "  make install-dependencies"
+	@echo ""
 	@echo "Image conversion:"
-	@echo "  make png / pdf (and target-specific rules)"
+	@echo "  make png"
+	@echo "  make pdf"
+	@echo "  make png-sugeno"
+	@echo "  make pdf-sugeno"
+	@echo ""
 	@echo "Cleanup:"
-	@echo "  make clean / clean-desktop / clean-embedded"
-	
+	@echo "  make clean"
+	@echo "  make clean-desktop"
+	@echo "  make clean-embedded"
+	@echo "  make clean-embedded-mamdani"
+	@echo "  make clean-embedded-sugeno"

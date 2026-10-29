@@ -17,6 +17,7 @@
 
 #endif /* SIMULATION */
 
+
 /* ==========================================================
  * Verification values retained for debugger inspection
  * ========================================================== */
@@ -58,10 +59,9 @@ static const hedges_t hedges = {
  * Temperature memberships: 0 to 100
  * ========================================================== */
 
- float temperature_low(float value)
+static float temperature_low(float value)
 {
     return fuzzy_ramp(
-        NULL,
         15.0f,
         40.0f,
         value,
@@ -71,10 +71,9 @@ static const hedges_t hedges = {
 }
 
 
- float temperature_high(float value)
+static float temperature_high(float value)
 {
     return fuzzy_ramp(
-        NULL,
         35.0f,
         75.0f,
         value,
@@ -88,10 +87,9 @@ static const hedges_t hedges = {
  * Load memberships: 0 to 100
  * ========================================================== */
 
- float load_low(float value)
+static float load_low(float value)
 {
     return fuzzy_ramp(
-        NULL,
         20.0f,
         50.0f,
         value,
@@ -101,10 +99,9 @@ static const hedges_t hedges = {
 }
 
 
- float load_high(float value)
+static float load_high(float value)
 {
     return fuzzy_ramp(
-        NULL,
         45.0f,
         85.0f,
         value,
@@ -118,10 +115,9 @@ static const hedges_t hedges = {
  * Vibration memberships: 0 to 10
  * ========================================================== */
 
- float vibration_low(float value)
+static float vibration_low(float value)
 {
     return fuzzy_ramp(
-        NULL,
         1.0f,
         4.0f,
         value,
@@ -131,10 +127,9 @@ static const hedges_t hedges = {
 }
 
 
- float vibration_high(float value)
+static float vibration_high(float value)
 {
     return fuzzy_ramp(
-        NULL,
         3.0f,
         8.0f,
         value,
@@ -256,7 +251,7 @@ static float response_protection(
  * (High load AND high vibration).
  * ========================================================== */
 
- float calculate_fan_speed(
+static float calculate_fan_speed(
     float temperature,
     float load,
     float vibration
@@ -282,34 +277,46 @@ static float response_protection(
     float rule6_mechanical;
 
     temperature_low_value =
-        temperature_low(temperature);
+        temperature_low(
+            temperature
+        );
 
     temperature_high_value =
-        temperature_high(temperature);
+        temperature_high(
+            temperature
+        );
 
     load_low_value =
-        load_low(load);
+        load_low(
+            load
+        );
 
     load_high_value =
-        load_high(load);
+        load_high(
+            load
+        );
 
     vibration_low_value =
-        vibration_low(vibration);
+        vibration_low(
+            vibration
+        );
 
     vibration_high_value =
-        vibration_high(vibration);
+        vibration_high(
+            vibration
+        );
 
     rule1 =
-        fuzzy_and(
-            3,
+        fuzzy_and_method(
+            FUZZY_LOGIC_STANDARD,
             temperature_low_value,
             load_low_value,
             vibration_low_value
         );
 
     rule2 =
-        fuzzy_and(
-            2,
+        fuzzy_and_method(
+            FUZZY_LOGIC_STANDARD,
             fuzzy_not(
                 temperature_high_value
             ),
@@ -317,22 +324,22 @@ static float response_protection(
         );
 
     rule3 =
-        fuzzy_or(
-            2,
+        fuzzy_or_method(
+            FUZZY_LOGIC_STANDARD,
             temperature_high_value,
             vibration_high_value
         );
 
     rule4 =
-        fuzzy_and(
-            2,
+        fuzzy_and_method(
+            FUZZY_LOGIC_STANDARD,
             temperature_high_value,
             load_high_value
         );
 
     rule5 =
-        fuzzy_and(
-            2,
+        fuzzy_and_method(
+            FUZZY_LOGIC_STANDARD,
             load_high_value,
             fuzzy_not(
                 vibration_high_value
@@ -340,29 +347,27 @@ static float response_protection(
         );
 
     rule6_thermal =
-        fuzzy_and(
-            2,
+        fuzzy_and_method(
+            FUZZY_LOGIC_STANDARD,
             temperature_high_value,
             vibration_high_value
         );
 
     rule6_mechanical =
-        fuzzy_and(
-            2,
+        fuzzy_and_method(
+            FUZZY_LOGIC_STANDARD,
             load_high_value,
             vibration_high_value
         );
 
     rule6 =
-        fuzzy_or(
-            2,
+        fuzzy_or_method(
+            FUZZY_LOGIC_STANDARD,
             rule6_thermal,
             rule6_mechanical
         );
 
     return fuzzy_sugeno_weighted_average(
-        6,
-
         rule1,
         response_idle(
             temperature,
@@ -412,7 +417,7 @@ static float response_protection(
  * Convert crisp Sugeno output to PWM percentage
  * ========================================================== */
 
- unsigned char fan_speed_to_pwm(float fan_speed)
+static unsigned char fan_speed_to_pwm(float fan_speed)
 {
     if (fan_speed <= 0.0f) {
         return 0u;
@@ -431,7 +436,7 @@ static float response_protection(
 /* ==========================================================
  * 8052 entry point
  *
- * Fixed stress-test inputs:
+ * Fixed verification inputs:
  *
  * Temperature = 42
  * Load        = 65
@@ -446,13 +451,18 @@ static float response_protection(
  * P0 = 0xAA when complete
  * ========================================================== */
 
- #ifndef SIMULATION
+#ifndef SIMULATION
 
 void main(void)
 {
-    P0 = 0x55u;
-    P1 = 0x00u;
-    P2 = test_temperature;
+    P0 =
+        0x55u;
+
+    P1 =
+        0x00u;
+
+    P2 =
+        test_temperature;
 
     test_fan_speed =
         calculate_fan_speed(
@@ -466,8 +476,11 @@ void main(void)
             test_fan_speed
         );
 
-    P1 = test_pwm;
-    P0 = 0xAAu;
+    P1 =
+        test_pwm;
+
+    P0 =
+        0xAAu;
 
     for (;;) {
         ;
@@ -525,7 +538,13 @@ static void print_verification(void)
             fan_speed
         );
 
-    FUZZY_PRINTF(
+    test_fan_speed =
+        fan_speed;
+
+    test_pwm =
+        pwm;
+
+    printf(
         "\nComplex Sugeno verification\n"
         "===========================\n"
         "Temperature: %u\n"
@@ -659,7 +678,8 @@ int main(void)
     print_verification();
 
     if (!plot_memberships()) {
-        FUZZY_ERROR(
+        fprintf(
+            stderr,
             "Failed to generate membership plots.\n"
         );
 
@@ -667,14 +687,15 @@ int main(void)
     }
 
     if (!plot_controller_sweep()) {
-        FUZZY_ERROR(
+        fprintf(
+            stderr,
             "Failed to generate Sugeno response sweep.\n"
         );
 
         return 1;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nGenerated:\n"
         "  sugeno_temperature.svg\n"
         "  sugeno_load.svg\n"
