@@ -110,6 +110,18 @@ typedef struct Hedges {
 typedef float (*fuzzy_output_function_t)(float);
 
 
+/* ==========================================================
+ * Mamdani defuzzification methods
+ * ========================================================== */
+
+typedef enum FuzzyDefuzzMethod {
+    FUZZY_DEFUZZ_COG = 0,
+    FUZZY_DEFUZZ_MOM,
+    FUZZY_DEFUZZ_SOM,
+    FUZZY_DEFUZZ_LOM
+} fuzzy_defuzz_method_t;
+
+
 typedef struct FuzzyRule {
 #ifndef FUZZY_8051
     const char *name;
@@ -265,6 +277,37 @@ bool fuzzy_rules_add(
     fuzzy_output_function_t output_function
 );
 
+/*
+ * Defuzzify the aggregated Mamdani output.
+ *
+ * Supported methods:
+ *
+ * FUZZY_DEFUZZ_COG
+ *     Center of gravity.
+ *
+ * FUZZY_DEFUZZ_MOM
+ *     Mean of all sampled maximum positions.
+ *
+ * FUZZY_DEFUZZ_SOM
+ *     Smallest sampled maximum position.
+ *
+ * FUZZY_DEFUZZ_LOM
+ *     Largest sampled maximum position.
+ */
+float fuzzy_rules_defuzzify(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_defuzz_method_t method
+);
+
+
+/*
+ * Compatibility wrapper.
+ *
+ * Existing calls to fuzzy_rules_cog() continue to work.
+ */
 float fuzzy_rules_cog(
     const fuzzy_rules_t *rules,
     float lower,
@@ -1360,20 +1403,47 @@ void fuzzy_rules_print(
 
 #endif /* FUZZY_8051 */
 
-float fuzzy_rules_cog(
+/*
+ * Mamdani defuzzification.
+ *
+ * The aggregated output is evaluated once at every sampled
+ * output value.
+ *
+ * During the same pass, the function collects:
+ *
+ * - Weighted height sum for COG
+ * - Total height for COG
+ * - Maximum aggregated height
+ * - Smallest maximum position for SOM
+ * - Largest maximum position for LOM
+ * - Sum and count of maximum positions for MOM
+ */
+float fuzzy_rules_defuzzify(
     const fuzzy_rules_t *rules,
     float lower,
     float upper,
-    float step
+    float step,
+    fuzzy_defuzz_method_t method
 )
 {
     float weighted_sum;
     float height_sum;
+
+    float maximum_height;
+    float maximum_position_sum;
+
+    float smallest_maximum;
+    float largest_maximum;
+
     float value;
     float aggregated_height;
     float output_membership;
     float clipped_height;
+
+    size_t maximum_count;
     size_t i;
+
+    bool maximum_found;
 
     if (
         rules == NULL ||
@@ -1384,8 +1454,38 @@ float fuzzy_rules_cog(
         return 0.0f;
     }
 
-    weighted_sum = 0.0f;
-    height_sum = 0.0f;
+    if (
+        method != FUZZY_DEFUZZ_COG &&
+        method != FUZZY_DEFUZZ_MOM &&
+        method != FUZZY_DEFUZZ_SOM &&
+        method != FUZZY_DEFUZZ_LOM
+    ) {
+        return 0.0f;
+    }
+
+    weighted_sum =
+        0.0f;
+
+    height_sum =
+        0.0f;
+
+    maximum_height =
+        LEVEL_LO;
+
+    maximum_position_sum =
+        0.0f;
+
+    smallest_maximum =
+        lower;
+
+    largest_maximum =
+        lower;
+
+    maximum_count =
+        0u;
+
+    maximum_found =
+        false;
 
     for (
         value = lower;
@@ -1395,6 +1495,12 @@ float fuzzy_rules_cog(
         aggregated_height =
             LEVEL_LO;
 
+        /*
+         * Mamdani implication and aggregation:
+         *
+         * implication = MIN
+         * aggregation = MAX
+         */
         for (
             i = 0;
             i < rules->count;
@@ -1402,7 +1508,14 @@ float fuzzy_rules_cog(
         ) {
             output_membership =
                 rules->rules[i]
-                    .output_function(value);
+                    .output_function(
+                        value
+                    );
+
+            output_membership =
+                fuzzy_clamp(
+                    output_membership
+                );
 
             clipped_height =
                 rules->rules[i].value <
@@ -1417,20 +1530,114 @@ float fuzzy_rules_cog(
                     : clipped_height;
         }
 
+        aggregated_height =
+            fuzzy_clamp(
+                aggregated_height
+            );
+
+        /*
+         * COG accumulation.
+         */
         weighted_sum +=
             value *
             aggregated_height;
 
         height_sum +=
             aggregated_height;
+
+        /*
+         * Maximum-family accumulation.
+         *
+         * A strictly larger height starts a new maximum set.
+         */
+        if (
+            !maximum_found ||
+            aggregated_height > maximum_height
+        ) {
+            maximum_height =
+                aggregated_height;
+
+            smallest_maximum =
+                value;
+
+            largest_maximum =
+                value;
+
+            maximum_position_sum =
+                value;
+
+            maximum_count =
+                1u;
+
+            maximum_found =
+                true;
+        }
+        else if (
+            aggregated_height == maximum_height
+        ) {
+            largest_maximum =
+                value;
+
+            maximum_position_sum +=
+                value;
+
+            maximum_count++;
+        }
     }
 
-    if (height_sum == 0.0f) {
+    /*
+     * No activated output area.
+     */
+    if (
+        !maximum_found ||
+        maximum_height <= LEVEL_LO ||
+        height_sum <= LEVEL_LO
+    ) {
         return 0.0f;
     }
 
-    return weighted_sum /
-        height_sum;
+    switch (method) {
+        case FUZZY_DEFUZZ_COG:
+            return weighted_sum /
+                height_sum;
+
+        case FUZZY_DEFUZZ_MOM:
+            if (maximum_count == 0u) {
+                return 0.0f;
+            }
+
+            return maximum_position_sum /
+                (float)maximum_count;
+
+        case FUZZY_DEFUZZ_SOM:
+            return smallest_maximum;
+
+        case FUZZY_DEFUZZ_LOM:
+            return largest_maximum;
+
+        default:
+            return 0.0f;
+    }
+}
+
+
+/*
+ * Existing COG compatibility wrapper.
+ */
+float fuzzy_rules_cog(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step
+)
+{
+    return fuzzy_rules_defuzzify(
+        rules,
+        lower,
+        upper,
+        step,
+        FUZZY_DEFUZZ_COG
+    );
 }
 
 void fuzzy_rules_free(

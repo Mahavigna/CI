@@ -155,13 +155,14 @@ static float calculate_fan_speed(
         return 0.0f;
     }
 
-    result =
-        fuzzy_rules_cog(
-            &rules,
-            0.0f,
-            100.0f,
-            10.0f
-        );
+result =
+    fuzzy_rules_defuzzify(
+        &rules,
+        0.0f,
+        100.0f,
+        10.0f,
+        FUZZY_DEFUZZ_MOM
+    );
 
     fuzzy_rules_free(
         &rules

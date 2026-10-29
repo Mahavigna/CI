@@ -1567,18 +1567,41 @@ static float evaluate_process_response(
  * Plot one selected process-response COG
  * ========================================================== */
 
+/* ==========================================================
+ * Plot the selected process response using every supported
+ * Mamdani defuzzification method.
+ *
+ * The same aggregated Mamdani output is used for:
+ *
+ * - COG
+ * - MOM
+ * - SOM
+ * - LOM
+ *
+ * Each result is passed separately to the existing
+ * fuzzy_rules_plot_cog() plotting function.
+ * ========================================================== */
+
 static bool plot_selected_process_cog(
     float temperature,
     float humidity,
     float vibration,
     float pressure,
     float quality,
-    float cog_step
+    float defuzz_step
 )
 {
     fuzzy_rules_t rules;
-    float result;
-    bool success;
+
+    float cog;
+    float mom;
+    float som;
+    float lom;
+
+    bool cog_success;
+    bool mom_success;
+    bool som_success;
+    bool lom_success;
 
     fuzzy_rules_create(
         &rules
@@ -1604,37 +1627,132 @@ static bool plot_selected_process_cog(
     }
 
     FUZZY_PRINTF(
-        "\nRule activations:\n"
+        "\nRule activations\n"
+        "================\n"
     );
 
     fuzzy_rules_print(
         &rules
     );
 
-    result =
-        fuzzy_rules_cog(
+    /*
+     * Run the same aggregated output through every
+     * defuzzification method.
+     */
+    cog =
+        fuzzy_rules_defuzzify(
             &rules,
             RESPONSE_LOWER,
             RESPONSE_UPPER,
-            cog_step
+            defuzz_step,
+            FUZZY_DEFUZZ_COG
         );
 
-    success =
+    mom =
+        fuzzy_rules_defuzzify(
+            &rules,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            defuzz_step,
+            FUZZY_DEFUZZ_MOM
+        );
+
+    som =
+        fuzzy_rules_defuzzify(
+            &rules,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            defuzz_step,
+            FUZZY_DEFUZZ_SOM
+        );
+
+    lom =
+        fuzzy_rules_defuzzify(
+            &rules,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            defuzz_step,
+            FUZZY_DEFUZZ_LOM
+        );
+
+    FUZZY_PRINTF(
+        "\nDefuzzification results\n"
+        "=======================\n"
+        "COG: %.5f\n"
+        "MOM: %.5f\n"
+        "SOM: %.5f\n"
+        "LOM: %.5f\n",
+        cog,
+        mom,
+        som,
+        lom
+    );
+
+    /*
+     * Plot COG.
+     */
+    cog_success =
         fuzzy_rules_plot_cog(
             &rules,
             DEMO_DIRECTORY "/selected_cog",
-            "Selected Process-Response COG",
-            result,
+            "Selected Process Response - COG",
+            cog,
             RESPONSE_LOWER,
             RESPONSE_UPPER,
-            cog_step
+            defuzz_step
+        );
+
+    /*
+     * Plot MOM.
+     */
+    mom_success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            DEMO_DIRECTORY "/selected_mom",
+            "Selected Process Response - MOM",
+            mom,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            defuzz_step
+        );
+
+    /*
+     * Plot SOM.
+     */
+    som_success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            DEMO_DIRECTORY "/selected_som",
+            "Selected Process Response - SOM",
+            som,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            defuzz_step
+        );
+
+    /*
+     * Plot LOM.
+     */
+    lom_success =
+        fuzzy_rules_plot_cog(
+            &rules,
+            DEMO_DIRECTORY "/selected_lom",
+            "Selected Process Response - LOM",
+            lom,
+            RESPONSE_LOWER,
+            RESPONSE_UPPER,
+            defuzz_step
         );
 
     fuzzy_rules_free(
         &rules
     );
 
-    return success;
+    return
+        cog_success &&
+        mom_success &&
+        som_success &&
+        lom_success;
 }
 
 /* ==========================================================
