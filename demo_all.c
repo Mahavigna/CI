@@ -1035,12 +1035,14 @@ static float evaluate_random_not_rule(
     float humidity,
     float vibration,
     float pressure,
-    float quality
+    float quality,
+    fuzzy_logic_method_t method
 )
 {
     switch (random_not_rule) {
         case RANDOM_NOT_TEMPERATURE_HIGH:
-            return fuzzy_and(
+            return fuzzy_and_method(
+                method,
                 2,
                 fuzzy_not(
                     temperature_high(
@@ -1053,7 +1055,8 @@ static float evaluate_random_not_rule(
             );
 
         case RANDOM_NOT_HUMIDITY_LOW:
-            return fuzzy_and(
+            return fuzzy_and_method(
+                method,
                 2,
                 fuzzy_not(
                     humidity_low(
@@ -1066,7 +1069,8 @@ static float evaluate_random_not_rule(
             );
 
         case RANDOM_NOT_VIBRATION_LOW:
-            return fuzzy_and(
+            return fuzzy_and_method(
+                method,
                 2,
                 fuzzy_not(
                     vibration_low(
@@ -1079,7 +1083,8 @@ static float evaluate_random_not_rule(
             );
 
         case RANDOM_NOT_PRESSURE_HIGH:
-            return fuzzy_and(
+            return fuzzy_and_method(
+                method,
                 2,
                 fuzzy_not(
                     pressure_high(
@@ -1092,7 +1097,8 @@ static float evaluate_random_not_rule(
             );
 
         case RANDOM_NOT_QUALITY_GOOD:
-            return fuzzy_or(
+            return fuzzy_or_method(
+                method,
                 2,
                 fuzzy_not(
                     quality_good(
@@ -1165,15 +1171,51 @@ static fuzzy_output_function_t random_not_output(void)
  * Complex Mamdani rule construction
  * ========================================================== */
 
+/* ==========================================================
+ * Complex Mamdani rule construction
+ *
+ * Rules 1 through 11 use the standard Zadeh operators:
+ *
+ *     AND = minimum
+ *     OR  = maximum
+ *
+ * Rule 12 demonstrates algebraic AND.
+ * Rule 13 demonstrates bounded OR.
+ * ========================================================== */
+
 static bool build_process_rules(
     fuzzy_rules_t *rules,
     float temperature,
     float humidity,
     float vibration,
     float pressure,
-    float quality
+    float quality,
+    fuzzy_logic_method_t method
 )
 {
+    float rule1;
+    float rule2;
+    float rule3;
+    float rule4;
+    float rule5;
+    float rule6;
+    float rule7;
+    float rule8;
+    float rule9;
+    float rule10;
+    float rule11;
+
+    float very_high_temperature;
+    float extremely_high_vibration;
+    float very_poor_quality;
+    float somewhat_high_humidity;
+
+    float rule8_left;
+    float rule8_right;
+
+    float rule9_environment;
+    float rule9_machine;
+
     if (rules == NULL) {
         return false;
     }
@@ -1188,14 +1230,26 @@ static bool build_process_rules(
      * AND quality is good
      * THEN response is minimal.
      */
-    float rule1 = fuzzy_and(
-        5,
-        temperature_low(temperature),
-        humidity_medium(humidity),
-        vibration_low(vibration),
-        pressure_normal(pressure),
-        quality_good(quality)
-    );
+    rule1 =
+        fuzzy_and_method(
+            method,
+            5,
+            temperature_low(
+                temperature
+            ),
+            humidity_medium(
+                humidity
+            ),
+            vibration_low(
+                vibration
+            ),
+            pressure_normal(
+                pressure
+            ),
+            quality_good(
+                quality
+            )
+        );
 
     /*
      * Rule 2:
@@ -1205,12 +1259,20 @@ static bool build_process_rules(
      * AND quality is average
      * THEN response is low.
      */
-    float rule2 = fuzzy_and(
-        3,
-        temperature_medium(temperature),
-        pressure_normal(pressure),
-        quality_average(quality)
-    );
+    rule2 =
+        fuzzy_and_method(
+            method,
+            3,
+            temperature_medium(
+                temperature
+            ),
+            pressure_normal(
+                pressure
+            ),
+            quality_average(
+                quality
+            )
+        );
 
     /*
      * Rule 3:
@@ -1220,12 +1282,20 @@ static bool build_process_rules(
      * OR quality is poor
      * THEN response is moderate.
      */
-    float rule3 = fuzzy_or(
-        3,
-        humidity_high(humidity),
-        vibration_medium(vibration),
-        quality_poor(quality)
-    );
+    rule3 =
+        fuzzy_or_method(
+            method,
+            3,
+            humidity_high(
+                humidity
+            ),
+            vibration_medium(
+                vibration
+            ),
+            quality_poor(
+                quality
+            )
+        );
 
     /*
      * Rule 4:
@@ -1234,11 +1304,17 @@ static bool build_process_rules(
      * AND vibration is high
      * THEN response is high.
      */
-    float rule4 = fuzzy_and(
-        2,
-        temperature_high(temperature),
-        vibration_high(vibration)
-    );
+    rule4 =
+        fuzzy_and_method(
+            method,
+            2,
+            temperature_high(
+                temperature
+            ),
+            vibration_high(
+                vibration
+            )
+        );
 
     /*
      * Rule 5:
@@ -1248,12 +1324,20 @@ static bool build_process_rules(
      * OR temperature is high
      * THEN response is high.
      */
-    float rule5 = fuzzy_or(
-        3,
-        pressure_high(pressure),
-        vibration_high(vibration),
-        temperature_high(temperature)
-    );
+    rule5 =
+        fuzzy_or_method(
+            method,
+            3,
+            pressure_high(
+                pressure
+            ),
+            vibration_high(
+                vibration
+            ),
+            temperature_high(
+                temperature
+            )
+        );
 
     /*
      * Rule 6:
@@ -1261,22 +1345,24 @@ static bool build_process_rules(
      * IF temperature is very high
      * AND pressure is high
      * THEN response is critical.
-     *
-     * The hedge is applied explicitly using the configured
-     * exponent because the temperature-high membership
-     * function itself uses the neutral hedge.
      */
-    float very_high_temperature =
+    very_high_temperature =
         powf(
-            temperature_high(temperature),
+            temperature_high(
+                temperature
+            ),
             hedges.very
         );
 
-    float rule6 = fuzzy_and(
-        2,
-        very_high_temperature,
-        pressure_high(pressure)
-    );
+    rule6 =
+        fuzzy_and_method(
+            method,
+            2,
+            very_high_temperature,
+            pressure_high(
+                pressure
+            )
+        );
 
     /*
      * Rule 7:
@@ -1285,23 +1371,29 @@ static bool build_process_rules(
      * OR quality is very poor
      * THEN response is critical.
      */
-    float extremely_high_vibration =
+    extremely_high_vibration =
         powf(
-            vibration_high(vibration),
+            vibration_high(
+                vibration
+            ),
             hedges.extremely
         );
 
-    float very_poor_quality =
+    very_poor_quality =
         powf(
-            quality_poor(quality),
+            quality_poor(
+                quality
+            ),
             hedges.very
         );
 
-    float rule7 = fuzzy_or(
-        2,
-        extremely_high_vibration,
-        very_poor_quality
-    );
+    rule7 =
+        fuzzy_or_method(
+            method,
+            2,
+            extremely_high_vibration,
+            very_poor_quality
+        );
 
     /*
      * Rule 8:
@@ -1316,30 +1408,46 @@ static bool build_process_rules(
      *     AND quality is poor
      *
      * THEN response is high.
+     *
+     * Every nested operator uses the same selected family.
      */
-    float somewhat_high_humidity =
+    somewhat_high_humidity =
         powf(
-            humidity_high(humidity),
+            humidity_high(
+                humidity
+            ),
             hedges.somewhat
         );
 
-    float rule8_left = fuzzy_and(
-        2,
-        temperature_medium(temperature),
-        somewhat_high_humidity
-    );
+    rule8_left =
+        fuzzy_and_method(
+            method,
+            2,
+            temperature_medium(
+                temperature
+            ),
+            somewhat_high_humidity
+        );
 
-    float rule8_right = fuzzy_and(
-        2,
-        pressure_high(pressure),
-        quality_poor(quality)
-    );
+    rule8_right =
+        fuzzy_and_method(
+            method,
+            2,
+            pressure_high(
+                pressure
+            ),
+            quality_poor(
+                quality
+            )
+        );
 
-    float rule8 = fuzzy_or(
-        2,
-        rule8_left,
-        rule8_right
-    );
+    rule8 =
+        fuzzy_or_method(
+            method,
+            2,
+            rule8_left,
+            rule8_right
+        );
 
     /*
      * Rule 9:
@@ -1356,25 +1464,43 @@ static bool build_process_rules(
      * AND quality is good
      *
      * THEN response is low.
+     *
+     * Every nested operator uses the same selected family.
      */
-    float rule9_environment = fuzzy_or(
-        2,
-        temperature_low(temperature),
-        humidity_low(humidity)
-    );
+    rule9_environment =
+        fuzzy_or_method(
+            method,
+            2,
+            temperature_low(
+                temperature
+            ),
+            humidity_low(
+                humidity
+            )
+        );
 
-    float rule9_machine = fuzzy_or(
-        2,
-        vibration_low(vibration),
-        pressure_normal(pressure)
-    );
+    rule9_machine =
+        fuzzy_or_method(
+            method,
+            2,
+            vibration_low(
+                vibration
+            ),
+            pressure_normal(
+                pressure
+            )
+        );
 
-    float rule9 = fuzzy_and(
-        3,
-        rule9_environment,
-        rule9_machine,
-        quality_good(quality)
-    );
+    rule9 =
+        fuzzy_and_method(
+            method,
+            3,
+            rule9_environment,
+            rule9_machine,
+            quality_good(
+                quality
+            )
+        );
 
     /*
      * Rule 10:
@@ -1386,22 +1512,41 @@ static bool build_process_rules(
      * AND quality is poor
      * THEN response is critical.
      */
-    float rule10 = fuzzy_and(
-        5,
-        temperature_high(temperature),
-        humidity_high(humidity),
-        vibration_high(vibration),
-        pressure_high(pressure),
-        quality_poor(quality)
-    );
+    rule10 =
+        fuzzy_and_method(
+            method,
+            5,
+            temperature_high(
+                temperature
+            ),
+            humidity_high(
+                humidity
+            ),
+            vibration_high(
+                vibration
+            ),
+            pressure_high(
+                pressure
+            ),
+            quality_poor(
+                quality
+            )
+        );
 
-    float rule11 =
+    /*
+     * Rule 11:
+     *
+     * The selected NOT rule also uses the same AND/OR
+     * operator family.
+     */
+    rule11 =
         evaluate_random_not_rule(
             temperature,
             humidity,
             vibration,
             pressure,
-            quality
+            quality,
+            method
         );
 
     if (!FUZZY_RULE_ADD_NAMED(
@@ -1506,7 +1651,6 @@ static bool build_process_rules(
     return true;
 }
 
-
 /* ==========================================================
  * Pure process-response evaluation
  *
@@ -1519,7 +1663,8 @@ static float evaluate_process_response(
     float vibration,
     float pressure,
     float quality,
-    float cog_step
+    float cog_step,
+    fuzzy_logic_method_t method
 )
 {
     fuzzy_rules_t rules;
@@ -1535,7 +1680,8 @@ static float evaluate_process_response(
         humidity,
         vibration,
         pressure,
-        quality
+        quality,
+        method
     )) {
         FUZZY_ERROR(
             "Failed to construct process-response rules.\n"
@@ -1549,11 +1695,12 @@ static float evaluate_process_response(
     }
 
     result =
-        fuzzy_rules_cog(
+        fuzzy_rules_defuzzify(
             &rules,
             RESPONSE_LOWER,
             RESPONSE_UPPER,
-            cog_step
+            cog_step,
+            FUZZY_DEFUZZ_COG
         );
 
     fuzzy_rules_free(
@@ -1591,173 +1738,407 @@ static bool plot_selected_process_cog(
     float defuzz_step
 )
 {
-    fuzzy_rules_t rules;
+    const fuzzy_logic_method_t methods[] = {
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_LOGIC_ALGEBRAIC,
+        FUZZY_LOGIC_BOUNDED
+    };
 
-    float cog;
-    float mom;
-    float som;
-    float lom;
+    const char *method_names[] = {
+        "Standard Zadeh",
+        "Algebraic",
+        "Bounded Lukasiewicz"
+    };
 
-    bool cog_success;
-    bool mom_success;
-    bool som_success;
-    bool lom_success;
+    const char *cog_filenames[] = {
+        DEMO_DIRECTORY "/selected_standard_cog",
+        DEMO_DIRECTORY "/selected_algebraic_cog",
+        DEMO_DIRECTORY "/selected_bounded_cog"
+    };
 
-    fuzzy_rules_create(
-        &rules
-    );
+    const char *mom_filenames[] = {
+        DEMO_DIRECTORY "/selected_standard_mom",
+        DEMO_DIRECTORY "/selected_algebraic_mom",
+        DEMO_DIRECTORY "/selected_bounded_mom"
+    };
 
-    if (!build_process_rules(
-        &rules,
-        temperature,
-        humidity,
-        vibration,
-        pressure,
-        quality
-    )) {
-        FUZZY_ERROR(
-            "Failed to construct process-response rules.\n"
+    const char *som_filenames[] = {
+        DEMO_DIRECTORY "/selected_standard_som",
+        DEMO_DIRECTORY "/selected_algebraic_som",
+        DEMO_DIRECTORY "/selected_bounded_som"
+    };
+
+    const char *lom_filenames[] = {
+        DEMO_DIRECTORY "/selected_standard_lom",
+        DEMO_DIRECTORY "/selected_algebraic_lom",
+        DEMO_DIRECTORY "/selected_bounded_lom"
+    };
+
+    const char *cog_titles[] = {
+        "Standard Min-Max Controller - COG",
+        "Algebraic Product-Sum Controller - COG",
+        "Bounded Lukasiewicz Controller - COG"
+    };
+
+    const char *mom_titles[] = {
+        "Standard Min-Max Controller - MOM",
+        "Algebraic Product-Sum Controller - MOM",
+        "Bounded Lukasiewicz Controller - MOM"
+    };
+
+    const char *som_titles[] = {
+        "Standard Min-Max Controller - SOM",
+        "Algebraic Product-Sum Controller - SOM",
+        "Bounded Lukasiewicz Controller - SOM"
+    };
+
+    const char *lom_titles[] = {
+        "Standard Min-Max Controller - LOM",
+        "Algebraic Product-Sum Controller - LOM",
+        "Bounded Lukasiewicz Controller - LOM"
+    };
+
+    const size_t method_count =
+        sizeof(methods) /
+        sizeof(methods[0]);
+
+    size_t method_index;
+
+    for (
+        method_index = 0;
+        method_index < method_count;
+        method_index++
+    ) {
+        fuzzy_rules_t rules;
+
+        float cog;
+        float mom;
+        float som;
+        float lom;
+
+        bool cog_success;
+        bool mom_success;
+        bool som_success;
+        bool lom_success;
+
+        fuzzy_rules_create(
+            &rules
         );
+
+        /*
+         * Rebuild the same complete controller using only
+         * the currently selected AND/OR operator family.
+         */
+        if (!build_process_rules(
+            &rules,
+            temperature,
+            humidity,
+            vibration,
+            pressure,
+            quality,
+            methods[method_index]
+        )) {
+            FUZZY_ERROR(
+                "Failed to construct %s controller.\n",
+                method_names[method_index]
+            );
+
+            fuzzy_rules_free(
+                &rules
+            );
+
+            return false;
+        }
+
+        FUZZY_PRINTF(
+            "\n%s controller rule activations\n"
+            "========================================\n",
+            method_names[method_index]
+        );
+
+        fuzzy_rules_print(
+            &rules
+        );
+
+        cog =
+            fuzzy_rules_defuzzify(
+                &rules,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step,
+                FUZZY_DEFUZZ_COG
+            );
+
+        mom =
+            fuzzy_rules_defuzzify(
+                &rules,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step,
+                FUZZY_DEFUZZ_MOM
+            );
+
+        som =
+            fuzzy_rules_defuzzify(
+                &rules,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step,
+                FUZZY_DEFUZZ_SOM
+            );
+
+        lom =
+            fuzzy_rules_defuzzify(
+                &rules,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step,
+                FUZZY_DEFUZZ_LOM
+            );
+
+        FUZZY_PRINTF(
+            "\n%s controller results\n"
+            "========================================\n"
+            "COG: %.5f\n"
+            "MOM: %.5f\n"
+            "SOM: %.5f\n"
+            "LOM: %.5f\n",
+            method_names[method_index],
+            cog,
+            mom,
+            som,
+            lom
+        );
+
+        cog_success =
+            fuzzy_rules_plot_cog(
+                &rules,
+                cog_filenames[method_index],
+                cog_titles[method_index],
+                cog,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step
+            );
+
+        mom_success =
+            fuzzy_rules_plot_cog(
+                &rules,
+                mom_filenames[method_index],
+                mom_titles[method_index],
+                mom,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step
+            );
+
+        som_success =
+            fuzzy_rules_plot_cog(
+                &rules,
+                som_filenames[method_index],
+                som_titles[method_index],
+                som,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step
+            );
+
+        lom_success =
+            fuzzy_rules_plot_cog(
+                &rules,
+                lom_filenames[method_index],
+                lom_titles[method_index],
+                lom,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step
+            );
 
         fuzzy_rules_free(
             &rules
         );
 
-        return false;
+        if (
+            !cog_success ||
+            !mom_success ||
+            !som_success ||
+            !lom_success
+        ) {
+            FUZZY_ERROR(
+                "Failed to plot %s controller results.\n",
+                method_names[method_index]
+            );
+
+            return false;
+        }
     }
 
-    FUZZY_PRINTF(
-        "\nRule activations\n"
-        "================\n"
-    );
-
-    fuzzy_rules_print(
-        &rules
-    );
-
-    /*
-     * Run the same aggregated output through every
-     * defuzzification method.
-     */
-    cog =
-        fuzzy_rules_defuzzify(
-            &rules,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step,
-            FUZZY_DEFUZZ_COG
-        );
-
-    mom =
-        fuzzy_rules_defuzzify(
-            &rules,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step,
-            FUZZY_DEFUZZ_MOM
-        );
-
-    som =
-        fuzzy_rules_defuzzify(
-            &rules,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step,
-            FUZZY_DEFUZZ_SOM
-        );
-
-    lom =
-        fuzzy_rules_defuzzify(
-            &rules,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step,
-            FUZZY_DEFUZZ_LOM
-        );
-
-    FUZZY_PRINTF(
-        "\nDefuzzification results\n"
-        "=======================\n"
-        "COG: %.5f\n"
-        "MOM: %.5f\n"
-        "SOM: %.5f\n"
-        "LOM: %.5f\n",
-        cog,
-        mom,
-        som,
-        lom
-    );
-
-    /*
-     * Plot COG.
-     */
-    cog_success =
-        fuzzy_rules_plot_cog(
-            &rules,
-            DEMO_DIRECTORY "/selected_cog",
-            "Selected Process Response - COG",
-            cog,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step
-        );
-
-    /*
-     * Plot MOM.
-     */
-    mom_success =
-        fuzzy_rules_plot_cog(
-            &rules,
-            DEMO_DIRECTORY "/selected_mom",
-            "Selected Process Response - MOM",
-            mom,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step
-        );
-
-    /*
-     * Plot SOM.
-     */
-    som_success =
-        fuzzy_rules_plot_cog(
-            &rules,
-            DEMO_DIRECTORY "/selected_som",
-            "Selected Process Response - SOM",
-            som,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step
-        );
-
-    /*
-     * Plot LOM.
-     */
-    lom_success =
-        fuzzy_rules_plot_cog(
-            &rules,
-            DEMO_DIRECTORY "/selected_lom",
-            "Selected Process Response - LOM",
-            lom,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            defuzz_step
-        );
-
-    fuzzy_rules_free(
-        &rules
-    );
-
-    return
-        cog_success &&
-        mom_success &&
-        som_success &&
-        lom_success;
+    return true;
 }
 
 /* ==========================================================
- * Membership-function plot helpers
+ * T-norm and T-conorm curve demonstrations
+ *
+ * The first operand varies from 0 to 1.
+ * The second operand remains fixed at 0.5.
+ *
+ * This produces direct comparisons of:
+ *
+ * T-norms:
+ *     - Standard minimum
+ *     - Algebraic product
+ *     - Bounded difference
+ *
+ * T-conorms:
+ *     - Standard maximum
+ *     - Algebraic probabilistic sum
+ *     - Bounded sum
  * ========================================================== */
+
+static float operator_and_standard(
+    float value
+)
+{
+    return fuzzy_and_method(
+        FUZZY_LOGIC_STANDARD,
+        2,
+        value,
+        0.5f
+    );
+}
+
+
+static float operator_and_algebraic(
+    float value
+)
+{
+    return fuzzy_and_method(
+        FUZZY_LOGIC_ALGEBRAIC,
+        2,
+        value,
+        0.5f
+    );
+}
+
+
+static float operator_and_bounded(
+    float value
+)
+{
+    return fuzzy_and_method(
+        FUZZY_LOGIC_BOUNDED,
+        2,
+        value,
+        0.5f
+    );
+}
+
+
+static float operator_or_standard(
+    float value
+)
+{
+    return fuzzy_or_method(
+        FUZZY_LOGIC_STANDARD,
+        2,
+        value,
+        0.5f
+    );
+}
+
+
+static float operator_or_algebraic(
+    float value
+)
+{
+    return fuzzy_or_method(
+        FUZZY_LOGIC_ALGEBRAIC,
+        2,
+        value,
+        0.5f
+    );
+}
+
+
+static float operator_or_bounded(
+    float value
+)
+{
+    return fuzzy_or_method(
+        FUZZY_LOGIC_BOUNDED,
+        2,
+        value,
+        0.5f
+    );
+}
+
+
+/* ==========================================================
+ * Plot every supported T-norm on one SVG.
+ * ========================================================== */
+
+static bool plot_t_norms(void)
+{
+    return FUZZY_PLOT(
+        DEMO_DIRECTORY "/t_norms",
+        "T-Norm Comparison: Second Operand = 0.5",
+        0.0f,
+        1.0f,
+        0.01f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Standard AND: min(a, 0.5)",
+            "#2563eb",
+            operator_and_standard
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Algebraic AND: a * 0.5",
+            "#16a34a",
+            operator_and_algebraic
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Bounded AND: max(0, a - 0.5)",
+            "#ef4444",
+            operator_and_bounded
+        )
+    );
+}
+
+
+/* ==========================================================
+ * Plot every supported T-conorm on one SVG.
+ * ========================================================== */
+
+static bool plot_t_conorms(void)
+{
+    return FUZZY_PLOT(
+        DEMO_DIRECTORY "/t_conorms",
+        "T-Conorm Comparison: Second Operand = 0.5",
+        0.0f,
+        1.0f,
+        0.01f,
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Standard OR: max(a, 0.5)",
+            "#2563eb",
+            operator_or_standard
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Algebraic OR: a + 0.5 - 0.5a",
+            "#16a34a",
+            operator_or_algebraic
+        ),
+
+        FUZZY_PLOT_FUNCTION_NAMED(
+            "Bounded OR: min(1, a + 0.5)",
+            "#ef4444",
+            operator_or_bounded
+        )
+    );
+}
 
 static bool plot_all_shapes(void)
 {
@@ -2052,7 +2433,6 @@ static bool plot_response_functions(void)
     );
 }
 
-
 static bool plot_all_membership_functions(void)
 {
     if (!plot_all_shapes()) {
@@ -2119,13 +2499,29 @@ static bool plot_all_membership_functions(void)
         return false;
     }
 
+    if (!plot_t_norms()) {
+        FUZZY_ERROR(
+            "Failed to generate T-norm comparison plot.\n"
+        );
+
+        return false;
+    }
+
+    if (!plot_t_conorms()) {
+        FUZZY_ERROR(
+            "Failed to generate T-conorm comparison plot.\n"
+        );
+
+        return false;
+    }
+
     FUZZY_PRINTF(
-        "\nGenerated all membership-function plots.\n"
+        "\nGenerated all membership-function "
+        "and fuzzy-operator plots.\n"
     );
 
     return true;
 }
-
 
 /* ==========================================================
  * Five-dimensional sweep adapter
@@ -2158,10 +2554,10 @@ static float evaluate_process_sweep(
         inputs[2],
         inputs[3],
         inputs[4],
-        cog_step
+        cog_step,
+        FUZZY_LOGIC_STANDARD
     );
 }
-
 
 /* ==========================================================
  * Five-dimensional COG sweep
@@ -2278,31 +2674,41 @@ static bool plot_process_sweep(void)
 
 static bool run_random_demonstration(void)
 {
-    float temperature =
+    float temperature;
+    float humidity;
+    float vibration;
+    float pressure;
+    float quality;
+
+    float standard_cog;
+    float algebraic_cog;
+    float bounded_cog;
+
+    temperature =
         random_float(
             0.0f,
             100.0f
         );
 
-    float humidity =
+    humidity =
         random_float(
             0.0f,
             100.0f
         );
 
-    float vibration =
+    vibration =
         random_float(
             0.0f,
             10.0f
         );
 
-    float pressure =
+    pressure =
         random_float(
             0.0f,
             200.0f
         );
 
-    float quality =
+    quality =
         random_float(
             0.0f,
             100.0f
@@ -2323,19 +2729,56 @@ static bool run_random_demonstration(void)
         quality
     );
 
-    float response =
+    /*
+     * Evaluate the same controller three times.
+     *
+     * The crisp inputs, membership functions, rule
+     * definitions and consequents remain identical.
+     *
+     * Only the T-norm and T-conorm family changes.
+     */
+    standard_cog =
         evaluate_process_response(
             temperature,
             humidity,
             vibration,
             pressure,
             quality,
-            NORMAL_COG_STEP
+            NORMAL_COG_STEP,
+            FUZZY_LOGIC_STANDARD
+        );
+
+    algebraic_cog =
+        evaluate_process_response(
+            temperature,
+            humidity,
+            vibration,
+            pressure,
+            quality,
+            NORMAL_COG_STEP,
+            FUZZY_LOGIC_ALGEBRAIC
+        );
+
+    bounded_cog =
+        evaluate_process_response(
+            temperature,
+            humidity,
+            vibration,
+            pressure,
+            quality,
+            NORMAL_COG_STEP,
+            FUZZY_LOGIC_BOUNDED
         );
 
     FUZZY_PRINTF(
-        "\nDefuzzified process-response COG: %.5f\n",
-        response
+        "\nOperator-family COG comparison\n"
+        "==============================\n"
+        "Standard Zadeh:      %.5f\n"
+        "Algebraic:           %.5f\n"
+        "Bounded Lukasiewicz: %.5f\n",
+        standard_cog,
+        algebraic_cog,
+        bounded_cog
     );
 
     if (!plot_selected_process_cog(
@@ -2347,7 +2790,8 @@ static bool run_random_demonstration(void)
         NORMAL_COG_STEP
     )) {
         FUZZY_ERROR(
-            "Failed to generate selected COG plot.\n"
+            "Failed to generate selected operator-family "
+            "defuzzification plots.\n"
         );
 
         return false;
@@ -2420,7 +2864,6 @@ static void print_random_not_rule(void)
 /* ==========================================================
  * Program entry point
  * ========================================================== */
-
 int main(void)
 {
     /*
@@ -2431,11 +2874,11 @@ int main(void)
     );
 
     /*
-    * Generate one randomized fuzzy system for this run.
-    *
-    * All subsequent plots, rules, COG evaluations, and sweep
-    * points use these same parameters.
-    */
+     * Generate one randomized fuzzy system for this run.
+     *
+     * All subsequent plots, rules, COG evaluations, and
+     * sweep points use these same parameters.
+     */
     randomize_membership_parameters();
 
     FUZZY_PRINTF(
@@ -2446,13 +2889,22 @@ int main(void)
     print_random_not_rule();
 
     /*
-     * Generate plots for every supported membership shape,
-     * every configured hedge, each input variable, and the
-     * output variable.
+     * Generate:
+     *
+     * - Membership-function plots
+     * - Hedge comparison plot
+     * - T-norm comparison plot
+     * - T-conorm comparison plot
      */
     if (!plot_all_membership_functions()) {
         return 1;
     }
+
+    FUZZY_PRINTF(
+        "\nGenerated fuzzy-operator comparison plots:\n"
+        "  " DEMO_DIRECTORY "/t_norms.svg\n"
+        "  " DEMO_DIRECTORY "/t_conorms.svg\n"
+    );
 
     /*
      * Generate:
@@ -2462,7 +2914,8 @@ int main(void)
      */
     if (!plot_process_sweep()) {
         FUZZY_ERROR(
-            "Failed to generate five-dimensional COG sweep.\n"
+            "Failed to generate five-dimensional "
+            "COG sweep.\n"
         );
 
         return 1;
@@ -2476,14 +2929,34 @@ int main(void)
 
     /*
      * Evaluate one randomly generated operating condition,
-     * print all rule activations, and generate one selected
-     * aggregated-output COG plot.
+     * print all thirteen rule activations, and generate
+     * separate COG, MOM, SOM, and LOM plots.
      */
     if (!run_random_demonstration()) {
         return 1;
     }
 
     FUZZY_PRINTF(
+        "\nGenerated complete operator-family controller plots:\n"
+
+        "\nStandard Zadeh controller:\n"
+        "  " DEMO_DIRECTORY "/selected_standard_cog.svg\n"
+        "  " DEMO_DIRECTORY "/selected_standard_mom.svg\n"
+        "  " DEMO_DIRECTORY "/selected_standard_som.svg\n"
+        "  " DEMO_DIRECTORY "/selected_standard_lom.svg\n"
+
+        "\nAlgebraic controller:\n"
+        "  " DEMO_DIRECTORY "/selected_algebraic_cog.svg\n"
+        "  " DEMO_DIRECTORY "/selected_algebraic_mom.svg\n"
+        "  " DEMO_DIRECTORY "/selected_algebraic_som.svg\n"
+        "  " DEMO_DIRECTORY "/selected_algebraic_lom.svg\n"
+
+        "\nBounded Lukasiewicz controller:\n"
+        "  " DEMO_DIRECTORY "/selected_bounded_cog.svg\n"
+        "  " DEMO_DIRECTORY "/selected_bounded_mom.svg\n"
+        "  " DEMO_DIRECTORY "/selected_bounded_som.svg\n"
+        "  " DEMO_DIRECTORY "/selected_bounded_lom.svg\n"
+
         "\nComplete fuzzy.h demonstration finished.\n"
     );
 

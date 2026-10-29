@@ -109,6 +109,12 @@ typedef struct Hedges {
 
 typedef float (*fuzzy_output_function_t)(float);
 
+typedef enum FuzzyLogicMethod {
+    FUZZY_LOGIC_STANDARD = 0,
+    FUZZY_LOGIC_ALGEBRAIC,
+    FUZZY_LOGIC_BOUNDED
+} fuzzy_logic_method_t;
+
 
 /* ==========================================================
  * Mamdani defuzzification methods
@@ -214,6 +220,18 @@ float fuzzy_or(
 );
 
 float fuzzy_and(
+    int count,
+    ...
+);
+
+float fuzzy_or_method(
+    fuzzy_logic_method_t method,
+    int count,
+    ...
+);
+
+float fuzzy_and_method(
+    fuzzy_logic_method_t method,
     int count,
     ...
 );
@@ -622,73 +640,117 @@ static float fuzzy_apply_hedge(
  *
  * fuzzy_or(3, value1, value2, value3);
  */
-float fuzzy_or(int count, ...)
+static float fuzzy_or_v(fuzzy_logic_method_t method, int count, va_list args)
 {
-    va_list args;
     float result;
     float next;
     int i;
 
-    if (count <= 0) {
+    if (count <= 0) return LEVEL_LO;
+
+    result = fuzzy_clamp((float)va_arg(args, double));
+
+    for (i = 1; i < count; i++) {
+        next = fuzzy_clamp((float)va_arg(args, double));
+
+        switch (method) {
+            case FUZZY_LOGIC_STANDARD:
+                result = result > next ? result : next;
+                break;
+            case FUZZY_LOGIC_ALGEBRAIC:
+                result = result + next - result * next;
+                break;
+            case FUZZY_LOGIC_BOUNDED:
+                result += next;
+                if (result > LEVEL_HI) result = LEVEL_HI;
+                break;
+            default:
+                return LEVEL_LO;
+        }
+    }
+
+    return fuzzy_clamp(result);
+}
+
+static float fuzzy_and_v(fuzzy_logic_method_t method, int count, va_list args)
+{
+    float result;
+    float next;
+    int i;
+
+    if (count <= 0) return LEVEL_HI;
+
+    result = fuzzy_clamp((float)va_arg(args, double));
+
+    for (i = 1; i < count; i++) {
+        next = fuzzy_clamp((float)va_arg(args, double));
+
+        switch (method) {
+            case FUZZY_LOGIC_STANDARD:
+                result = result < next ? result : next;
+                break;
+            case FUZZY_LOGIC_ALGEBRAIC:
+                result *= next;
+                break;
+            case FUZZY_LOGIC_BOUNDED:
+                result = result + next - LEVEL_HI;
+                if (result < LEVEL_LO) result = LEVEL_LO;
+                break;
+            default:
+                return LEVEL_LO;
+        }
+    }
+
+    return fuzzy_clamp(result);
+}
+
+float fuzzy_or_method(fuzzy_logic_method_t method, int count, ...)
+{
+    va_list args;
+    float result;
+
+    if (method < FUZZY_LOGIC_STANDARD || method > FUZZY_LOGIC_BOUNDED) {
         return LEVEL_LO;
     }
 
     va_start(args, count);
-
-    result =
-        (float)va_arg(args, double);
-
-    for (i = 1; i < count; i++) {
-        next =
-            (float)va_arg(args, double);
-
-        result =
-            result > next
-                ? result
-                : next;
-    }
-
+    result = fuzzy_or_v(method, count, args);
     va_end(args);
-
     return result;
 }
 
-/*
- * Fuzzy AND:
- * Returns the minimum of all supplied membership values.
- *
- * Example:
- *
- * fuzzy_and(3, value1, value2, value3);
- */
+float fuzzy_and_method(fuzzy_logic_method_t method, int count, ...)
+{
+    va_list args;
+    float result;
+
+    if (method < FUZZY_LOGIC_STANDARD || method > FUZZY_LOGIC_BOUNDED) {
+        return LEVEL_LO;
+    }
+
+    va_start(args, count);
+    result = fuzzy_and_v(method, count, args);
+    va_end(args);
+    return result;
+}
+
+float fuzzy_or(int count, ...)
+{
+    va_list args;
+    float result;
+    va_start(args, count);
+    result = fuzzy_or_v(FUZZY_LOGIC_STANDARD, count, args);
+    va_end(args);
+    return result;
+}
+
 float fuzzy_and(int count, ...)
 {
     va_list args;
     float result;
-    float next;
-    int i;
-
-    if (count <= 0) {
-        return LEVEL_HI;
-    }
-
     va_start(args, count);
-
-    result =
-        (float)va_arg(args, double);
-
-    for (i = 1; i < count; i++) {
-        next =
-            (float)va_arg(args, double);
-
-        result =
-            result < next
-                ? result
-                : next;
-    }
-
+    result = fuzzy_and_v(FUZZY_LOGIC_STANDARD, count, args);
     va_end(args);
-
     return result;
 }
 
