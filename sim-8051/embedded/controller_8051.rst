@@ -546,13 +546,13 @@
                                     546 	.globl __mcs51_genXRAMCLEAR
                                     547 	.globl __mcs51_genRAMCLEAR
                            000000   548 	C$controller_8051.c$29$2_0$103 ==.
-                                    549 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:29: volatile unsigned char test_temperature = 0u;
+                                    549 ;	/home/mahavigna/CI/controller_8051.c:29: volatile unsigned char test_temperature = 0u;
       0000A5 75 08 00         [24]  550 	mov	_test_temperature,#0x00
                            000003   551 	C$controller_8051.c$30$2_0$103 ==.
-                                    552 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:30: volatile unsigned char test_pwm = 0u;
+                                    552 ;	/home/mahavigna/CI/controller_8051.c:30: volatile unsigned char test_pwm = 0u;
       0000A8 75 09 00         [24]  553 	mov	_test_pwm,#0x00
                            000006   554 	C$controller_8051.c$31$2_0$103 ==.
-                                    555 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:31: volatile float test_fan_speed = 0.0f;
+                                    555 ;	/home/mahavigna/CI/controller_8051.c:31: volatile float test_fan_speed = 0.0f;
       0000AB E4               [12]  556 	clr	a
       0000AC F5 0A            [12]  557 	mov	_test_fan_speed,a
       0000AE F5 0B            [12]  558 	mov	(_test_fan_speed + 1),a
@@ -579,7 +579,7 @@
                                     579 ;------------------------------------------------------------
                            000000   580 	Fcontroller_8051$fuzzy_clamp$0$0 ==.
                            000000   581 	C$fuzzy.h$494$0_0$38 ==.
-                                    582 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:494: static float fuzzy_clamp(float value)
+                                    582 ;	/home/mahavigna/CI/fuzzy.h:494: static float fuzzy_clamp(float value)
                                     583 ;	-----------------------------------------
                                     584 ;	 function fuzzy_clamp
                                     585 ;	-----------------------------------------
@@ -597,7 +597,7 @@
       0000BB AE F0            [24]  597 	mov	r6,b
       0000BD FF               [12]  598 	mov	r7,a
                            000007   599 	C$fuzzy.h$496$1_0$38 ==.
-                                    600 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:496: if (value < LEVEL_LO) {
+                                    600 ;	/home/mahavigna/CI/fuzzy.h:496: if (value < LEVEL_LO) {
       0000BE C0 07            [24]  601 	push	ar7
       0000C0 C0 06            [24]  602 	push	ar6
       0000C2 C0 05            [24]  603 	push	ar5
@@ -623,14 +623,14 @@
       0000E9 EB               [12]  623 	mov	a,r3
       0000EA 60 08            [24]  624 	jz	00102$
                            000035   625 	C$fuzzy.h$497$2_0$39 ==.
-                                    626 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:497: return LEVEL_LO;
+                                    626 ;	/home/mahavigna/CI/fuzzy.h:497: return LEVEL_LO;
       0000EC 90 00 00         [24]  627 	mov	dptr,#0x0000
       0000EF E4               [12]  628 	clr	a
       0000F0 F5 F0            [12]  629 	mov	b,a
       0000F2 80 3F            [24]  630 	sjmp	00105$
       0000F4                        631 00102$:
                            00003D   632 	C$fuzzy.h$500$1_0$38 ==.
-                                    633 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:500: if (value > LEVEL_HI) {
+                                    633 ;	/home/mahavigna/CI/fuzzy.h:500: if (value > LEVEL_HI) {
       0000F4 C0 07            [24]  634 	push	ar7
       0000F6 C0 06            [24]  635 	push	ar6
       0000F8 C0 05            [24]  636 	push	ar5
@@ -654,21 +654,21 @@
       00011F EB               [12]  654 	mov	a,r3
       000120 60 0A            [24]  655 	jz	00104$
                            00006B   656 	C$fuzzy.h$501$2_0$40 ==.
-                                    657 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:501: return LEVEL_HI;
+                                    657 ;	/home/mahavigna/CI/fuzzy.h:501: return LEVEL_HI;
       000122 90 00 00         [24]  658 	mov	dptr,#0x0000
       000125 75 F0 80         [24]  659 	mov	b, #0x80
       000128 74 3F            [12]  660 	mov	a, #0x3f
       00012A 80 07            [24]  661 	sjmp	00105$
       00012C                        662 00104$:
                            000075   663 	C$fuzzy.h$504$1_0$38 ==.
-                                    664 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:504: return value;
+                                    664 ;	/home/mahavigna/CI/fuzzy.h:504: return value;
       00012C 8C 82            [24]  665 	mov	dpl, r4
       00012E 8D 83            [24]  666 	mov	dph, r5
       000130 8E F0            [24]  667 	mov	b, r6
       000132 EF               [12]  668 	mov	a, r7
       000133                        669 00105$:
                            00007C   670 	C$fuzzy.h$505$1_0$38 ==.
-                                    671 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:505: }
+                                    671 ;	/home/mahavigna/CI/fuzzy.h:505: }
                            00007C   672 	C$fuzzy.h$505$1_0$38 ==.
                            00007C   673 	XFcontroller_8051$fuzzy_clamp$0$0 ==.
       000133 22               [24]  674 	ret
@@ -679,13 +679,13 @@
                                     679 ;------------------------------------------------------------
                            00007D   680 	G$fuzzy_not$0$0 ==.
                            00007D   681 	C$fuzzy.h$510$1_0$42 ==.
-                                    682 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:510: float fuzzy_not(
+                                    682 ;	/home/mahavigna/CI/fuzzy.h:510: float fuzzy_not(
                                     683 ;	-----------------------------------------
                                     684 ;	 function fuzzy_not
                                     685 ;	-----------------------------------------
       000134                        686 _fuzzy_not:
                            00007D   687 	C$fuzzy.h$516$1_0$42 ==.
-                                    688 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:516: membership
+                                    688 ;	/home/mahavigna/CI/fuzzy.h:516: membership
       000134 12 00 B7         [24]  689 	lcall	_fuzzy_clamp
       000137 AC 82            [24]  690 	mov	r4, dpl
       000139 AD 83            [24]  691 	mov	r5, dph
@@ -711,7 +711,7 @@
       000162 8E F0            [24]  711 	mov	b, r6
       000164 EF               [12]  712 	mov	a, r7
                            0000AE   713 	C$fuzzy.h$518$1_0$42 ==.
-                                    714 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:518: }
+                                    714 ;	/home/mahavigna/CI/fuzzy.h:518: }
                            0000AE   715 	C$fuzzy.h$518$1_0$42 ==.
                            0000AE   716 	XG$fuzzy_not$0$0 ==.
       000165 22               [24]  717 	ret
@@ -724,7 +724,7 @@
                                     724 ;------------------------------------------------------------
                            0000AF   725 	Fcontroller_8051$fuzzy_apply_hedge$0$0 ==.
                            0000AF   726 	C$fuzzy.h$528$1_0$44 ==.
-                                    727 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:528: static float fuzzy_apply_hedge(
+                                    727 ;	/home/mahavigna/CI/fuzzy.h:528: static float fuzzy_apply_hedge(
                                     728 ;	-----------------------------------------
                                     729 ;	 function fuzzy_apply_hedge
                                     730 ;	-----------------------------------------
@@ -739,7 +739,7 @@
       000174 24 04            [12]  739 	add	a,#0x04
       000176 F5 81            [12]  740 	mov	sp,a
                            0000C1   741 	C$fuzzy.h$540$1_0$44 ==.
-                                    742 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:540: fuzzy_clamp(membership);
+                                    742 ;	/home/mahavigna/CI/fuzzy.h:540: fuzzy_clamp(membership);
       000178 8C 82            [24]  743 	mov	dpl, r4
       00017A 8D 83            [24]  744 	mov	dph, r5
       00017C 8E F0            [24]  745 	mov	b, r6
@@ -755,27 +755,27 @@
       00018D 08               [12]  755 	inc	r0
       00018E F6               [12]  756 	mov	@r0,a
                            0000D8   757 	C$fuzzy.h$555$1_0$44 ==.
-                                    758 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:555: if (hedge == 0u) {
+                                    758 ;	/home/mahavigna/CI/fuzzy.h:555: if (hedge == 0u) {
       00018F E5 0E            [12]  759 	mov	a,_bp
       000191 24 FD            [12]  760 	add	a,#0xfd
       000193 F8               [12]  761 	mov	r0,a
       000194 E6               [12]  762 	mov	a,@r0
       000195 70 07            [24]  763 	jnz	00102$
                            0000E0   764 	C$fuzzy.h$556$2_0$45 ==.
-                                    765 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:556: hedge = 1u;
+                                    765 ;	/home/mahavigna/CI/fuzzy.h:556: hedge = 1u;
       000197 E5 0E            [12]  766 	mov	a,_bp
       000199 24 FD            [12]  767 	add	a,#0xfd
       00019B F8               [12]  768 	mov	r0,a
       00019C 76 01            [12]  769 	mov	@r0,#0x01
       00019E                        770 00102$:
                            0000E7   771 	C$fuzzy.h$559$1_0$44 ==.
-                                    772 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:559: result = LEVEL_HI;
+                                    772 ;	/home/mahavigna/CI/fuzzy.h:559: result = LEVEL_HI;
       00019E 7A 00            [12]  773 	mov	r2,#0x00
       0001A0 7B 00            [12]  774 	mov	r3,#0x00
       0001A2 7E 80            [12]  775 	mov	r6,#0x80
       0001A4 7F 3F            [12]  776 	mov	r7,#0x3f
                            0000EF   777 	C$fuzzy.h$561$1_0$44 ==.
-                                    778 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:561: while (hedge > 0u) {
+                                    778 ;	/home/mahavigna/CI/fuzzy.h:561: while (hedge > 0u) {
       0001A6 E5 0E            [12]  779 	mov	a,_bp
       0001A8 24 FD            [12]  780 	add	a,#0xfd
       0001AA F8               [12]  781 	mov	r0,a
@@ -784,7 +784,7 @@
       0001AD ED               [12]  784 	mov	a,r5
       0001AE 60 30            [24]  785 	jz	00105$
                            0000F9   786 	C$fuzzy.h$562$1_0$44 ==.
-                                    787 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:562: result *= membership;
+                                    787 ;	/home/mahavigna/CI/fuzzy.h:562: result *= membership;
       0001B0 C0 05            [24]  788 	push	ar5
       0001B2 A8 0E            [24]  789 	mov	r0,_bp
       0001B4 08               [12]  790 	inc	r0
@@ -800,7 +800,7 @@
       0001C1 E6               [12]  800 	mov	a,@r0
       0001C2 C0 E0            [24]  801 	push	acc
                            00010D   802 	C$fuzzy.h$563$1_0$44 ==.
-                                    803 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:563: hedge--;
+                                    803 ;	/home/mahavigna/CI/fuzzy.h:563: hedge--;
       0001C4 8A 82            [24]  804 	mov	dpl, r2
       0001C6 8B 83            [24]  805 	mov	dph, r3
       0001C8 8E F0            [24]  806 	mov	b, r6
@@ -818,14 +818,14 @@
       0001DE 80 CD            [24]  818 	sjmp	00103$
       0001E0                        819 00105$:
                            000129   820 	C$fuzzy.h$567$1_0$44 ==.
-                                    821 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:567: result
+                                    821 ;	/home/mahavigna/CI/fuzzy.h:567: result
       0001E0 8A 82            [24]  822 	mov	dpl, r2
       0001E2 8B 83            [24]  823 	mov	dph, r3
       0001E4 8E F0            [24]  824 	mov	b, r6
       0001E6 EF               [12]  825 	mov	a, r7
       0001E7 12 00 B7         [24]  826 	lcall	_fuzzy_clamp
                            000133   827 	C$fuzzy.h$571$1_0$44 ==.
-                                    828 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:571: }
+                                    828 ;	/home/mahavigna/CI/fuzzy.h:571: }
       0001EA 85 0E 81         [24]  829 	mov	sp,_bp
       0001ED D0 0E            [24]  830 	pop	_bp
                            000138   831 	C$fuzzy.h$571$1_0$44 ==.
@@ -846,7 +846,7 @@
                                     846 ;------------------------------------------------------------
                            000139   847 	G$fuzzy_sugeno_weighted_average$0$0 ==.
                            000139   848 	C$fuzzy.h$659$1_0$48 ==.
-                                    849 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:659: float fuzzy_sugeno_weighted_average(
+                                    849 ;	/home/mahavigna/CI/fuzzy.h:659: float fuzzy_sugeno_weighted_average(
                                     850 ;	-----------------------------------------
                                     851 ;	 function fuzzy_sugeno_weighted_average
                                     852 ;	-----------------------------------------
@@ -857,7 +857,7 @@
       0001F6 24 11            [12]  857 	add	a,#0x11
       0001F8 F5 81            [12]  858 	mov	sp,a
                            000143   859 	C$fuzzy.h$671$1_0$48 ==.
-                                    860 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:671: if (rule_count <= 0) {
+                                    860 ;	/home/mahavigna/CI/fuzzy.h:671: if (rule_count <= 0) {
       0001FA E5 0E            [12]  861 	mov	a,_bp
       0001FC 24 FC            [12]  862 	add	a,#0xfc
       0001FE F8               [12]  863 	mov	r0,a
@@ -871,14 +871,14 @@
       00020A 95 F0            [12]  871 	subb	a,b
       00020C 40 09            [24]  872 	jc	00102$
                            000157   873 	C$fuzzy.h$672$2_0$49 ==.
-                                    874 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:672: return 0.0f;
+                                    874 ;	/home/mahavigna/CI/fuzzy.h:672: return 0.0f;
       00020E 90 00 00         [24]  875 	mov	dptr,#0x0000
       000211 E4               [12]  876 	clr	a
       000212 F5 F0            [12]  877 	mov	b,a
       000214 02 03 D4         [24]  878 	ljmp	00109$
       000217                        879 00102$:
                            000160   880 	C$fuzzy.h$676$1_0$48 ==.
-                                    881 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:676: 0.0f;
+                                    881 ;	/home/mahavigna/CI/fuzzy.h:676: 0.0f;
       000217 E5 0E            [12]  882 	mov	a,_bp
       000219 24 06            [12]  883 	add	a,#0x06
       00021B F8               [12]  884 	mov	r0,a
@@ -891,7 +891,7 @@
       000222 08               [12]  891 	inc	r0
       000223 F6               [12]  892 	mov	@r0,a
                            00016D   893 	C$fuzzy.h$679$1_0$48 ==.
-                                    894 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:679: 0.0f;
+                                    894 ;	/home/mahavigna/CI/fuzzy.h:679: 0.0f;
       000224 E5 0E            [12]  895 	mov	a,_bp
       000226 24 0A            [12]  896 	add	a,#0x0a
       000228 F8               [12]  897 	mov	r0,a
@@ -904,19 +904,19 @@
       00022F 08               [12]  904 	inc	r0
       000230 F6               [12]  905 	mov	@r0,a
                            00017A   906 	C$fuzzy.h$681$2_0$50 ==.
-                                    907 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:681: va_start(
+                                    907 ;	/home/mahavigna/CI/fuzzy.h:681: va_start(
       000231 A8 0E            [24]  908 	mov	r0,_bp
       000233 08               [12]  909 	inc	r0
       000234 E5 0E            [12]  910 	mov	a,_bp
       000236 24 FC            [12]  911 	add	a,#0xfc
       000238 F6               [12]  912 	mov	@r0,a
                            000182   913 	C$fuzzy.h$687$1_0$48 ==.
-                                    914 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:687: i = 0;
+                                    914 ;	/home/mahavigna/CI/fuzzy.h:687: i = 0;
       000239 7B 00            [12]  915 	mov	r3,#0x00
       00023B 7A 00            [12]  916 	mov	r2,#0x00
       00023D                        917 00107$:
                            000186   918 	C$fuzzy.h$688$2_0$51 ==.
-                                    919 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:688: i < rule_count;
+                                    919 ;	/home/mahavigna/CI/fuzzy.h:688: i < rule_count;
       00023D E5 0E            [12]  920 	mov	a,_bp
       00023F 24 FC            [12]  921 	add	a,#0xfc
       000241 F8               [12]  922 	mov	r0,a
@@ -933,7 +933,7 @@
       000252 02 03 67         [24]  933 	ljmp	00103$
       000255                        934 00141$:
                            00019E   935 	C$fuzzy.h$692$3_0$52 ==.
-                                    936 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:692: (float)va_arg(
+                                    936 ;	/home/mahavigna/CI/fuzzy.h:692: (float)va_arg(
       000255 A8 0E            [24]  937 	mov	r0,_bp
       000257 08               [12]  938 	inc	r0
       000258 E6               [12]  939 	mov	a,@r0
@@ -961,7 +961,7 @@
       000270 19               [12]  961 	dec	r1
       000271 19               [12]  962 	dec	r1
                            0001BB   963 	C$fuzzy.h$698$3_0$52 ==.
-                                    964 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:698: (float)va_arg(
+                                    964 ;	/home/mahavigna/CI/fuzzy.h:698: (float)va_arg(
       000272 1E               [12]  965 	dec	r6
       000273 1E               [12]  966 	dec	r6
       000274 1E               [12]  967 	dec	r6
@@ -981,7 +981,7 @@
       000289 19               [12]  981 	dec	r1
       00028A 19               [12]  982 	dec	r1
                            0001D4   983 	C$fuzzy.h$705$3_0$52 ==.
-                                    984 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:705: firing_strength
+                                    984 ;	/home/mahavigna/CI/fuzzy.h:705: firing_strength
       00028B A8 0E            [24]  985 	mov	r0,_bp
       00028D 08               [12]  986 	inc	r0
       00028E 08               [12]  987 	inc	r0
@@ -1017,7 +1017,7 @@
       0002C0 D0 06            [24] 1017 	pop	ar6
       0002C2 D0 07            [24] 1018 	pop	ar7
                            00020D  1019 	C$fuzzy.h$718$1_0$48 ==.
-                                   1020 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:718: consequent;
+                                   1020 ;	/home/mahavigna/CI/fuzzy.h:718: consequent;
       0002C4 C0 03            [24] 1021 	push	ar3
       0002C6 C0 02            [24] 1022 	push	ar2
       0002C8 C0 07            [24] 1023 	push	ar7
@@ -1047,7 +1047,7 @@
       0002F3 C0 06            [24] 1047 	push	ar6
       0002F5 C0 07            [24] 1048 	push	ar7
                            000240  1049 	C$fuzzy.h$721$1_0$48 ==.
-                                   1050 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:721: firing_strength;
+                                   1050 ;	/home/mahavigna/CI/fuzzy.h:721: firing_strength;
       0002F7 E5 0E            [12] 1051 	mov	a,_bp
       0002F9 24 06            [12] 1052 	add	a,#0x06
       0002FB F8               [12] 1053 	mov	r0,a
@@ -1088,7 +1088,7 @@
       000330 E6               [12] 1088 	mov	a,@r0
       000331 C0 E0            [24] 1089 	push	acc
                            00027C  1090 	C$fuzzy.h$689$1_0$48 ==.
-                                   1091 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:689: i++
+                                   1091 ;	/home/mahavigna/CI/fuzzy.h:689: i++
       000333 E5 0E            [12] 1092 	mov	a,_bp
       000335 24 0A            [12] 1093 	add	a,#0x0a
       000337 F8               [12] 1094 	mov	r0,a
@@ -1123,7 +1123,7 @@
       000364 02 02 3D         [24] 1123 	ljmp	00107$
       000367                       1124 00103$:
                            0002B0  1125 	C$fuzzy.h$726$1_0$48 ==.
-                                   1126 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:726: if (firing_sum <= LEVEL_LO) {
+                                   1126 ;	/home/mahavigna/CI/fuzzy.h:726: if (firing_sum <= LEVEL_LO) {
       000367 E5 0E            [12] 1127 	mov	a,_bp
       000369 24 0A            [12] 1128 	add	a,#0x0a
       00036B F8               [12] 1129 	mov	r0,a
@@ -1150,14 +1150,14 @@
       00038E 92 00            [24] 1150 	mov	b0,c
       000390 40 08            [24] 1151 	jc	00105$
                            0002DB  1152 	C$fuzzy.h$727$2_0$54 ==.
-                                   1153 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:727: return 0.0f;
+                                   1153 ;	/home/mahavigna/CI/fuzzy.h:727: return 0.0f;
       000392 90 00 00         [24] 1154 	mov	dptr,#0x0000
       000395 E4               [12] 1155 	clr	a
       000396 F5 F0            [12] 1156 	mov	b,a
       000398 80 3A            [24] 1157 	sjmp	00109$
       00039A                       1158 00105$:
                            0002E3  1159 	C$fuzzy.h$731$1_0$48 ==.
-                                   1160 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:731: firing_sum;
+                                   1160 ;	/home/mahavigna/CI/fuzzy.h:731: firing_sum;
       00039A E5 0E            [12] 1161 	mov	a,_bp
       00039C 24 0A            [12] 1162 	add	a,#0x0a
       00039E F8               [12] 1163 	mov	r0,a
@@ -1196,7 +1196,7 @@
       0003D3 EF               [12] 1196 	mov	a, r7
       0003D4                       1197 00109$:
                            00031D  1198 	C$fuzzy.h$732$1_0$48 ==.
-                                   1199 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:732: }
+                                   1199 ;	/home/mahavigna/CI/fuzzy.h:732: }
       0003D4 85 0E 81         [24] 1200 	mov	sp,_bp
       0003D7 D0 0E            [24] 1201 	pop	_bp
                            000322  1202 	C$fuzzy.h$732$1_0$48 ==.
@@ -1216,7 +1216,7 @@
                                    1216 ;------------------------------------------------------------
                            000323  1217 	G$fuzzy_sugeno_weighted_sum$0$0 ==.
                            000323  1218 	C$fuzzy.h$738$1_0$56 ==.
-                                   1219 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:738: float fuzzy_sugeno_weighted_sum(
+                                   1219 ;	/home/mahavigna/CI/fuzzy.h:738: float fuzzy_sugeno_weighted_sum(
                                    1220 ;	-----------------------------------------
                                    1221 ;	 function fuzzy_sugeno_weighted_sum
                                    1222 ;	-----------------------------------------
@@ -1227,7 +1227,7 @@
       0003E0 24 0A            [12] 1227 	add	a,#0x0a
       0003E2 F5 81            [12] 1228 	mov	sp,a
                            00032D  1229 	C$fuzzy.h$749$1_0$56 ==.
-                                   1230 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:749: if (rule_count <= 0) {
+                                   1230 ;	/home/mahavigna/CI/fuzzy.h:749: if (rule_count <= 0) {
       0003E4 E5 0E            [12] 1231 	mov	a,_bp
       0003E6 24 FC            [12] 1232 	add	a,#0xfc
       0003E8 F8               [12] 1233 	mov	r0,a
@@ -1241,14 +1241,14 @@
       0003F4 95 F0            [12] 1241 	subb	a,b
       0003F6 40 09            [24] 1242 	jc	00102$
                            000341  1243 	C$fuzzy.h$750$2_0$57 ==.
-                                   1244 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:750: return 0.0f;
+                                   1244 ;	/home/mahavigna/CI/fuzzy.h:750: return 0.0f;
       0003F8 90 00 00         [24] 1245 	mov	dptr,#0x0000
       0003FB E4               [12] 1246 	clr	a
       0003FC F5 F0            [12] 1247 	mov	b,a
       0003FE 02 04 EF         [24] 1248 	ljmp	00107$
       000401                       1249 00102$:
                            00034A  1250 	C$fuzzy.h$754$1_0$56 ==.
-                                   1251 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:754: 0.0f;
+                                   1251 ;	/home/mahavigna/CI/fuzzy.h:754: 0.0f;
       000401 A8 0E            [24] 1252 	mov	r0,_bp
       000403 08               [12] 1253 	inc	r0
       000404 E4               [12] 1254 	clr	a
@@ -1260,12 +1260,12 @@
       00040A 08               [12] 1260 	inc	r0
       00040B F6               [12] 1261 	mov	@r0,a
                            000355  1262 	C$fuzzy.h$756$2_0$58 ==.
-                                   1263 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:756: va_start(
+                                   1263 ;	/home/mahavigna/CI/fuzzy.h:756: va_start(
       00040C E5 0E            [12] 1264 	mov	a,_bp
       00040E 24 FC            [12] 1265 	add	a,#0xfc
       000410 FB               [12] 1266 	mov	r3,a
                            00035A  1267 	C$fuzzy.h$762$1_0$56 ==.
-                                   1268 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:762: i = 0;
+                                   1268 ;	/home/mahavigna/CI/fuzzy.h:762: i = 0;
       000411 E5 0E            [12] 1269 	mov	a,_bp
       000413 24 09            [12] 1270 	add	a,#0x09
       000415 F8               [12] 1271 	mov	r0,a
@@ -1275,7 +1275,7 @@
       000419 F6               [12] 1275 	mov	@r0,a
       00041A                       1276 00105$:
                            000363  1277 	C$fuzzy.h$763$2_0$59 ==.
-                                   1278 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:763: i < rule_count;
+                                   1278 ;	/home/mahavigna/CI/fuzzy.h:763: i < rule_count;
       00041A E5 0E            [12] 1279 	mov	a,_bp
       00041C 24 09            [12] 1280 	add	a,#0x09
       00041E F8               [12] 1281 	mov	r0,a
@@ -1296,7 +1296,7 @@
       000435 02 04 E2         [24] 1296 	ljmp	00103$
       000438                       1297 00132$:
                            000381  1298 	C$fuzzy.h$767$3_0$60 ==.
-                                   1299 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:767: (float)va_arg(
+                                   1299 ;	/home/mahavigna/CI/fuzzy.h:767: (float)va_arg(
       000438 EB               [12] 1300 	mov	a,r3
       000439 24 FC            [12] 1301 	add	a,#0xfc
       00043B FE               [12] 1302 	mov	r6,a
@@ -1312,7 +1312,7 @@
       000449 19               [12] 1312 	dec	r1
       00044A 19               [12] 1313 	dec	r1
                            000394  1314 	C$fuzzy.h$773$3_0$60 ==.
-                                   1315 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:773: (float)va_arg(
+                                   1315 ;	/home/mahavigna/CI/fuzzy.h:773: (float)va_arg(
       00044B 1E               [12] 1316 	dec	r6
       00044C 1E               [12] 1317 	dec	r6
       00044D 1E               [12] 1318 	dec	r6
@@ -1340,7 +1340,7 @@
       000467 19               [12] 1340 	dec	r1
       000468 19               [12] 1341 	dec	r1
                            0003B2  1342 	C$fuzzy.h$780$3_0$60 ==.
-                                   1343 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:780: firing_strength
+                                   1343 ;	/home/mahavigna/CI/fuzzy.h:780: firing_strength
       000469 8F 82            [24] 1344 	mov	dpl, r7
       00046B 8D 83            [24] 1345 	mov	dph, r5
       00046D 8C F0            [24] 1346 	mov	b, r4
@@ -1352,7 +1352,7 @@
       000479 AE F0            [24] 1352 	mov	r6, b
       00047B FF               [12] 1353 	mov	r7, a
                            0003C5  1354 	C$fuzzy.h$793$1_0$56 ==.
-                                   1355 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:793: consequent;
+                                   1355 ;	/home/mahavigna/CI/fuzzy.h:793: consequent;
       00047C E5 0E            [12] 1356 	mov	a,_bp
       00047E 24 05            [12] 1357 	add	a,#0x05
       000480 F8               [12] 1358 	mov	r0,a
@@ -1384,7 +1384,7 @@
       0004AB C0 06            [24] 1384 	push	ar6
       0004AD C0 07            [24] 1385 	push	ar7
                            0003F8  1386 	C$fuzzy.h$764$1_0$56 ==.
-                                   1387 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:764: i++
+                                   1387 ;	/home/mahavigna/CI/fuzzy.h:764: i++
       0004AF A8 0E            [24] 1388 	mov	r0,_bp
       0004B1 08               [12] 1389 	inc	r0
       0004B2 86 82            [24] 1390 	mov	dpl, @r0
@@ -1419,7 +1419,7 @@
       0004DF 02 04 1A         [24] 1419 	ljmp	00105$
       0004E2                       1420 00103$:
                            00042B  1421 	C$fuzzy.h$798$1_0$56 ==.
-                                   1422 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:798: return weighted_sum;
+                                   1422 ;	/home/mahavigna/CI/fuzzy.h:798: return weighted_sum;
       0004E2 A8 0E            [24] 1423 	mov	r0,_bp
       0004E4 08               [12] 1424 	inc	r0
       0004E5 86 82            [24] 1425 	mov	dpl, @r0
@@ -1431,7 +1431,7 @@
       0004EE E6               [12] 1431 	mov	a, @r0
       0004EF                       1432 00107$:
                            000438  1433 	C$fuzzy.h$799$1_0$56 ==.
-                                   1434 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:799: }
+                                   1434 ;	/home/mahavigna/CI/fuzzy.h:799: }
       0004EF 85 0E 81         [24] 1435 	mov	sp,_bp
       0004F2 D0 0E            [24] 1436 	pop	_bp
                            00043D  1437 	C$fuzzy.h$799$1_0$56 ==.
@@ -1453,7 +1453,7 @@
                                    1453 ;------------------------------------------------------------
                            00043E  1454 	G$fuzzy_ramp$0$0 ==.
                            00043E  1455 	C$fuzzy.h$804$1_0$63 ==.
-                                   1456 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:804: float fuzzy_ramp(
+                                   1456 ;	/home/mahavigna/CI/fuzzy.h:804: float fuzzy_ramp(
                                    1457 ;	-----------------------------------------
                                    1458 ;	 function fuzzy_ramp
                                    1459 ;	-----------------------------------------
@@ -1464,7 +1464,7 @@
       0004FB 24 08            [12] 1464 	add	a,#0x08
       0004FD F5 81            [12] 1465 	mov	sp,a
                            000448  1466 	C$fuzzy.h$818$1_0$63 ==.
-                                   1467 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:818: if (lower_boundary >= upper_boundary) {
+                                   1467 ;	/home/mahavigna/CI/fuzzy.h:818: if (lower_boundary >= upper_boundary) {
       0004FF E5 0E            [12] 1468 	mov	a,_bp
       000501 24 F6            [12] 1469 	add	a,#0xf6
       000503 F8               [12] 1470 	mov	r0,a
@@ -1498,14 +1498,14 @@
       00052F 92 00            [24] 1498 	mov	b0,c
       000531 40 09            [24] 1499 	jc	00102$
                            00047C  1500 	C$fuzzy.h$819$2_0$64 ==.
-                                   1501 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:819: return LEVEL_LO;
+                                   1501 ;	/home/mahavigna/CI/fuzzy.h:819: return LEVEL_LO;
       000533 90 00 00         [24] 1502 	mov	dptr,#0x0000
       000536 E4               [12] 1503 	clr	a
       000537 F5 F0            [12] 1504 	mov	b,a
       000539 02 07 14         [24] 1505 	ljmp	00109$
       00053C                       1506 00102$:
                            000485  1507 	C$fuzzy.h$822$1_0$63 ==.
-                                   1508 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:822: if (value <= lower_boundary) {
+                                   1508 ;	/home/mahavigna/CI/fuzzy.h:822: if (value <= lower_boundary) {
       00053C E5 0E            [12] 1509 	mov	a,_bp
       00053E 24 F2            [12] 1510 	add	a,#0xf2
       000540 F8               [12] 1511 	mov	r0,a
@@ -1539,14 +1539,14 @@
       00056C 92 00            [24] 1539 	mov	b0,c
       00056E 40 1D            [24] 1540 	jc	00107$
                            0004B9  1541 	C$fuzzy.h$824$2_0$65 ==.
-                                   1542 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:824: ramp_up
+                                   1542 ;	/home/mahavigna/CI/fuzzy.h:824: ramp_up
       000570 E5 0E            [12] 1543 	mov	a,_bp
       000572 24 F1            [12] 1544 	add	a,#0xf1
       000574 F8               [12] 1545 	mov	r0,a
       000575 E6               [12] 1546 	mov	a,@r0
       000576 60 0A            [24] 1547 	jz	00111$
                            0004C1  1548 	C$fuzzy.h$825$2_0$65 ==.
-                                   1549 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:825: ? LEVEL_LO
+                                   1549 ;	/home/mahavigna/CI/fuzzy.h:825: ? LEVEL_LO
       000578 7C 00            [12] 1550 	mov	r4,#0x00
       00057A 7D 00            [12] 1551 	mov	r5,#0x00
       00057C 7E 00            [12] 1552 	mov	r6,#0x00
@@ -1554,7 +1554,7 @@
       000580 80 08            [24] 1554 	sjmp	00112$
       000582                       1555 00111$:
                            0004CB  1556 	C$fuzzy.h$826$2_0$65 ==.
-                                   1557 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:826: : LEVEL_HI;
+                                   1557 ;	/home/mahavigna/CI/fuzzy.h:826: : LEVEL_HI;
       000582 7C 00            [12] 1558 	mov	r4,#0x00
       000584 7D 00            [12] 1559 	mov	r5,#0x00
       000586 7E 80            [12] 1560 	mov	r6,#0x80
@@ -1563,7 +1563,7 @@
       00058A 02 06 F2         [24] 1563 	ljmp	00108$
       00058D                       1564 00107$:
                            0004D6  1565 	C$fuzzy.h$828$1_0$63 ==.
-                                   1566 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:828: else if (value >= upper_boundary) {
+                                   1566 ;	/home/mahavigna/CI/fuzzy.h:828: else if (value >= upper_boundary) {
       00058D E5 0E            [12] 1567 	mov	a,_bp
       00058F 24 F6            [12] 1568 	add	a,#0xf6
       000591 F8               [12] 1569 	mov	r0,a
@@ -1597,14 +1597,14 @@
       0005BD 92 00            [24] 1597 	mov	b0,c
       0005BF 40 39            [24] 1598 	jc	00104$
                            00050A  1599 	C$fuzzy.h$830$2_0$66 ==.
-                                   1600 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:830: ramp_up
+                                   1600 ;	/home/mahavigna/CI/fuzzy.h:830: ramp_up
       0005C1 E5 0E            [12] 1601 	mov	a,_bp
       0005C3 24 F1            [12] 1602 	add	a,#0xf1
       0005C5 F8               [12] 1603 	mov	r0,a
       0005C6 E6               [12] 1604 	mov	a,@r0
       0005C7 60 11            [24] 1605 	jz	00113$
                            000512  1606 	C$fuzzy.h$831$2_0$66 ==.
-                                   1607 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:831: ? LEVEL_HI
+                                   1607 ;	/home/mahavigna/CI/fuzzy.h:831: ? LEVEL_HI
       0005C9 E5 0E            [12] 1608 	mov	a,_bp
       0005CB 24 05            [12] 1609 	add	a,#0x05
       0005CD F8               [12] 1610 	mov	r0,a
@@ -1619,7 +1619,7 @@
       0005D8 80 0D            [24] 1619 	sjmp	00114$
       0005DA                       1620 00113$:
                            000523  1621 	C$fuzzy.h$832$2_0$66 ==.
-                                   1622 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:832: : LEVEL_LO;
+                                   1622 ;	/home/mahavigna/CI/fuzzy.h:832: : LEVEL_LO;
       0005DA E5 0E            [12] 1623 	mov	a,_bp
       0005DC 24 05            [12] 1624 	add	a,#0x05
       0005DE F8               [12] 1625 	mov	r0,a
@@ -1645,7 +1645,7 @@
       0005F7 02 06 F2         [24] 1645 	ljmp	00108$
       0005FA                       1646 00104$:
                            000543  1647 	C$fuzzy.h$836$1_0$63 ==.
-                                   1648 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:836: (value - lower_boundary) /
+                                   1648 ;	/home/mahavigna/CI/fuzzy.h:836: (value - lower_boundary) /
       0005FA E5 0E            [12] 1649 	mov	a,_bp
       0005FC 24 FA            [12] 1650 	add	a,#0xfa
       0005FE F8               [12] 1651 	mov	r0,a
@@ -1661,7 +1661,7 @@
       00060B E6               [12] 1661 	mov	a,@r0
       00060C C0 E0            [24] 1662 	push	acc
                            000557  1663 	C$fuzzy.h$837$1_0$63 ==.
-                                   1664 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:837: (upper_boundary - lower_boundary);
+                                   1664 ;	/home/mahavigna/CI/fuzzy.h:837: (upper_boundary - lower_boundary);
       00060E E5 0E            [12] 1665 	mov	a,_bp
       000610 24 F2            [12] 1666 	add	a,#0xf2
       000612 F8               [12] 1667 	mov	r0,a
@@ -1739,7 +1739,7 @@
       000685 E6               [12] 1739 	mov	a,@r0
       000686 C0 E0            [24] 1740 	push	acc
                            0005D1  1741 	C$fuzzy.h$840$1_0$63 ==.
-                                   1742 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:840: ramp_up
+                                   1742 ;	/home/mahavigna/CI/fuzzy.h:840: ramp_up
       000688 8F 82            [24] 1743 	mov	dpl, r7
       00068A 8E 83            [24] 1744 	mov	dph, r6
       00068C 8D F0            [24] 1745 	mov	b, r5
@@ -1758,7 +1758,7 @@
       0006A4 E6               [12] 1758 	mov	a,@r0
       0006A5 60 12            [24] 1759 	jz	00115$
                            0005F0  1760 	C$fuzzy.h$841$2_0$67 ==.
-                                   1761 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:841: ? normalized
+                                   1761 ;	/home/mahavigna/CI/fuzzy.h:841: ? normalized
       0006A7 E5 0E            [12] 1762 	mov	a,_bp
       0006A9 24 05            [12] 1763 	add	a,#0x05
       0006AB F8               [12] 1764 	mov	r0,a
@@ -1772,7 +1772,7 @@
       0006B7 80 29            [24] 1772 	sjmp	00116$
       0006B9                       1773 00115$:
                            000602  1774 	C$fuzzy.h$842$1_0$63 ==.
-                                   1775 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:842: : LEVEL_HI - normalized;
+                                   1775 ;	/home/mahavigna/CI/fuzzy.h:842: : LEVEL_HI - normalized;
       0006B9 C0 07            [24] 1776 	push	ar7
       0006BB C0 06            [24] 1777 	push	ar6
       0006BD C0 05            [24] 1778 	push	ar5
@@ -1808,7 +1808,7 @@
       0006F0 86 07            [24] 1808 	mov	ar7,@r0
       0006F2                       1809 00108$:
                            00063B  1810 	C$fuzzy.h$846$1_0$63 ==.
-                                   1811 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:846: result,
+                                   1811 ;	/home/mahavigna/CI/fuzzy.h:846: result,
       0006F2 E5 0E            [12] 1812 	mov	a,_bp
       0006F4 24 F0            [12] 1813 	add	a,#0xf0
       0006F6 F8               [12] 1814 	mov	r0,a
@@ -1830,7 +1830,7 @@
       000713 EF               [12] 1830 	mov	a, r7
       000714                       1831 00109$:
                            00065D  1832 	C$fuzzy.h$849$1_0$63 ==.
-                                   1833 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:849: }
+                                   1833 ;	/home/mahavigna/CI/fuzzy.h:849: }
       000714 85 0E 81         [24] 1834 	mov	sp,_bp
       000717 D0 0E            [24] 1835 	pop	_bp
                            000662  1836 	C$fuzzy.h$849$1_0$63 ==.
@@ -1843,7 +1843,7 @@
                                    1843 ;------------------------------------------------------------
                            000663  1844 	G$fuzzy_rules_create$0$0 ==.
                            000663  1845 	C$fuzzy.h$1267$1_0$69 ==.
-                                   1846 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1267: void fuzzy_rules_create(
+                                   1846 ;	/home/mahavigna/CI/fuzzy.h:1267: void fuzzy_rules_create(
                                    1847 ;	-----------------------------------------
                                    1848 ;	 function fuzzy_rules_create
                                    1849 ;	-----------------------------------------
@@ -1852,16 +1852,16 @@
       00071C AE 83            [24] 1852 	mov	r6, dph
       00071E AF F0            [24] 1853 	mov	r7, b
                            000669  1854 	C$fuzzy.h$1271$1_0$69 ==.
-                                   1855 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1271: if (rules == NULL) {
+                                   1855 ;	/home/mahavigna/CI/fuzzy.h:1271: if (rules == NULL) {
       000720 ED               [12] 1856 	mov	a,r5
       000721 4E               [12] 1857 	orl	a,r6
       000722 70 02            [24] 1858 	jnz	00102$
                            00066D  1859 	C$fuzzy.h$1272$2_0$70 ==.
-                                   1860 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1272: return;
+                                   1860 ;	/home/mahavigna/CI/fuzzy.h:1272: return;
       000724 80 15            [24] 1861 	sjmp	00103$
       000726                       1862 00102$:
                            00066F  1863 	C$fuzzy.h$1275$1_0$69 ==.
-                                   1864 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1275: rules->count = 0;
+                                   1864 ;	/home/mahavigna/CI/fuzzy.h:1275: rules->count = 0;
       000726 74 0C            [12] 1865 	mov	a,#0x0c
       000728 2D               [12] 1866 	add	a, r5
       000729 FD               [12] 1867 	mov	r5,a
@@ -1877,7 +1877,7 @@
       000738 12 11 50         [24] 1877 	lcall	__gptrput
       00073B                       1878 00103$:
                            000684  1879 	C$fuzzy.h$1276$1_0$69 ==.
-                                   1880 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1276: }
+                                   1880 ;	/home/mahavigna/CI/fuzzy.h:1276: }
                            000684  1881 	C$fuzzy.h$1276$1_0$69 ==.
                            000684  1882 	XG$fuzzy_rules_create$0$0 ==.
       00073B 22               [24] 1883 	ret
@@ -1895,7 +1895,7 @@
                                    1895 ;------------------------------------------------------------
                            000685  1896 	G$fuzzy_rules_add$0$0 ==.
                            000685  1897 	C$fuzzy.h$1279$1_0$72 ==.
-                                   1898 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1279: bool fuzzy_rules_add(
+                                   1898 ;	/home/mahavigna/CI/fuzzy.h:1279: bool fuzzy_rules_add(
                                    1899 ;	-----------------------------------------
                                    1900 ;	 function fuzzy_rules_add
                                    1901 ;	-----------------------------------------
@@ -1909,7 +1909,7 @@
       000749 24 06            [12] 1909 	add	a,#0x06
       00074B F5 81            [12] 1910 	mov	sp,a
                            000696  1911 	C$fuzzy.h$1289$1_0$72 ==.
-                                   1912 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1289: rules == NULL ||
+                                   1912 ;	/home/mahavigna/CI/fuzzy.h:1289: rules == NULL ||
       00074D A8 0E            [24] 1913 	mov	r0,_bp
       00074F 08               [12] 1914 	inc	r0
       000750 E6               [12] 1915 	mov	a,@r0
@@ -1917,7 +1917,7 @@
       000752 46               [12] 1917 	orl	a,@r0
       000753 60 0A            [24] 1918 	jz	00101$
                            00069E  1919 	C$fuzzy.h$1290$1_0$72 ==.
-                                   1920 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1290: output_function == NULL
+                                   1920 ;	/home/mahavigna/CI/fuzzy.h:1290: output_function == NULL
       000755 E5 0E            [12] 1921 	mov	a,_bp
       000757 24 F5            [12] 1922 	add	a,#0xf5
       000759 F8               [12] 1923 	mov	r0,a
@@ -1927,12 +1927,12 @@
       00075D 70 06            [24] 1927 	jnz	00102$
       00075F                       1928 00101$:
                            0006A8  1929 	C$fuzzy.h$1292$2_0$73 ==.
-                                   1930 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1292: return false;
+                                   1930 ;	/home/mahavigna/CI/fuzzy.h:1292: return false;
       00075F 75 82 00         [24] 1931 	mov	dpl, #0x00
       000762 02 08 63         [24] 1932 	ljmp	00106$
       000765                       1933 00102$:
                            0006AE  1934 	C$fuzzy.h$1295$1_0$72 ==.
-                                   1935 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1295: if (rules->count >= FUZZY_MAX_RULES) {
+                                   1935 ;	/home/mahavigna/CI/fuzzy.h:1295: if (rules->count >= FUZZY_MAX_RULES) {
       000765 A8 0E            [24] 1936 	mov	r0,_bp
       000767 08               [12] 1937 	inc	r0
       000768 E5 0E            [12] 1938 	mov	a,_bp
@@ -1970,12 +1970,12 @@
       000795 94 00            [12] 1970 	subb	a,#0x00
       000797 40 06            [24] 1971 	jc	00105$
                            0006E2  1972 	C$fuzzy.h$1304$2_0$74 ==.
-                                   1973 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1304: return false;
+                                   1973 ;	/home/mahavigna/CI/fuzzy.h:1304: return false;
       000799 75 82 00         [24] 1974 	mov	dpl, #0x00
       00079C 02 08 63         [24] 1975 	ljmp	00106$
       00079F                       1976 00105$:
                            0006E8  1977 	C$fuzzy.h$1321$1_0$72 ==.
-                                   1978 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1321: rules->rules[index].value =
+                                   1978 ;	/home/mahavigna/CI/fuzzy.h:1321: rules->rules[index].value =
       00079F C0 07            [24] 1979 	push	ar7
       0007A1 C0 06            [24] 1980 	push	ar6
       0007A3 90 00 06         [24] 1981 	mov	dptr,#0x0006
@@ -2002,7 +2002,7 @@
       0007C3 09               [12] 2002 	inc	r1
       0007C4 F7               [12] 2003 	mov	@r1,a
                            00070E  2004 	C$fuzzy.h$1322$1_0$72 ==.
-                                   2005 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1322: fuzzy_clamp(value);
+                                   2005 ;	/home/mahavigna/CI/fuzzy.h:1322: fuzzy_clamp(value);
       0007C5 E5 0E            [12] 2006 	mov	a,_bp
       0007C7 24 F7            [12] 2007 	add	a,#0xf7
       0007C9 F8               [12] 2008 	mov	r0,a
@@ -2042,7 +2042,7 @@
       000802 EF               [12] 2042 	mov	a,r7
       000803 12 11 50         [24] 2043 	lcall	__gptrput
                            00074F  2044 	C$fuzzy.h$1324$1_0$72 ==.
-                                   2045 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1324: rules->rules[index].output_function =
+                                   2045 ;	/home/mahavigna/CI/fuzzy.h:1324: rules->rules[index].output_function =
       000806 A8 0E            [24] 2046 	mov	r0,_bp
       000808 08               [12] 2047 	inc	r0
       000809 EB               [12] 2048 	mov	a,r3
@@ -2073,7 +2073,7 @@
       00082B E6               [12] 2073 	mov	a,@r0
       00082C 12 11 50         [24] 2074 	lcall	__gptrput
                            000778  2075 	C$fuzzy.h$1327$1_0$72 ==.
-                                   2076 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1327: rules->count++;
+                                   2076 ;	/home/mahavigna/CI/fuzzy.h:1327: rules->count++;
       00082F E5 0E            [12] 2077 	mov	a,_bp
       000831 24 07            [12] 2078 	add	a,#0x07
       000833 F8               [12] 2079 	mov	r0,a
@@ -2105,11 +2105,11 @@
       00085C EF               [12] 2105 	mov	a,r7
       00085D 12 11 50         [24] 2106 	lcall	__gptrput
                            0007A9  2107 	C$fuzzy.h$1329$1_0$72 ==.
-                                   2108 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1329: return true;
+                                   2108 ;	/home/mahavigna/CI/fuzzy.h:1329: return true;
       000860 75 82 01         [24] 2109 	mov	dpl, #0x01
       000863                       2110 00106$:
                            0007AC  2111 	C$fuzzy.h$1330$1_0$72 ==.
-                                   2112 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1330: }
+                                   2112 ;	/home/mahavigna/CI/fuzzy.h:1330: }
       000863 85 0E 81         [24] 2113 	mov	sp,_bp
       000866 D0 0E            [24] 2114 	pop	_bp
                            0007B1  2115 	C$fuzzy.h$1330$1_0$72 ==.
@@ -2135,7 +2135,7 @@
                                    2135 ;------------------------------------------------------------
                            0007B2  2136 	G$fuzzy_rules_cog$0$0 ==.
                            0007B2  2137 	C$fuzzy.h$1363$1_0$76 ==.
-                                   2138 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1363: float fuzzy_rules_cog(
+                                   2138 ;	/home/mahavigna/CI/fuzzy.h:1363: float fuzzy_rules_cog(
                                    2139 ;	-----------------------------------------
                                    2140 ;	 function fuzzy_rules_cog
                                    2141 ;	-----------------------------------------
@@ -2149,7 +2149,7 @@
       000876 24 24            [12] 2149 	add	a,#0x24
       000878 F5 81            [12] 2150 	mov	sp,a
                            0007C3  2151 	C$fuzzy.h$1379$1_0$76 ==.
-                                   2152 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1379: rules == NULL ||
+                                   2152 ;	/home/mahavigna/CI/fuzzy.h:1379: rules == NULL ||
       00087A A8 0E            [24] 2153 	mov	r0,_bp
       00087C 08               [12] 2154 	inc	r0
       00087D E6               [12] 2155 	mov	a,@r0
@@ -2159,7 +2159,7 @@
       000882 02 09 0E         [24] 2159 	ljmp	00101$
       000885                       2160 00183$:
                            0007CE  2161 	C$fuzzy.h$1380$1_0$76 ==.
-                                   2162 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1380: rules->count == 0 ||
+                                   2162 ;	/home/mahavigna/CI/fuzzy.h:1380: rules->count == 0 ||
       000885 A8 0E            [24] 2163 	mov	r0,_bp
       000887 08               [12] 2164 	inc	r0
       000888 E5 0E            [12] 2165 	mov	a,_bp
@@ -2192,7 +2192,7 @@
       0008AF 4E               [12] 2192 	orl	a,r6
       0008B0 60 5C            [24] 2193 	jz	00101$
                            0007FB  2194 	C$fuzzy.h$1381$1_0$76 ==.
-                                   2195 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1381: lower > upper ||
+                                   2195 ;	/home/mahavigna/CI/fuzzy.h:1381: lower > upper ||
       0008B2 E5 0E            [12] 2196 	mov	a,_bp
       0008B4 24 FA            [12] 2197 	add	a,#0xfa
       0008B6 F8               [12] 2198 	mov	r0,a
@@ -2225,7 +2225,7 @@
       0008E0 EF               [12] 2225 	mov	a,r7
       0008E1 70 2B            [24] 2226 	jnz	00101$
                            00082C  2227 	C$fuzzy.h$1383$1_0$76 ==.
-                                   2228 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1383: ) {
+                                   2228 ;	/home/mahavigna/CI/fuzzy.h:1383: ) {
       0008E3 E5 0E            [12] 2229 	mov	a,_bp
       0008E5 24 F2            [12] 2230 	add	a,#0xf2
       0008E7 F8               [12] 2231 	mov	r0,a
@@ -2253,14 +2253,14 @@
       00090C 40 09            [24] 2253 	jc	00102$
       00090E                       2254 00101$:
                            000857  2255 	C$fuzzy.h$1384$2_0$77 ==.
-                                   2256 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1384: return 0.0f;
+                                   2256 ;	/home/mahavigna/CI/fuzzy.h:1384: return 0.0f;
       00090E 90 00 00         [24] 2257 	mov	dptr,#0x0000
       000911 E4               [12] 2258 	clr	a
       000912 F5 F0            [12] 2259 	mov	b,a
       000914 02 0C 86         [24] 2260 	ljmp	00116$
       000917                       2261 00102$:
                            000860  2262 	C$fuzzy.h$1387$1_0$76 ==.
-                                   2263 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1387: weighted_sum = 0.0f;
+                                   2263 ;	/home/mahavigna/CI/fuzzy.h:1387: weighted_sum = 0.0f;
       000917 E5 0E            [12] 2264 	mov	a,_bp
       000919 24 0E            [12] 2265 	add	a,#0x0e
       00091B F8               [12] 2266 	mov	r0,a
@@ -2273,7 +2273,7 @@
       000922 08               [12] 2273 	inc	r0
       000923 F6               [12] 2274 	mov	@r0,a
                            00086D  2275 	C$fuzzy.h$1388$1_0$76 ==.
-                                   2276 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1388: height_sum = 0.0f;
+                                   2276 ;	/home/mahavigna/CI/fuzzy.h:1388: height_sum = 0.0f;
       000924 E5 0E            [12] 2277 	mov	a,_bp
       000926 24 12            [12] 2278 	add	a,#0x12
       000928 F8               [12] 2279 	mov	r0,a
@@ -2286,7 +2286,7 @@
       00092F 08               [12] 2286 	inc	r0
       000930 F6               [12] 2287 	mov	@r0,a
                            00087A  2288 	C$fuzzy.h$1391$2_0$78 ==.
-                                   2289 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1391: value = lower;
+                                   2289 ;	/home/mahavigna/CI/fuzzy.h:1391: value = lower;
       000931 E5 0E            [12] 2290 	mov	a,_bp
       000933 24 FA            [12] 2291 	add	a,#0xfa
       000935 F8               [12] 2292 	mov	r0,a
@@ -2324,7 +2324,7 @@
       00095A F7               [12] 2324 	mov	@r1,a
       00095B                       2325 00114$:
                            0008A4  2326 	C$fuzzy.h$1392$1_0$76 ==.
-                                   2327 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1392: value <= upper;
+                                   2327 ;	/home/mahavigna/CI/fuzzy.h:1392: value <= upper;
       00095B E5 0E            [12] 2328 	mov	a,_bp
       00095D 24 16            [12] 2329 	add	a,#0x16
       00095F F8               [12] 2330 	mov	r0,a
@@ -2360,7 +2360,7 @@
       00098F 02 0C 2D         [24] 2360 	ljmp	00107$
       000992                       2361 00187$:
                            0008DB  2362 	C$fuzzy.h$1396$3_0$79 ==.
-                                   2363 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1396: LEVEL_LO;
+                                   2363 ;	/home/mahavigna/CI/fuzzy.h:1396: LEVEL_LO;
       000992 E5 0E            [12] 2364 	mov	a,_bp
       000994 24 1A            [12] 2365 	add	a,#0x1a
       000996 F8               [12] 2366 	mov	r0,a
@@ -2373,7 +2373,7 @@
       00099D 08               [12] 2373 	inc	r0
       00099E F6               [12] 2374 	mov	@r0,a
                            0008E8  2375 	C$fuzzy.h$1399$1_0$76 ==.
-                                   2376 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1399: i = 0;
+                                   2376 ;	/home/mahavigna/CI/fuzzy.h:1399: i = 0;
       00099F E5 0E            [12] 2377 	mov	a,_bp
       0009A1 24 26            [12] 2378 	add	a,#0x26
       0009A3 F8               [12] 2379 	mov	r0,a
@@ -2385,7 +2385,7 @@
       0009A9 FB               [12] 2385 	mov	r3,a
       0009AA                       2386 00111$:
                            0008F3  2387 	C$fuzzy.h$1400$1_0$76 ==.
-                                   2388 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1400: i < rules->count;
+                                   2388 ;	/home/mahavigna/CI/fuzzy.h:1400: i < rules->count;
       0009AA C0 02            [24] 2389 	push	ar2
       0009AC C0 03            [24] 2390 	push	ar3
       0009AE E5 0E            [12] 2391 	mov	a,_bp
@@ -2416,7 +2416,7 @@
       0009D5 02 0B 4F         [24] 2416 	ljmp	00106$
       0009D8                       2417 00188$:
                            000921  2418 	C$fuzzy.h$1404$1_0$76 ==.
-                                   2419 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1404: rules->rules[i]
+                                   2419 ;	/home/mahavigna/CI/fuzzy.h:1404: rules->rules[i]
       0009D8 E5 0E            [12] 2420 	mov	a,_bp
       0009DA 24 07            [12] 2421 	add	a,#0x07
       0009DC F8               [12] 2422 	mov	r0,a
@@ -2444,7 +2444,7 @@
       0009F9 12 13 8B         [24] 2444 	lcall	__gptrget
       0009FC FE               [12] 2445 	mov	r6,a
                            000946  2446 	C$fuzzy.h$1405$5_0$81 ==.
-                                   2447 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1405: .output_function(value);
+                                   2447 ;	/home/mahavigna/CI/fuzzy.h:1405: .output_function(value);
       0009FD C0 06            [24] 2448 	push	ar6
       0009FF C0 05            [24] 2449 	push	ar5
       000A01 C0 03            [24] 2450 	push	ar3
@@ -2482,7 +2482,7 @@
       000A32 D0 05            [24] 2482 	pop	ar5
       000A34 D0 06            [24] 2483 	pop	ar6
                            00097F  2484 	C$fuzzy.h$1408$5_0$81 ==.
-                                   2485 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1408: rules->rules[i].value <
+                                   2485 ;	/home/mahavigna/CI/fuzzy.h:1408: rules->rules[i].value <
       000A36 A8 0E            [24] 2486 	mov	r0,_bp
       000A38 08               [12] 2487 	inc	r0
       000A39 EA               [12] 2488 	mov	a,r2
@@ -2550,7 +2550,7 @@
       000A9A EF               [12] 2550 	mov	a,r7
       000A9B 60 12            [24] 2551 	jz	00118$
                            0009E6  2552 	C$fuzzy.h$1410$5_0$81 ==.
-                                   2553 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1410: ? rules->rules[i].value
+                                   2553 ;	/home/mahavigna/CI/fuzzy.h:1410: ? rules->rules[i].value
       000A9D E5 0E            [12] 2554 	mov	a,_bp
       000A9F 24 0A            [12] 2555 	add	a,#0x0a
       000AA1 F8               [12] 2556 	mov	r0,a
@@ -2564,7 +2564,7 @@
       000AAD 80 10            [24] 2564 	sjmp	00119$
       000AAF                       2565 00118$:
                            0009F8  2566 	C$fuzzy.h$1411$5_0$81 ==.
-                                   2567 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1411: : output_membership;
+                                   2567 ;	/home/mahavigna/CI/fuzzy.h:1411: : output_membership;
       000AAF E5 0E            [12] 2568 	mov	a,_bp
       000AB1 24 1E            [12] 2569 	add	a,#0x1e
       000AB3 F8               [12] 2570 	mov	r0,a
@@ -2587,7 +2587,7 @@
       000ACC 08               [12] 2587 	inc	r0
       000ACD A6 04            [24] 2588 	mov	@r0,ar4
                            000A18  2589 	C$fuzzy.h$1416$1_0$76 ==.
-                                   2590 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1416: ? aggregated_height
+                                   2590 ;	/home/mahavigna/CI/fuzzy.h:1416: ? aggregated_height
       000ACF C0 03            [24] 2591 	push	ar3
       000AD1 C0 02            [24] 2592 	push	ar2
       000AD3 E5 0E            [12] 2593 	mov	a,_bp
@@ -2636,7 +2636,7 @@
       000B18 80 10            [24] 2636 	sjmp	00121$
       000B1A                       2637 00120$:
                            000A63  2638 	C$fuzzy.h$1417$5_0$81 ==.
-                                   2639 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1417: : clipped_height;
+                                   2639 ;	/home/mahavigna/CI/fuzzy.h:1417: : clipped_height;
       000B1A E5 0E            [12] 2640 	mov	a,_bp
       000B1C 24 22            [12] 2641 	add	a,#0x22
       000B1E F8               [12] 2642 	mov	r0,a
@@ -2659,7 +2659,7 @@
       000B37 08               [12] 2659 	inc	r0
       000B38 A6 07            [24] 2660 	mov	@r0,ar7
                            000A83  2661 	C$fuzzy.h$1401$1_0$76 ==.
-                                   2662 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1401: i++
+                                   2662 ;	/home/mahavigna/CI/fuzzy.h:1401: i++
       000B3A 74 06            [12] 2663 	mov	a,#0x06
       000B3C 2A               [12] 2664 	add	a, r2
       000B3D FA               [12] 2665 	mov	r2,a
@@ -2677,7 +2677,7 @@
       000B4C 02 09 AA         [24] 2677 	ljmp	00111$
       000B4F                       2678 00106$:
                            000A98  2679 	C$fuzzy.h$1422$1_0$76 ==.
-                                   2680 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1422: aggregated_height;
+                                   2680 ;	/home/mahavigna/CI/fuzzy.h:1422: aggregated_height;
       000B4F E5 0E            [12] 2681 	mov	a,_bp
       000B51 24 1A            [12] 2682 	add	a,#0x1a
       000B53 F8               [12] 2683 	mov	r0,a
@@ -2715,7 +2715,7 @@
       000B86 C0 06            [24] 2715 	push	ar6
       000B88 C0 07            [24] 2716 	push	ar7
                            000AD3  2717 	C$fuzzy.h$1425$1_0$76 ==.
-                                   2718 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1425: aggregated_height;
+                                   2718 ;	/home/mahavigna/CI/fuzzy.h:1425: aggregated_height;
       000B8A E5 0E            [12] 2719 	mov	a,_bp
       000B8C 24 0E            [12] 2720 	add	a,#0x0e
       000B8E F8               [12] 2721 	mov	r0,a
@@ -2756,7 +2756,7 @@
       000BC3 E6               [12] 2756 	mov	a,@r0
       000BC4 C0 E0            [24] 2757 	push	acc
                            000B0F  2758 	C$fuzzy.h$1394$1_0$76 ==.
-                                   2759 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1394: ) {
+                                   2759 ;	/home/mahavigna/CI/fuzzy.h:1394: ) {
       000BC6 E5 0E            [12] 2760 	mov	a,_bp
       000BC8 24 12            [12] 2761 	add	a,#0x12
       000BCA F8               [12] 2762 	mov	r0,a
@@ -2824,7 +2824,7 @@
       000C2A 02 09 5B         [24] 2824 	ljmp	00114$
       000C2D                       2825 00107$:
                            000B76  2826 	C$fuzzy.h$1428$1_0$76 ==.
-                                   2827 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1428: if (height_sum == 0.0f) {
+                                   2827 ;	/home/mahavigna/CI/fuzzy.h:1428: if (height_sum == 0.0f) {
       000C2D E5 0E            [12] 2828 	mov	a,_bp
       000C2F 24 12            [12] 2829 	add	a,#0x12
       000C31 F8               [12] 2830 	mov	r0,a
@@ -2841,14 +2841,14 @@
       000C40 45 F0            [12] 2841 	orl	a,b
       000C42 70 08            [24] 2842 	jnz	00109$
                            000B8D  2843 	C$fuzzy.h$1429$2_0$82 ==.
-                                   2844 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1429: return 0.0f;
+                                   2844 ;	/home/mahavigna/CI/fuzzy.h:1429: return 0.0f;
       000C44 90 00 00         [24] 2845 	mov	dptr,#0x0000
       000C47 E4               [12] 2846 	clr	a
       000C48 F5 F0            [12] 2847 	mov	b,a
       000C4A 80 3A            [24] 2848 	sjmp	00116$
       000C4C                       2849 00109$:
                            000B95  2850 	C$fuzzy.h$1433$1_0$76 ==.
-                                   2851 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1433: height_sum;
+                                   2851 ;	/home/mahavigna/CI/fuzzy.h:1433: height_sum;
       000C4C E5 0E            [12] 2852 	mov	a,_bp
       000C4E 24 12            [12] 2853 	add	a,#0x12
       000C50 F8               [12] 2854 	mov	r0,a
@@ -2887,7 +2887,7 @@
       000C85 EF               [12] 2887 	mov	a, r7
       000C86                       2888 00116$:
                            000BCF  2889 	C$fuzzy.h$1434$1_0$76 ==.
-                                   2890 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1434: }
+                                   2890 ;	/home/mahavigna/CI/fuzzy.h:1434: }
       000C86 85 0E 81         [24] 2891 	mov	sp,_bp
       000C89 D0 0E            [24] 2892 	pop	_bp
                            000BD4  2893 	C$fuzzy.h$1434$1_0$76 ==.
@@ -2900,7 +2900,7 @@
                                    2900 ;------------------------------------------------------------
                            000BD5  2901 	G$fuzzy_rules_free$0$0 ==.
                            000BD5  2902 	C$fuzzy.h$1436$1_0$84 ==.
-                                   2903 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1436: void fuzzy_rules_free(
+                                   2903 ;	/home/mahavigna/CI/fuzzy.h:1436: void fuzzy_rules_free(
                                    2904 ;	-----------------------------------------
                                    2905 ;	 function fuzzy_rules_free
                                    2906 ;	-----------------------------------------
@@ -2909,16 +2909,16 @@
       000C8E AE 83            [24] 2909 	mov	r6, dph
       000C90 AF F0            [24] 2910 	mov	r7, b
                            000BDB  2911 	C$fuzzy.h$1440$1_0$84 ==.
-                                   2912 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1440: if (rules == NULL) {
+                                   2912 ;	/home/mahavigna/CI/fuzzy.h:1440: if (rules == NULL) {
       000C92 ED               [12] 2913 	mov	a,r5
       000C93 4E               [12] 2914 	orl	a,r6
       000C94 70 02            [24] 2915 	jnz	00102$
                            000BDF  2916 	C$fuzzy.h$1441$2_0$85 ==.
-                                   2917 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1441: return;
+                                   2917 ;	/home/mahavigna/CI/fuzzy.h:1441: return;
       000C96 80 15            [24] 2918 	sjmp	00103$
       000C98                       2919 00102$:
                            000BE1  2920 	C$fuzzy.h$1449$1_0$84 ==.
-                                   2921 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1449: rules->count = 0;
+                                   2921 ;	/home/mahavigna/CI/fuzzy.h:1449: rules->count = 0;
       000C98 74 0C            [12] 2922 	mov	a,#0x0c
       000C9A 2D               [12] 2923 	add	a, r5
       000C9B FD               [12] 2924 	mov	r5,a
@@ -2934,7 +2934,7 @@
       000CAA 12 11 50         [24] 2934 	lcall	__gptrput
       000CAD                       2935 00103$:
                            000BF6  2936 	C$fuzzy.h$1450$1_0$84 ==.
-                                   2937 ;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1450: }
+                                   2937 ;	/home/mahavigna/CI/fuzzy.h:1450: }
                            000BF6  2938 	C$fuzzy.h$1450$1_0$84 ==.
                            000BF6  2939 	XG$fuzzy_rules_free$0$0 ==.
       000CAD 22               [24] 2940 	ret
@@ -2945,7 +2945,7 @@
                                    2945 ;------------------------------------------------------------
                            000BF7  2946 	Fcontroller_8051$temperature_low$0$0 ==.
                            000BF7  2947 	C$controller_8051.c$63$1_0$87 ==.
-                                   2948 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:63: static float temperature_low(
+                                   2948 ;	/home/mahavigna/CI/controller_8051.c:63: static float temperature_low(
                                    2949 ;	-----------------------------------------
                                    2950 ;	 function temperature_low
                                    2951 ;	-----------------------------------------
@@ -2955,13 +2955,13 @@
       000CB2 AE F0            [24] 2955 	mov	r6,b
       000CB4 FF               [12] 2956 	mov	r7,a
                            000BFE  2957 	C$controller_8051.c$73$1_0$87 ==.
-                                   2958 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:73: hedges.none
+                                   2958 ;	/home/mahavigna/CI/controller_8051.c:73: hedges.none
       000CB5 90 14 4D         [24] 2959 	mov	dptr,#_hedges
       000CB8 E4               [12] 2960 	clr	a
       000CB9 93               [24] 2961 	movc	a,@a+dptr
       000CBA FB               [12] 2962 	mov	r3,a
                            000C04  2963 	C$controller_8051.c$68$1_0$87 ==.
-                                   2964 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:68: NULL,
+                                   2964 ;	/home/mahavigna/CI/controller_8051.c:68: NULL,
       000CBB C0 03            [24] 2965 	push	ar3
       000CBD E4               [12] 2966 	clr	a
       000CBE C0 E0            [24] 2967 	push	acc
@@ -2997,7 +2997,7 @@
       000CFA 8E F0            [24] 2997 	mov	b, r6
       000CFC EF               [12] 2998 	mov	a, r7
                            000C46  2999 	C$controller_8051.c$75$1_0$87 ==.
-                                   3000 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:75: }
+                                   3000 ;	/home/mahavigna/CI/controller_8051.c:75: }
                            000C46  3001 	C$controller_8051.c$75$1_0$87 ==.
                            000C46  3002 	XFcontroller_8051$temperature_low$0$0 ==.
       000CFD 22               [24] 3003 	ret
@@ -3008,7 +3008,7 @@
                                    3008 ;------------------------------------------------------------
                            000C47  3009 	Fcontroller_8051$temperature_high$0$0 ==.
                            000C47  3010 	C$controller_8051.c$78$1_0$89 ==.
-                                   3011 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:78: static float temperature_high(
+                                   3011 ;	/home/mahavigna/CI/controller_8051.c:78: static float temperature_high(
                                    3012 ;	-----------------------------------------
                                    3013 ;	 function temperature_high
                                    3014 ;	-----------------------------------------
@@ -3018,13 +3018,13 @@
       000D02 AE F0            [24] 3018 	mov	r6,b
       000D04 FF               [12] 3019 	mov	r7,a
                            000C4E  3020 	C$controller_8051.c$88$1_0$89 ==.
-                                   3021 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:88: hedges.none
+                                   3021 ;	/home/mahavigna/CI/controller_8051.c:88: hedges.none
       000D05 90 14 4D         [24] 3022 	mov	dptr,#_hedges
       000D08 E4               [12] 3023 	clr	a
       000D09 93               [24] 3024 	movc	a,@a+dptr
       000D0A FB               [12] 3025 	mov	r3,a
                            000C54  3026 	C$controller_8051.c$83$1_0$89 ==.
-                                   3027 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:83: NULL,
+                                   3027 ;	/home/mahavigna/CI/controller_8051.c:83: NULL,
       000D0B C0 03            [24] 3028 	push	ar3
       000D0D 74 01            [12] 3029 	mov	a,#0x01
       000D0F C0 E0            [24] 3030 	push	acc
@@ -3061,7 +3061,7 @@
       000D4D 8E F0            [24] 3061 	mov	b, r6
       000D4F EF               [12] 3062 	mov	a, r7
                            000C99  3063 	C$controller_8051.c$90$1_0$89 ==.
-                                   3064 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:90: }
+                                   3064 ;	/home/mahavigna/CI/controller_8051.c:90: }
                            000C99  3065 	C$controller_8051.c$90$1_0$89 ==.
                            000C99  3066 	XFcontroller_8051$temperature_high$0$0 ==.
       000D50 22               [24] 3067 	ret
@@ -3072,7 +3072,7 @@
                                    3072 ;------------------------------------------------------------
                            000C9A  3073 	Fcontroller_8051$fan_slow$0$0 ==.
                            000C9A  3074 	C$controller_8051.c$97$1_0$91 ==.
-                                   3075 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:97: static float fan_slow(
+                                   3075 ;	/home/mahavigna/CI/controller_8051.c:97: static float fan_slow(
                                    3076 ;	-----------------------------------------
                                    3077 ;	 function fan_slow
                                    3078 ;	-----------------------------------------
@@ -3082,13 +3082,13 @@
       000D55 AE F0            [24] 3082 	mov	r6,b
       000D57 FF               [12] 3083 	mov	r7,a
                            000CA1  3084 	C$controller_8051.c$107$1_0$91 ==.
-                                   3085 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:107: hedges.none
+                                   3085 ;	/home/mahavigna/CI/controller_8051.c:107: hedges.none
       000D58 90 14 4D         [24] 3086 	mov	dptr,#_hedges
       000D5B E4               [12] 3087 	clr	a
       000D5C 93               [24] 3088 	movc	a,@a+dptr
       000D5D FB               [12] 3089 	mov	r3,a
                            000CA7  3090 	C$controller_8051.c$102$1_0$91 ==.
-                                   3091 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:102: NULL,
+                                   3091 ;	/home/mahavigna/CI/controller_8051.c:102: NULL,
       000D5E C0 03            [24] 3092 	push	ar3
       000D60 E4               [12] 3093 	clr	a
       000D61 C0 E0            [24] 3094 	push	acc
@@ -3124,7 +3124,7 @@
       000D9D 8E F0            [24] 3124 	mov	b, r6
       000D9F EF               [12] 3125 	mov	a, r7
                            000CE9  3126 	C$controller_8051.c$109$1_0$91 ==.
-                                   3127 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:109: }
+                                   3127 ;	/home/mahavigna/CI/controller_8051.c:109: }
                            000CE9  3128 	C$controller_8051.c$109$1_0$91 ==.
                            000CE9  3129 	XFcontroller_8051$fan_slow$0$0 ==.
       000DA0 22               [24] 3130 	ret
@@ -3135,7 +3135,7 @@
                                    3135 ;------------------------------------------------------------
                            000CEA  3136 	Fcontroller_8051$fan_fast$0$0 ==.
                            000CEA  3137 	C$controller_8051.c$112$1_0$93 ==.
-                                   3138 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:112: static float fan_fast(
+                                   3138 ;	/home/mahavigna/CI/controller_8051.c:112: static float fan_fast(
                                    3139 ;	-----------------------------------------
                                    3140 ;	 function fan_fast
                                    3141 ;	-----------------------------------------
@@ -3145,13 +3145,13 @@
       000DA5 AE F0            [24] 3145 	mov	r6,b
       000DA7 FF               [12] 3146 	mov	r7,a
                            000CF1  3147 	C$controller_8051.c$122$1_0$93 ==.
-                                   3148 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:122: hedges.none
+                                   3148 ;	/home/mahavigna/CI/controller_8051.c:122: hedges.none
       000DA8 90 14 4D         [24] 3149 	mov	dptr,#_hedges
       000DAB E4               [12] 3150 	clr	a
       000DAC 93               [24] 3151 	movc	a,@a+dptr
       000DAD FB               [12] 3152 	mov	r3,a
                            000CF7  3153 	C$controller_8051.c$117$1_0$93 ==.
-                                   3154 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:117: NULL,
+                                   3154 ;	/home/mahavigna/CI/controller_8051.c:117: NULL,
       000DAE C0 03            [24] 3155 	push	ar3
       000DB0 74 01            [12] 3156 	mov	a,#0x01
       000DB2 C0 E0            [24] 3157 	push	acc
@@ -3188,7 +3188,7 @@
       000DF0 8E F0            [24] 3188 	mov	b, r6
       000DF2 EF               [12] 3189 	mov	a, r7
                            000D3C  3190 	C$controller_8051.c$124$1_0$93 ==.
-                                   3191 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:124: }
+                                   3191 ;	/home/mahavigna/CI/controller_8051.c:124: }
                            000D3C  3192 	C$controller_8051.c$124$1_0$93 ==.
                            000D3C  3193 	XFcontroller_8051$fan_fast$0$0 ==.
       000DF3 22               [24] 3194 	ret
@@ -3202,7 +3202,7 @@
                                    3202 ;------------------------------------------------------------
                            000D3D  3203 	Fcontroller_8051$calculate_fan_speed$0$0 ==.
                            000D3D  3204 	C$controller_8051.c$131$1_0$95 ==.
-                                   3205 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:131: static float calculate_fan_speed(
+                                   3205 ;	/home/mahavigna/CI/controller_8051.c:131: static float calculate_fan_speed(
                                    3206 ;	-----------------------------------------
                                    3207 ;	 function calculate_fan_speed
                                    3208 ;	-----------------------------------------
@@ -3217,7 +3217,7 @@
       000E03 24 16            [12] 3217 	add	a,#0x16
       000E05 F5 81            [12] 3218 	mov	sp,a
                            000D50  3219 	C$controller_8051.c$140$1_0$95 ==.
-                                   3220 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:140: );
+                                   3220 ;	/home/mahavigna/CI/controller_8051.c:140: );
       000E07 E5 0E            [12] 3221 	mov	a,_bp
       000E09 24 09            [12] 3222 	add	a,#0x09
       000E0B FB               [12] 3223 	mov	r3,a
@@ -3230,7 +3230,7 @@
       000E17 C0 03            [24] 3230 	push	ar3
       000E19 12 07 1A         [24] 3231 	lcall	_fuzzy_rules_create
                            000D65  3232 	C$controller_8051.c$142$1_0$95 ==.
-                                   3233 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:142: if (!FUZZY_RULE_ADD(
+                                   3233 ;	/home/mahavigna/CI/controller_8051.c:142: if (!FUZZY_RULE_ADD(
       000E1C A8 0E            [24] 3234 	mov	r0,_bp
       000E1E 08               [12] 3235 	inc	r0
       000E1F 86 82            [24] 3236 	mov	dpl, @r0
@@ -3291,14 +3291,14 @@
       000E7C EF               [12] 3291 	mov	a,r7
       000E7D 70 09            [24] 3292 	jnz	00102$
                            000DC8  3293 	C$controller_8051.c$147$2_0$96 ==.
-                                   3294 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:147: return 0.0f;
+                                   3294 ;	/home/mahavigna/CI/controller_8051.c:147: return 0.0f;
       000E7F 90 00 00         [24] 3295 	mov	dptr,#0x0000
       000E82 E4               [12] 3296 	clr	a
       000E83 F5 F0            [12] 3297 	mov	b,a
       000E85 02 0F 5F         [24] 3298 	ljmp	00105$
       000E88                       3299 00102$:
                            000DD1  3300 	C$controller_8051.c$150$1_0$95 ==.
-                                   3301 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:150: if (!FUZZY_RULE_ADD(
+                                   3301 ;	/home/mahavigna/CI/controller_8051.c:150: if (!FUZZY_RULE_ADD(
       000E88 A8 0E            [24] 3302 	mov	r0,_bp
       000E8A 08               [12] 3303 	inc	r0
       000E8B 86 82            [24] 3304 	mov	dpl, @r0
@@ -3360,14 +3360,14 @@
       000EEA EF               [12] 3360 	mov	a,r7
       000EEB 70 08            [24] 3361 	jnz	00104$
                            000E36  3362 	C$controller_8051.c$155$2_0$97 ==.
-                                   3363 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:155: return 0.0f;
+                                   3363 ;	/home/mahavigna/CI/controller_8051.c:155: return 0.0f;
       000EED 90 00 00         [24] 3364 	mov	dptr,#0x0000
       000EF0 E4               [12] 3365 	clr	a
       000EF1 F5 F0            [12] 3366 	mov	b,a
       000EF3 80 6A            [24] 3367 	sjmp	00105$
       000EF5                       3368 00104$:
                            000E3E  3369 	C$controller_8051.c$160$1_0$95 ==.
-                                   3370 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:160: &rules,
+                                   3370 ;	/home/mahavigna/CI/controller_8051.c:160: &rules,
       000EF5 8B 05            [24] 3371 	mov	ar5,r3
       000EF7 7E 00            [12] 3372 	mov	r6,#0x00
       000EF9 7F 40            [12] 3373 	mov	r7,#0x40
@@ -3411,7 +3411,7 @@
       000F3D F5 81            [12] 3411 	mov	sp,a
       000F3F D0 03            [24] 3412 	pop	ar3
                            000E8A  3413 	C$controller_8051.c$168$1_0$95 ==.
-                                   3414 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:168: );
+                                   3414 ;	/home/mahavigna/CI/controller_8051.c:168: );
       000F41 8B 02            [24] 3415 	mov	ar2,r3
       000F43 7B 00            [12] 3416 	mov	r3,#0x00
       000F45 7F 40            [12] 3417 	mov	r7,#0x40
@@ -3420,7 +3420,7 @@
       000F4B 8F F0            [24] 3420 	mov	b, r7
       000F4D 12 0C 8C         [24] 3421 	lcall	_fuzzy_rules_free
                            000E99  3422 	C$controller_8051.c$170$1_0$95 ==.
-                                   3423 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:170: return result;
+                                   3423 ;	/home/mahavigna/CI/controller_8051.c:170: return result;
       000F50 E5 0E            [12] 3424 	mov	a,_bp
       000F52 24 17            [12] 3425 	add	a,#0x17
       000F54 F8               [12] 3426 	mov	r0,a
@@ -3433,7 +3433,7 @@
       000F5E E6               [12] 3433 	mov	a, @r0
       000F5F                       3434 00105$:
                            000EA8  3435 	C$controller_8051.c$171$1_0$95 ==.
-                                   3436 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:171: }
+                                   3436 ;	/home/mahavigna/CI/controller_8051.c:171: }
       000F5F 85 0E 81         [24] 3437 	mov	sp,_bp
       000F62 D0 0E            [24] 3438 	pop	_bp
                            000EAD  3439 	C$controller_8051.c$171$1_0$95 ==.
@@ -3446,7 +3446,7 @@
                                    3446 ;------------------------------------------------------------
                            000EAE  3447 	Fcontroller_8051$fan_speed_to_pwm$0$0 ==.
                            000EAE  3448 	C$controller_8051.c$178$1_0$99 ==.
-                                   3449 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:178: static unsigned char fan_speed_to_pwm(
+                                   3449 ;	/home/mahavigna/CI/controller_8051.c:178: static unsigned char fan_speed_to_pwm(
                                    3450 ;	-----------------------------------------
                                    3451 ;	 function fan_speed_to_pwm
                                    3452 ;	-----------------------------------------
@@ -3456,7 +3456,7 @@
       000F69 AE F0            [24] 3456 	mov	r6,b
       000F6B FF               [12] 3457 	mov	r7,a
                            000EB5  3458 	C$controller_8051.c$182$1_0$99 ==.
-                                   3459 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:182: if (fan_speed <= 0.0f) {
+                                   3459 ;	/home/mahavigna/CI/controller_8051.c:182: if (fan_speed <= 0.0f) {
       000F6C C0 07            [24] 3460 	push	ar7
       000F6E C0 06            [24] 3461 	push	ar6
       000F70 C0 05            [24] 3462 	push	ar5
@@ -3481,12 +3481,12 @@
       000F97 92 00            [24] 3481 	mov	b0,c
       000F99 40 05            [24] 3482 	jc	00102$
                            000EE4  3483 	C$controller_8051.c$183$2_0$100 ==.
-                                   3484 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:183: return 0u;
+                                   3484 ;	/home/mahavigna/CI/controller_8051.c:183: return 0u;
       000F9B 75 82 00         [24] 3485 	mov	dpl, #0x00
       000F9E 80 66            [24] 3486 	sjmp	00105$
       000FA0                       3487 00102$:
                            000EE9  3488 	C$controller_8051.c$186$1_0$99 ==.
-                                   3489 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:186: if (fan_speed >= 100.0f) {
+                                   3489 ;	/home/mahavigna/CI/controller_8051.c:186: if (fan_speed >= 100.0f) {
       000FA0 C0 07            [24] 3490 	push	ar7
       000FA2 C0 06            [24] 3491 	push	ar6
       000FA4 C0 05            [24] 3492 	push	ar5
@@ -3515,12 +3515,12 @@
       000FD1 92 00            [24] 3515 	mov	b0,c
       000FD3 40 05            [24] 3516 	jc	00104$
                            000F1E  3517 	C$controller_8051.c$187$2_0$101 ==.
-                                   3518 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:187: return 100u;
+                                   3518 ;	/home/mahavigna/CI/controller_8051.c:187: return 100u;
       000FD5 75 82 64         [24] 3519 	mov	dpl, #0x64
       000FD8 80 2C            [24] 3520 	sjmp	00105$
       000FDA                       3521 00104$:
                            000F23  3522 	C$controller_8051.c$192$1_0$99 ==.
-                                   3523 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:192: );
+                                   3523 ;	/home/mahavigna/CI/controller_8051.c:192: );
       000FDA E4               [12] 3524 	clr	a
       000FDB C0 E0            [24] 3525 	push	acc
       000FDD C0 E0            [24] 3526 	push	acc
@@ -3546,7 +3546,7 @@
       001003 12 13 A7         [24] 3546 	lcall	___fs2uchar
       001006                       3547 00105$:
                            000F4F  3548 	C$controller_8051.c$193$1_0$99 ==.
-                                   3549 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:193: }
+                                   3549 ;	/home/mahavigna/CI/controller_8051.c:193: }
                            000F4F  3550 	C$controller_8051.c$193$1_0$99 ==.
                            000F4F  3551 	XFcontroller_8051$fan_speed_to_pwm$0$0 ==.
       001006 22               [24] 3552 	ret
@@ -3555,25 +3555,25 @@
                                    3555 ;------------------------------------------------------------
                            000F50  3556 	G$main$0$0 ==.
                            000F50  3557 	C$controller_8051.c$210$1_0$103 ==.
-                                   3558 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:210: void main(void)
+                                   3558 ;	/home/mahavigna/CI/controller_8051.c:210: void main(void)
                                    3559 ;	-----------------------------------------
                                    3560 ;	 function main
                                    3561 ;	-----------------------------------------
       001007                       3562 _main:
                            000F50  3563 	C$controller_8051.c$218$1_0$103 ==.
-                                   3564 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:218: 42u;
+                                   3564 ;	/home/mahavigna/CI/controller_8051.c:218: 42u;
       001007 75 08 2A         [24] 3565 	mov	_test_temperature,#0x2a
                            000F53  3566 	C$controller_8051.c$224$1_0$103 ==.
-                                   3567 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:224: 0x55u;
+                                   3567 ;	/home/mahavigna/CI/controller_8051.c:224: 0x55u;
       00100A 75 80 55         [24] 3568 	mov	_P0,#0x55
                            000F56  3569 	C$controller_8051.c$227$1_0$103 ==.
-                                   3570 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:227: 0x00u;
+                                   3570 ;	/home/mahavigna/CI/controller_8051.c:227: 0x00u;
       00100D 75 90 00         [24] 3571 	mov	_P1,#0x00
                            000F59  3572 	C$controller_8051.c$233$1_0$103 ==.
-                                   3573 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:233: test_temperature = P2;
+                                   3573 ;	/home/mahavigna/CI/controller_8051.c:233: test_temperature = P2;
       001010 85 A0 08         [24] 3574 	mov	_test_temperature,_P2
                            000F5C  3575 	C$controller_8051.c$238$2_0$103 ==.
-                                   3576 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:238: );
+                                   3576 ;	/home/mahavigna/CI/controller_8051.c:238: );
       001013 85 08 82         [24] 3577 	mov	dpl, _test_temperature
       001016 12 13 AF         [24] 3578 	lcall	___uchar2fs
       001019 12 0D F4         [24] 3579 	lcall	_calculate_fan_speed
@@ -3582,7 +3582,7 @@
       001022 85 F0 0C         [24] 3582 	mov	(_test_fan_speed + 2),b
       001025 F5 0D            [12] 3583 	mov	(_test_fan_speed + 3),a
                            000F70  3584 	C$controller_8051.c$242$1_0$103 ==.
-                                   3585 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:242: test_fan_speed
+                                   3585 ;	/home/mahavigna/CI/controller_8051.c:242: test_fan_speed
       001027 85 0A 82         [24] 3586 	mov	dpl, _test_fan_speed
       00102A 85 0B 83         [24] 3587 	mov	dph, (_test_fan_speed + 1)
       00102D 85 0C F0         [24] 3588 	mov	b, (_test_fan_speed + 2)
@@ -3590,15 +3590,15 @@
       001032 12 0F 65         [24] 3590 	lcall	_fan_speed_to_pwm
       001035 85 82 09         [24] 3591 	mov	_test_pwm,dpl
                            000F81  3592 	C$controller_8051.c$249$1_0$103 ==.
-                                   3593 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:249: test_pwm;
+                                   3593 ;	/home/mahavigna/CI/controller_8051.c:249: test_pwm;
       001038 85 09 90         [24] 3594 	mov	_P1,_test_pwm
                            000F84  3595 	C$controller_8051.c$255$1_0$103 ==.
-                                   3596 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:255: 0xAAu;
+                                   3596 ;	/home/mahavigna/CI/controller_8051.c:255: 0xAAu;
       00103B 75 80 AA         [24] 3597 	mov	_P0,#0xaa
       00103E                       3598 00103$:
       00103E 80 FE            [24] 3599 	sjmp	00103$
                            000F89  3600 	C$controller_8051.c$260$2_0$103 ==.
-                                   3601 ;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:260: }
+                                   3601 ;	/home/mahavigna/CI/controller_8051.c:260: }
                            000F89  3602 	C$controller_8051.c$260$2_0$103 ==.
                            000F89  3603 	XG$main$0$0 ==.
       001040 22               [24] 3604 	ret

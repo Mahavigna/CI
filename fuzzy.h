@@ -2431,246 +2431,6 @@ bool fuzzy_demo(void)
 #endif /* FUZZY_DEMO */
 
 /*
- * Parse the generated sweep CSV and write its contents
- * into the supplied flat arrays.
- *
- * This is private because CSV parsing is an internal part
- * of sweep generation, not part of the public API.
- */
-static bool fuzzy_sweep_parse_csv(
-    const char *filename,
-    size_t expected_dimension_count,
-    size_t expected_point_count,
-    float inputs[],
-    float cog_values[]
-)
-{
-    if (
-        filename == NULL ||
-        expected_dimension_count == 0 ||
-        expected_point_count == 0 ||
-        inputs == NULL ||
-        cog_values == NULL
-    ) {
-        return false;
-    }
-
-    FILE *file = fopen(
-        filename,
-        "r"
-    );
-
-    if (file == NULL) {
-        FUZZY_ERROR(
-            "Failed to open sweep CSV: %s\n",
-            filename
-        );
-
-        return false;
-    }
-
-    char line[4096];
-
-    /*
-     * Read and validate the heading.
-     */
-    if (
-        fgets(
-            line,
-            sizeof(line),
-            file
-        ) == NULL
-    ) {
-        FUZZY_ERROR(
-            "Sweep CSV is empty: %s\n",
-            filename
-        );
-
-        fclose(file);
-
-        return false;
-    }
-
-    size_t heading_columns = 1;
-
-    for (
-        const char *character = line;
-        *character != '\0';
-        character++
-    ) {
-        if (*character == ',') {
-            heading_columns++;
-        }
-    }
-
-    if (
-        heading_columns !=
-        expected_dimension_count + 1
-    ) {
-        FUZZY_ERROR(
-            "Sweep CSV has %zu columns; expected %zu.\n",
-            heading_columns,
-            expected_dimension_count + 1
-        );
-
-        fclose(file);
-
-        return false;
-    }
-
-    size_t point = 0;
-    size_t line_number = 1;
-
-    while (
-        fgets(
-            line,
-            sizeof(line),
-            file
-        ) != NULL
-    ) {
-        line_number++;
-
-        size_t length =
-            strlen(line);
-
-        while (
-            length > 0 &&
-            (
-                line[length - 1] == '\n' ||
-                line[length - 1] == '\r'
-            )
-        ) {
-            line[length - 1] = '\0';
-            length--;
-        }
-
-        if (line[0] == '\0') {
-            continue;
-        }
-
-        if (point >= expected_point_count) {
-            FUZZY_ERROR(
-                "Sweep CSV contains more than %zu points.\n",
-                expected_point_count
-            );
-
-            fclose(file);
-
-            return false;
-        }
-
-        char *cursor = line;
-
-        for (
-            size_t dimension = 0;
-            dimension < expected_dimension_count;
-            dimension++
-        ) {
-            char *end = NULL;
-
-            float value =
-                strtof(cursor, &end);
-
-            if (
-                end == cursor ||
-                *end != ','
-            ) {
-                FUZZY_ERROR(
-                    "Invalid input value on CSV line %zu, "
-                    "dimension %zu.\n",
-                    line_number,
-                    dimension
-                );
-
-                fclose(file);
-
-                return false;
-            }
-
-            inputs[
-                point *
-                expected_dimension_count +
-                dimension
-            ] = value;
-
-            cursor =
-                end + 1;
-        }
-
-        char *end = NULL;
-
-        float cog =
-            strtof(cursor, &end);
-
-        if (end == cursor) {
-            FUZZY_ERROR(
-                "Invalid COG value on CSV line %zu.\n",
-                line_number
-            );
-
-            fclose(file);
-
-            return false;
-        }
-
-        while (
-            *end == ' ' ||
-            *end == '\t'
-        ) {
-            end++;
-        }
-
-        if (*end != '\0') {
-            FUZZY_ERROR(
-                "Unexpected data after COG on CSV line %zu.\n",
-                line_number
-            );
-
-            fclose(file);
-
-            return false;
-        }
-
-        cog_values[point] =
-            cog;
-
-        point++;
-    }
-
-    if (ferror(file)) {
-        FUZZY_ERROR(
-            "Failed while reading sweep CSV: %s\n",
-            filename
-        );
-
-        fclose(file);
-
-        return false;
-    }
-
-    if (fclose(file) != 0) {
-        FUZZY_ERROR(
-            "Failed to close sweep CSV: %s\n",
-            filename
-        );
-
-        return false;
-    }
-
-    if (point != expected_point_count) {
-        FUZZY_ERROR(
-            "Sweep CSV contains %zu points; expected %zu.\n",
-            point,
-            expected_point_count
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-/*
  * Write the parsed N-dimensional COG sweep as SVG.
  *
  * 1 dimension:
@@ -3876,8 +3636,29 @@ static bool fuzzy_sweep_write_svg(
     return true;
 }
 
-bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
+bool fuzzy_cog_sweep(
+    const fuzzy_cog_sweep_t *sweep
+)
 {
+    size_t dimension_count;
+    size_t total_points;
+    size_t sweep_input_count;
+
+    size_t *sample_counts;
+    size_t *indices;
+
+    float *inputs;
+    float *sweep_inputs;
+    float *sweep_cog_values;
+
+    FILE *csv_file;
+
+    char csv_filename[256];
+
+    int written;
+
+    bool success;
+
     if (
         sweep == NULL ||
         sweep->filename == NULL ||
@@ -3889,42 +3670,50 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
         return false;
     }
 
-    size_t dimension_count =
+    dimension_count =
         sweep->dimension_count;
 
-    size_t *sample_counts = calloc(
-        dimension_count,
-        sizeof(*sample_counts)
-    );
+    sample_counts =
+        calloc(
+            dimension_count,
+            sizeof(*sample_counts)
+        );
 
-    size_t *indices = calloc(
-        dimension_count,
-        sizeof(*indices)
-    );
+    indices =
+        calloc(
+            dimension_count,
+            sizeof(*indices)
+        );
 
-    float *inputs = calloc(
-        dimension_count,
-        sizeof(*inputs)
-    );
+    inputs =
+        calloc(
+            dimension_count,
+            sizeof(*inputs)
+        );
 
     if (
         sample_counts == NULL ||
         indices == NULL ||
         inputs == NULL
     ) {
+        FUZZY_ERROR(
+            "Failed to allocate COG sweep dimensions.\n"
+        );
+
         free(sample_counts);
         free(indices);
         free(inputs);
 
-        FUZZY_ERROR(
-            "Failed to allocate COG sweep data.\n"
-        );
-
         return false;
     }
 
-    size_t total_points = 1;
+    total_points =
+        1;
 
+    /*
+     * Validate every dimension and determine the total
+     * number of points.
+     */
     for (
         size_t dimension = 0;
         dimension < dimension_count;
@@ -3956,10 +3745,10 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
                     current->lower
                 ) /
                 current->step
-            ) + 1;
+            ) + 1u;
 
         if (
-            sample_counts[dimension] != 0 &&
+            sample_counts[dimension] == 0 ||
             total_points >
                 SIZE_MAX /
                 sample_counts[dimension]
@@ -3979,21 +3768,17 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
             sample_counts[dimension];
     }
 
-    char output_filename[256];
-
-    int written = snprintf(
-        output_filename,
-        sizeof(output_filename),
-        "%s.csv",
-        sweep->filename
-    );
-
+    /*
+     * The flat input array contains every input coordinate
+     * for every generated point.
+     */
     if (
-        written < 0 ||
-        (size_t)written >= sizeof(output_filename)
+        total_points >
+            SIZE_MAX /
+            dimension_count
     ) {
         FUZZY_ERROR(
-            "COG sweep filename is too long.\n"
+            "COG sweep input count overflow.\n"
         );
 
         free(sample_counts);
@@ -4003,16 +3788,102 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
         return false;
     }
 
-    FILE *file = fopen(
-        output_filename,
-        "w"
-    );
+    sweep_input_count =
+        total_points *
+        dimension_count;
 
-    if (file == NULL) {
+    /*
+     * Prevent byte-size overflow before allocating.
+     */
+    if (
+        sweep_input_count >
+            SIZE_MAX /
+            sizeof(*sweep_inputs) ||
+        total_points >
+            SIZE_MAX /
+            sizeof(*sweep_cog_values)
+    ) {
+        FUZZY_ERROR(
+            "COG sweep allocation is too large.\n"
+        );
+
+        free(sample_counts);
+        free(indices);
+        free(inputs);
+
+        return false;
+    }
+
+    sweep_inputs =
+        malloc(
+            sweep_input_count *
+            sizeof(*sweep_inputs)
+        );
+
+    sweep_cog_values =
+        malloc(
+            total_points *
+            sizeof(*sweep_cog_values)
+        );
+
+    if (
+        sweep_inputs == NULL ||
+        sweep_cog_values == NULL
+    ) {
+        FUZZY_ERROR(
+            "Failed to allocate COG sweep results.\n"
+        );
+
+        free(sweep_inputs);
+        free(sweep_cog_values);
+
+        free(sample_counts);
+        free(indices);
+        free(inputs);
+
+        return false;
+    }
+
+    written =
+        snprintf(
+            csv_filename,
+            sizeof(csv_filename),
+            "%s.csv",
+            sweep->filename
+        );
+
+    if (
+        written < 0 ||
+        (size_t)written >= sizeof(csv_filename)
+    ) {
+        FUZZY_ERROR(
+            "COG sweep CSV filename is too long.\n"
+        );
+
+        free(sweep_inputs);
+        free(sweep_cog_values);
+
+        free(sample_counts);
+        free(indices);
+        free(inputs);
+
+        return false;
+    }
+
+    csv_file =
+        fopen(
+            csv_filename,
+            "w"
+        );
+
+    if (csv_file == NULL) {
         FUZZY_ERROR(
             "Failed to open %s.\n",
-            output_filename
+            csv_filename
         );
+
+        free(sweep_inputs);
+        free(sweep_cog_values);
 
         free(sample_counts);
         free(indices);
@@ -4033,7 +3904,7 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
             sweep->dimensions[dimension].name;
 
         fprintf(
-            file,
+            csv_file,
             "%s,",
             name != NULL
                 ? name
@@ -4042,14 +3913,19 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
     }
 
     fprintf(
-        file,
+        csv_file,
         "COG\n"
     );
 
     /*
-     * N-dimensional odometer loop.
+     * Generate the sweep once.
      *
-     * The final dimension changes fastest.
+     * Every calculated input and COG value is:
+     *
+     * 1. Stored directly in memory for the SVG.
+     * 2. Written directly to the CSV.
+     *
+     * The CSV is never reopened or parsed.
      */
     for (
         size_t point = 0;
@@ -4077,28 +3953,36 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
             inputs[dimension] =
                 input;
 
+            sweep_inputs[
+                point *
+                dimension_count +
+                dimension
+            ] = input;
+
             fprintf(
-                file,
+                csv_file,
                 "%.9g,",
                 input
             );
         }
 
-        float cog = sweep->evaluate(
-            inputs,
-            dimension_count,
-            sweep->cog_step
-        );
+        sweep_cog_values[point] =
+            sweep->evaluate(
+                inputs,
+                dimension_count,
+                sweep->cog_step
+            );
 
         fprintf(
-            file,
+            csv_file,
             "%.9g\n",
-            cog
+            sweep_cog_values[point]
         );
 
         /*
-         * Increment the last dimension.
-         * Carry into preceding dimensions when required.
+         * Increment the N-dimensional odometer.
+         *
+         * The final dimension changes fastest.
          */
         for (
             size_t dimension = dimension_count;
@@ -4106,7 +3990,7 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
             dimension--
         ) {
             size_t index =
-                dimension - 1;
+                dimension - 1u;
 
             indices[index]++;
 
@@ -4117,18 +4001,40 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
                 break;
             }
 
-            indices[index] = 0;
+            indices[index] =
+                0;
         }
     }
 
     /*
-     * Close the CSV before reopening it for parsing.
+     * Ensure the CSV was written successfully.
      */
-    if (fclose(file) != 0) {
+    if (ferror(csv_file)) {
+        FUZZY_ERROR(
+            "Failed while writing %s.\n",
+            csv_filename
+        );
+
+        fclose(csv_file);
+
+        free(sweep_inputs);
+        free(sweep_cog_values);
+
+        free(sample_counts);
+        free(indices);
+        free(inputs);
+
+        return false;
+    }
+
+    if (fclose(csv_file) != 0) {
         FUZZY_ERROR(
             "Failed to finish writing %s.\n",
-            output_filename
+            csv_filename
         );
+
+        free(sweep_inputs);
+        free(sweep_cog_values);
 
         free(sample_counts);
         free(indices);
@@ -4138,116 +4044,27 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
     }
 
     /*
-     * Prevent allocation-size overflow.
+     * Generate the SVG directly from the same values that
+     * were written to the CSV.
+     *
+     * No CSV parsing and no controller reevaluation.
      */
-    if (
-        dimension_count != 0 &&
-        total_points >
-            SIZE_MAX /
-            dimension_count
-    ) {
-        FUZZY_ERROR(
-            "Parsed sweep input data is too large.\n"
+    success =
+        fuzzy_sweep_write_svg(
+            sweep,
+            sample_counts,
+            total_points,
+            sweep_inputs,
+            sweep_cog_values
         );
 
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
-    size_t parsed_input_count =
-        total_points *
-        dimension_count;
-
-    if (
-        parsed_input_count >
-            SIZE_MAX /
-            sizeof(float) ||
-        total_points >
-            SIZE_MAX /
-            sizeof(float)
-    ) {
-        FUZZY_ERROR(
-            "Parsed sweep allocation is too large.\n"
-        );
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
-    float *parsed_inputs = malloc(
-        parsed_input_count *
-        sizeof(*parsed_inputs)
-    );
-
-    float *parsed_cog_values = malloc(
-        total_points *
-        sizeof(*parsed_cog_values)
-    );
-
-    if (
-        parsed_inputs == NULL ||
-        parsed_cog_values == NULL
-    ) {
-        FUZZY_ERROR(
-            "Failed to allocate parsed sweep data.\n"
-        );
-
-        free(parsed_inputs);
-        free(parsed_cog_values);
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
-    /*
-     * Parse the CSV generated above.
-     */
-    if (!fuzzy_sweep_parse_csv(
-        output_filename,
-        dimension_count,
-        total_points,
-        parsed_inputs,
-        parsed_cog_values
-    )) {
-        FUZZY_ERROR(
-            "Failed to parse generated sweep CSV.\n"
-        );
-
-        free(parsed_inputs);
-        free(parsed_cog_values);
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
-    /*
-     * Generate the SVG from the parsed sweep data.
-     */
-    if (!fuzzy_sweep_write_svg(
-        sweep,
-        sample_counts,
-        total_points,
-        parsed_inputs,
-        parsed_cog_values
-    )) {
+    if (!success) {
         FUZZY_ERROR(
             "Failed to generate COG sweep SVG.\n"
         );
 
-        free(parsed_inputs);
-        free(parsed_cog_values);
+        free(sweep_inputs);
+        free(sweep_cog_values);
 
         free(sample_counts);
         free(indices);
@@ -4256,8 +4073,8 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
         return false;
     }
 
-    free(parsed_inputs);
-    free(parsed_cog_values);
+    free(sweep_inputs);
+    free(sweep_cog_values);
 
     free(sample_counts);
     free(indices);

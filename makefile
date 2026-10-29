@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 
 BUILD_SCRIPT := scripts/build.sh
 
-.PHONY: all desktop embedded test \
+.PHONY: all desktop embedded test run-sugeno \
 	run-strength run-greenhouse run-demo run-sim-8051 \
 	build-8051 simulate-8051 debug-8051 test-8051 \
 	check-dependencies install-dependencies \
@@ -21,6 +21,9 @@ embedded:
 
 test:
 	./$(BUILD_SCRIPT) test
+
+sugeno: 
+	./$(BUILD_SCRIPT) sugeno
 
 run-strength:
 	./$(BUILD_SCRIPT) run-strength

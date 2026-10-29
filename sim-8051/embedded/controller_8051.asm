@@ -546,13 +546,13 @@ sdcc_atomic_compare_exchange_gptr_impl::
 	.globl __mcs51_genXRAMCLEAR
 	.globl __mcs51_genRAMCLEAR
 	C$controller_8051.c$29$2_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:29: volatile unsigned char test_temperature = 0u;
+;	/home/mahavigna/CI/controller_8051.c:29: volatile unsigned char test_temperature = 0u;
 	mov	_test_temperature,#0x00
 	C$controller_8051.c$30$2_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:30: volatile unsigned char test_pwm = 0u;
+;	/home/mahavigna/CI/controller_8051.c:30: volatile unsigned char test_pwm = 0u;
 	mov	_test_pwm,#0x00
 	C$controller_8051.c$31$2_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:31: volatile float test_fan_speed = 0.0f;
+;	/home/mahavigna/CI/controller_8051.c:31: volatile float test_fan_speed = 0.0f;
 	clr	a
 	mov	_test_fan_speed,a
 	mov	(_test_fan_speed + 1),a
@@ -579,7 +579,7 @@ __sdcc_program_startup:
 ;------------------------------------------------------------
 	Fcontroller_8051$fuzzy_clamp$0$0 ==.
 	C$fuzzy.h$494$0_0$38 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:494: static float fuzzy_clamp(float value)
+;	/home/mahavigna/CI/fuzzy.h:494: static float fuzzy_clamp(float value)
 ;	-----------------------------------------
 ;	 function fuzzy_clamp
 ;	-----------------------------------------
@@ -597,7 +597,7 @@ _fuzzy_clamp:
 	mov	r6,b
 	mov	r7,a
 	C$fuzzy.h$496$1_0$38 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:496: if (value < LEVEL_LO) {
+;	/home/mahavigna/CI/fuzzy.h:496: if (value < LEVEL_LO) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -623,14 +623,14 @@ _fuzzy_clamp:
 	mov	a,r3
 	jz	00102$
 	C$fuzzy.h$497$2_0$39 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:497: return LEVEL_LO;
+;	/home/mahavigna/CI/fuzzy.h:497: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00105$
 00102$:
 	C$fuzzy.h$500$1_0$38 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:500: if (value > LEVEL_HI) {
+;	/home/mahavigna/CI/fuzzy.h:500: if (value > LEVEL_HI) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -654,21 +654,21 @@ _fuzzy_clamp:
 	mov	a,r3
 	jz	00104$
 	C$fuzzy.h$501$2_0$40 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:501: return LEVEL_HI;
+;	/home/mahavigna/CI/fuzzy.h:501: return LEVEL_HI;
 	mov	dptr,#0x0000
 	mov	b, #0x80
 	mov	a, #0x3f
 	sjmp	00105$
 00104$:
 	C$fuzzy.h$504$1_0$38 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:504: return value;
+;	/home/mahavigna/CI/fuzzy.h:504: return value;
 	mov	dpl, r4
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
 00105$:
 	C$fuzzy.h$505$1_0$38 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:505: }
+;	/home/mahavigna/CI/fuzzy.h:505: }
 	C$fuzzy.h$505$1_0$38 ==.
 	XFcontroller_8051$fuzzy_clamp$0$0 ==.
 	ret
@@ -679,13 +679,13 @@ _fuzzy_clamp:
 ;------------------------------------------------------------
 	G$fuzzy_not$0$0 ==.
 	C$fuzzy.h$510$1_0$42 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:510: float fuzzy_not(
+;	/home/mahavigna/CI/fuzzy.h:510: float fuzzy_not(
 ;	-----------------------------------------
 ;	 function fuzzy_not
 ;	-----------------------------------------
 _fuzzy_not:
 	C$fuzzy.h$516$1_0$42 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:516: membership
+;	/home/mahavigna/CI/fuzzy.h:516: membership
 	lcall	_fuzzy_clamp
 	mov	r4, dpl
 	mov	r5, dph
@@ -711,7 +711,7 @@ _fuzzy_not:
 	mov	b, r6
 	mov	a, r7
 	C$fuzzy.h$518$1_0$42 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:518: }
+;	/home/mahavigna/CI/fuzzy.h:518: }
 	C$fuzzy.h$518$1_0$42 ==.
 	XG$fuzzy_not$0$0 ==.
 	ret
@@ -724,7 +724,7 @@ _fuzzy_not:
 ;------------------------------------------------------------
 	Fcontroller_8051$fuzzy_apply_hedge$0$0 ==.
 	C$fuzzy.h$528$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:528: static float fuzzy_apply_hedge(
+;	/home/mahavigna/CI/fuzzy.h:528: static float fuzzy_apply_hedge(
 ;	-----------------------------------------
 ;	 function fuzzy_apply_hedge
 ;	-----------------------------------------
@@ -739,7 +739,7 @@ _fuzzy_apply_hedge:
 	add	a,#0x04
 	mov	sp,a
 	C$fuzzy.h$540$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:540: fuzzy_clamp(membership);
+;	/home/mahavigna/CI/fuzzy.h:540: fuzzy_clamp(membership);
 	mov	dpl, r4
 	mov	dph, r5
 	mov	b, r6
@@ -755,27 +755,27 @@ _fuzzy_apply_hedge:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$555$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:555: if (hedge == 0u) {
+;	/home/mahavigna/CI/fuzzy.h:555: if (hedge == 0u) {
 	mov	a,_bp
 	add	a,#0xfd
 	mov	r0,a
 	mov	a,@r0
 	jnz	00102$
 	C$fuzzy.h$556$2_0$45 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:556: hedge = 1u;
+;	/home/mahavigna/CI/fuzzy.h:556: hedge = 1u;
 	mov	a,_bp
 	add	a,#0xfd
 	mov	r0,a
 	mov	@r0,#0x01
 00102$:
 	C$fuzzy.h$559$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:559: result = LEVEL_HI;
+;	/home/mahavigna/CI/fuzzy.h:559: result = LEVEL_HI;
 	mov	r2,#0x00
 	mov	r3,#0x00
 	mov	r6,#0x80
 	mov	r7,#0x3f
 	C$fuzzy.h$561$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:561: while (hedge > 0u) {
+;	/home/mahavigna/CI/fuzzy.h:561: while (hedge > 0u) {
 	mov	a,_bp
 	add	a,#0xfd
 	mov	r0,a
@@ -784,7 +784,7 @@ _fuzzy_apply_hedge:
 	mov	a,r5
 	jz	00105$
 	C$fuzzy.h$562$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:562: result *= membership;
+;	/home/mahavigna/CI/fuzzy.h:562: result *= membership;
 	push	ar5
 	mov	r0,_bp
 	inc	r0
@@ -800,7 +800,7 @@ _fuzzy_apply_hedge:
 	mov	a,@r0
 	push	acc
 	C$fuzzy.h$563$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:563: hedge--;
+;	/home/mahavigna/CI/fuzzy.h:563: hedge--;
 	mov	dpl, r2
 	mov	dph, r3
 	mov	b, r6
@@ -818,14 +818,14 @@ _fuzzy_apply_hedge:
 	sjmp	00103$
 00105$:
 	C$fuzzy.h$567$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:567: result
+;	/home/mahavigna/CI/fuzzy.h:567: result
 	mov	dpl, r2
 	mov	dph, r3
 	mov	b, r6
 	mov	a, r7
 	lcall	_fuzzy_clamp
 	C$fuzzy.h$571$1_0$44 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:571: }
+;	/home/mahavigna/CI/fuzzy.h:571: }
 	mov	sp,_bp
 	pop	_bp
 	C$fuzzy.h$571$1_0$44 ==.
@@ -846,7 +846,7 @@ _fuzzy_apply_hedge:
 ;------------------------------------------------------------
 	G$fuzzy_sugeno_weighted_average$0$0 ==.
 	C$fuzzy.h$659$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:659: float fuzzy_sugeno_weighted_average(
+;	/home/mahavigna/CI/fuzzy.h:659: float fuzzy_sugeno_weighted_average(
 ;	-----------------------------------------
 ;	 function fuzzy_sugeno_weighted_average
 ;	-----------------------------------------
@@ -857,7 +857,7 @@ _fuzzy_sugeno_weighted_average:
 	add	a,#0x11
 	mov	sp,a
 	C$fuzzy.h$671$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:671: if (rule_count <= 0) {
+;	/home/mahavigna/CI/fuzzy.h:671: if (rule_count <= 0) {
 	mov	a,_bp
 	add	a,#0xfc
 	mov	r0,a
@@ -871,14 +871,14 @@ _fuzzy_sugeno_weighted_average:
 	subb	a,b
 	jc	00102$
 	C$fuzzy.h$672$2_0$49 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:672: return 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:672: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00109$
 00102$:
 	C$fuzzy.h$676$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:676: 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:676: 0.0f;
 	mov	a,_bp
 	add	a,#0x06
 	mov	r0,a
@@ -891,7 +891,7 @@ _fuzzy_sugeno_weighted_average:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$679$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:679: 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:679: 0.0f;
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -904,19 +904,19 @@ _fuzzy_sugeno_weighted_average:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$681$2_0$50 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:681: va_start(
+;	/home/mahavigna/CI/fuzzy.h:681: va_start(
 	mov	r0,_bp
 	inc	r0
 	mov	a,_bp
 	add	a,#0xfc
 	mov	@r0,a
 	C$fuzzy.h$687$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:687: i = 0;
+;	/home/mahavigna/CI/fuzzy.h:687: i = 0;
 	mov	r3,#0x00
 	mov	r2,#0x00
 00107$:
 	C$fuzzy.h$688$2_0$51 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:688: i < rule_count;
+;	/home/mahavigna/CI/fuzzy.h:688: i < rule_count;
 	mov	a,_bp
 	add	a,#0xfc
 	mov	r0,a
@@ -933,7 +933,7 @@ _fuzzy_sugeno_weighted_average:
 	ljmp	00103$
 00141$:
 	C$fuzzy.h$692$3_0$52 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:692: (float)va_arg(
+;	/home/mahavigna/CI/fuzzy.h:692: (float)va_arg(
 	mov	r0,_bp
 	inc	r0
 	mov	a,@r0
@@ -961,7 +961,7 @@ _fuzzy_sugeno_weighted_average:
 	dec	r1
 	dec	r1
 	C$fuzzy.h$698$3_0$52 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:698: (float)va_arg(
+;	/home/mahavigna/CI/fuzzy.h:698: (float)va_arg(
 	dec	r6
 	dec	r6
 	dec	r6
@@ -981,7 +981,7 @@ _fuzzy_sugeno_weighted_average:
 	dec	r1
 	dec	r1
 	C$fuzzy.h$705$3_0$52 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:705: firing_strength
+;	/home/mahavigna/CI/fuzzy.h:705: firing_strength
 	mov	r0,_bp
 	inc	r0
 	inc	r0
@@ -1017,7 +1017,7 @@ _fuzzy_sugeno_weighted_average:
 	pop	ar6
 	pop	ar7
 	C$fuzzy.h$718$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:718: consequent;
+;	/home/mahavigna/CI/fuzzy.h:718: consequent;
 	push	ar3
 	push	ar2
 	push	ar7
@@ -1047,7 +1047,7 @@ _fuzzy_sugeno_weighted_average:
 	push	ar6
 	push	ar7
 	C$fuzzy.h$721$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:721: firing_strength;
+;	/home/mahavigna/CI/fuzzy.h:721: firing_strength;
 	mov	a,_bp
 	add	a,#0x06
 	mov	r0,a
@@ -1088,7 +1088,7 @@ _fuzzy_sugeno_weighted_average:
 	mov	a,@r0
 	push	acc
 	C$fuzzy.h$689$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:689: i++
+;	/home/mahavigna/CI/fuzzy.h:689: i++
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1123,7 +1123,7 @@ _fuzzy_sugeno_weighted_average:
 	ljmp	00107$
 00103$:
 	C$fuzzy.h$726$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:726: if (firing_sum <= LEVEL_LO) {
+;	/home/mahavigna/CI/fuzzy.h:726: if (firing_sum <= LEVEL_LO) {
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1150,14 +1150,14 @@ _fuzzy_sugeno_weighted_average:
 	mov	b0,c
 	jc	00105$
 	C$fuzzy.h$727$2_0$54 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:727: return 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:727: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00109$
 00105$:
 	C$fuzzy.h$731$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:731: firing_sum;
+;	/home/mahavigna/CI/fuzzy.h:731: firing_sum;
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1196,7 +1196,7 @@ _fuzzy_sugeno_weighted_average:
 	mov	a, r7
 00109$:
 	C$fuzzy.h$732$1_0$48 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:732: }
+;	/home/mahavigna/CI/fuzzy.h:732: }
 	mov	sp,_bp
 	pop	_bp
 	C$fuzzy.h$732$1_0$48 ==.
@@ -1216,7 +1216,7 @@ _fuzzy_sugeno_weighted_average:
 ;------------------------------------------------------------
 	G$fuzzy_sugeno_weighted_sum$0$0 ==.
 	C$fuzzy.h$738$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:738: float fuzzy_sugeno_weighted_sum(
+;	/home/mahavigna/CI/fuzzy.h:738: float fuzzy_sugeno_weighted_sum(
 ;	-----------------------------------------
 ;	 function fuzzy_sugeno_weighted_sum
 ;	-----------------------------------------
@@ -1227,7 +1227,7 @@ _fuzzy_sugeno_weighted_sum:
 	add	a,#0x0a
 	mov	sp,a
 	C$fuzzy.h$749$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:749: if (rule_count <= 0) {
+;	/home/mahavigna/CI/fuzzy.h:749: if (rule_count <= 0) {
 	mov	a,_bp
 	add	a,#0xfc
 	mov	r0,a
@@ -1241,14 +1241,14 @@ _fuzzy_sugeno_weighted_sum:
 	subb	a,b
 	jc	00102$
 	C$fuzzy.h$750$2_0$57 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:750: return 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:750: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00107$
 00102$:
 	C$fuzzy.h$754$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:754: 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:754: 0.0f;
 	mov	r0,_bp
 	inc	r0
 	clr	a
@@ -1260,12 +1260,12 @@ _fuzzy_sugeno_weighted_sum:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$756$2_0$58 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:756: va_start(
+;	/home/mahavigna/CI/fuzzy.h:756: va_start(
 	mov	a,_bp
 	add	a,#0xfc
 	mov	r3,a
 	C$fuzzy.h$762$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:762: i = 0;
+;	/home/mahavigna/CI/fuzzy.h:762: i = 0;
 	mov	a,_bp
 	add	a,#0x09
 	mov	r0,a
@@ -1275,7 +1275,7 @@ _fuzzy_sugeno_weighted_sum:
 	mov	@r0,a
 00105$:
 	C$fuzzy.h$763$2_0$59 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:763: i < rule_count;
+;	/home/mahavigna/CI/fuzzy.h:763: i < rule_count;
 	mov	a,_bp
 	add	a,#0x09
 	mov	r0,a
@@ -1296,7 +1296,7 @@ _fuzzy_sugeno_weighted_sum:
 	ljmp	00103$
 00132$:
 	C$fuzzy.h$767$3_0$60 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:767: (float)va_arg(
+;	/home/mahavigna/CI/fuzzy.h:767: (float)va_arg(
 	mov	a,r3
 	add	a,#0xfc
 	mov	r6,a
@@ -1312,7 +1312,7 @@ _fuzzy_sugeno_weighted_sum:
 	dec	r1
 	dec	r1
 	C$fuzzy.h$773$3_0$60 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:773: (float)va_arg(
+;	/home/mahavigna/CI/fuzzy.h:773: (float)va_arg(
 	dec	r6
 	dec	r6
 	dec	r6
@@ -1340,7 +1340,7 @@ _fuzzy_sugeno_weighted_sum:
 	dec	r1
 	dec	r1
 	C$fuzzy.h$780$3_0$60 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:780: firing_strength
+;	/home/mahavigna/CI/fuzzy.h:780: firing_strength
 	mov	dpl, r7
 	mov	dph, r5
 	mov	b, r4
@@ -1352,7 +1352,7 @@ _fuzzy_sugeno_weighted_sum:
 	mov	r6, b
 	mov	r7, a
 	C$fuzzy.h$793$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:793: consequent;
+;	/home/mahavigna/CI/fuzzy.h:793: consequent;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1384,7 +1384,7 @@ _fuzzy_sugeno_weighted_sum:
 	push	ar6
 	push	ar7
 	C$fuzzy.h$764$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:764: i++
+;	/home/mahavigna/CI/fuzzy.h:764: i++
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -1419,7 +1419,7 @@ _fuzzy_sugeno_weighted_sum:
 	ljmp	00105$
 00103$:
 	C$fuzzy.h$798$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:798: return weighted_sum;
+;	/home/mahavigna/CI/fuzzy.h:798: return weighted_sum;
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -1431,7 +1431,7 @@ _fuzzy_sugeno_weighted_sum:
 	mov	a, @r0
 00107$:
 	C$fuzzy.h$799$1_0$56 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:799: }
+;	/home/mahavigna/CI/fuzzy.h:799: }
 	mov	sp,_bp
 	pop	_bp
 	C$fuzzy.h$799$1_0$56 ==.
@@ -1453,7 +1453,7 @@ _fuzzy_sugeno_weighted_sum:
 ;------------------------------------------------------------
 	G$fuzzy_ramp$0$0 ==.
 	C$fuzzy.h$804$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:804: float fuzzy_ramp(
+;	/home/mahavigna/CI/fuzzy.h:804: float fuzzy_ramp(
 ;	-----------------------------------------
 ;	 function fuzzy_ramp
 ;	-----------------------------------------
@@ -1464,7 +1464,7 @@ _fuzzy_ramp:
 	add	a,#0x08
 	mov	sp,a
 	C$fuzzy.h$818$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:818: if (lower_boundary >= upper_boundary) {
+;	/home/mahavigna/CI/fuzzy.h:818: if (lower_boundary >= upper_boundary) {
 	mov	a,_bp
 	add	a,#0xf6
 	mov	r0,a
@@ -1498,14 +1498,14 @@ _fuzzy_ramp:
 	mov	b0,c
 	jc	00102$
 	C$fuzzy.h$819$2_0$64 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:819: return LEVEL_LO;
+;	/home/mahavigna/CI/fuzzy.h:819: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00109$
 00102$:
 	C$fuzzy.h$822$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:822: if (value <= lower_boundary) {
+;	/home/mahavigna/CI/fuzzy.h:822: if (value <= lower_boundary) {
 	mov	a,_bp
 	add	a,#0xf2
 	mov	r0,a
@@ -1539,14 +1539,14 @@ _fuzzy_ramp:
 	mov	b0,c
 	jc	00107$
 	C$fuzzy.h$824$2_0$65 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:824: ramp_up
+;	/home/mahavigna/CI/fuzzy.h:824: ramp_up
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
 	mov	a,@r0
 	jz	00111$
 	C$fuzzy.h$825$2_0$65 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:825: ? LEVEL_LO
+;	/home/mahavigna/CI/fuzzy.h:825: ? LEVEL_LO
 	mov	r4,#0x00
 	mov	r5,#0x00
 	mov	r6,#0x00
@@ -1554,7 +1554,7 @@ _fuzzy_ramp:
 	sjmp	00112$
 00111$:
 	C$fuzzy.h$826$2_0$65 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:826: : LEVEL_HI;
+;	/home/mahavigna/CI/fuzzy.h:826: : LEVEL_HI;
 	mov	r4,#0x00
 	mov	r5,#0x00
 	mov	r6,#0x80
@@ -1563,7 +1563,7 @@ _fuzzy_ramp:
 	ljmp	00108$
 00107$:
 	C$fuzzy.h$828$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:828: else if (value >= upper_boundary) {
+;	/home/mahavigna/CI/fuzzy.h:828: else if (value >= upper_boundary) {
 	mov	a,_bp
 	add	a,#0xf6
 	mov	r0,a
@@ -1597,14 +1597,14 @@ _fuzzy_ramp:
 	mov	b0,c
 	jc	00104$
 	C$fuzzy.h$830$2_0$66 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:830: ramp_up
+;	/home/mahavigna/CI/fuzzy.h:830: ramp_up
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
 	mov	a,@r0
 	jz	00113$
 	C$fuzzy.h$831$2_0$66 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:831: ? LEVEL_HI
+;	/home/mahavigna/CI/fuzzy.h:831: ? LEVEL_HI
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1619,7 +1619,7 @@ _fuzzy_ramp:
 	sjmp	00114$
 00113$:
 	C$fuzzy.h$832$2_0$66 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:832: : LEVEL_LO;
+;	/home/mahavigna/CI/fuzzy.h:832: : LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1645,7 +1645,7 @@ _fuzzy_ramp:
 	ljmp	00108$
 00104$:
 	C$fuzzy.h$836$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:836: (value - lower_boundary) /
+;	/home/mahavigna/CI/fuzzy.h:836: (value - lower_boundary) /
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -1661,7 +1661,7 @@ _fuzzy_ramp:
 	mov	a,@r0
 	push	acc
 	C$fuzzy.h$837$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:837: (upper_boundary - lower_boundary);
+;	/home/mahavigna/CI/fuzzy.h:837: (upper_boundary - lower_boundary);
 	mov	a,_bp
 	add	a,#0xf2
 	mov	r0,a
@@ -1739,7 +1739,7 @@ _fuzzy_ramp:
 	mov	a,@r0
 	push	acc
 	C$fuzzy.h$840$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:840: ramp_up
+;	/home/mahavigna/CI/fuzzy.h:840: ramp_up
 	mov	dpl, r7
 	mov	dph, r6
 	mov	b, r5
@@ -1758,7 +1758,7 @@ _fuzzy_ramp:
 	mov	a,@r0
 	jz	00115$
 	C$fuzzy.h$841$2_0$67 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:841: ? normalized
+;	/home/mahavigna/CI/fuzzy.h:841: ? normalized
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1772,7 +1772,7 @@ _fuzzy_ramp:
 	sjmp	00116$
 00115$:
 	C$fuzzy.h$842$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:842: : LEVEL_HI - normalized;
+;	/home/mahavigna/CI/fuzzy.h:842: : LEVEL_HI - normalized;
 	push	ar7
 	push	ar6
 	push	ar5
@@ -1808,7 +1808,7 @@ _fuzzy_ramp:
 	mov	ar7,@r0
 00108$:
 	C$fuzzy.h$846$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:846: result,
+;	/home/mahavigna/CI/fuzzy.h:846: result,
 	mov	a,_bp
 	add	a,#0xf0
 	mov	r0,a
@@ -1830,7 +1830,7 @@ _fuzzy_ramp:
 	mov	a, r7
 00109$:
 	C$fuzzy.h$849$1_0$63 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:849: }
+;	/home/mahavigna/CI/fuzzy.h:849: }
 	mov	sp,_bp
 	pop	_bp
 	C$fuzzy.h$849$1_0$63 ==.
@@ -1843,7 +1843,7 @@ _fuzzy_ramp:
 ;------------------------------------------------------------
 	G$fuzzy_rules_create$0$0 ==.
 	C$fuzzy.h$1267$1_0$69 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1267: void fuzzy_rules_create(
+;	/home/mahavigna/CI/fuzzy.h:1267: void fuzzy_rules_create(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_create
 ;	-----------------------------------------
@@ -1852,16 +1852,16 @@ _fuzzy_rules_create:
 	mov	r6, dph
 	mov	r7, b
 	C$fuzzy.h$1271$1_0$69 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1271: if (rules == NULL) {
+;	/home/mahavigna/CI/fuzzy.h:1271: if (rules == NULL) {
 	mov	a,r5
 	orl	a,r6
 	jnz	00102$
 	C$fuzzy.h$1272$2_0$70 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1272: return;
+;	/home/mahavigna/CI/fuzzy.h:1272: return;
 	sjmp	00103$
 00102$:
 	C$fuzzy.h$1275$1_0$69 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1275: rules->count = 0;
+;	/home/mahavigna/CI/fuzzy.h:1275: rules->count = 0;
 	mov	a,#0x0c
 	add	a, r5
 	mov	r5,a
@@ -1877,7 +1877,7 @@ _fuzzy_rules_create:
 	lcall	__gptrput
 00103$:
 	C$fuzzy.h$1276$1_0$69 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1276: }
+;	/home/mahavigna/CI/fuzzy.h:1276: }
 	C$fuzzy.h$1276$1_0$69 ==.
 	XG$fuzzy_rules_create$0$0 ==.
 	ret
@@ -1895,7 +1895,7 @@ _fuzzy_rules_create:
 ;------------------------------------------------------------
 	G$fuzzy_rules_add$0$0 ==.
 	C$fuzzy.h$1279$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1279: bool fuzzy_rules_add(
+;	/home/mahavigna/CI/fuzzy.h:1279: bool fuzzy_rules_add(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_add
 ;	-----------------------------------------
@@ -1909,7 +1909,7 @@ _fuzzy_rules_add:
 	add	a,#0x06
 	mov	sp,a
 	C$fuzzy.h$1289$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1289: rules == NULL ||
+;	/home/mahavigna/CI/fuzzy.h:1289: rules == NULL ||
 	mov	r0,_bp
 	inc	r0
 	mov	a,@r0
@@ -1917,7 +1917,7 @@ _fuzzy_rules_add:
 	orl	a,@r0
 	jz	00101$
 	C$fuzzy.h$1290$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1290: output_function == NULL
+;	/home/mahavigna/CI/fuzzy.h:1290: output_function == NULL
 	mov	a,_bp
 	add	a,#0xf5
 	mov	r0,a
@@ -1927,12 +1927,12 @@ _fuzzy_rules_add:
 	jnz	00102$
 00101$:
 	C$fuzzy.h$1292$2_0$73 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1292: return false;
+;	/home/mahavigna/CI/fuzzy.h:1292: return false;
 	mov	dpl, #0x00
 	ljmp	00106$
 00102$:
 	C$fuzzy.h$1295$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1295: if (rules->count >= FUZZY_MAX_RULES) {
+;	/home/mahavigna/CI/fuzzy.h:1295: if (rules->count >= FUZZY_MAX_RULES) {
 	mov	r0,_bp
 	inc	r0
 	mov	a,_bp
@@ -1970,12 +1970,12 @@ _fuzzy_rules_add:
 	subb	a,#0x00
 	jc	00105$
 	C$fuzzy.h$1304$2_0$74 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1304: return false;
+;	/home/mahavigna/CI/fuzzy.h:1304: return false;
 	mov	dpl, #0x00
 	ljmp	00106$
 00105$:
 	C$fuzzy.h$1321$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1321: rules->rules[index].value =
+;	/home/mahavigna/CI/fuzzy.h:1321: rules->rules[index].value =
 	push	ar7
 	push	ar6
 	mov	dptr,#0x0006
@@ -2002,7 +2002,7 @@ _fuzzy_rules_add:
 	inc	r1
 	mov	@r1,a
 	C$fuzzy.h$1322$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1322: fuzzy_clamp(value);
+;	/home/mahavigna/CI/fuzzy.h:1322: fuzzy_clamp(value);
 	mov	a,_bp
 	add	a,#0xf7
 	mov	r0,a
@@ -2042,7 +2042,7 @@ _fuzzy_rules_add:
 	mov	a,r7
 	lcall	__gptrput
 	C$fuzzy.h$1324$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1324: rules->rules[index].output_function =
+;	/home/mahavigna/CI/fuzzy.h:1324: rules->rules[index].output_function =
 	mov	r0,_bp
 	inc	r0
 	mov	a,r3
@@ -2073,7 +2073,7 @@ _fuzzy_rules_add:
 	mov	a,@r0
 	lcall	__gptrput
 	C$fuzzy.h$1327$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1327: rules->count++;
+;	/home/mahavigna/CI/fuzzy.h:1327: rules->count++;
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -2105,11 +2105,11 @@ _fuzzy_rules_add:
 	mov	a,r7
 	lcall	__gptrput
 	C$fuzzy.h$1329$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1329: return true;
+;	/home/mahavigna/CI/fuzzy.h:1329: return true;
 	mov	dpl, #0x01
 00106$:
 	C$fuzzy.h$1330$1_0$72 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1330: }
+;	/home/mahavigna/CI/fuzzy.h:1330: }
 	mov	sp,_bp
 	pop	_bp
 	C$fuzzy.h$1330$1_0$72 ==.
@@ -2135,7 +2135,7 @@ _fuzzy_rules_add:
 ;------------------------------------------------------------
 	G$fuzzy_rules_cog$0$0 ==.
 	C$fuzzy.h$1363$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1363: float fuzzy_rules_cog(
+;	/home/mahavigna/CI/fuzzy.h:1363: float fuzzy_rules_cog(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_cog
 ;	-----------------------------------------
@@ -2149,7 +2149,7 @@ _fuzzy_rules_cog:
 	add	a,#0x24
 	mov	sp,a
 	C$fuzzy.h$1379$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1379: rules == NULL ||
+;	/home/mahavigna/CI/fuzzy.h:1379: rules == NULL ||
 	mov	r0,_bp
 	inc	r0
 	mov	a,@r0
@@ -2159,7 +2159,7 @@ _fuzzy_rules_cog:
 	ljmp	00101$
 00183$:
 	C$fuzzy.h$1380$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1380: rules->count == 0 ||
+;	/home/mahavigna/CI/fuzzy.h:1380: rules->count == 0 ||
 	mov	r0,_bp
 	inc	r0
 	mov	a,_bp
@@ -2192,7 +2192,7 @@ _fuzzy_rules_cog:
 	orl	a,r6
 	jz	00101$
 	C$fuzzy.h$1381$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1381: lower > upper ||
+;	/home/mahavigna/CI/fuzzy.h:1381: lower > upper ||
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -2225,7 +2225,7 @@ _fuzzy_rules_cog:
 	mov	a,r7
 	jnz	00101$
 	C$fuzzy.h$1383$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1383: ) {
+;	/home/mahavigna/CI/fuzzy.h:1383: ) {
 	mov	a,_bp
 	add	a,#0xf2
 	mov	r0,a
@@ -2253,14 +2253,14 @@ _fuzzy_rules_cog:
 	jc	00102$
 00101$:
 	C$fuzzy.h$1384$2_0$77 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1384: return 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:1384: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00116$
 00102$:
 	C$fuzzy.h$1387$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1387: weighted_sum = 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:1387: weighted_sum = 0.0f;
 	mov	a,_bp
 	add	a,#0x0e
 	mov	r0,a
@@ -2273,7 +2273,7 @@ _fuzzy_rules_cog:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$1388$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1388: height_sum = 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:1388: height_sum = 0.0f;
 	mov	a,_bp
 	add	a,#0x12
 	mov	r0,a
@@ -2286,7 +2286,7 @@ _fuzzy_rules_cog:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$1391$2_0$78 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1391: value = lower;
+;	/home/mahavigna/CI/fuzzy.h:1391: value = lower;
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -2324,7 +2324,7 @@ _fuzzy_rules_cog:
 	mov	@r1,a
 00114$:
 	C$fuzzy.h$1392$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1392: value <= upper;
+;	/home/mahavigna/CI/fuzzy.h:1392: value <= upper;
 	mov	a,_bp
 	add	a,#0x16
 	mov	r0,a
@@ -2360,7 +2360,7 @@ _fuzzy_rules_cog:
 	ljmp	00107$
 00187$:
 	C$fuzzy.h$1396$3_0$79 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1396: LEVEL_LO;
+;	/home/mahavigna/CI/fuzzy.h:1396: LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x1a
 	mov	r0,a
@@ -2373,7 +2373,7 @@ _fuzzy_rules_cog:
 	inc	r0
 	mov	@r0,a
 	C$fuzzy.h$1399$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1399: i = 0;
+;	/home/mahavigna/CI/fuzzy.h:1399: i = 0;
 	mov	a,_bp
 	add	a,#0x26
 	mov	r0,a
@@ -2385,7 +2385,7 @@ _fuzzy_rules_cog:
 	mov	r3,a
 00111$:
 	C$fuzzy.h$1400$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1400: i < rules->count;
+;	/home/mahavigna/CI/fuzzy.h:1400: i < rules->count;
 	push	ar2
 	push	ar3
 	mov	a,_bp
@@ -2416,7 +2416,7 @@ _fuzzy_rules_cog:
 	ljmp	00106$
 00188$:
 	C$fuzzy.h$1404$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1404: rules->rules[i]
+;	/home/mahavigna/CI/fuzzy.h:1404: rules->rules[i]
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -2444,7 +2444,7 @@ _fuzzy_rules_cog:
 	lcall	__gptrget
 	mov	r6,a
 	C$fuzzy.h$1405$5_0$81 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1405: .output_function(value);
+;	/home/mahavigna/CI/fuzzy.h:1405: .output_function(value);
 	push	ar6
 	push	ar5
 	push	ar3
@@ -2482,7 +2482,7 @@ _fuzzy_rules_cog:
 	pop	ar5
 	pop	ar6
 	C$fuzzy.h$1408$5_0$81 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1408: rules->rules[i].value <
+;	/home/mahavigna/CI/fuzzy.h:1408: rules->rules[i].value <
 	mov	r0,_bp
 	inc	r0
 	mov	a,r2
@@ -2550,7 +2550,7 @@ _fuzzy_rules_cog:
 	mov	a,r7
 	jz	00118$
 	C$fuzzy.h$1410$5_0$81 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1410: ? rules->rules[i].value
+;	/home/mahavigna/CI/fuzzy.h:1410: ? rules->rules[i].value
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -2564,7 +2564,7 @@ _fuzzy_rules_cog:
 	sjmp	00119$
 00118$:
 	C$fuzzy.h$1411$5_0$81 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1411: : output_membership;
+;	/home/mahavigna/CI/fuzzy.h:1411: : output_membership;
 	mov	a,_bp
 	add	a,#0x1e
 	mov	r0,a
@@ -2587,7 +2587,7 @@ _fuzzy_rules_cog:
 	inc	r0
 	mov	@r0,ar4
 	C$fuzzy.h$1416$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1416: ? aggregated_height
+;	/home/mahavigna/CI/fuzzy.h:1416: ? aggregated_height
 	push	ar3
 	push	ar2
 	mov	a,_bp
@@ -2636,7 +2636,7 @@ _fuzzy_rules_cog:
 	sjmp	00121$
 00120$:
 	C$fuzzy.h$1417$5_0$81 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1417: : clipped_height;
+;	/home/mahavigna/CI/fuzzy.h:1417: : clipped_height;
 	mov	a,_bp
 	add	a,#0x22
 	mov	r0,a
@@ -2659,7 +2659,7 @@ _fuzzy_rules_cog:
 	inc	r0
 	mov	@r0,ar7
 	C$fuzzy.h$1401$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1401: i++
+;	/home/mahavigna/CI/fuzzy.h:1401: i++
 	mov	a,#0x06
 	add	a, r2
 	mov	r2,a
@@ -2677,7 +2677,7 @@ _fuzzy_rules_cog:
 	ljmp	00111$
 00106$:
 	C$fuzzy.h$1422$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1422: aggregated_height;
+;	/home/mahavigna/CI/fuzzy.h:1422: aggregated_height;
 	mov	a,_bp
 	add	a,#0x1a
 	mov	r0,a
@@ -2715,7 +2715,7 @@ _fuzzy_rules_cog:
 	push	ar6
 	push	ar7
 	C$fuzzy.h$1425$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1425: aggregated_height;
+;	/home/mahavigna/CI/fuzzy.h:1425: aggregated_height;
 	mov	a,_bp
 	add	a,#0x0e
 	mov	r0,a
@@ -2756,7 +2756,7 @@ _fuzzy_rules_cog:
 	mov	a,@r0
 	push	acc
 	C$fuzzy.h$1394$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1394: ) {
+;	/home/mahavigna/CI/fuzzy.h:1394: ) {
 	mov	a,_bp
 	add	a,#0x12
 	mov	r0,a
@@ -2824,7 +2824,7 @@ _fuzzy_rules_cog:
 	ljmp	00114$
 00107$:
 	C$fuzzy.h$1428$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1428: if (height_sum == 0.0f) {
+;	/home/mahavigna/CI/fuzzy.h:1428: if (height_sum == 0.0f) {
 	mov	a,_bp
 	add	a,#0x12
 	mov	r0,a
@@ -2841,14 +2841,14 @@ _fuzzy_rules_cog:
 	orl	a,b
 	jnz	00109$
 	C$fuzzy.h$1429$2_0$82 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1429: return 0.0f;
+;	/home/mahavigna/CI/fuzzy.h:1429: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00116$
 00109$:
 	C$fuzzy.h$1433$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1433: height_sum;
+;	/home/mahavigna/CI/fuzzy.h:1433: height_sum;
 	mov	a,_bp
 	add	a,#0x12
 	mov	r0,a
@@ -2887,7 +2887,7 @@ _fuzzy_rules_cog:
 	mov	a, r7
 00116$:
 	C$fuzzy.h$1434$1_0$76 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1434: }
+;	/home/mahavigna/CI/fuzzy.h:1434: }
 	mov	sp,_bp
 	pop	_bp
 	C$fuzzy.h$1434$1_0$76 ==.
@@ -2900,7 +2900,7 @@ _fuzzy_rules_cog:
 ;------------------------------------------------------------
 	G$fuzzy_rules_free$0$0 ==.
 	C$fuzzy.h$1436$1_0$84 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1436: void fuzzy_rules_free(
+;	/home/mahavigna/CI/fuzzy.h:1436: void fuzzy_rules_free(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_free
 ;	-----------------------------------------
@@ -2909,16 +2909,16 @@ _fuzzy_rules_free:
 	mov	r6, dph
 	mov	r7, b
 	C$fuzzy.h$1440$1_0$84 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1440: if (rules == NULL) {
+;	/home/mahavigna/CI/fuzzy.h:1440: if (rules == NULL) {
 	mov	a,r5
 	orl	a,r6
 	jnz	00102$
 	C$fuzzy.h$1441$2_0$85 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1441: return;
+;	/home/mahavigna/CI/fuzzy.h:1441: return;
 	sjmp	00103$
 00102$:
 	C$fuzzy.h$1449$1_0$84 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1449: rules->count = 0;
+;	/home/mahavigna/CI/fuzzy.h:1449: rules->count = 0;
 	mov	a,#0x0c
 	add	a, r5
 	mov	r5,a
@@ -2934,7 +2934,7 @@ _fuzzy_rules_free:
 	lcall	__gptrput
 00103$:
 	C$fuzzy.h$1450$1_0$84 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/fuzzy.h:1450: }
+;	/home/mahavigna/CI/fuzzy.h:1450: }
 	C$fuzzy.h$1450$1_0$84 ==.
 	XG$fuzzy_rules_free$0$0 ==.
 	ret
@@ -2945,7 +2945,7 @@ _fuzzy_rules_free:
 ;------------------------------------------------------------
 	Fcontroller_8051$temperature_low$0$0 ==.
 	C$controller_8051.c$63$1_0$87 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:63: static float temperature_low(
+;	/home/mahavigna/CI/controller_8051.c:63: static float temperature_low(
 ;	-----------------------------------------
 ;	 function temperature_low
 ;	-----------------------------------------
@@ -2955,13 +2955,13 @@ _temperature_low:
 	mov	r6,b
 	mov	r7,a
 	C$controller_8051.c$73$1_0$87 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:73: hedges.none
+;	/home/mahavigna/CI/controller_8051.c:73: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
 	C$controller_8051.c$68$1_0$87 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:68: NULL,
+;	/home/mahavigna/CI/controller_8051.c:68: NULL,
 	push	ar3
 	clr	a
 	push	acc
@@ -2997,7 +2997,7 @@ _temperature_low:
 	mov	b, r6
 	mov	a, r7
 	C$controller_8051.c$75$1_0$87 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:75: }
+;	/home/mahavigna/CI/controller_8051.c:75: }
 	C$controller_8051.c$75$1_0$87 ==.
 	XFcontroller_8051$temperature_low$0$0 ==.
 	ret
@@ -3008,7 +3008,7 @@ _temperature_low:
 ;------------------------------------------------------------
 	Fcontroller_8051$temperature_high$0$0 ==.
 	C$controller_8051.c$78$1_0$89 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:78: static float temperature_high(
+;	/home/mahavigna/CI/controller_8051.c:78: static float temperature_high(
 ;	-----------------------------------------
 ;	 function temperature_high
 ;	-----------------------------------------
@@ -3018,13 +3018,13 @@ _temperature_high:
 	mov	r6,b
 	mov	r7,a
 	C$controller_8051.c$88$1_0$89 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:88: hedges.none
+;	/home/mahavigna/CI/controller_8051.c:88: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
 	C$controller_8051.c$83$1_0$89 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:83: NULL,
+;	/home/mahavigna/CI/controller_8051.c:83: NULL,
 	push	ar3
 	mov	a,#0x01
 	push	acc
@@ -3061,7 +3061,7 @@ _temperature_high:
 	mov	b, r6
 	mov	a, r7
 	C$controller_8051.c$90$1_0$89 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:90: }
+;	/home/mahavigna/CI/controller_8051.c:90: }
 	C$controller_8051.c$90$1_0$89 ==.
 	XFcontroller_8051$temperature_high$0$0 ==.
 	ret
@@ -3072,7 +3072,7 @@ _temperature_high:
 ;------------------------------------------------------------
 	Fcontroller_8051$fan_slow$0$0 ==.
 	C$controller_8051.c$97$1_0$91 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:97: static float fan_slow(
+;	/home/mahavigna/CI/controller_8051.c:97: static float fan_slow(
 ;	-----------------------------------------
 ;	 function fan_slow
 ;	-----------------------------------------
@@ -3082,13 +3082,13 @@ _fan_slow:
 	mov	r6,b
 	mov	r7,a
 	C$controller_8051.c$107$1_0$91 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:107: hedges.none
+;	/home/mahavigna/CI/controller_8051.c:107: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
 	C$controller_8051.c$102$1_0$91 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:102: NULL,
+;	/home/mahavigna/CI/controller_8051.c:102: NULL,
 	push	ar3
 	clr	a
 	push	acc
@@ -3124,7 +3124,7 @@ _fan_slow:
 	mov	b, r6
 	mov	a, r7
 	C$controller_8051.c$109$1_0$91 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:109: }
+;	/home/mahavigna/CI/controller_8051.c:109: }
 	C$controller_8051.c$109$1_0$91 ==.
 	XFcontroller_8051$fan_slow$0$0 ==.
 	ret
@@ -3135,7 +3135,7 @@ _fan_slow:
 ;------------------------------------------------------------
 	Fcontroller_8051$fan_fast$0$0 ==.
 	C$controller_8051.c$112$1_0$93 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:112: static float fan_fast(
+;	/home/mahavigna/CI/controller_8051.c:112: static float fan_fast(
 ;	-----------------------------------------
 ;	 function fan_fast
 ;	-----------------------------------------
@@ -3145,13 +3145,13 @@ _fan_fast:
 	mov	r6,b
 	mov	r7,a
 	C$controller_8051.c$122$1_0$93 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:122: hedges.none
+;	/home/mahavigna/CI/controller_8051.c:122: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
 	C$controller_8051.c$117$1_0$93 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:117: NULL,
+;	/home/mahavigna/CI/controller_8051.c:117: NULL,
 	push	ar3
 	mov	a,#0x01
 	push	acc
@@ -3188,7 +3188,7 @@ _fan_fast:
 	mov	b, r6
 	mov	a, r7
 	C$controller_8051.c$124$1_0$93 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:124: }
+;	/home/mahavigna/CI/controller_8051.c:124: }
 	C$controller_8051.c$124$1_0$93 ==.
 	XFcontroller_8051$fan_fast$0$0 ==.
 	ret
@@ -3202,7 +3202,7 @@ _fan_fast:
 ;------------------------------------------------------------
 	Fcontroller_8051$calculate_fan_speed$0$0 ==.
 	C$controller_8051.c$131$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:131: static float calculate_fan_speed(
+;	/home/mahavigna/CI/controller_8051.c:131: static float calculate_fan_speed(
 ;	-----------------------------------------
 ;	 function calculate_fan_speed
 ;	-----------------------------------------
@@ -3217,7 +3217,7 @@ _calculate_fan_speed:
 	add	a,#0x16
 	mov	sp,a
 	C$controller_8051.c$140$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:140: );
+;	/home/mahavigna/CI/controller_8051.c:140: );
 	mov	a,_bp
 	add	a,#0x09
 	mov	r3,a
@@ -3230,7 +3230,7 @@ _calculate_fan_speed:
 	push	ar3
 	lcall	_fuzzy_rules_create
 	C$controller_8051.c$142$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:142: if (!FUZZY_RULE_ADD(
+;	/home/mahavigna/CI/controller_8051.c:142: if (!FUZZY_RULE_ADD(
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -3291,14 +3291,14 @@ _calculate_fan_speed:
 	mov	a,r7
 	jnz	00102$
 	C$controller_8051.c$147$2_0$96 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:147: return 0.0f;
+;	/home/mahavigna/CI/controller_8051.c:147: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00105$
 00102$:
 	C$controller_8051.c$150$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:150: if (!FUZZY_RULE_ADD(
+;	/home/mahavigna/CI/controller_8051.c:150: if (!FUZZY_RULE_ADD(
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -3360,14 +3360,14 @@ _calculate_fan_speed:
 	mov	a,r7
 	jnz	00104$
 	C$controller_8051.c$155$2_0$97 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:155: return 0.0f;
+;	/home/mahavigna/CI/controller_8051.c:155: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00105$
 00104$:
 	C$controller_8051.c$160$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:160: &rules,
+;	/home/mahavigna/CI/controller_8051.c:160: &rules,
 	mov	ar5,r3
 	mov	r6,#0x00
 	mov	r7,#0x40
@@ -3411,7 +3411,7 @@ _calculate_fan_speed:
 	mov	sp,a
 	pop	ar3
 	C$controller_8051.c$168$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:168: );
+;	/home/mahavigna/CI/controller_8051.c:168: );
 	mov	ar2,r3
 	mov	r3,#0x00
 	mov	r7,#0x40
@@ -3420,7 +3420,7 @@ _calculate_fan_speed:
 	mov	b, r7
 	lcall	_fuzzy_rules_free
 	C$controller_8051.c$170$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:170: return result;
+;	/home/mahavigna/CI/controller_8051.c:170: return result;
 	mov	a,_bp
 	add	a,#0x17
 	mov	r0,a
@@ -3433,7 +3433,7 @@ _calculate_fan_speed:
 	mov	a, @r0
 00105$:
 	C$controller_8051.c$171$1_0$95 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:171: }
+;	/home/mahavigna/CI/controller_8051.c:171: }
 	mov	sp,_bp
 	pop	_bp
 	C$controller_8051.c$171$1_0$95 ==.
@@ -3446,7 +3446,7 @@ _calculate_fan_speed:
 ;------------------------------------------------------------
 	Fcontroller_8051$fan_speed_to_pwm$0$0 ==.
 	C$controller_8051.c$178$1_0$99 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:178: static unsigned char fan_speed_to_pwm(
+;	/home/mahavigna/CI/controller_8051.c:178: static unsigned char fan_speed_to_pwm(
 ;	-----------------------------------------
 ;	 function fan_speed_to_pwm
 ;	-----------------------------------------
@@ -3456,7 +3456,7 @@ _fan_speed_to_pwm:
 	mov	r6,b
 	mov	r7,a
 	C$controller_8051.c$182$1_0$99 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:182: if (fan_speed <= 0.0f) {
+;	/home/mahavigna/CI/controller_8051.c:182: if (fan_speed <= 0.0f) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3481,12 +3481,12 @@ _fan_speed_to_pwm:
 	mov	b0,c
 	jc	00102$
 	C$controller_8051.c$183$2_0$100 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:183: return 0u;
+;	/home/mahavigna/CI/controller_8051.c:183: return 0u;
 	mov	dpl, #0x00
 	sjmp	00105$
 00102$:
 	C$controller_8051.c$186$1_0$99 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:186: if (fan_speed >= 100.0f) {
+;	/home/mahavigna/CI/controller_8051.c:186: if (fan_speed >= 100.0f) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3515,12 +3515,12 @@ _fan_speed_to_pwm:
 	mov	b0,c
 	jc	00104$
 	C$controller_8051.c$187$2_0$101 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:187: return 100u;
+;	/home/mahavigna/CI/controller_8051.c:187: return 100u;
 	mov	dpl, #0x64
 	sjmp	00105$
 00104$:
 	C$controller_8051.c$192$1_0$99 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:192: );
+;	/home/mahavigna/CI/controller_8051.c:192: );
 	clr	a
 	push	acc
 	push	acc
@@ -3546,7 +3546,7 @@ _fan_speed_to_pwm:
 	lcall	___fs2uchar
 00105$:
 	C$controller_8051.c$193$1_0$99 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:193: }
+;	/home/mahavigna/CI/controller_8051.c:193: }
 	C$controller_8051.c$193$1_0$99 ==.
 	XFcontroller_8051$fan_speed_to_pwm$0$0 ==.
 	ret
@@ -3555,25 +3555,25 @@ _fan_speed_to_pwm:
 ;------------------------------------------------------------
 	G$main$0$0 ==.
 	C$controller_8051.c$210$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:210: void main(void)
+;	/home/mahavigna/CI/controller_8051.c:210: void main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
 	C$controller_8051.c$218$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:218: 42u;
+;	/home/mahavigna/CI/controller_8051.c:218: 42u;
 	mov	_test_temperature,#0x2a
 	C$controller_8051.c$224$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:224: 0x55u;
+;	/home/mahavigna/CI/controller_8051.c:224: 0x55u;
 	mov	_P0,#0x55
 	C$controller_8051.c$227$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:227: 0x00u;
+;	/home/mahavigna/CI/controller_8051.c:227: 0x00u;
 	mov	_P1,#0x00
 	C$controller_8051.c$233$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:233: test_temperature = P2;
+;	/home/mahavigna/CI/controller_8051.c:233: test_temperature = P2;
 	mov	_test_temperature,_P2
 	C$controller_8051.c$238$2_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:238: );
+;	/home/mahavigna/CI/controller_8051.c:238: );
 	mov	dpl, _test_temperature
 	lcall	___uchar2fs
 	lcall	_calculate_fan_speed
@@ -3582,7 +3582,7 @@ _main:
 	mov	(_test_fan_speed + 2),b
 	mov	(_test_fan_speed + 3),a
 	C$controller_8051.c$242$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:242: test_fan_speed
+;	/home/mahavigna/CI/controller_8051.c:242: test_fan_speed
 	mov	dpl, _test_fan_speed
 	mov	dph, (_test_fan_speed + 1)
 	mov	b, (_test_fan_speed + 2)
@@ -3590,15 +3590,15 @@ _main:
 	lcall	_fan_speed_to_pwm
 	mov	_test_pwm,dpl
 	C$controller_8051.c$249$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:249: test_pwm;
+;	/home/mahavigna/CI/controller_8051.c:249: test_pwm;
 	mov	_P1,_test_pwm
 	C$controller_8051.c$255$1_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:255: 0xAAu;
+;	/home/mahavigna/CI/controller_8051.c:255: 0xAAu;
 	mov	_P0,#0xaa
 00103$:
 	sjmp	00103$
 	C$controller_8051.c$260$2_0$103 ==.
-;	/mnt/c/Users/viktor/Downloads/CI/controller_8051.c:260: }
+;	/home/mahavigna/CI/controller_8051.c:260: }
 	C$controller_8051.c$260$2_0$103 ==.
 	XG$main$0$0 ==.
 	ret
