@@ -556,11 +556,11 @@ static void randomize_membership_parameters(void)
 static float temperature_low(float value)
 {
     return fuzzy_function(
-        "zmf",
+        FUZZY_SHAPE_ZMF,
         value,
         hedges.none,
-        (double)parameters.temperature_low[0],
-        (double)parameters.temperature_low[1]
+        parameters.temperature_low[0],
+        parameters.temperature_low[1]
     );
 }
 
@@ -568,11 +568,11 @@ static float temperature_low(float value)
 static float temperature_medium(float value)
 {
     return fuzzy_function(
-        "gauss",
+        FUZZY_SHAPE_GAUSSIAN,
         value,
         hedges.none,
-        (double)parameters.temperature_medium[0],
-        (double)parameters.temperature_medium[1]
+        parameters.temperature_medium[0],
+        parameters.temperature_medium[1]
     );
 }
 
@@ -580,11 +580,11 @@ static float temperature_medium(float value)
 static float temperature_high(float value)
 {
     return fuzzy_function(
-        "smf",
+        FUZZY_SHAPE_SMF,
         value,
         hedges.none,
-        (double)parameters.temperature_high[0],
-        (double)parameters.temperature_high[1]
+        parameters.temperature_high[0],
+        parameters.temperature_high[1]
     );
 }
 
@@ -596,11 +596,11 @@ static float temperature_high(float value)
 static float humidity_low(float value)
 {
     return fuzzy_function(
-        "ramp",
+        FUZZY_SHAPE_RAMP,
         value,
         hedges.none,
-        (double)parameters.humidity_low[0],
-        (double)parameters.humidity_low[1],
+        parameters.humidity_low[0],
+        parameters.humidity_low[1],
         false
     );
 }
@@ -609,13 +609,13 @@ static float humidity_low(float value)
 static float humidity_medium(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.none,
-        (double)parameters.humidity_medium[0],
-        (double)parameters.humidity_medium[1],
-        (double)parameters.humidity_medium[2],
-        (double)parameters.humidity_medium[3]
+        parameters.humidity_medium[0],
+        parameters.humidity_medium[1],
+        parameters.humidity_medium[2],
+        parameters.humidity_medium[3]
     );
 }
 
@@ -623,11 +623,11 @@ static float humidity_medium(float value)
 static float humidity_high(float value)
 {
     return fuzzy_function(
-        "sigmoid",
+        FUZZY_SHAPE_SIGMOID,
         value,
         hedges.none,
-        (double)parameters.humidity_high[0],
-        (double)parameters.humidity_high[1]
+        parameters.humidity_high[0],
+        parameters.humidity_high[1]
     );
 }
 
@@ -639,11 +639,11 @@ static float humidity_high(float value)
 static float vibration_low(float value)
 {
     return fuzzy_function(
-        "zmf",
+        FUZZY_SHAPE_ZMF,
         value,
         hedges.none,
-        (double)parameters.vibration_low[0],
-        (double)parameters.vibration_low[1]
+        parameters.vibration_low[0],
+        parameters.vibration_low[1]
     );
 }
 
@@ -651,12 +651,12 @@ static float vibration_low(float value)
 static float vibration_medium(float value)
 {
     return fuzzy_function(
-        "bell",
+        FUZZY_SHAPE_BELL,
         value,
         hedges.none,
-        (double)parameters.vibration_medium[0],
-        (double)parameters.vibration_medium[1],
-        (double)parameters.vibration_medium[2]
+        parameters.vibration_medium[0],
+        parameters.vibration_medium[1],
+        parameters.vibration_medium[2]
     );
 }
 
@@ -664,11 +664,11 @@ static float vibration_medium(float value)
 static float vibration_high(float value)
 {
     return fuzzy_function(
-        "smf",
+        FUZZY_SHAPE_SMF,
         value,
         hedges.none,
-        (double)parameters.vibration_high[0],
-        (double)parameters.vibration_high[1]
+        parameters.vibration_high[0],
+        parameters.vibration_high[1]
     );
 }
 
@@ -680,11 +680,11 @@ static float vibration_high(float value)
 static float pressure_low(float value)
 {
     return fuzzy_function(
-        "ramp",
+        FUZZY_SHAPE_RAMP,
         value,
         hedges.none,
-        (double)parameters.pressure_low[0],
-        (double)parameters.pressure_low[1],
+        parameters.pressure_low[0],
+        parameters.pressure_low[1],
         false
     );
 }
@@ -693,12 +693,12 @@ static float pressure_low(float value)
 static float pressure_normal(float value)
 {
     return fuzzy_function(
-        "triangle",
+        FUZZY_SHAPE_TRIANGLE,
         value,
         hedges.none,
-        (double)parameters.pressure_normal[0],
-        (double)parameters.pressure_normal[1],
-        (double)parameters.pressure_normal[2]
+        parameters.pressure_normal[0],
+        parameters.pressure_normal[1],
+        parameters.pressure_normal[2]
     );
 }
 
@@ -706,11 +706,11 @@ static float pressure_normal(float value)
 static float pressure_high(float value)
 {
     return fuzzy_function(
-        "sigmoid",
+        FUZZY_SHAPE_SIGMOID,
         value,
         hedges.none,
-        (double)parameters.pressure_high[0],
-        (double)parameters.pressure_high[1]
+        parameters.pressure_high[0],
+        parameters.pressure_high[1]
     );
 }
 
@@ -722,11 +722,11 @@ static float pressure_high(float value)
 static float quality_poor(float value)
 {
     return fuzzy_function(
-        "zmf",
+        FUZZY_SHAPE_ZMF,
         value,
         hedges.none,
-        (double)parameters.quality_poor[0],
-        (double)parameters.quality_poor[1]
+        parameters.quality_poor[0],
+        parameters.quality_poor[1]
     );
 }
 
@@ -734,11 +734,11 @@ static float quality_poor(float value)
 static float quality_average(float value)
 {
     return fuzzy_function(
-        "gauss",
+        FUZZY_SHAPE_GAUSSIAN,
         value,
         hedges.none,
-        (double)parameters.quality_average[0],
-        (double)parameters.quality_average[1]
+        parameters.quality_average[0],
+        parameters.quality_average[1]
     );
 }
 
@@ -746,11 +746,11 @@ static float quality_average(float value)
 static float quality_good(float value)
 {
     return fuzzy_function(
-        "smf",
+        FUZZY_SHAPE_SMF,
         value,
         hedges.none,
-        (double)parameters.quality_good[0],
-        (double)parameters.quality_good[1]
+        parameters.quality_good[0],
+        parameters.quality_good[1]
     );
 }
 
@@ -762,11 +762,11 @@ static float quality_good(float value)
 static float response_minimal(float value)
 {
     return fuzzy_function(
-        "zmf",
+        FUZZY_SHAPE_ZMF,
         value,
         hedges.none,
-        (double)parameters.response_minimal[0],
-        (double)parameters.response_minimal[1]
+        parameters.response_minimal[0],
+        parameters.response_minimal[1]
     );
 }
 
@@ -774,12 +774,12 @@ static float response_minimal(float value)
 static float response_low(float value)
 {
     return fuzzy_function(
-        "triangle",
+        FUZZY_SHAPE_TRIANGLE,
         value,
         hedges.none,
-        (double)parameters.response_low[0],
-        (double)parameters.response_low[1],
-        (double)parameters.response_low[2]
+        parameters.response_low[0],
+        parameters.response_low[1],
+        parameters.response_low[2]
     );
 }
 
@@ -787,13 +787,13 @@ static float response_low(float value)
 static float response_moderate(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.none,
-        (double)parameters.response_moderate[0],
-        (double)parameters.response_moderate[1],
-        (double)parameters.response_moderate[2],
-        (double)parameters.response_moderate[3]
+        parameters.response_moderate[0],
+        parameters.response_moderate[1],
+        parameters.response_moderate[2],
+        parameters.response_moderate[3]
     );
 }
 
@@ -801,12 +801,12 @@ static float response_moderate(float value)
 static float response_high(float value)
 {
     return fuzzy_function(
-        "triangle",
+        FUZZY_SHAPE_TRIANGLE,
         value,
         hedges.none,
-        (double)parameters.response_high[0],
-        (double)parameters.response_high[1],
-        (double)parameters.response_high[2]
+        parameters.response_high[0],
+        parameters.response_high[1],
+        parameters.response_high[2]
     );
 }
 
@@ -814,11 +814,11 @@ static float response_high(float value)
 static float response_critical(float value)
 {
     return fuzzy_function(
-        "smf",
+        FUZZY_SHAPE_SMF,
         value,
         hedges.none,
-        (double)parameters.response_critical[0],
-        (double)parameters.response_critical[1]
+        parameters.response_critical[0],
+        parameters.response_critical[1]
     );
 }
 
@@ -830,13 +830,13 @@ static float response_critical(float value)
 static float hedge_none_demo(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.none,
-        (double)parameters.hedge_trapezoid[0],
-        (double)parameters.hedge_trapezoid[1],
-        (double)parameters.hedge_trapezoid[2],
-        (double)parameters.hedge_trapezoid[3]
+        parameters.hedge_trapezoid[0],
+        parameters.hedge_trapezoid[1],
+        parameters.hedge_trapezoid[2],
+        parameters.hedge_trapezoid[3]
     );
 }
 
@@ -844,13 +844,13 @@ static float hedge_none_demo(float value)
 static float hedge_very_demo(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.very,
-        (double)parameters.hedge_trapezoid[0],
-        (double)parameters.hedge_trapezoid[1],
-        (double)parameters.hedge_trapezoid[2],
-        (double)parameters.hedge_trapezoid[3]
+        parameters.hedge_trapezoid[0],
+        parameters.hedge_trapezoid[1],
+        parameters.hedge_trapezoid[2],
+        parameters.hedge_trapezoid[3]
     );
 }
 
@@ -858,13 +858,13 @@ static float hedge_very_demo(float value)
 static float hedge_extremely_demo(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.extremely,
-        (double)parameters.hedge_trapezoid[0],
-        (double)parameters.hedge_trapezoid[1],
-        (double)parameters.hedge_trapezoid[2],
-        (double)parameters.hedge_trapezoid[3]
+        parameters.hedge_trapezoid[0],
+        parameters.hedge_trapezoid[1],
+        parameters.hedge_trapezoid[2],
+        parameters.hedge_trapezoid[3]
     );
 }
 
@@ -872,13 +872,13 @@ static float hedge_extremely_demo(float value)
 static float hedge_somewhat_demo(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.somewhat,
-        (double)parameters.hedge_trapezoid[0],
-        (double)parameters.hedge_trapezoid[1],
-        (double)parameters.hedge_trapezoid[2],
-        (double)parameters.hedge_trapezoid[3]
+        parameters.hedge_trapezoid[0],
+        parameters.hedge_trapezoid[1],
+        parameters.hedge_trapezoid[2],
+        parameters.hedge_trapezoid[3]
     );
 }
 
@@ -886,13 +886,13 @@ static float hedge_somewhat_demo(float value)
 static float hedge_slightly_demo(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.slightly,
-        (double)parameters.hedge_trapezoid[0],
-        (double)parameters.hedge_trapezoid[1],
-        (double)parameters.hedge_trapezoid[2],
-        (double)parameters.hedge_trapezoid[3]
+        parameters.hedge_trapezoid[0],
+        parameters.hedge_trapezoid[1],
+        parameters.hedge_trapezoid[2],
+        parameters.hedge_trapezoid[3]
     );
 }
 
@@ -905,11 +905,11 @@ static float hedge_slightly_demo(float value)
 static float shape_ramp_demo(float value)
 {
     return fuzzy_function(
-        "ramp",
+        FUZZY_SHAPE_RAMP,
         value,
         hedges.none,
-        20.0,
-        80.0,
+        20.0f,
+        80.0f,
         true
     );
 }
@@ -918,12 +918,12 @@ static float shape_ramp_demo(float value)
 static float shape_triangle_demo(float value)
 {
     return fuzzy_function(
-        "triangle",
+        FUZZY_SHAPE_TRIANGLE,
         value,
         hedges.none,
-        10.0,
-        50.0,
-        90.0
+        10.0f,
+        50.0f,
+        90.0f
     );
 }
 
@@ -931,13 +931,13 @@ static float shape_triangle_demo(float value)
 static float shape_trapezoid_demo(float value)
 {
     return fuzzy_function(
-        "trapezoid",
+        FUZZY_SHAPE_TRAPEZOID,
         value,
         hedges.none,
-        10.0,
-        30.0,
-        70.0,
-        90.0
+        10.0f,
+        30.0f,
+        70.0f,
+        90.0f
     );
 }
 
@@ -945,11 +945,11 @@ static float shape_trapezoid_demo(float value)
 static float shape_smf_demo(float value)
 {
     return fuzzy_function(
-        "smf",
+        FUZZY_SHAPE_SMF,
         value,
         hedges.none,
-        20.0,
-        80.0
+        20.0f,
+        80.0f
     );
 }
 
@@ -957,11 +957,11 @@ static float shape_smf_demo(float value)
 static float shape_zmf_demo(float value)
 {
     return fuzzy_function(
-        "zmf",
+        FUZZY_SHAPE_ZMF,
         value,
         hedges.none,
-        20.0,
-        80.0
+        20.0f,
+        80.0f
     );
 }
 
@@ -969,11 +969,11 @@ static float shape_zmf_demo(float value)
 static float shape_gauss_demo(float value)
 {
     return fuzzy_function(
-        "gauss",
+        FUZZY_SHAPE_GAUSSIAN,
         value,
         hedges.none,
-        50.0,
-        15.0
+        50.0f,
+        15.0f
     );
 }
 
@@ -981,12 +981,12 @@ static float shape_gauss_demo(float value)
 static float shape_bell_demo(float value)
 {
     return fuzzy_function(
-        "bell",
+        FUZZY_SHAPE_BELL,
         value,
         hedges.none,
-        40.0,
-        2.0,
-        50.0
+        40.0f,
+        2.0f,
+        50.0f
     );
 }
 
@@ -994,11 +994,11 @@ static float shape_bell_demo(float value)
 static float shape_sigmoid_demo(float value)
 {
     return fuzzy_function(
-        "sigmoid",
+        FUZZY_SHAPE_SIGMOID,
         value,
         hedges.none,
-        0.12,
-        50.0
+        0.12f,
+        50.0f
     );
 }
 
@@ -1043,7 +1043,6 @@ static float evaluate_random_not_rule(
         case RANDOM_NOT_TEMPERATURE_HIGH:
             return fuzzy_and_method(
                 method,
-                2,
                 fuzzy_not(
                     temperature_high(
                         temperature
@@ -1057,7 +1056,6 @@ static float evaluate_random_not_rule(
         case RANDOM_NOT_HUMIDITY_LOW:
             return fuzzy_and_method(
                 method,
-                2,
                 fuzzy_not(
                     humidity_low(
                         humidity
@@ -1071,7 +1069,6 @@ static float evaluate_random_not_rule(
         case RANDOM_NOT_VIBRATION_LOW:
             return fuzzy_and_method(
                 method,
-                2,
                 fuzzy_not(
                     vibration_low(
                         vibration
@@ -1085,7 +1082,6 @@ static float evaluate_random_not_rule(
         case RANDOM_NOT_PRESSURE_HIGH:
             return fuzzy_and_method(
                 method,
-                2,
                 fuzzy_not(
                     pressure_high(
                         pressure
@@ -1099,7 +1095,6 @@ static float evaluate_random_not_rule(
         case RANDOM_NOT_QUALITY_GOOD:
             return fuzzy_or_method(
                 method,
-                2,
                 fuzzy_not(
                     quality_good(
                         quality
@@ -1174,13 +1169,13 @@ static fuzzy_output_function_t random_not_output(void)
 /* ==========================================================
  * Complex Mamdani rule construction
  *
- * Rules 1 through 11 use the standard Zadeh operators:
+ * Rules 1 through 11 use the selected operator family:
  *
  *     AND = minimum
  *     OR  = maximum
  *
- * Rule 12 demonstrates algebraic AND.
- * Rule 13 demonstrates bounded OR.
+ * The same rule base is evaluated with standard, algebraic,
+ * and bounded operator families.
  * ========================================================== */
 
 static bool build_process_rules(
@@ -1233,7 +1228,6 @@ static bool build_process_rules(
     rule1 =
         fuzzy_and_method(
             method,
-            5,
             temperature_low(
                 temperature
             ),
@@ -1262,7 +1256,6 @@ static bool build_process_rules(
     rule2 =
         fuzzy_and_method(
             method,
-            3,
             temperature_medium(
                 temperature
             ),
@@ -1285,7 +1278,6 @@ static bool build_process_rules(
     rule3 =
         fuzzy_or_method(
             method,
-            3,
             humidity_high(
                 humidity
             ),
@@ -1307,7 +1299,6 @@ static bool build_process_rules(
     rule4 =
         fuzzy_and_method(
             method,
-            2,
             temperature_high(
                 temperature
             ),
@@ -1327,7 +1318,6 @@ static bool build_process_rules(
     rule5 =
         fuzzy_or_method(
             method,
-            3,
             pressure_high(
                 pressure
             ),
@@ -1357,7 +1347,6 @@ static bool build_process_rules(
     rule6 =
         fuzzy_and_method(
             method,
-            2,
             very_high_temperature,
             pressure_high(
                 pressure
@@ -1390,7 +1379,6 @@ static bool build_process_rules(
     rule7 =
         fuzzy_or_method(
             method,
-            2,
             extremely_high_vibration,
             very_poor_quality
         );
@@ -1422,7 +1410,6 @@ static bool build_process_rules(
     rule8_left =
         fuzzy_and_method(
             method,
-            2,
             temperature_medium(
                 temperature
             ),
@@ -1432,7 +1419,6 @@ static bool build_process_rules(
     rule8_right =
         fuzzy_and_method(
             method,
-            2,
             pressure_high(
                 pressure
             ),
@@ -1444,7 +1430,6 @@ static bool build_process_rules(
     rule8 =
         fuzzy_or_method(
             method,
-            2,
             rule8_left,
             rule8_right
         );
@@ -1470,7 +1455,6 @@ static bool build_process_rules(
     rule9_environment =
         fuzzy_or_method(
             method,
-            2,
             temperature_low(
                 temperature
             ),
@@ -1482,7 +1466,6 @@ static bool build_process_rules(
     rule9_machine =
         fuzzy_or_method(
             method,
-            2,
             vibration_low(
                 vibration
             ),
@@ -1494,7 +1477,6 @@ static bool build_process_rules(
     rule9 =
         fuzzy_and_method(
             method,
-            3,
             rule9_environment,
             rule9_machine,
             quality_good(
@@ -1515,7 +1497,6 @@ static bool build_process_rules(
     rule10 =
         fuzzy_and_method(
             method,
-            5,
             temperature_high(
                 temperature
             ),
@@ -1683,7 +1664,7 @@ static float evaluate_process_response(
         quality,
         method
     )) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to construct process-response rules.\n"
         );
 
@@ -1838,7 +1819,7 @@ static bool plot_selected_process_cog(
             quality,
             methods[method_index]
         )) {
-            FUZZY_ERROR(
+            fprintf(stderr, 
                 "Failed to construct %s controller.\n",
                 method_names[method_index]
             );
@@ -1850,7 +1831,7 @@ static bool plot_selected_process_cog(
             return false;
         }
 
-        FUZZY_PRINTF(
+        printf(
             "\n%s controller rule activations\n"
             "========================================\n",
             method_names[method_index]
@@ -1896,7 +1877,7 @@ static bool plot_selected_process_cog(
                 FUZZY_DEFUZZ_LOM
             );
 
-        FUZZY_PRINTF(
+        printf(
             "\n%s controller results\n"
             "========================================\n"
             "COG: %.5f\n"
@@ -1964,7 +1945,7 @@ static bool plot_selected_process_cog(
             !som_success ||
             !lom_success
         ) {
-            FUZZY_ERROR(
+            fprintf(stderr, 
                 "Failed to plot %s controller results.\n",
                 method_names[method_index]
             );
@@ -2001,7 +1982,6 @@ static float operator_and_standard(
 {
     return fuzzy_and_method(
         FUZZY_LOGIC_STANDARD,
-        2,
         value,
         0.5f
     );
@@ -2014,7 +1994,6 @@ static float operator_and_algebraic(
 {
     return fuzzy_and_method(
         FUZZY_LOGIC_ALGEBRAIC,
-        2,
         value,
         0.5f
     );
@@ -2027,7 +2006,6 @@ static float operator_and_bounded(
 {
     return fuzzy_and_method(
         FUZZY_LOGIC_BOUNDED,
-        2,
         value,
         0.5f
     );
@@ -2040,7 +2018,6 @@ static float operator_or_standard(
 {
     return fuzzy_or_method(
         FUZZY_LOGIC_STANDARD,
-        2,
         value,
         0.5f
     );
@@ -2053,7 +2030,6 @@ static float operator_or_algebraic(
 {
     return fuzzy_or_method(
         FUZZY_LOGIC_ALGEBRAIC,
-        2,
         value,
         0.5f
     );
@@ -2066,7 +2042,6 @@ static float operator_or_bounded(
 {
     return fuzzy_or_method(
         FUZZY_LOGIC_BOUNDED,
-        2,
         value,
         0.5f
     );
@@ -2436,7 +2411,7 @@ static bool plot_response_functions(void)
 static bool plot_all_membership_functions(void)
 {
     if (!plot_all_shapes()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate all-shapes plot.\n"
         );
 
@@ -2444,7 +2419,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_all_hedges()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate hedge plot.\n"
         );
 
@@ -2452,7 +2427,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_temperature_functions()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate temperature plot.\n"
         );
 
@@ -2460,7 +2435,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_humidity_functions()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate humidity plot.\n"
         );
 
@@ -2468,7 +2443,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_vibration_functions()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate vibration plot.\n"
         );
 
@@ -2476,7 +2451,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_pressure_functions()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate pressure plot.\n"
         );
 
@@ -2484,7 +2459,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_quality_functions()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate quality plot.\n"
         );
 
@@ -2492,7 +2467,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_response_functions()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate response plot.\n"
         );
 
@@ -2500,7 +2475,7 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_t_norms()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate T-norm comparison plot.\n"
         );
 
@@ -2508,14 +2483,14 @@ static bool plot_all_membership_functions(void)
     }
 
     if (!plot_t_conorms()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate T-conorm comparison plot.\n"
         );
 
         return false;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nGenerated all membership-function "
         "and fuzzy-operator plots.\n"
     );
@@ -2604,7 +2579,7 @@ static bool plot_process_sweep(void)
      * Interactive slider dimensions:
      *
      *     Vibration:
-     *         0.0, 0.5, 1.0, ..., 10.0
+     *         0.0, 0.5, 1.0, ..., 10.0f
      *
      *     Pressure:
      *         0, 10, 20, ..., 200
@@ -2618,7 +2593,6 @@ static bool plot_process_sweep(void)
      *     - N-dimensional Cartesian iteration
      *     - COG evaluation
      *     - CSV generation
-     *     - CSV parsing
      *     - A randomly selected but deterministic fuzzy-NOT rule
      *     - SVG generation
      *     - Interactive SVG slice selection
@@ -2714,7 +2688,7 @@ static bool run_random_demonstration(void)
             100.0f
         );
 
-    FUZZY_PRINTF(
+    printf(
         "\nRandom crisp inputs\n"
         "===================\n"
         "Temperature:      %8.3f\n"
@@ -2770,7 +2744,7 @@ static bool run_random_demonstration(void)
             FUZZY_LOGIC_BOUNDED
         );
 
-    FUZZY_PRINTF(
+    printf(
         "\nOperator-family COG comparison\n"
         "==============================\n"
         "Standard Zadeh:      %.5f\n"
@@ -2789,7 +2763,7 @@ static bool run_random_demonstration(void)
         quality,
         NORMAL_COG_STEP
     )) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate selected operator-family "
             "defuzzification plots.\n"
         );
@@ -2806,14 +2780,14 @@ static bool run_random_demonstration(void)
 
 static void print_random_not_rule(void)
 {
-    FUZZY_PRINTF(
+    printf(
         "\nRandomized fuzzy-NOT rule\n"
         "=========================\n"
     );
 
     switch (random_not_rule) {
         case RANDOM_NOT_TEMPERATURE_HIGH:
-            FUZZY_PRINTF(
+            printf(
                 "IF temperature is NOT high\n"
                 "AND pressure is normal\n"
                 "THEN response is low.\n"
@@ -2821,7 +2795,7 @@ static void print_random_not_rule(void)
             break;
 
         case RANDOM_NOT_HUMIDITY_LOW:
-            FUZZY_PRINTF(
+            printf(
                 "IF humidity is NOT low\n"
                 "AND vibration is medium\n"
                 "THEN response is moderate.\n"
@@ -2829,7 +2803,7 @@ static void print_random_not_rule(void)
             break;
 
         case RANDOM_NOT_VIBRATION_LOW:
-            FUZZY_PRINTF(
+            printf(
                 "IF vibration is NOT low\n"
                 "AND pressure is high\n"
                 "THEN response is high.\n"
@@ -2837,7 +2811,7 @@ static void print_random_not_rule(void)
             break;
 
         case RANDOM_NOT_PRESSURE_HIGH:
-            FUZZY_PRINTF(
+            printf(
                 "IF pressure is NOT high\n"
                 "AND material quality is good\n"
                 "THEN response is minimal.\n"
@@ -2845,7 +2819,7 @@ static void print_random_not_rule(void)
             break;
 
         case RANDOM_NOT_QUALITY_GOOD:
-            FUZZY_PRINTF(
+            printf(
                 "IF material quality is NOT good\n"
                 "OR temperature is high\n"
                 "THEN response is high.\n"
@@ -2853,7 +2827,7 @@ static void print_random_not_rule(void)
             break;
 
         default:
-            FUZZY_PRINTF(
+            printf(
                 "No valid fuzzy-NOT rule selected.\n"
             );
             break;
@@ -2881,7 +2855,7 @@ int main(void)
      */
     randomize_membership_parameters();
 
-    FUZZY_PRINTF(
+    printf(
         "\nfuzzy.h Complete API Demonstration\n"
         "==================================\n"
     );
@@ -2900,7 +2874,7 @@ int main(void)
         return 1;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nGenerated fuzzy-operator comparison plots:\n"
         "  " DEMO_DIRECTORY "/t_norms.svg\n"
         "  " DEMO_DIRECTORY "/t_conorms.svg\n"
@@ -2913,7 +2887,7 @@ int main(void)
      * demo-all/process_sweep.svg
      */
     if (!plot_process_sweep()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate five-dimensional "
             "COG sweep.\n"
         );
@@ -2921,7 +2895,7 @@ int main(void)
         return 1;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nGenerated five-dimensional sweep files:\n"
         "  " DEMO_DIRECTORY "/process_sweep.csv\n"
         "  " DEMO_DIRECTORY "/process_sweep.svg\n"
@@ -2929,14 +2903,14 @@ int main(void)
 
     /*
      * Evaluate one randomly generated operating condition,
-     * print all thirteen rule activations, and generate
+     * print all eleven rule activations, and generate
      * separate COG, MOM, SOM, and LOM plots.
      */
     if (!run_random_demonstration()) {
         return 1;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nGenerated complete operator-family controller plots:\n"
 
         "\nStandard Zadeh controller:\n"

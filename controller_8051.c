@@ -1,6 +1,5 @@
 #ifdef SIMULATION
 
-#define FUZZY_MAX_RULES 2u
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
 
@@ -13,9 +12,6 @@
 #endif
 
 #define FUZZY_8051
-#define FUZZY_8051_MINIMAL
-#define FUZZY_MAX_RULES 2u
-
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
 
@@ -65,7 +61,6 @@ static float temperature_low(
 )
 {
     return fuzzy_ramp(
-        NULL,
         20.0f,
         40.0f,
         value,
@@ -80,7 +75,6 @@ static float temperature_high(
 )
 {
     return fuzzy_ramp(
-        NULL,
         30.0f,
         60.0f,
         value,
@@ -99,7 +93,6 @@ static float fan_slow(
 )
 {
     return fuzzy_ramp(
-        NULL,
         20.0f,
         50.0f,
         value,
@@ -114,7 +107,6 @@ static float fan_fast(
 )
 {
     return fuzzy_ramp(
-        NULL,
         40.0f,
         80.0f,
         value,
@@ -144,6 +136,10 @@ static float calculate_fan_speed(
         temperature_low(temperature),
         fan_slow
     )) {
+        fuzzy_rules_free(
+            &rules
+        );
+
         return 0.0f;
     }
 
@@ -152,11 +148,15 @@ static float calculate_fan_speed(
         temperature_high(temperature),
         fan_fast
     )) {
+        fuzzy_rules_free(
+            &rules
+        );
+
         return 0.0f;
     }
 
-result =
-    fuzzy_rules_defuzzify(
+    result =
+        fuzzy_rules_defuzzify(
         &rules,
         0.0f,
         100.0f,
@@ -311,7 +311,7 @@ static void print_verification(void)
             test_fan_speed
         );
 
-    FUZZY_PRINTF(
+    printf(
         "\nMamdani 8052 verification\n"
         "=========================\n"
         "Temperature:     %u\n"
@@ -383,7 +383,7 @@ static bool plot_selected_cog(
         return false;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nSelected-input rule activations:\n"
     );
 
@@ -499,7 +499,7 @@ int main(void)
     print_verification();
 
     if (!plot_memberships()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate membership plots.\n"
         );
 
@@ -509,7 +509,7 @@ int main(void)
     if (!plot_selected_cog(
         42.0f
     )) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate selected COG plot.\n"
         );
 
@@ -517,14 +517,14 @@ int main(void)
     }
 
     if (!plot_controller_sweep()) {
-        FUZZY_ERROR(
+        fprintf(stderr, 
             "Failed to generate Mamdani response sweep.\n"
         );
 
         return 1;
     }
 
-    FUZZY_PRINTF(
+    printf(
         "\nGenerated:\n"
         "  mamdani_temperature.svg\n"
         "  mamdani_fan.svg\n"
