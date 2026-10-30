@@ -1,0 +1,58 @@
+name: Fuzzy Engine Full CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+# 1. WORKFLOW CONCURRENCY:
+# If you push a new commit while an old one is still building, cancel the old one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-simulate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install All Toolchains (GCC, SDCC, ucsim, rsvg-convert)
+      run: make install-dependencies
+
+    - name: Compile Desktop Simulations and 8051 Firmware
+      # 2. COMPILER CONCURRENCY:
+      # -j$(nproc) automatically detects the number of CPU cores on the GitHub runner
+      # and spins up parallel threads to compile all your binaries at the exact same time.
+      run: make -j$(nproc) all
+
+    - name: Execute Automated Desktop Sweeps
+      run: |
+        make run-demo
+        make run-sugeno
+        make run-sim-8051
+
+    - name: Execute Interactive Simulations (Mocked Inputs)
+      run: |
+        echo -e "45\n80" | make run-strength
+        echo -e "28\n65\n5" | make run-greenhouse
+
+    - name: Convert SVGs to PNG and PDF
+      # Process images on all CPU cores simultaneously
+      run: |
+        make -j$(nproc) png
+        make -j$(nproc) pdf
+
+    - name: Upload Complete Project Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: fuzzy-complete-build
+        path: |
+          strength/
+          greenhouse/
+          demo-all/
+          sugeno/
+          sim-8051/
