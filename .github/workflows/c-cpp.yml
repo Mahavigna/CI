@@ -16,7 +16,7 @@ jobs:
     - name: Compile Desktop Simulation
       # Adjust 'main.c' to whatever your simulation file is named. 
       # -lm links the math library for your floating-point shapes.
-      run: gcc -Wall -Wextra -O2 -o fuzzy_sim braking.c -lm
+      run: gcc -DSIMULATION -Wall -Wextra -O2 -o fuzzy_sim controller_8051.c -lm
 
     - name: Execute Simulation
       run: ./fuzzy_sim
