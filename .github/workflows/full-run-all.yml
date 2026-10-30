@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Fuzzy Desktop CI
 
 on:
   push:
@@ -7,17 +7,41 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-
+  simulate-desktop:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Install Desktop Toolchains
+      # Only installs what is needed for the desktop build
+      run: sudo apt-get update && sudo apt-get install -y gcc make
+
+    - name: Compile Desktop Simulations
+      # Leverages the 'desktop' target from your existing Makefile
+      run: make desktop
+
+    - name: Execute Non-Interactive Sweeps
+      run: |
+        make run-demo
+        make run-sugeno
+        make run-sim-8051
+
+    - name: Execute Interactive Programs (with mock inputs)
+      # The 'echo -e' command pipes sequential simulated inputs to scanf/gets 
+      # \n acts as the 'Enter' key. Adjust the numbers to match your expected prompts.
+      run: |
+        echo -e "45\n80" | make run-strength
+        echo -e "28\n65\n5" | make run-greenhouse
+
+    - name: Upload Plot Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: fuzzy-desktop-artifacts
+        path: |
+          strength/
+          greenhouse/
+          demo-all/
+          sugeno/
+          sim-8051/
