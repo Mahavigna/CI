@@ -30,16 +30,22 @@
  * - Generalized bell membership functions
  * - Sigmoid membership functions
  * - Difference-of-sigmoids membership functions
- * - Product-of-sigmoids membership functions * - Linguistic hedges
+ * - Product-of-sigmoids membership functions
+ * - Five-dimensional sampled-membership interpolation
+ * - Linguistic hedges
  * - Fuzzy AND
  * - Fuzzy OR
  * - Nested fuzzy expressions
+ * - Minimum and product implication
+ * - Maximum, algebraic, and bounded aggregation
  * - Mamdani rule aggregation
  * - COG defuzzification
  * - Membership-function SVG plots
  * - Selected COG SVG plot
+ * - Five-dimensional membership interpolation sweep CSV
+ * - Interactive five-dimensional membership sweep SVG
  * - Five-dimensional COG sweep CSV
- * - Interactive five-dimensional sweep SVG
+ * - Interactive five-dimensional COG sweep SVG
  * - Random crisp input generation
  */
 
@@ -285,7 +291,8 @@ static void randomize_membership_parameters(void)
     parameters.shape_psigmoid[2] = -random_float(0.08f, 0.20f);
     parameters.shape_psigmoid[3] = random_float(60.0f, 80.0f);
 
-    random_ordered_4(parameters.hedge_trapezoid, 5.0f, 95.0f, 12.0f); random_not_rule = (random_not_rule_t)(rand() % RANDOM_NOT_RULE_COUNT);
+    random_ordered_4(parameters.hedge_trapezoid, 5.0f, 95.0f, 12.0f);
+    random_not_rule = (random_not_rule_t)(rand() % RANDOM_NOT_RULE_COUNT);
 }
 
 /* ==========================================================
@@ -364,6 +371,23 @@ FUZZY_VAR(shape_sigmoid_demo, FUZZY_SHAPE_SIGMOID, hedges.none, parameters.shape
 FUZZY_VAR(shape_dsigmoid_demo, FUZZY_SHAPE_DSIGMOID, hedges.none, parameters.shape_dsigmoid[0], parameters.shape_dsigmoid[1], parameters.shape_dsigmoid[2], parameters.shape_dsigmoid[3])
 
 FUZZY_VAR(shape_psigmoid_demo, FUZZY_SHAPE_PSIGMOID, hedges.none, parameters.shape_psigmoid[0], parameters.shape_psigmoid[1], parameters.shape_psigmoid[2], parameters.shape_psigmoid[3])
+
+/* ==========================================================
+ * Five-dimensional sampled-membership interpolation
+ *
+ * Axis order:
+ *
+ * 1. Temperature
+ * 2. Humidity
+ * 3. Vibration
+ * 4. Pressure
+ * 5. Material quality
+ * ========================================================== */
+
+static float sampled_membership_coordinates[5][5];
+static fuzzy_point_t sampled_membership_points[5];
+
+
 
 /* ==========================================================
  * Randomized fuzzy-NOT rule evaluation
@@ -474,7 +498,7 @@ static void build_process_rules(fuzzy_rules_t *rules, float temperature, float h
     RULE("Rule 7: Critical vibration-quality response", fuzzy_or_method(method, powf(vibration_high(vibration), hedges.extremely), powf(quality_poor(quality), hedges.very)), response_critical);
 
     RULE("Rule 8: High compound response", fuzzy_or_method(method, fuzzy_and_method(method, temperature_medium(temperature), powf(humidity_high(humidity), hedges.somewhat)), fuzzy_and_method(method, pressure_high(pressure), quality_poor(quality))), response_high);
-
+ 
     RULE("Rule 9: Low stable-process response", fuzzy_and_method(method, fuzzy_or_method(method, temperature_low(temperature), humidity_low(humidity)), fuzzy_or_method(method, vibration_low(vibration), pressure_normal(pressure)), quality_good(quality)), response_low);
 
     RULE("Rule 10: Critical combined response", fuzzy_and_method(method, temperature_high(temperature), humidity_high(humidity), vibration_high(vibration), pressure_high(pressure), quality_poor(quality)), response_critical);
@@ -487,6 +511,18 @@ static void build_process_rules(fuzzy_rules_t *rules, float temperature, float h
  *
  * Safe for repeated sweep evaluations.
  * ========================================================== */
+
+static float evaluate_process_response_method(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t logic_method, fuzzy_implication_method_t implication_method, fuzzy_aggregation_method_t aggregation_method)
+{
+    fuzzy_rules_t rules;
+    fuzzy_rules_create(&rules);
+    build_process_rules(&rules, temperature, humidity, vibration, pressure, quality, logic_method);
+
+    float result = fuzzy_rules_defuzzify_method(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COG, implication_method, aggregation_method);
+
+    fuzzy_rules_free(&rules);
+    return result;
+}
 
 static float evaluate_process_response(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t method)
 {
@@ -796,6 +832,8 @@ static void plot_all_membership_functions(void)
         SERIES(shape_psigmoid_demo, "#f43f5e"),
         SERIES(shape_pimf_demo, "#14b8a6"));
 
+
+
     PLOT(DEMO_DIRECTORY "/all_hedges", "All Linguistic Hedge Exponents", 100.0f, 0.5f,
         SERIES(hedge_none_demo, "#111827"),
         SERIES(hedge_very_demo, "#ef4444"),
@@ -837,16 +875,46 @@ static void plot_all_membership_functions(void)
 }
 
 /* ==========================================================
- * Five-dimensional sweep adapter
+ * Five-dimensional sampled-membership sweep
  *
- * Dimension order:
+ * Temperature and humidity form the heatmap.
  *
- * inputs[0] = temperature
- * inputs[1] = humidity
- * inputs[2] = vibration
- * inputs[3] = pressure
- * inputs[4] = material quality
+ * Vibration, pressure, and material quality use the
+ * existing interactive SVG slider dimensions.
  * ========================================================== */
+
+static bool plot_sampled_membership_sweep(void)
+{
+    bool sweep_success;
+    bool slices_success;
+
+    sweep_success = FUZZY_INTERPOLATION_SWEEP(
+        DEMO_DIRECTORY "/sampled_interpolation",
+        "Five-Dimensional Sampled Membership Interpolation",
+        sampled_membership_points,
+        FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 20.0f),
+        FUZZY_SWEEP_DIMENSION("Humidity", 0.0f, 100.0f, 20.0f),
+        FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.5f),
+        FUZZY_SWEEP_DIMENSION("Pressure", 0.0f, 200.0f, 10.0f),
+        FUZZY_SWEEP_DIMENSION("Material quality", 0.0f, 100.0f, 5.0f)
+    );
+
+    slices_success = FUZZY_INTERPOLATION_SLICES(
+        DEMO_DIRECTORY "/sampled_membership_slice",
+        "Sampled Membership",
+        sampled_membership_points,
+        FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 0.5f),
+        FUZZY_SWEEP_DIMENSION("Humidity", 0.0f, 100.0f, 0.5f),
+        FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.05f),
+        FUZZY_SWEEP_DIMENSION("Pressure", 0.0f, 200.0f, 1.0f),
+        FUZZY_SWEEP_DIMENSION("Material quality", 0.0f, 100.0f, 0.5f)
+    );
+
+    return sweep_success && slices_success;
+}
+
+
+
 
 static float evaluate_process_sweep(const float inputs[], size_t input_count, float cog_step)
 {
@@ -949,9 +1017,18 @@ static bool run_random_demonstration(void)
     float pressure;
     float quality;
 
-    float standard_cog;
+     float standard_cog;
     float algebraic_cog;
     float bounded_cog;
+
+    float min_max_cog;
+    float product_max_cog;
+    float min_algebraic_cog;
+    float product_algebraic_cog;
+    float min_bounded_cog;
+    float product_bounded_cog;
+
+    float interpolated_membership;
 
     temperature =
         random_float(
@@ -998,6 +1075,30 @@ static bool run_random_demonstration(void)
         quality
     );
 
+    fuzzy_point_t sampled_inputs = FUZZY_INPUTS(temperature, humidity, vibration, pressure, quality);
+
+    interpolated_membership = fuzzy_interpolate_membership_array(
+        sampled_inputs.coordinates,
+        sampled_inputs.dimension_count,
+        sampled_membership_points,
+        sizeof(sampled_membership_points) / sizeof(sampled_membership_points[0])
+    );
+
+    printf("\nFive-dimensional sampled-membership interpolation\n"
+           "=================================================\n"
+           "Temperature:             %.5f\n"
+           "Humidity:                %.5f\n"
+           "Vibration:               %.5f\n"
+           "Pressure:                %.5f\n"
+           "Material quality:        %.5f\n"
+           "Interpolated membership: %.5f\n",
+           temperature,
+           humidity,
+           vibration,
+           pressure,
+           quality,
+           interpolated_membership);
+
     /*
      * Evaluate the same controller three times.
      *
@@ -1006,38 +1107,9 @@ static bool run_random_demonstration(void)
      *
      * Only the T-norm and T-conorm family changes.
      */
-    standard_cog =
-        evaluate_process_response(
-            temperature,
-            humidity,
-            vibration,
-            pressure,
-            quality,
-            NORMAL_COG_STEP,
-            FUZZY_LOGIC_STANDARD
-        );
-
-    algebraic_cog =
-        evaluate_process_response(
-            temperature,
-            humidity,
-            vibration,
-            pressure,
-            quality,
-            NORMAL_COG_STEP,
-            FUZZY_LOGIC_ALGEBRAIC
-        );
-
-    bounded_cog =
-        evaluate_process_response(
-            temperature,
-            humidity,
-            vibration,
-            pressure,
-            quality,
-            NORMAL_COG_STEP,
-            FUZZY_LOGIC_BOUNDED
-        );
+    standard_cog = evaluate_process_response(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD);
+    algebraic_cog = evaluate_process_response(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_ALGEBRAIC);
+    bounded_cog = evaluate_process_response(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_BOUNDED);
 
     printf(
         "\nOperator-family COG comparison\n"
@@ -1048,6 +1120,30 @@ static bool run_random_demonstration(void)
         standard_cog,
         algebraic_cog,
         bounded_cog
+    );
+
+    min_max_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_MAX);
+    product_max_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_MAX);
+    min_algebraic_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_ALGEBRAIC);
+    product_algebraic_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_ALGEBRAIC);
+    min_bounded_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_BOUNDED);
+    product_bounded_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_BOUNDED);
+
+    printf(
+        "\nImplication and aggregation comparison\n"
+        "======================================\n"
+        "MIN implication + MAX aggregation:               %.5f\n"
+        "PRODUCT implication + MAX aggregation:           %.5f\n"
+        "MIN implication + ALGEBRAIC aggregation:         %.5f\n"
+        "PRODUCT implication + ALGEBRAIC aggregation:     %.5f\n"
+        "MIN implication + BOUNDED aggregation:           %.5f\n"
+        "PRODUCT implication + BOUNDED aggregation:       %.5f\n",
+        min_max_cog,
+        product_max_cog,
+        min_algebraic_cog,
+        product_algebraic_cog,
+        min_bounded_cog,
+        product_bounded_cog
     );
 
     if (!plot_selected_process_cog(
@@ -1136,6 +1232,18 @@ static void print_random_not_rule(void)
 int main(void)
 {
     srand((unsigned int)time(NULL));
+
+    for (size_t index = 0u; index < sizeof(sampled_membership_points) / sizeof(sampled_membership_points[0]); index++) {
+        sampled_membership_coordinates[index][0] = random_float(0.0f, 100.0f);
+        sampled_membership_coordinates[index][1] = random_float(0.0f, 100.0f);
+        sampled_membership_coordinates[index][2] = random_float(0.0f, 10.0f);
+        sampled_membership_coordinates[index][3] = random_float(0.0f, 200.0f);
+        sampled_membership_coordinates[index][4] = random_float(0.0f, 100.0f);
+
+        sampled_membership_points[index].coordinates = sampled_membership_coordinates[index];
+        sampled_membership_points[index].dimension_count = 5u;
+        sampled_membership_points[index].membership = random_float(0.0f, 1.0f);
+    }
     randomize_membership_parameters();
 
     printf("\nfuzzy.h Complete API Demonstration\n");
@@ -1143,6 +1251,7 @@ int main(void)
 
     print_random_not_rule();
     plot_all_membership_functions();
+    plot_sampled_membership_sweep();
     plot_process_sweep();
     run_random_demonstration();
 

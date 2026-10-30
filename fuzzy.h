@@ -45,6 +45,20 @@ typedef struct FuzzyHedges {
     fuzzy_hedge_t slightly;
 } hedges_t;
 
+
+typedef struct FuzzyPoint {
+    const float *coordinates;
+    size_t dimension_count;
+    float membership;
+} fuzzy_point_t;
+
+float fuzzy_interpolate_membership_array(const float *inputs, size_t dimension_count, const fuzzy_point_t *points, size_t point_count);
+
+#define FUZZY_INPUTS(...) ((fuzzy_point_t){(const float[]){__VA_ARGS__}, FUZZY_VALUE_COUNT(__VA_ARGS__), 0.0f})
+#define FUZZY_POINT(membership, ...) ((fuzzy_point_t){(const float[]){__VA_ARGS__}, FUZZY_VALUE_COUNT(__VA_ARGS__), (float)(membership)})
+#define fuzzy_interpolate_membership(inputs, ...) fuzzy_interpolate_membership_array((inputs).coordinates, (inputs).dimension_count, (const fuzzy_point_t[]){__VA_ARGS__}, sizeof((const fuzzy_point_t[]){__VA_ARGS__}) / sizeof(fuzzy_point_t))
+
+
 #endif /* FUZZY_8051 */
 
 
@@ -232,6 +246,17 @@ typedef enum FuzzyLogicMethod {
     FUZZY_LOGIC_BOUNDED
 } fuzzy_logic_method_t;
 
+typedef enum FuzzyImplicationMethod {
+    FUZZY_IMPLICATION_MIN = 0,
+    FUZZY_IMPLICATION_PRODUCT
+} fuzzy_implication_method_t;
+
+typedef enum FuzzyAggregationMethod {
+    FUZZY_AGGREGATION_MAX = 0,
+    FUZZY_AGGREGATION_ALGEBRAIC,
+    FUZZY_AGGREGATION_BOUNDED
+} fuzzy_aggregation_method_t;
+
 /*
  * Membership-function shape selection.
  */
@@ -405,7 +430,15 @@ float fuzzy_ramp(
     fuzzy_hedge_t hedge
 );
 
+#ifndef FUZZY_8051
 
+float fuzzy_interpolate_membership_array(const float *inputs, size_t dimension_count, const fuzzy_point_t *points, size_t point_count);
+
+#define FUZZY_INPUTS(...) ((fuzzy_point_t){(const float[]){__VA_ARGS__}, FUZZY_VALUE_COUNT(__VA_ARGS__), 0.0f})
+#define FUZZY_POINT(membership, ...) ((fuzzy_point_t){(const float[]){__VA_ARGS__}, FUZZY_VALUE_COUNT(__VA_ARGS__), (float)(membership)})
+#define fuzzy_interpolate_membership(inputs, ...) fuzzy_interpolate_membership_array((inputs).coordinates, (inputs).dimension_count, (const fuzzy_point_t[]){__VA_ARGS__}, sizeof((const fuzzy_point_t[]){__VA_ARGS__}) / sizeof(fuzzy_point_t))
+
+#endif /* FUZZY_8051 */
 
 float fuzzy_function_array(
     fuzzy_shape_t shape,
@@ -454,6 +487,17 @@ bool fuzzy_rules_add(
     float value,
     fuzzy_output_function_t output_function
 );
+
+float fuzzy_rules_defuzzify_method(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_defuzz_method_t defuzz_method,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+);
+
 
 /*
  * Defuzzify the aggregated Mamdani output.
@@ -535,24 +579,26 @@ typedef struct FuzzySweepDimension {
 } fuzzy_sweep_dimension_t;
 
 
-typedef float (*fuzzy_sweep_evaluator_t)(
-    const float inputs[],
-    size_t input_count,
-    float cog_step
-);
-
+typedef float (*fuzzy_sweep_evaluator_t)(const float inputs[], size_t input_count, float cog_step);
 
 typedef struct FuzzyCogSweep {
     const char *filename;
     const char *title;
-
+    const char *value_name;
     const fuzzy_sweep_dimension_t *dimensions;
     size_t dimension_count;
-
     float cog_step;
-
     fuzzy_sweep_evaluator_t evaluate;
 } fuzzy_cog_sweep_t;
+
+typedef struct FuzzyInterpolationSweep {
+    const char *filename;
+    const char *title;
+    const fuzzy_sweep_dimension_t *dimensions;
+    size_t dimension_count;
+    const fuzzy_point_t *points;
+    size_t point_count;
+} fuzzy_interpolation_sweep_t;
 
 
 #define FUZZY_PLOT_FUNCTION(function_arg, color_arg)   \
@@ -612,6 +658,7 @@ typedef struct FuzzyCogSweep {
         &(const fuzzy_cog_sweep_t) {                  \
             .filename = (filename_arg),               \
             .title = (title_arg),                     \
+            .value_name = "COG",                      \
             .dimensions =                             \
                 (const fuzzy_sweep_dimension_t[]) {   \
                     __VA_ARGS__                       \
@@ -626,6 +673,10 @@ typedef struct FuzzyCogSweep {
             .evaluate = (evaluator_arg)               \
         }                                             \
     )
+
+#define FUZZY_INTERPOLATION_SWEEP(filename_arg, title_arg, points_arg, ...) fuzzy_interpolation_sweep(&(const fuzzy_interpolation_sweep_t){.filename = (filename_arg), .title = (title_arg), .dimensions = (const fuzzy_sweep_dimension_t[]){__VA_ARGS__}, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]){__VA_ARGS__}) / sizeof(fuzzy_sweep_dimension_t), .points = (points_arg), .point_count = sizeof(points_arg) / sizeof((points_arg)[0])})
+
+#define FUZZY_INTERPOLATION_SLICES(filename_arg, title_arg, points_arg, ...) fuzzy_interpolation_slices(&(const fuzzy_interpolation_sweep_t){.filename = (filename_arg), .title = (title_arg), .dimensions = (const fuzzy_sweep_dimension_t[]){__VA_ARGS__}, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]){__VA_ARGS__}) / sizeof(fuzzy_sweep_dimension_t), .points = (points_arg), .point_count = sizeof(points_arg) / sizeof((points_arg)[0])})
 
 /* PLOTTING ADAPTER FOR COMPRESSED SYNTAX */
 #define SERIES(fn, color) FUZZY_PLOT_FUNCTION_NAMED(#fn, color, fn)
@@ -676,9 +727,11 @@ bool fuzzy_rules_plot_cog(
     float step
 );
 
-bool fuzzy_cog_sweep(
-    const fuzzy_cog_sweep_t *sweep
-);
+bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep);
+
+bool fuzzy_interpolation_sweep(const fuzzy_interpolation_sweep_t *sweep);
+
+bool fuzzy_interpolation_slices(const fuzzy_interpolation_sweep_t *sweep);
 
 #endif /* FUZZY_8051 */
 
@@ -1108,6 +1161,48 @@ float fuzzy_ramp(
         hedge
     );
 }
+
+#ifndef FUZZY_8051
+
+float fuzzy_interpolate_membership_array(const float *inputs, size_t dimension_count, const fuzzy_point_t *points, size_t point_count)
+{
+    size_t point;
+    size_t dimension;
+    float distance_squared;
+    float difference;
+    float weight;
+    float weighted_membership = 0.0f;
+    float weight_sum = 0.0f;
+
+    if (inputs == NULL || points == NULL || dimension_count == 0u || point_count == 0u) {
+        return LEVEL_LO;
+    }
+
+    for (point = 0u; point < point_count; point++) {
+        if (points[point].coordinates == NULL || points[point].dimension_count != dimension_count) {
+            return LEVEL_LO;
+        }
+
+        distance_squared = 0.0f;
+
+        for (dimension = 0u; dimension < dimension_count; dimension++) {
+            difference = inputs[dimension] - points[point].coordinates[dimension];
+            distance_squared += difference * difference;
+        }
+
+        if (distance_squared == 0.0f) {
+            return fuzzy_clamp(points[point].membership);
+        }
+
+        weight = 1.0f / distance_squared;
+        weighted_membership += weight * fuzzy_clamp(points[point].membership);
+        weight_sum += weight;
+    }
+
+    return fuzzy_clamp(weighted_membership / weight_sum);
+}
+
+#endif /* FUZZY_8051 */
 
 /*
  * Generic membership-function wrapper.
@@ -1652,6 +1747,60 @@ void fuzzy_rules_print(
 
 #endif /* FUZZY_8051 */
 
+static float fuzzy_implication(
+    fuzzy_implication_method_t method,
+    float activation,
+    float membership
+)
+{
+    activation = fuzzy_clamp(activation);
+    membership = fuzzy_clamp(membership);
+
+    switch (method) {
+        case FUZZY_IMPLICATION_MIN:
+            return activation < membership
+                ? activation
+                : membership;
+
+        case FUZZY_IMPLICATION_PRODUCT:
+            return activation * membership;
+
+        default:
+            return LEVEL_LO;
+    }
+}
+
+static float fuzzy_aggregation(
+    fuzzy_aggregation_method_t method,
+    float aggregated,
+    float implied
+)
+{
+    aggregated = fuzzy_clamp(aggregated);
+    implied = fuzzy_clamp(implied);
+
+    switch (method) {
+        case FUZZY_AGGREGATION_MAX:
+            return aggregated > implied
+                ? aggregated
+                : implied;
+
+        case FUZZY_AGGREGATION_ALGEBRAIC:
+            return aggregated +
+                   implied -
+                   aggregated * implied;
+
+        case FUZZY_AGGREGATION_BOUNDED:
+            return fuzzy_clamp(
+                aggregated +
+                implied
+            );
+
+        default:
+            return LEVEL_LO;
+    }
+}
+
 /*
  * Mamdani defuzzification.
  *
@@ -1667,126 +1816,72 @@ void fuzzy_rules_print(
  * - Largest maximum position for LOM
  * - Sum and count of maximum positions for MOM
  */
-float fuzzy_rules_defuzzify(
+float fuzzy_rules_defuzzify_method(
     const fuzzy_rules_t *rules,
     float lower,
     float upper,
     float step,
-    fuzzy_defuzz_method_t method
+    fuzzy_defuzz_method_t defuzz_method,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
 )
 {
-    float weighted_sum;
-    float height_sum;
-
-    float maximum_height;
-    float maximum_position_sum;
-
-    float smallest_maximum;
-    float largest_maximum;
-
+    float weighted_sum = 0.0f;
+    float height_sum = 0.0f;
+    float maximum_height = LEVEL_LO;
+    float maximum_position_sum = 0.0f;
+    float smallest_maximum = lower;
+    float largest_maximum = lower;
     float value;
     float aggregated_height;
     float output_membership;
-    float clipped_height;
-
-    size_t maximum_count;
-    size_t i;
-
-    bool maximum_found;
+    float implied_height;
+    size_t maximum_count = 0u;
+    size_t index;
+    bool maximum_found = false;
 
     if (
         rules == NULL ||
-        rules->count == 0 ||
+        rules->count == 0u ||
         lower > upper ||
         step <= 0.0f
     ) {
         return 0.0f;
     }
 
-    if (
-        method != FUZZY_DEFUZZ_COG &&
-        method != FUZZY_DEFUZZ_MOM &&
-        method != FUZZY_DEFUZZ_SOM &&
-        method != FUZZY_DEFUZZ_LOM
-    ) {
-        return 0.0f;
-    }
-
-    weighted_sum =
-        0.0f;
-
-    height_sum =
-        0.0f;
-
-    maximum_height =
-        LEVEL_LO;
-
-    maximum_position_sum =
-        0.0f;
-
-    smallest_maximum =
-        lower;
-
-    largest_maximum =
-        lower;
-
-    maximum_count =
-        0u;
-
-    maximum_found =
-        false;
-
     for (
         value = lower;
         value <= upper;
         value += step
     ) {
-        aggregated_height =
-            LEVEL_LO;
+        aggregated_height = LEVEL_LO;
 
-        /*
-         * Mamdani implication and aggregation:
-         *
-         * implication = MIN
-         * aggregation = MAX
-         */
         for (
-            i = 0;
-            i < rules->count;
-            i++
+            index = 0u;
+            index < rules->count;
+            index++
         ) {
-            output_membership =
-                rules->rules[i]
-                    .output_function(
-                        value
-                    );
-
-            output_membership =
-                fuzzy_clamp(
-                    output_membership
-                );
-
-            clipped_height =
-                rules->rules[i].value <
-                output_membership
-                    ? rules->rules[i].value
-                    : output_membership;
-
-            aggregated_height =
-                aggregated_height >
-                clipped_height
-                    ? aggregated_height
-                    : clipped_height;
-        }
-
-        aggregated_height =
-            fuzzy_clamp(
-                aggregated_height
+            output_membership = fuzzy_clamp(
+                rules->rules[index].output_function(value)
             );
 
-        /*
-         * COG accumulation.
-         */
+            implied_height = fuzzy_implication(
+                implication_method,
+                rules->rules[index].value,
+                output_membership
+            );
+
+            aggregated_height = fuzzy_aggregation(
+                aggregation_method,
+                aggregated_height,
+                implied_height
+            );
+        }
+
+        aggregated_height = fuzzy_clamp(
+            aggregated_height
+        );
+
         weighted_sum +=
             value *
             aggregated_height;
@@ -1794,49 +1889,24 @@ float fuzzy_rules_defuzzify(
         height_sum +=
             aggregated_height;
 
-        /*
-         * Maximum-family accumulation.
-         *
-         * A strictly larger height starts a new maximum set.
-         */
         if (
             !maximum_found ||
             aggregated_height > maximum_height
         ) {
-            maximum_height =
-                aggregated_height;
-
-            smallest_maximum =
-                value;
-
-            largest_maximum =
-                value;
-
-            maximum_position_sum =
-                value;
-
-            maximum_count =
-                1u;
-
-            maximum_found =
-                true;
+            maximum_height = aggregated_height;
+            smallest_maximum = value;
+            largest_maximum = value;
+            maximum_position_sum = value;
+            maximum_count = 1u;
+            maximum_found = true;
         }
-        else if (
-            aggregated_height == maximum_height
-        ) {
-            largest_maximum =
-                value;
-
-            maximum_position_sum +=
-                value;
-
+        else if (aggregated_height == maximum_height) {
+            largest_maximum = value;
+            maximum_position_sum += value;
             maximum_count++;
         }
     }
 
-    /*
-     * No activated output area.
-     */
     if (
         !maximum_found ||
         maximum_height <= LEVEL_LO ||
@@ -1845,18 +1915,14 @@ float fuzzy_rules_defuzzify(
         return 0.0f;
     }
 
-    switch (method) {
+    switch (defuzz_method) {
         case FUZZY_DEFUZZ_COG:
             return weighted_sum /
-                height_sum;
+                   height_sum;
 
         case FUZZY_DEFUZZ_MOM:
-            if (maximum_count == 0u) {
-                return 0.0f;
-            }
-
             return maximum_position_sum /
-                (float)maximum_count;
+                   (float)maximum_count;
 
         case FUZZY_DEFUZZ_SOM:
             return smallest_maximum;
@@ -1869,6 +1935,24 @@ float fuzzy_rules_defuzzify(
     }
 }
 
+float fuzzy_rules_defuzzify(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_defuzz_method_t method
+)
+{
+    return fuzzy_rules_defuzzify_method(
+        rules,
+        lower,
+        upper,
+        step,
+        method,
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX
+    );
+}
 
 /*
  * Existing COG compatibility wrapper.
@@ -2693,7 +2777,7 @@ static bool fuzzy_sweep_write_svg(
         file,
         sweep->title != NULL
             ? sweep->title
-            : "COG Sweep"
+            : "N-Dimensional Sweep"
     );
 
     fprintf(
@@ -2843,10 +2927,19 @@ static bool fuzzy_sweep_write_svg(
             "text-anchor=\"middle\" "
             "font-family=\"sans-serif\" "
             "font-size=\"15\" "
-            "transform=\"rotate(-90 35 %d)\">"
-            "COG</text>\n",
+            "transform=\"rotate(-90 35 %d)\">",
             (top + bottom) / 2,
             (top + bottom) / 2
+        );
+
+        fuzzy_plot_write_text(
+            file,
+            sweep->value_name
+        );
+
+        fprintf(
+            file,
+            "</text>\n"
         );
     }
     else {
@@ -3110,10 +3203,19 @@ static bool fuzzy_sweep_write_svg(
             "text-anchor=\"middle\" "
             "font-family=\"sans-serif\" "
             "font-size=\"14\" "
-            "transform=\"rotate(-90 914 %d)\">"
-            "COG</text>\n",
+            "transform=\"rotate(-90 914 %d)\">",
             (top + bottom) / 2,
             (top + bottom) / 2
+        );
+
+        fuzzy_plot_write_text(
+            file,
+            sweep->value_name
+        );
+
+        fprintf(
+            file,
+            "</text>\n"
         );
 
         /*
@@ -3197,6 +3299,8 @@ static bool fuzzy_sweep_write_svg(
             file,
             "<script type=\"application/ecmascript\">"
             "<![CDATA[\n"
+            "const fuzzyValueName=\"%s\";\n",
+            sweep->value_name
         );
 
         /*
@@ -3612,7 +3716,7 @@ static bool fuzzy_sweep_write_svg(
             "        }\n"
             "\n"
             "        title.textContent="
-            "text+', COG = '+cog.toFixed(5);\n"
+            "text+', '+fuzzyValueName+' = '+cog.toFixed(5);\n"
             "      }\n"
             "    }\n"
             "  }\n"
@@ -3674,15 +3778,18 @@ static bool fuzzy_sweep_write_svg(
     }
 
     printf(
-        "COG sweep SVG written to %s\n",
+        "%s sweep SVG written to %s\n",
+        sweep->value_name,
         svg_filename
     );
 
     return true;
 }
 
-bool fuzzy_cog_sweep(
-    const fuzzy_cog_sweep_t *sweep
+static bool fuzzy_sweep_generate(
+    const fuzzy_cog_sweep_t *sweep,
+    const fuzzy_point_t points[],
+    size_t point_count
 )
 {
     size_t dimension_count;
@@ -3694,7 +3801,7 @@ bool fuzzy_cog_sweep(
 
     float *inputs;
     float *sweep_inputs;
-    float *sweep_cog_values;
+    float *sweep_values;
 
     FILE *csv_file;
 
@@ -3708,9 +3815,17 @@ bool fuzzy_cog_sweep(
         sweep == NULL ||
         sweep->filename == NULL ||
         sweep->dimensions == NULL ||
-        sweep->dimension_count == 0 ||
-        sweep->evaluate == NULL ||
-        sweep->cog_step <= 0.0f
+        sweep->dimension_count == 0u
+    ) {
+        return false;
+    }
+
+    if (
+        sweep->evaluate == NULL &&
+        (
+            points == NULL ||
+            point_count == 0u
+        )
     ) {
         return false;
     }
@@ -3721,19 +3836,19 @@ bool fuzzy_cog_sweep(
     sample_counts =
         calloc(
             dimension_count,
-            sizeof(*sample_counts)
+            sizeof(sample_counts[0])
         );
 
     indices =
         calloc(
             dimension_count,
-            sizeof(*indices)
+            sizeof(indices[0])
         );
 
     inputs =
         calloc(
             dimension_count,
-            sizeof(*inputs)
+            sizeof(inputs[0])
         );
 
     if (
@@ -3741,10 +3856,6 @@ bool fuzzy_cog_sweep(
         indices == NULL ||
         inputs == NULL
     ) {
-        fprintf(stderr, 
-            "Failed to allocate COG sweep dimensions.\n"
-        );
-
         free(sample_counts);
         free(indices);
         free(inputs);
@@ -3753,14 +3864,10 @@ bool fuzzy_cog_sweep(
     }
 
     total_points =
-        1;
+        1u;
 
-    /*
-     * Validate every dimension and determine the total
-     * number of points.
-     */
     for (
-        size_t dimension = 0;
+        size_t dimension = 0u;
         dimension < dimension_count;
         dimension++
     ) {
@@ -3771,11 +3878,6 @@ bool fuzzy_cog_sweep(
             current->lower > current->upper ||
             current->step <= 0.0f
         ) {
-            fprintf(stderr, 
-                "Invalid sweep dimension %zu.\n",
-                dimension
-            );
-
             free(sample_counts);
             free(indices);
             free(inputs);
@@ -3792,96 +3894,32 @@ bool fuzzy_cog_sweep(
                 current->step
             ) + 1u;
 
-        if (
-            sample_counts[dimension] == 0 ||
-            total_points >
-                SIZE_MAX /
-                sample_counts[dimension]
-        ) {
-            fprintf(stderr, 
-                "COG sweep contains too many points.\n"
-            );
-
-            free(sample_counts);
-            free(indices);
-            free(inputs);
-
-            return false;
-        }
-
         total_points *=
             sample_counts[dimension];
-    }
-
-    /*
-     * The flat input array contains every input coordinate
-     * for every generated point.
-     */
-    if (
-        total_points >
-            SIZE_MAX /
-            dimension_count
-    ) {
-        fprintf(stderr, 
-            "COG sweep input count overflow.\n"
-        );
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
     }
 
     sweep_input_count =
         total_points *
         dimension_count;
 
-    /*
-     * Prevent byte-size overflow before allocating.
-     */
-    if (
-        sweep_input_count >
-            SIZE_MAX /
-            sizeof(*sweep_inputs) ||
-        total_points >
-            SIZE_MAX /
-            sizeof(*sweep_cog_values)
-    ) {
-        fprintf(stderr, 
-            "COG sweep allocation is too large.\n"
-        );
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
     sweep_inputs =
         malloc(
             sweep_input_count *
-            sizeof(*sweep_inputs)
+            sizeof(sweep_inputs[0])
         );
 
-    sweep_cog_values =
+    sweep_values =
         malloc(
             total_points *
-            sizeof(*sweep_cog_values)
+            sizeof(sweep_values[0])
         );
 
     if (
         sweep_inputs == NULL ||
-        sweep_cog_values == NULL
+        sweep_values == NULL
     ) {
-        fprintf(stderr, 
-            "Failed to allocate COG sweep results.\n"
-        );
-
         free(sweep_inputs);
-        free(sweep_cog_values);
-
+        free(sweep_values);
         free(sample_counts);
         free(indices);
         free(inputs);
@@ -3901,13 +3939,8 @@ bool fuzzy_cog_sweep(
         written < 0 ||
         (size_t)written >= sizeof(csv_filename)
     ) {
-        fprintf(stderr, 
-            "COG sweep CSV filename is too long.\n"
-        );
-
         free(sweep_inputs);
-        free(sweep_cog_values);
-
+        free(sweep_values);
         free(sample_counts);
         free(indices);
         free(inputs);
@@ -3922,14 +3955,8 @@ bool fuzzy_cog_sweep(
         );
 
     if (csv_file == NULL) {
-        fprintf(stderr, 
-            "Failed to open %s.\n",
-            csv_filename
-        );
-
         free(sweep_inputs);
-        free(sweep_cog_values);
-
+        free(sweep_values);
         free(sample_counts);
         free(indices);
         free(inputs);
@@ -3937,48 +3964,33 @@ bool fuzzy_cog_sweep(
         return false;
     }
 
-    /*
-     * CSV heading.
-     */
     for (
-        size_t dimension = 0;
+        size_t dimension = 0u;
         dimension < dimension_count;
         dimension++
     ) {
-        const char *name =
-            sweep->dimensions[dimension].name;
-
         fprintf(
             csv_file,
             "%s,",
-            name != NULL
-                ? name
+            sweep->dimensions[dimension].name != NULL
+                ? sweep->dimensions[dimension].name
                 : "Input"
         );
     }
 
     fprintf(
         csv_file,
-        "COG\n"
+        "%s\n",
+        sweep->value_name
     );
 
-    /*
-     * Generate the sweep once.
-     *
-     * Every calculated input and COG value is:
-     *
-     * 1. Stored directly in memory for the SVG.
-     * 2. Written directly to the CSV.
-     *
-     * The CSV is never reopened or parsed.
-     */
     for (
-        size_t point = 0;
+        size_t point = 0u;
         point < total_points;
         point++
     ) {
         for (
-            size_t dimension = 0;
+            size_t dimension = 0u;
             dimension < dimension_count;
             dimension++
         ) {
@@ -4011,115 +4023,347 @@ bool fuzzy_cog_sweep(
             );
         }
 
-        sweep_cog_values[point] =
-            sweep->evaluate(
-                inputs,
-                dimension_count,
-                sweep->cog_step
-            );
+        if (sweep->evaluate != NULL) {
+            sweep_values[point] =
+                sweep->evaluate(
+                    inputs,
+                    dimension_count,
+                    sweep->cog_step
+                );
+        }
+        else {
+            sweep_values[point] =
+                fuzzy_interpolate_membership_array(
+                    inputs,
+                    dimension_count,
+                    points,
+                    point_count
+                );
+        }
 
         fprintf(
             csv_file,
             "%.9g\n",
-            sweep_cog_values[point]
+            sweep_values[point]
         );
 
-        /*
-         * Increment the N-dimensional odometer.
-         *
-         * The final dimension changes fastest.
-         */
-        for (size_t dimension = dimension_count; dimension > 0; dimension--)
-        {
-            size_t index = dimension - 1u;
+        for (
+            size_t dimension = dimension_count;
+            dimension > 0u;
+            dimension--
+        ) {
+            size_t index =
+                dimension - 1u;
 
             indices[index]++;
 
-            if (indices[index] < sample_counts[index]) break;
+            if (
+                indices[index] <
+                sample_counts[index]
+            ) {
+                break;
+            }
 
-            indices[index] = 0;
+            indices[index] =
+                0u;
         }
     }
 
-    /*
-     * Ensure the CSV was written successfully.
-     */
-    if (ferror(csv_file)) {
-        fprintf(stderr, "Failed while writing %s.\n", csv_filename);
+    fclose(
+        csv_file
+    );
 
-        fclose(csv_file);
-
-        free(sweep_inputs);
-        free(sweep_cog_values);
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
-    if (fclose(csv_file) != 0) {
-        fprintf(stderr, 
-            "Failed to finish writing %s.\n",
-            csv_filename
-        );
-
-        free(sweep_inputs);
-        free(sweep_cog_values);
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
-
-    /*
-     * Generate the SVG directly from the same values that
-     * were written to the CSV.
-     *
-     * No CSV parsing and no controller reevaluation.
-     */
     success =
         fuzzy_sweep_write_svg(
             sweep,
             sample_counts,
             total_points,
             sweep_inputs,
-            sweep_cog_values
+            sweep_values
         );
-
-    if (!success) {
-        fprintf(stderr, 
-            "Failed to generate COG sweep SVG.\n"
-        );
-
-        free(sweep_inputs);
-        free(sweep_cog_values);
-
-        free(sample_counts);
-        free(indices);
-        free(inputs);
-
-        return false;
-    }
 
     free(sweep_inputs);
-    free(sweep_cog_values);
-
+    free(sweep_values);
     free(sample_counts);
     free(indices);
     free(inputs);
 
     printf(
-        "COG sweep complete "
+        "%s sweep complete "
         "(%zu dimensions, %zu points)\n",
+        sweep->value_name,
         dimension_count,
         total_points
     );
 
+    return success;
+}
+
+bool fuzzy_cog_sweep(
+    const fuzzy_cog_sweep_t *sweep
+)
+{
+    if (
+        sweep == NULL ||
+        sweep->evaluate == NULL ||
+        sweep->cog_step <= 0.0f
+    ) {
+        return false;
+    }
+
+    return fuzzy_sweep_generate(
+        sweep,
+        NULL,
+        0u
+    );
+}
+
+bool fuzzy_interpolation_slices(
+    const fuzzy_interpolation_sweep_t *sweep
+)
+{
+    float *inputs;
+    char filename[256];
+    char title[256];
+
+    if (
+        sweep == NULL ||
+        sweep->filename == NULL ||
+        sweep->dimensions == NULL ||
+        sweep->dimension_count == 0u ||
+        sweep->points == NULL ||
+        sweep->point_count == 0u
+    ) {
+        return false;
+    }
+
+    inputs =
+        malloc(
+            sweep->dimension_count *
+            sizeof(inputs[0])
+        );
+
+    if (inputs == NULL) {
+        return false;
+    }
+
+    for (
+        size_t dimension = 0u;
+        dimension < sweep->dimension_count;
+        dimension++
+    ) {
+        inputs[dimension] =
+            (
+                sweep->dimensions[dimension].lower +
+                sweep->dimensions[dimension].upper
+            ) /
+            2.0f;
+    }
+
+    for (
+        size_t sliced_dimension = 0u;
+        sliced_dimension < sweep->dimension_count;
+        sliced_dimension++
+    ) {
+        const fuzzy_sweep_dimension_t *current =
+            &sweep->dimensions[sliced_dimension];
+
+        fuzzy_plot_t plot;
+
+        snprintf(
+            filename,
+            sizeof(filename),
+            "%s_%zu.svg",
+            sweep->filename,
+            sliced_dimension
+        );
+
+        snprintf(
+            title,
+            sizeof(title),
+            "%s: %s Slice",
+            sweep->title != NULL
+                ? sweep->title
+                : "Membership Interpolation",
+            current->name != NULL
+                ? current->name
+                : "Input"
+        );
+
+        if (!fuzzy_plot_begin(
+            &plot,
+            filename,
+            title,
+            current->lower,
+            current->upper,
+            current->step
+        )) {
+            free(inputs);
+
+            return false;
+        }
+
+        FILE *file =
+            plot.file;
+
+        int left =
+            plot.padding;
+
+        int right =
+            plot.width -
+            plot.padding;
+
+        int top =
+            plot.padding;
+
+        int bottom =
+            plot.height -
+            plot.padding;
+
+        size_t sample_count =
+            (size_t)ceilf(
+                (
+                    current->upper -
+                    current->lower
+                ) /
+                current->step
+            );
+
+        fprintf(
+            file,
+            "<polyline fill=\"none\" "
+            "stroke=\"#7c3aed\" "
+            "stroke-width=\"3\" "
+            "stroke-linejoin=\"round\" "
+            "stroke-linecap=\"round\" "
+            "points=\""
+        );
+
+        for (
+            size_t sample = 0u;
+            sample <= sample_count;
+            sample++
+        ) {
+            float value =
+                current->lower +
+                (float)sample *
+                current->step;
+
+            if (value > current->upper) {
+                value =
+                    current->upper;
+            }
+
+            inputs[sliced_dimension] =
+                value;
+
+            float membership =
+                fuzzy_interpolate_membership_array(
+                    inputs,
+                    sweep->dimension_count,
+                    sweep->points,
+                    sweep->point_count
+                );
+
+            float ratio =
+                (
+                    value -
+                    current->lower
+                ) /
+                (
+                    current->upper -
+                    current->lower
+                );
+
+            float x =
+                (float)left +
+                ratio *
+                (float)(right - left);
+
+            float y =
+                (float)bottom -
+                membership *
+                (float)(bottom - top);
+
+            fprintf(
+                file,
+                "%.2f,%.2f",
+                x,
+                y
+            );
+
+            if (sample < sample_count) {
+                fputc(
+                    ' ',
+                    file
+                );
+            }
+        }
+
+        fprintf(
+            file,
+            "\" />\n"
+        );
+
+        fuzzy_plot_end(
+            &plot
+        );
+
+        inputs[sliced_dimension] =
+            (
+                current->lower +
+                current->upper
+            ) /
+            2.0f;
+    }
+
+    free(
+        inputs
+    );
+
     return true;
+}
+
+bool fuzzy_interpolation_sweep(
+    const fuzzy_interpolation_sweep_t *sweep
+)
+{
+    fuzzy_cog_sweep_t shared_sweep;
+
+    if (
+        sweep == NULL ||
+        sweep->points == NULL ||
+        sweep->point_count == 0u
+    ) {
+        return false;
+    }
+
+    shared_sweep.filename =
+        sweep->filename;
+
+    shared_sweep.title =
+        sweep->title;
+
+    shared_sweep.value_name =
+        "Membership";
+
+    shared_sweep.dimensions =
+        sweep->dimensions;
+
+    shared_sweep.dimension_count =
+        sweep->dimension_count;
+
+    shared_sweep.cog_step =
+        0.0f;
+
+    shared_sweep.evaluate =
+        NULL;
+
+    return fuzzy_sweep_generate(
+        &shared_sweep,
+        sweep->points,
+        sweep->point_count
+    );
 }
 
 #endif /* FUZZY_8051 */
