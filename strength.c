@@ -276,7 +276,7 @@ static bool plot_strength_cog(
 
     success = fuzzy_rules_plot_cog(
         &rules,
-        "svg/cog",
+        "strength/cog",
         "Paint Strength COG Defuzzification",
         result,
         30.0f,
@@ -295,7 +295,7 @@ static bool plot_strength_cog(
 static bool plot_mixture_content(void)
 {
     return FUZZY_PLOT(
-        "svg/mixture_content",
+        "strength/mixture_content",
         "Mixture Content Membership Functions",
         0.0f,
         100.0f,
@@ -318,7 +318,7 @@ static bool plot_mixture_content(void)
 static bool plot_temperature(void)
 {
     return FUZZY_PLOT(
-        "svg/temperature",
+        "strength/temperature",
         "Temperature Membership Functions",
         0.0f,
         100.0f,
@@ -347,7 +347,7 @@ static bool plot_temperature(void)
 static bool plot_strength(void)
 {
     return FUZZY_PLOT(
-        "svg/strength",
+        "strength/strength",
         "Paint Strength Membership Functions",
         0.0f,
         100.0f,
@@ -430,7 +430,7 @@ static float evaluate_strength_sweep(
 static bool plot_strength_sweep(void)
 {
     return FUZZY_COG_SWEEP(
-        "svg/paint_strength_cog_sweep",
+        "strength/paint_strength_cog_sweep",
         "Paint Strength COG Sweep",
         evaluate_strength_sweep,
         1.0f,
@@ -473,8 +473,8 @@ int main(void)
 
     printf(
         "\nGenerated paint-strength sweep files:\n"
-        "  svg/paint_strength_cog_sweep.csv\n"
-        "  svg/paint_strength_cog_sweep.svg\n"
+        " strength/paint_strength_cog_sweep.csv\n"
+        " strength/paint_strength_cog_sweep.svg\n"
     );
 
     if (!plot_membership_functions()) {

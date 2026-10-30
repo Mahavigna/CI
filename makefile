@@ -21,9 +21,9 @@ endif
 # Targets and Directories
 # ============================================================
 
-STRENGTH_TARGET := fuzzy
+STRENGTH_TARGET := strength-app
 STRENGTH_SOURCE := strength.c
-STRENGTH_OUTPUT := svg
+STRENGTH_OUTPUT := strength
 
 GREENHOUSE_TARGET := greenhouse-app
 GREENHOUSE_SOURCE := greenhouse.c
@@ -145,7 +145,7 @@ $(MAMDANI_8051_TARGET): $(MAMDANI_8051_SOURCE) fuzzy.h | $(MAMDANI_8051_OUTPUT)
 # ============================================================
 # Desktop Execution
 # ============================================================
-run-strength: $(STRENGTH_TARGET)
+run-strength: $(STRENGTH_TARGET) | $(STRENGTH_OUTPUT)
 	@echo "\n============================================================"
 	@echo "Running paint-strength example"
 	@echo "============================================================"

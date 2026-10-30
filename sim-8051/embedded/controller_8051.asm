@@ -414,6 +414,9 @@ bits:
 ; internal ram data
 ;--------------------------------------------------------
 	.area DSEG    (DATA)
+Fcontroller_8051$fuzzy_values_buffer$0_0$0==.
+_fuzzy_values_buffer:
+	.ds 64
 G$test_temperature$0_0$0==.
 _test_temperature::
 	.ds 1
@@ -549,13 +552,13 @@ sdcc_atomic_compare_exchange_gptr_impl::
 	.globl __mcs51_genXINIT
 	.globl __mcs51_genXRAMCLEAR
 	.globl __mcs51_genRAMCLEAR
-	C$controller_8051.c$25$2_0$118 ==.
+	C$controller_8051.c$25$2_0$122 ==.
 ;	../../controller_8051.c:25: volatile unsigned char test_temperature = 0u;
 	mov	_test_temperature,#0x00
-	C$controller_8051.c$26$2_0$118 ==.
+	C$controller_8051.c$26$2_0$122 ==.
 ;	../../controller_8051.c:26: volatile unsigned char test_pwm = 0u;
 	mov	_test_pwm,#0x00
-	C$controller_8051.c$27$2_0$118 ==.
+	C$controller_8051.c$27$2_0$122 ==.
 ;	../../controller_8051.c:27: volatile float test_fan_speed = 0.0f;
 	clr	a
 	mov	_test_fan_speed,a
@@ -577,17 +580,17 @@ __sdcc_program_startup:
 ;--------------------------------------------------------
 	.area CSEG    (CODE)
 ;------------------------------------------------------------
-;Allocation info for local variables in function 'fuzzy_clamp'
+;Allocation info for local variables in function 'fuzzy_values_initialize'
 ;------------------------------------------------------------
-;value         Allocated to registers r4 r5 r6 r7 
+;index         Allocated to registers r6 r7 
 ;------------------------------------------------------------
-	Fcontroller_8051$fuzzy_clamp$0$0 ==.
-	C$fuzzy.h$521$0_0$16 ==.
-;	../../fuzzy.h:521: static float fuzzy_clamp(float value)
+	Fcontroller_8051$fuzzy_values_initialize$0$0 ==.
+	C$fuzzy.h$102$0_0$3 ==.
+;	../../fuzzy.h:102: static float *fuzzy_values_initialize(void)
 ;	-----------------------------------------
-;	 function fuzzy_clamp
+;	 function fuzzy_values_initialize
 ;	-----------------------------------------
-_fuzzy_clamp:
+_fuzzy_values_initialize:
 	ar7 = 0x07
 	ar6 = 0x06
 	ar5 = 0x05
@@ -596,12 +599,75 @@ _fuzzy_clamp:
 	ar2 = 0x02
 	ar1 = 0x01
 	ar0 = 0x00
+	C$fuzzy.h$107$3_0$5 ==.
+;	../../fuzzy.h:107: index = 0u;
+	mov	r6,#0x00
+	mov	r7,#0x00
+00102$:
+	C$fuzzy.h$111$3_0$5 ==.
+;	../../fuzzy.h:111: fuzzy_values_buffer[index] =
+	mov	a,r6
+	add	a,r6
+	mov	r4,a
+	mov	a,r7
+	rlc	a
+	mov	r5,a
+	mov	a,r4
+	add	a,r4
+	mov	r4,a
+	mov	a,r5
+	rlc	a
+	mov	a,r4
+	add	a, #_fuzzy_values_buffer
+	mov	r0,a
+	mov	@r0,#0x00
+	inc	r0
+	mov	@r0,#0x00
+	inc	r0
+	mov	@r0,#0x00
+	inc	r0
+	mov	@r0,#0x00
+	C$fuzzy.h$109$2_0$4 ==.
+;	../../fuzzy.h:109: index++
+	inc	r6
+	cjne	r6,#0x00,00119$
+	inc	r7
+00119$:
+	C$fuzzy.h$108$2_0$4 ==.
+;	../../fuzzy.h:108: index < FUZZY_MAX_VALUES;
+	clr	c
+	mov	a,r6
+	subb	a,#0x10
+	mov	a,r7
+	subb	a,#0x00
+	jc	00102$
+	C$fuzzy.h$115$1_0$3 ==.
+;	../../fuzzy.h:115: return fuzzy_values_buffer;
+	mov	dptr,#_fuzzy_values_buffer
+	mov	b, #0x40
+	C$fuzzy.h$116$1_0$3 ==.
+;	../../fuzzy.h:116: }
+	C$fuzzy.h$116$1_0$3 ==.
+	XFcontroller_8051$fuzzy_values_initialize$0$0 ==.
+	ret
+;------------------------------------------------------------
+;Allocation info for local variables in function 'fuzzy_clamp'
+;------------------------------------------------------------
+;value         Allocated to registers r4 r5 r6 r7 
+;------------------------------------------------------------
+	Fcontroller_8051$fuzzy_clamp$0$0 ==.
+	C$fuzzy.h$674$1_0$20 ==.
+;	../../fuzzy.h:674: static float fuzzy_clamp(float value)
+;	-----------------------------------------
+;	 function fuzzy_clamp
+;	-----------------------------------------
+_fuzzy_clamp:
 	mov	r4,dpl
 	mov	r5,dph
 	mov	r6,b
 	mov	r7,a
-	C$fuzzy.h$523$1_0$16 ==.
-;	../../fuzzy.h:523: if (value < LEVEL_LO) {
+	C$fuzzy.h$676$1_0$20 ==.
+;	../../fuzzy.h:676: if (value < LEVEL_LO) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -626,15 +692,15 @@ _fuzzy_clamp:
 	pop	ar7
 	mov	a,r3
 	jz	00102$
-	C$fuzzy.h$524$2_0$17 ==.
-;	../../fuzzy.h:524: return LEVEL_LO;
+	C$fuzzy.h$677$2_0$21 ==.
+;	../../fuzzy.h:677: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00105$
 00102$:
-	C$fuzzy.h$527$1_0$16 ==.
-;	../../fuzzy.h:527: if (value > LEVEL_HI) {
+	C$fuzzy.h$680$1_0$20 ==.
+;	../../fuzzy.h:680: if (value > LEVEL_HI) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -657,23 +723,23 @@ _fuzzy_clamp:
 	pop	ar7
 	mov	a,r3
 	jz	00104$
-	C$fuzzy.h$528$2_0$18 ==.
-;	../../fuzzy.h:528: return LEVEL_HI;
+	C$fuzzy.h$681$2_0$22 ==.
+;	../../fuzzy.h:681: return LEVEL_HI;
 	mov	dptr,#0x0000
 	mov	b, #0x80
 	mov	a, #0x3f
 	sjmp	00105$
 00104$:
-	C$fuzzy.h$531$1_0$16 ==.
-;	../../fuzzy.h:531: return value;
+	C$fuzzy.h$684$1_0$20 ==.
+;	../../fuzzy.h:684: return value;
 	mov	dpl, r4
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
 00105$:
-	C$fuzzy.h$532$1_0$16 ==.
-;	../../fuzzy.h:532: }
-	C$fuzzy.h$532$1_0$16 ==.
+	C$fuzzy.h$685$1_0$20 ==.
+;	../../fuzzy.h:685: }
+	C$fuzzy.h$685$1_0$20 ==.
 	XFcontroller_8051$fuzzy_clamp$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -682,14 +748,14 @@ _fuzzy_clamp:
 ;membership    Allocated to registers r4 r5 r6 r7 
 ;------------------------------------------------------------
 	G$fuzzy_not$0$0 ==.
-	C$fuzzy.h$537$1_0$20 ==.
-;	../../fuzzy.h:537: float fuzzy_not(
+	C$fuzzy.h$690$1_0$24 ==.
+;	../../fuzzy.h:690: float fuzzy_not(
 ;	-----------------------------------------
 ;	 function fuzzy_not
 ;	-----------------------------------------
 _fuzzy_not:
-	C$fuzzy.h$543$1_0$20 ==.
-;	../../fuzzy.h:543: membership
+	C$fuzzy.h$696$1_0$24 ==.
+;	../../fuzzy.h:696: membership
 	lcall	_fuzzy_clamp
 	mov	r4, dpl
 	mov	r5, dph
@@ -714,9 +780,9 @@ _fuzzy_not:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$fuzzy.h$545$1_0$20 ==.
-;	../../fuzzy.h:545: }
-	C$fuzzy.h$545$1_0$20 ==.
+	C$fuzzy.h$698$1_0$24 ==.
+;	../../fuzzy.h:698: }
+	C$fuzzy.h$698$1_0$24 ==.
 	XG$fuzzy_not$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -727,8 +793,8 @@ _fuzzy_not:
 ;result        Allocated to registers r2 r3 r6 r7 
 ;------------------------------------------------------------
 	Fcontroller_8051$fuzzy_apply_hedge$0$0 ==.
-	C$fuzzy.h$555$1_0$22 ==.
-;	../../fuzzy.h:555: static float fuzzy_apply_hedge(
+	C$fuzzy.h$708$1_0$26 ==.
+;	../../fuzzy.h:708: static float fuzzy_apply_hedge(
 ;	-----------------------------------------
 ;	 function fuzzy_apply_hedge
 ;	-----------------------------------------
@@ -742,8 +808,8 @@ _fuzzy_apply_hedge:
 	mov	a,sp
 	add	a,#0x04
 	mov	sp,a
-	C$fuzzy.h$562$1_0$22 ==.
-;	../../fuzzy.h:562: membership
+	C$fuzzy.h$715$1_0$26 ==.
+;	../../fuzzy.h:715: membership
 	mov	dpl, r4
 	mov	dph, r5
 	mov	b, r6
@@ -758,27 +824,27 @@ _fuzzy_apply_hedge:
 	mov	@r0, b
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$567$2_0$23 ==.
-;	../../fuzzy.h:567: float result =
+	C$fuzzy.h$720$2_0$27 ==.
+;	../../fuzzy.h:720: float result =
 	mov	r2,#0x00
 	mov	r3,#0x00
 	mov	r6,#0x80
 	mov	r7,#0x3f
-	C$fuzzy.h$570$1_1$23 ==.
-;	../../fuzzy.h:570: if (hedge == 0u) {
+	C$fuzzy.h$723$1_1$27 ==.
+;	../../fuzzy.h:723: if (hedge == 0u) {
 	mov	a,_bp
 	add	a,#0xfd
 	mov	r0,a
 	mov	a,@r0
 	jnz	00110$
-	C$fuzzy.h$572$2_1$24 ==.
-;	../../fuzzy.h:572: 1u;
+	C$fuzzy.h$725$2_1$28 ==.
+;	../../fuzzy.h:725: 1u;
 	mov	a,_bp
 	add	a,#0xfd
 	mov	r0,a
 	mov	@r0,#0x01
-	C$fuzzy.h$575$1_1$22 ==.
-;	../../fuzzy.h:575: while (hedge > 0u) {
+	C$fuzzy.h$728$1_1$26 ==.
+;	../../fuzzy.h:728: while (hedge > 0u) {
 00110$:
 	mov	a,_bp
 	add	a,#0xfd
@@ -787,8 +853,8 @@ _fuzzy_apply_hedge:
 00103$:
 	mov	a,r5
 	jz	00105$
-	C$fuzzy.h$577$1_1$22 ==.
-;	../../fuzzy.h:577: membership;
+	C$fuzzy.h$730$1_1$26 ==.
+;	../../fuzzy.h:730: membership;
 	push	ar5
 	mov	r0,_bp
 	inc	r0
@@ -803,8 +869,8 @@ _fuzzy_apply_hedge:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$579$1_1$22 ==.
-;	../../fuzzy.h:579: hedge--;
+	C$fuzzy.h$732$1_1$26 ==.
+;	../../fuzzy.h:732: hedge--;
 	mov	dpl, r2
 	mov	dph, r3
 	mov	b, r6
@@ -821,18 +887,18 @@ _fuzzy_apply_hedge:
 	dec	r5
 	sjmp	00103$
 00105$:
-	C$fuzzy.h$583$1_1$23 ==.
-;	../../fuzzy.h:583: result
+	C$fuzzy.h$736$1_1$27 ==.
+;	../../fuzzy.h:736: result
 	mov	dpl, r2
 	mov	dph, r3
 	mov	b, r6
 	mov	a, r7
 	lcall	_fuzzy_clamp
-	C$fuzzy.h$599$1_1$22 ==.
-;	../../fuzzy.h:599: }
+	C$fuzzy.h$752$1_1$26 ==.
+;	../../fuzzy.h:752: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$599$1_1$22 ==.
+	C$fuzzy.h$752$1_1$26 ==.
 	XFcontroller_8051$fuzzy_apply_hedge$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -848,8 +914,8 @@ _fuzzy_apply_hedge:
 ;sloc1         Allocated to stack - _bp +4 +1 
 ;------------------------------------------------------------
 	G$fuzzy_and_array$0$0 ==.
-	C$fuzzy.h$613$1_1$27 ==.
-;	../../fuzzy.h:613: float fuzzy_and_array(
+	C$fuzzy.h$766$1_1$31 ==.
+;	../../fuzzy.h:766: float fuzzy_and_array(
 ;	-----------------------------------------
 ;	 function fuzzy_and_array
 ;	-----------------------------------------
@@ -860,8 +926,8 @@ _fuzzy_and_array:
 	add	a,#0x0e
 	mov	sp,a
 	mov	r5, dpl
-	C$fuzzy.h$624$1_0$27 ==.
-;	../../fuzzy.h:624: args == NULL ||
+	C$fuzzy.h$777$1_0$31 ==.
+;	../../fuzzy.h:777: args == NULL ||
 	mov	a,_bp
 	add	a,#0xf9
 	mov	r0,a
@@ -869,8 +935,8 @@ _fuzzy_and_array:
 	inc	r0
 	orl	a,@r0
 	jz	00101$
-	C$fuzzy.h$625$1_0$27 ==.
-;	../../fuzzy.h:625: count == 0u
+	C$fuzzy.h$778$1_0$31 ==.
+;	../../fuzzy.h:778: count == 0u
 	mov	a,_bp
 	add	a,#0xfc
 	mov	r0,a
@@ -879,36 +945,36 @@ _fuzzy_and_array:
 	orl	a,@r0
 	jnz	00102$
 00101$:
-	C$fuzzy.h$627$2_0$28 ==.
-;	../../fuzzy.h:627: return LEVEL_HI;
+	C$fuzzy.h$780$2_0$32 ==.
+;	../../fuzzy.h:780: return LEVEL_HI;
 	mov	dptr,#0x0000
 	mov	b, #0x80
 	mov	a, #0x3f
 	ljmp	00121$
 00102$:
-	C$fuzzy.h$631$1_0$27 ==.
-;	../../fuzzy.h:631: method != FUZZY_LOGIC_STANDARD &&
+	C$fuzzy.h$784$1_0$31 ==.
+;	../../fuzzy.h:784: method != FUZZY_LOGIC_STANDARD &&
 	mov	a,r5
 	jz	00105$
-	C$fuzzy.h$632$1_0$27 ==.
-;	../../fuzzy.h:632: method != FUZZY_LOGIC_ALGEBRAIC &&
+	C$fuzzy.h$785$1_0$31 ==.
+;	../../fuzzy.h:785: method != FUZZY_LOGIC_ALGEBRAIC &&
 	cjne	r5,#0x01,00192$
 	sjmp	00105$
 00192$:
-	C$fuzzy.h$634$1_0$27 ==.
-;	../../fuzzy.h:634: ) {
+	C$fuzzy.h$787$1_0$31 ==.
+;	../../fuzzy.h:787: ) {
 	cjne	r5,#0x02,00193$
 	sjmp	00105$
 00193$:
-	C$fuzzy.h$635$2_0$29 ==.
-;	../../fuzzy.h:635: return LEVEL_LO;
+	C$fuzzy.h$788$2_0$33 ==.
+;	../../fuzzy.h:788: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00121$
 00105$:
-	C$fuzzy.h$640$1_0$27 ==.
-;	../../fuzzy.h:640: args[0]
+	C$fuzzy.h$793$1_0$31 ==.
+;	../../fuzzy.h:793: args[0]
 	mov	a,_bp
 	add	a,#0xf9
 	mov	r0,a
@@ -958,8 +1024,8 @@ _fuzzy_and_array:
 	inc	r0
 	mov	@r0,a
 	pop	ar5
-	C$fuzzy.h$644$3_0$31 ==.
-;	../../fuzzy.h:644: index = 1u;
+	C$fuzzy.h$797$3_0$35 ==.
+;	../../fuzzy.h:797: index = 1u;
 	clr	a
 	cjne	r5,#0x00,00194$
 	inc	a
@@ -987,8 +1053,8 @@ _fuzzy_and_array:
 	inc	r0
 	mov	@r0,#0x00
 00119$:
-	C$fuzzy.h$645$2_0$30 ==.
-;	../../fuzzy.h:645: index < count;
+	C$fuzzy.h$798$2_0$34 ==.
+;	../../fuzzy.h:798: index < count;
 	mov	a,_bp
 	add	a,#0x0d
 	mov	r0,a
@@ -1005,8 +1071,8 @@ _fuzzy_and_array:
 	jc	00200$
 	ljmp	00117$
 00200$:
-	C$fuzzy.h$650$1_0$27 ==.
-;	../../fuzzy.h:650: args[index]
+	C$fuzzy.h$803$1_0$31 ==.
+;	../../fuzzy.h:803: args[index]
 	push	ar2
 	mov	a,_bp
 	add	a,#0x0d
@@ -1067,8 +1133,8 @@ _fuzzy_and_array:
 	mov	@r0,a
 	pop	ar2
 	pop	ar3
-	C$fuzzy.h$653$1_0$27 ==.
-;	../../fuzzy.h:653: switch (method) {
+	C$fuzzy.h$806$1_0$31 ==.
+;	../../fuzzy.h:806: switch (method) {
 	pop	ar2
 	mov	a,r3
 	jnz	00108$
@@ -1082,11 +1148,11 @@ _fuzzy_and_array:
 	ljmp	00112$
 00203$:
 	ljmp	00115$
-	C$fuzzy.h$654$4_0$32 ==.
-;	../../fuzzy.h:654: case FUZZY_LOGIC_STANDARD:
+	C$fuzzy.h$807$4_0$36 ==.
+;	../../fuzzy.h:807: case FUZZY_LOGIC_STANDARD:
 00108$:
-	C$fuzzy.h$655$1_0$27 ==.
-;	../../fuzzy.h:655: if (next < result) {
+	C$fuzzy.h$808$1_0$31 ==.
+;	../../fuzzy.h:808: if (next < result) {
 	push	ar3
 	push	ar2
 	mov	a,_bp
@@ -1124,8 +1190,8 @@ _fuzzy_and_array:
 	jnz	00204$
 	ljmp	00120$
 00204$:
-	C$fuzzy.h$656$5_0$33 ==.
-;	../../fuzzy.h:656: result = next;
+	C$fuzzy.h$809$5_0$37 ==.
+;	../../fuzzy.h:809: result = next;
 	mov	a,_bp
 	add	a,#0x09
 	mov	r0,a
@@ -1146,14 +1212,14 @@ _fuzzy_and_array:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$658$4_0$32 ==.
-;	../../fuzzy.h:658: break;
+	C$fuzzy.h$811$4_0$36 ==.
+;	../../fuzzy.h:811: break;
 	ljmp	00120$
-	C$fuzzy.h$660$4_0$32 ==.
-;	../../fuzzy.h:660: case FUZZY_LOGIC_ALGEBRAIC:
+	C$fuzzy.h$813$4_0$36 ==.
+;	../../fuzzy.h:813: case FUZZY_LOGIC_ALGEBRAIC:
 00111$:
-	C$fuzzy.h$662$1_0$27 ==.
-;	../../fuzzy.h:662: next;
+	C$fuzzy.h$815$1_0$31 ==.
+;	../../fuzzy.h:815: next;
 	push	ar3
 	push	ar2
 	mov	a,_bp
@@ -1170,8 +1236,8 @@ _fuzzy_and_array:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$663$1_0$27 ==.
-;	../../fuzzy.h:663: break;
+	C$fuzzy.h$816$1_0$31 ==.
+;	../../fuzzy.h:816: break;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1200,11 +1266,11 @@ _fuzzy_and_array:
 	pop	ar2
 	pop	ar3
 	ljmp	00120$
-	C$fuzzy.h$665$4_0$32 ==.
-;	../../fuzzy.h:665: case FUZZY_LOGIC_BOUNDED:
+	C$fuzzy.h$818$4_0$36 ==.
+;	../../fuzzy.h:818: case FUZZY_LOGIC_BOUNDED:
 00112$:
-	C$fuzzy.h$668$1_0$27 ==.
-;	../../fuzzy.h:668: next -
+	C$fuzzy.h$821$1_0$31 ==.
+;	../../fuzzy.h:821: next -
 	push	ar3
 	push	ar2
 	mov	a,_bp
@@ -1246,8 +1312,8 @@ _fuzzy_and_array:
 	push	acc
 	mov	a,#0x3f
 	push	acc
-	C$fuzzy.h$671$1_0$27 ==.
-;	../../fuzzy.h:671: if (result < LEVEL_LO) {
+	C$fuzzy.h$824$1_0$31 ==.
+;	../../fuzzy.h:824: if (result < LEVEL_LO) {
 	mov	dpl, r4
 	mov	dph, r5
 	mov	b, r6
@@ -1291,8 +1357,8 @@ _fuzzy_and_array:
 	pop	ar3
 	mov	a,r7
 	jz	00120$
-	C$fuzzy.h$672$5_0$34 ==.
-;	../../fuzzy.h:672: result = LEVEL_LO;
+	C$fuzzy.h$825$5_0$38 ==.
+;	../../fuzzy.h:825: result = LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1304,23 +1370,23 @@ _fuzzy_and_array:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$674$4_0$32 ==.
-;	../../fuzzy.h:674: break;
-	C$fuzzy.h$676$4_0$32 ==.
-;	../../fuzzy.h:676: default:
+	C$fuzzy.h$827$4_0$36 ==.
+;	../../fuzzy.h:827: break;
+	C$fuzzy.h$829$4_0$36 ==.
+;	../../fuzzy.h:829: default:
 	sjmp	00120$
 00115$:
-	C$fuzzy.h$677$4_0$32 ==.
-;	../../fuzzy.h:677: return LEVEL_LO;
+	C$fuzzy.h$830$4_0$36 ==.
+;	../../fuzzy.h:830: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
-	C$fuzzy.h$678$3_0$31 ==.
-;	../../fuzzy.h:678: }
+	C$fuzzy.h$831$3_0$35 ==.
+;	../../fuzzy.h:831: }
 	sjmp	00121$
 00120$:
-	C$fuzzy.h$646$2_0$30 ==.
-;	../../fuzzy.h:646: index++
+	C$fuzzy.h$799$2_0$34 ==.
+;	../../fuzzy.h:799: index++
 	mov	a,_bp
 	add	a,#0x0d
 	mov	r0,a
@@ -1331,8 +1397,8 @@ _fuzzy_and_array:
 00206$:
 	ljmp	00119$
 00117$:
-	C$fuzzy.h$682$1_0$27 ==.
-;	../../fuzzy.h:682: result
+	C$fuzzy.h$835$1_0$31 ==.
+;	../../fuzzy.h:835: result
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1345,11 +1411,11 @@ _fuzzy_and_array:
 	mov	a, @r0
 	lcall	_fuzzy_clamp
 00121$:
-	C$fuzzy.h$684$1_0$27 ==.
-;	../../fuzzy.h:684: }
+	C$fuzzy.h$837$1_0$31 ==.
+;	../../fuzzy.h:837: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$684$1_0$27 ==.
+	C$fuzzy.h$837$1_0$31 ==.
 	XG$fuzzy_and_array$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -1367,8 +1433,8 @@ _fuzzy_and_array:
 ;sloc3         Allocated to stack - _bp +6 +4 
 ;------------------------------------------------------------
 	G$fuzzy_or_array$0$0 ==.
-	C$fuzzy.h$699$1_0$36 ==.
-;	../../fuzzy.h:699: float fuzzy_or_array(
+	C$fuzzy.h$852$1_0$40 ==.
+;	../../fuzzy.h:852: float fuzzy_or_array(
 ;	-----------------------------------------
 ;	 function fuzzy_or_array
 ;	-----------------------------------------
@@ -1379,8 +1445,8 @@ _fuzzy_or_array:
 	add	a,#0x0f
 	mov	sp,a
 	mov	r5, dpl
-	C$fuzzy.h$710$1_0$36 ==.
-;	../../fuzzy.h:710: args == NULL ||
+	C$fuzzy.h$863$1_0$40 ==.
+;	../../fuzzy.h:863: args == NULL ||
 	mov	a,_bp
 	add	a,#0xf9
 	mov	r0,a
@@ -1388,8 +1454,8 @@ _fuzzy_or_array:
 	inc	r0
 	orl	a,@r0
 	jz	00101$
-	C$fuzzy.h$711$1_0$36 ==.
-;	../../fuzzy.h:711: count == 0u
+	C$fuzzy.h$864$1_0$40 ==.
+;	../../fuzzy.h:864: count == 0u
 	mov	a,_bp
 	add	a,#0xfc
 	mov	r0,a
@@ -1398,36 +1464,36 @@ _fuzzy_or_array:
 	orl	a,@r0
 	jnz	00102$
 00101$:
-	C$fuzzy.h$713$2_0$37 ==.
-;	../../fuzzy.h:713: return LEVEL_LO;
+	C$fuzzy.h$866$2_0$41 ==.
+;	../../fuzzy.h:866: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00121$
 00102$:
-	C$fuzzy.h$717$1_0$36 ==.
-;	../../fuzzy.h:717: method != FUZZY_LOGIC_STANDARD &&
+	C$fuzzy.h$870$1_0$40 ==.
+;	../../fuzzy.h:870: method != FUZZY_LOGIC_STANDARD &&
 	mov	a,r5
 	jz	00105$
-	C$fuzzy.h$718$1_0$36 ==.
-;	../../fuzzy.h:718: method != FUZZY_LOGIC_ALGEBRAIC &&
+	C$fuzzy.h$871$1_0$40 ==.
+;	../../fuzzy.h:871: method != FUZZY_LOGIC_ALGEBRAIC &&
 	cjne	r5,#0x01,00192$
 	sjmp	00105$
 00192$:
-	C$fuzzy.h$720$1_0$36 ==.
-;	../../fuzzy.h:720: ) {
+	C$fuzzy.h$873$1_0$40 ==.
+;	../../fuzzy.h:873: ) {
 	cjne	r5,#0x02,00193$
 	sjmp	00105$
 00193$:
-	C$fuzzy.h$721$2_0$38 ==.
-;	../../fuzzy.h:721: return LEVEL_LO;
+	C$fuzzy.h$874$2_0$42 ==.
+;	../../fuzzy.h:874: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00121$
 00105$:
-	C$fuzzy.h$726$1_0$36 ==.
-;	../../fuzzy.h:726: args[0]
+	C$fuzzy.h$879$1_0$40 ==.
+;	../../fuzzy.h:879: args[0]
 	mov	a,_bp
 	add	a,#0xf9
 	mov	r0,a
@@ -1477,8 +1543,8 @@ _fuzzy_or_array:
 	inc	r0
 	mov	@r0,a
 	pop	ar5
-	C$fuzzy.h$730$3_0$40 ==.
-;	../../fuzzy.h:730: index = 1u;
+	C$fuzzy.h$883$3_0$44 ==.
+;	../../fuzzy.h:883: index = 1u;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -1509,8 +1575,8 @@ _fuzzy_or_array:
 	inc	r0
 	mov	@r0,#0x00
 00119$:
-	C$fuzzy.h$731$2_0$39 ==.
-;	../../fuzzy.h:731: index < count;
+	C$fuzzy.h$884$2_0$43 ==.
+;	../../fuzzy.h:884: index < count;
 	mov	a,_bp
 	add	a,#0x0e
 	mov	r0,a
@@ -1527,8 +1593,8 @@ _fuzzy_or_array:
 	jc	00200$
 	ljmp	00117$
 00200$:
-	C$fuzzy.h$736$1_0$36 ==.
-;	../../fuzzy.h:736: args[index]
+	C$fuzzy.h$889$1_0$40 ==.
+;	../../fuzzy.h:889: args[index]
 	push	ar2
 	mov	a,_bp
 	add	a,#0x0e
@@ -1580,8 +1646,8 @@ _fuzzy_or_array:
 	mov	r6, b
 	mov	r3, a
 	pop	ar2
-	C$fuzzy.h$739$1_0$36 ==.
-;	../../fuzzy.h:739: switch (method) {
+	C$fuzzy.h$892$1_0$40 ==.
+;	../../fuzzy.h:892: switch (method) {
 	pop	ar2
 	mov	a,_bp
 	add	a,#0x05
@@ -1598,11 +1664,11 @@ _fuzzy_or_array:
 	ljmp	00112$
 00203$:
 	ljmp	00115$
-	C$fuzzy.h$740$4_0$41 ==.
-;	../../fuzzy.h:740: case FUZZY_LOGIC_STANDARD:
+	C$fuzzy.h$893$4_0$45 ==.
+;	../../fuzzy.h:893: case FUZZY_LOGIC_STANDARD:
 00108$:
-	C$fuzzy.h$741$1_0$36 ==.
-;	../../fuzzy.h:741: if (next > result) {
+	C$fuzzy.h$894$1_0$40 ==.
+;	../../fuzzy.h:894: if (next > result) {
 	push	ar6
 	push	ar5
 	push	ar4
@@ -1636,8 +1702,8 @@ _fuzzy_or_array:
 	jnz	00204$
 	ljmp	00120$
 00204$:
-	C$fuzzy.h$742$5_0$42 ==.
-;	../../fuzzy.h:742: result = next;
+	C$fuzzy.h$895$5_0$46 ==.
+;	../../fuzzy.h:895: result = next;
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1648,14 +1714,14 @@ _fuzzy_or_array:
 	mov	@r0,ar6
 	inc	r0
 	mov	@r0,ar3
-	C$fuzzy.h$744$4_0$41 ==.
-;	../../fuzzy.h:744: break;
+	C$fuzzy.h$897$4_0$45 ==.
+;	../../fuzzy.h:897: break;
 	ljmp	00120$
-	C$fuzzy.h$746$4_0$41 ==.
-;	../../fuzzy.h:746: case FUZZY_LOGIC_ALGEBRAIC:
+	C$fuzzy.h$899$4_0$45 ==.
+;	../../fuzzy.h:899: case FUZZY_LOGIC_ALGEBRAIC:
 00111$:
-	C$fuzzy.h$749$1_0$36 ==.
-;	../../fuzzy.h:749: next -
+	C$fuzzy.h$902$1_0$40 ==.
+;	../../fuzzy.h:902: next -
 	push	ar2
 	push	ar6
 	push	ar5
@@ -1666,8 +1732,8 @@ _fuzzy_or_array:
 	push	ar5
 	push	ar6
 	push	ar3
-	C$fuzzy.h$750$1_0$36 ==.
-;	../../fuzzy.h:750: result * next;
+	C$fuzzy.h$903$1_0$40 ==.
+;	../../fuzzy.h:903: result * next;
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1725,8 +1791,8 @@ _fuzzy_or_array:
 	push	ar3
 	push	ar6
 	push	ar7
-	C$fuzzy.h$751$1_0$36 ==.
-;	../../fuzzy.h:751: break;
+	C$fuzzy.h$904$1_0$40 ==.
+;	../../fuzzy.h:904: break;
 	mov	a,_bp
 	add	a,#0x06
 	mov	r0,a
@@ -1754,19 +1820,19 @@ _fuzzy_or_array:
 	mov	sp,a
 	pop	ar2
 	pop	ar2
-	C$fuzzy.h$753$4_0$41 ==.
-;	../../fuzzy.h:753: case FUZZY_LOGIC_BOUNDED:
+	C$fuzzy.h$906$4_0$45 ==.
+;	../../fuzzy.h:906: case FUZZY_LOGIC_BOUNDED:
 	sjmp	00120$
 00112$:
-	C$fuzzy.h$755$1_0$36 ==.
-;	../../fuzzy.h:755: next;
+	C$fuzzy.h$908$1_0$40 ==.
+;	../../fuzzy.h:908: next;
 	push	ar2
 	push	ar4
 	push	ar5
 	push	ar6
 	push	ar3
-	C$fuzzy.h$757$1_0$36 ==.
-;	../../fuzzy.h:757: if (result > LEVEL_HI) {
+	C$fuzzy.h$910$1_0$40 ==.
+;	../../fuzzy.h:910: if (result > LEVEL_HI) {
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1817,8 +1883,8 @@ _fuzzy_or_array:
 	pop	ar2
 	mov	a,r7
 	jz	00120$
-	C$fuzzy.h$758$5_0$43 ==.
-;	../../fuzzy.h:758: result = LEVEL_HI;
+	C$fuzzy.h$911$5_0$47 ==.
+;	../../fuzzy.h:911: result = LEVEL_HI;
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1830,23 +1896,23 @@ _fuzzy_or_array:
 	mov	@r0,#0x80
 	inc	r0
 	mov	@r0,#0x3f
-	C$fuzzy.h$760$4_0$41 ==.
-;	../../fuzzy.h:760: break;
-	C$fuzzy.h$762$4_0$41 ==.
-;	../../fuzzy.h:762: default:
+	C$fuzzy.h$913$4_0$45 ==.
+;	../../fuzzy.h:913: break;
+	C$fuzzy.h$915$4_0$45 ==.
+;	../../fuzzy.h:915: default:
 	sjmp	00120$
 00115$:
-	C$fuzzy.h$763$4_0$41 ==.
-;	../../fuzzy.h:763: return LEVEL_LO;
+	C$fuzzy.h$916$4_0$45 ==.
+;	../../fuzzy.h:916: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
-	C$fuzzy.h$764$3_0$40 ==.
-;	../../fuzzy.h:764: }
+	C$fuzzy.h$917$3_0$44 ==.
+;	../../fuzzy.h:917: }
 	sjmp	00121$
 00120$:
-	C$fuzzy.h$732$2_0$39 ==.
-;	../../fuzzy.h:732: index++
+	C$fuzzy.h$885$2_0$43 ==.
+;	../../fuzzy.h:885: index++
 	mov	a,_bp
 	add	a,#0x0e
 	mov	r0,a
@@ -1857,8 +1923,8 @@ _fuzzy_or_array:
 00206$:
 	ljmp	00119$
 00117$:
-	C$fuzzy.h$768$1_0$36 ==.
-;	../../fuzzy.h:768: result
+	C$fuzzy.h$921$1_0$40 ==.
+;	../../fuzzy.h:921: result
 	mov	a,_bp
 	add	a,#0x0a
 	mov	r0,a
@@ -1871,11 +1937,11 @@ _fuzzy_or_array:
 	mov	a, @r0
 	lcall	_fuzzy_clamp
 00121$:
-	C$fuzzy.h$770$1_0$36 ==.
-;	../../fuzzy.h:770: }
+	C$fuzzy.h$923$1_0$40 ==.
+;	../../fuzzy.h:923: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$770$1_0$36 ==.
+	C$fuzzy.h$923$1_0$40 ==.
 	XG$fuzzy_or_array$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -1890,8 +1956,8 @@ _fuzzy_or_array:
 ;index         Allocated to registers r6 r7 
 ;------------------------------------------------------------
 	G$fuzzy_sugeno_weighted_average_array$0$0 ==.
-	C$fuzzy.h$781$1_0$45 ==.
-;	../../fuzzy.h:781: float fuzzy_sugeno_weighted_average_array(
+	C$fuzzy.h$934$1_0$49 ==.
+;	../../fuzzy.h:934: float fuzzy_sugeno_weighted_average_array(
 ;	-----------------------------------------
 ;	 function fuzzy_sugeno_weighted_average_array
 ;	-----------------------------------------
@@ -1903,8 +1969,8 @@ _fuzzy_sugeno_weighted_average_array:
 	mov	a,sp
 	add	a,#0x0c
 	mov	sp,a
-	C$fuzzy.h$794$1_0$45 ==.
-;	../../fuzzy.h:794: values == NULL ||
+	C$fuzzy.h$947$1_0$49 ==.
+;	../../fuzzy.h:947: values == NULL ||
 	mov	a,_bp
 	add	a,#0xfb
 	mov	r0,a
@@ -1912,30 +1978,30 @@ _fuzzy_sugeno_weighted_average_array:
 	inc	r0
 	orl	a,@r0
 	jz	00101$
-	C$fuzzy.h$795$1_0$45 ==.
-;	../../fuzzy.h:795: value_count == 0u ||
+	C$fuzzy.h$948$1_0$49 ==.
+;	../../fuzzy.h:948: value_count == 0u ||
 	mov	r0,_bp
 	inc	r0
 	mov	a,@r0
 	inc	r0
 	orl	a,@r0
 	jz	00101$
-	C$fuzzy.h$796$1_0$45 ==.
-;	../../fuzzy.h:796: value_count % 2u != 0u
+	C$fuzzy.h$949$1_0$49 ==.
+;	../../fuzzy.h:949: value_count % 2u != 0u
 	mov	r0,_bp
 	inc	r0
 	mov	a,@r0
 	jnb	acc.0,00102$
 00101$:
-	C$fuzzy.h$798$2_0$46 ==.
-;	../../fuzzy.h:798: return 0.0f;
+	C$fuzzy.h$951$2_0$50 ==.
+;	../../fuzzy.h:951: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00111$
 00102$:
-	C$fuzzy.h$802$1_0$45 ==.
-;	../../fuzzy.h:802: 0.0f;
+	C$fuzzy.h$955$1_0$49 ==.
+;	../../fuzzy.h:955: 0.0f;
 	mov	a,_bp
 	add	a,#0x03
 	mov	r0,a
@@ -1947,8 +2013,8 @@ _fuzzy_sugeno_weighted_average_array:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$805$1_0$45 ==.
-;	../../fuzzy.h:805: 0.0f;
+	C$fuzzy.h$958$1_0$49 ==.
+;	../../fuzzy.h:958: 0.0f;
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -1960,13 +2026,13 @@ _fuzzy_sugeno_weighted_average_array:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$808$1_0$45 ==.
-;	../../fuzzy.h:808: index = 0u;
+	C$fuzzy.h$961$1_0$49 ==.
+;	../../fuzzy.h:961: index = 0u;
 	mov	r6,a
 	mov	r7,a
 00109$:
-	C$fuzzy.h$809$2_0$47 ==.
-;	../../fuzzy.h:809: index < value_count;
+	C$fuzzy.h$962$2_0$51 ==.
+;	../../fuzzy.h:962: index < value_count;
 	mov	r0,_bp
 	inc	r0
 	clr	c
@@ -1978,8 +2044,8 @@ _fuzzy_sugeno_weighted_average_array:
 	jc	00147$
 	ljmp	00105$
 00147$:
-	C$fuzzy.h$814$3_0$48 ==.
-;	../../fuzzy.h:814: values[index]
+	C$fuzzy.h$967$3_0$52 ==.
+;	../../fuzzy.h:967: values[index]
 	mov	a,r6
 	add	a,r6
 	mov	r4,a
@@ -2036,8 +2102,8 @@ _fuzzy_sugeno_weighted_average_array:
 	mov	@r0,a
 	pop	ar6
 	pop	ar7
-	C$fuzzy.h$818$3_0$48 ==.
-;	../../fuzzy.h:818: values[index + 1u];
+	C$fuzzy.h$971$3_0$52 ==.
+;	../../fuzzy.h:971: values[index + 1u];
 	mov	a,#0x01
 	add	a, r6
 	mov	r4,a
@@ -2082,8 +2148,8 @@ _fuzzy_sugeno_weighted_average_array:
 	inc	dptr
 	lcall	__gptrget
 	mov	r2,a
-	C$fuzzy.h$823$1_0$45 ==.
-;	../../fuzzy.h:823: consequent;
+	C$fuzzy.h$976$1_0$49 ==.
+;	../../fuzzy.h:976: consequent;
 	push	ar7
 	push	ar6
 	push	ar4
@@ -2112,8 +2178,8 @@ _fuzzy_sugeno_weighted_average_array:
 	push	ar3
 	push	ar4
 	push	ar5
-	C$fuzzy.h$826$1_0$45 ==.
-;	../../fuzzy.h:826: firing_strength;
+	C$fuzzy.h$979$1_0$49 ==.
+;	../../fuzzy.h:979: firing_strength;
 	mov	a,_bp
 	add	a,#0x03
 	mov	r0,a
@@ -2153,8 +2219,8 @@ _fuzzy_sugeno_weighted_average_array:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$811$1_0$45 ==.
-;	../../fuzzy.h:811: ) {
+	C$fuzzy.h$964$1_0$49 ==.
+;	../../fuzzy.h:964: ) {
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -2190,8 +2256,8 @@ _fuzzy_sugeno_weighted_average_array:
 	mov	r7,a
 	ljmp	00109$
 00105$:
-	C$fuzzy.h$829$1_0$45 ==.
-;	../../fuzzy.h:829: if (firing_sum <= LEVEL_LO) {
+	C$fuzzy.h$982$1_0$49 ==.
+;	../../fuzzy.h:982: if (firing_sum <= LEVEL_LO) {
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -2217,15 +2283,15 @@ _fuzzy_sugeno_weighted_average_array:
 	add	a,#0xff
 	mov	b0,c
 	jc	00107$
-	C$fuzzy.h$830$2_0$49 ==.
-;	../../fuzzy.h:830: return 0.0f;
+	C$fuzzy.h$983$2_0$53 ==.
+;	../../fuzzy.h:983: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00111$
 00107$:
-	C$fuzzy.h$834$1_0$45 ==.
-;	../../fuzzy.h:834: firing_sum;
+	C$fuzzy.h$987$1_0$49 ==.
+;	../../fuzzy.h:987: firing_sum;
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -2263,11 +2329,11 @@ _fuzzy_sugeno_weighted_average_array:
 	mov	b, r6
 	mov	a, r7
 00111$:
-	C$fuzzy.h$835$1_0$45 ==.
-;	../../fuzzy.h:835: }
+	C$fuzzy.h$988$1_0$49 ==.
+;	../../fuzzy.h:988: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$835$1_0$45 ==.
+	C$fuzzy.h$988$1_0$49 ==.
 	XG$fuzzy_sugeno_weighted_average_array$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -2281,8 +2347,8 @@ _fuzzy_sugeno_weighted_average_array:
 ;index         Allocated to registers r4 r5 
 ;------------------------------------------------------------
 	G$fuzzy_sugeno_weighted_sum_array$0$0 ==.
-	C$fuzzy.h$845$1_0$51 ==.
-;	../../fuzzy.h:845: float fuzzy_sugeno_weighted_sum_array(
+	C$fuzzy.h$998$1_0$55 ==.
+;	../../fuzzy.h:998: float fuzzy_sugeno_weighted_sum_array(
 ;	-----------------------------------------
 ;	 function fuzzy_sugeno_weighted_sum_array
 ;	-----------------------------------------
@@ -2294,8 +2360,8 @@ _fuzzy_sugeno_weighted_sum_array:
 	mov	sp,a
 	mov	r6, dpl
 	mov	r7, dph
-	C$fuzzy.h$857$1_0$51 ==.
-;	../../fuzzy.h:857: values == NULL ||
+	C$fuzzy.h$1010$1_0$55 ==.
+;	../../fuzzy.h:1010: values == NULL ||
 	mov	a,_bp
 	add	a,#0xfb
 	mov	r0,a
@@ -2303,25 +2369,25 @@ _fuzzy_sugeno_weighted_sum_array:
 	inc	r0
 	orl	a,@r0
 	jz	00101$
-	C$fuzzy.h$858$1_0$51 ==.
-;	../../fuzzy.h:858: value_count == 0u ||
+	C$fuzzy.h$1011$1_0$55 ==.
+;	../../fuzzy.h:1011: value_count == 0u ||
 	mov	a,r6
 	orl	a,r7
 	jz	00101$
-	C$fuzzy.h$859$1_0$51 ==.
-;	../../fuzzy.h:859: value_count % 2u != 0u
+	C$fuzzy.h$1012$1_0$55 ==.
+;	../../fuzzy.h:1012: value_count % 2u != 0u
 	mov	a,r6
 	jnb	acc.0,00102$
 00101$:
-	C$fuzzy.h$861$2_0$52 ==.
-;	../../fuzzy.h:861: return 0.0f;
+	C$fuzzy.h$1014$2_0$56 ==.
+;	../../fuzzy.h:1014: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00109$
 00102$:
-	C$fuzzy.h$865$1_0$51 ==.
-;	../../fuzzy.h:865: 0.0f;
+	C$fuzzy.h$1018$1_0$55 ==.
+;	../../fuzzy.h:1018: 0.0f;
 	mov	r0,_bp
 	inc	r0
 	clr	a
@@ -2332,13 +2398,13 @@ _fuzzy_sugeno_weighted_sum_array:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$868$1_0$51 ==.
-;	../../fuzzy.h:868: index = 0u;
+	C$fuzzy.h$1021$1_0$55 ==.
+;	../../fuzzy.h:1021: index = 0u;
 	mov	r4,a
 	mov	r5,a
 00107$:
-	C$fuzzy.h$869$2_0$53 ==.
-;	../../fuzzy.h:869: index < value_count;
+	C$fuzzy.h$1022$2_0$57 ==.
+;	../../fuzzy.h:1022: index < value_count;
 	clr	c
 	mov	a,r4
 	subb	a,r6
@@ -2347,8 +2413,8 @@ _fuzzy_sugeno_weighted_sum_array:
 	jc	00139$
 	ljmp	00105$
 00139$:
-	C$fuzzy.h$874$1_0$51 ==.
-;	../../fuzzy.h:874: values[index]
+	C$fuzzy.h$1027$1_0$55 ==.
+;	../../fuzzy.h:1027: values[index]
 	push	ar6
 	push	ar7
 	mov	a,r4
@@ -2412,8 +2478,8 @@ _fuzzy_sugeno_weighted_sum_array:
 	pop	ar5
 	pop	ar6
 	pop	ar7
-	C$fuzzy.h$878$3_0$54 ==.
-;	../../fuzzy.h:878: values[index + 1u];
+	C$fuzzy.h$1031$3_0$58 ==.
+;	../../fuzzy.h:1031: values[index + 1u];
 	mov	a,#0x01
 	add	a, r4
 	mov	r6,a
@@ -2458,8 +2524,8 @@ _fuzzy_sugeno_weighted_sum_array:
 	inc	dptr
 	lcall	__gptrget
 	mov	r2,a
-	C$fuzzy.h$883$1_0$51 ==.
-;	../../fuzzy.h:883: consequent;
+	C$fuzzy.h$1036$1_0$55 ==.
+;	../../fuzzy.h:1036: consequent;
 	push	ar5
 	push	ar4
 	push	ar6
@@ -2494,8 +2560,8 @@ _fuzzy_sugeno_weighted_sum_array:
 	push	ar3
 	push	ar6
 	push	ar7
-	C$fuzzy.h$871$1_0$51 ==.
-;	../../fuzzy.h:871: ) {
+	C$fuzzy.h$1024$1_0$55 ==.
+;	../../fuzzy.h:1024: ) {
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -2532,8 +2598,8 @@ _fuzzy_sugeno_weighted_sum_array:
 	pop	ar6
 	ljmp	00107$
 00105$:
-	C$fuzzy.h$886$1_0$51 ==.
-;	../../fuzzy.h:886: return weighted_sum;
+	C$fuzzy.h$1039$1_0$55 ==.
+;	../../fuzzy.h:1039: return weighted_sum;
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -2544,11 +2610,11 @@ _fuzzy_sugeno_weighted_sum_array:
 	inc	r0
 	mov	a, @r0
 00109$:
-	C$fuzzy.h$887$1_0$51 ==.
-;	../../fuzzy.h:887: }
+	C$fuzzy.h$1040$1_0$55 ==.
+;	../../fuzzy.h:1040: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$887$1_0$51 ==.
+	C$fuzzy.h$1040$1_0$55 ==.
 	XG$fuzzy_sugeno_weighted_sum_array$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -2565,8 +2631,8 @@ _fuzzy_sugeno_weighted_sum_array:
 ;sloc1         Allocated to stack - _bp +1 +4 
 ;------------------------------------------------------------
 	G$fuzzy_ramp$0$0 ==.
-	C$fuzzy.h$893$1_0$56 ==.
-;	../../fuzzy.h:893: float fuzzy_ramp(
+	C$fuzzy.h$1046$1_0$60 ==.
+;	../../fuzzy.h:1046: float fuzzy_ramp(
 ;	-----------------------------------------
 ;	 function fuzzy_ramp
 ;	-----------------------------------------
@@ -2580,8 +2646,8 @@ _fuzzy_ramp:
 	mov	a,sp
 	add	a,#0x08
 	mov	sp,a
-	C$fuzzy.h$904$1_0$56 ==.
-;	../../fuzzy.h:904: if (lower_boundary >= upper_boundary) {
+	C$fuzzy.h$1057$1_0$60 ==.
+;	../../fuzzy.h:1057: if (lower_boundary >= upper_boundary) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -2616,15 +2682,15 @@ _fuzzy_ramp:
 	add	a,#0xff
 	mov	b0,c
 	jc	00102$
-	C$fuzzy.h$905$2_0$57 ==.
-;	../../fuzzy.h:905: return LEVEL_LO;
+	C$fuzzy.h$1058$2_0$61 ==.
+;	../../fuzzy.h:1058: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00109$
 00102$:
-	C$fuzzy.h$908$1_0$56 ==.
-;	../../fuzzy.h:908: if (value <= lower_boundary) {
+	C$fuzzy.h$1061$1_0$60 ==.
+;	../../fuzzy.h:1061: if (value <= lower_boundary) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -2659,15 +2725,15 @@ _fuzzy_ramp:
 	add	a,#0xff
 	mov	b0,c
 	jc	00107$
-	C$fuzzy.h$910$2_0$58 ==.
-;	../../fuzzy.h:910: ramp_up
+	C$fuzzy.h$1063$2_0$62 ==.
+;	../../fuzzy.h:1063: ramp_up
 	mov	a,_bp
 	add	a,#0xf5
 	mov	r0,a
 	mov	a,@r0
 	jz	00111$
-	C$fuzzy.h$911$2_0$58 ==.
-;	../../fuzzy.h:911: ? LEVEL_LO
+	C$fuzzy.h$1064$2_0$62 ==.
+;	../../fuzzy.h:1064: ? LEVEL_LO
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -2681,8 +2747,8 @@ _fuzzy_ramp:
 	mov	@r0,a
 	sjmp	00112$
 00111$:
-	C$fuzzy.h$912$2_0$58 ==.
-;	../../fuzzy.h:912: : LEVEL_HI;
+	C$fuzzy.h$1065$2_0$62 ==.
+;	../../fuzzy.h:1065: : LEVEL_HI;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -2707,8 +2773,8 @@ _fuzzy_ramp:
 	mov	ar4,@r0
 	ljmp	00108$
 00107$:
-	C$fuzzy.h$914$1_0$56 ==.
-;	../../fuzzy.h:914: else if (value >= upper_boundary) {
+	C$fuzzy.h$1067$1_0$60 ==.
+;	../../fuzzy.h:1067: else if (value >= upper_boundary) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -2749,15 +2815,15 @@ _fuzzy_ramp:
 	add	a,#0xff
 	mov	b0,c
 	jc	00104$
-	C$fuzzy.h$916$2_0$59 ==.
-;	../../fuzzy.h:916: ramp_up
+	C$fuzzy.h$1069$2_0$63 ==.
+;	../../fuzzy.h:1069: ramp_up
 	mov	a,_bp
 	add	a,#0xf5
 	mov	r0,a
 	mov	a,@r0
 	jz	00113$
-	C$fuzzy.h$917$2_0$59 ==.
-;	../../fuzzy.h:917: ? LEVEL_HI
+	C$fuzzy.h$1070$2_0$63 ==.
+;	../../fuzzy.h:1070: ? LEVEL_HI
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -2771,8 +2837,8 @@ _fuzzy_ramp:
 	mov	@r0,#0x3f
 	sjmp	00114$
 00113$:
-	C$fuzzy.h$918$2_0$59 ==.
-;	../../fuzzy.h:918: : LEVEL_LO;
+	C$fuzzy.h$1071$2_0$63 ==.
+;	../../fuzzy.h:1071: : LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -2797,8 +2863,8 @@ _fuzzy_ramp:
 	mov	ar4,@r0
 	ljmp	00108$
 00104$:
-	C$fuzzy.h$922$1_0$56 ==.
-;	../../fuzzy.h:922: (value - lower_boundary) /
+	C$fuzzy.h$1075$1_0$60 ==.
+;	../../fuzzy.h:1075: (value - lower_boundary) /
 	push	ar7
 	push	ar6
 	push	ar5
@@ -2807,8 +2873,8 @@ _fuzzy_ramp:
 	push	ar6
 	push	ar5
 	push	ar4
-	C$fuzzy.h$923$1_0$56 ==.
-;	../../fuzzy.h:923: (upper_boundary - lower_boundary);
+	C$fuzzy.h$1076$1_0$60 ==.
+;	../../fuzzy.h:1076: (upper_boundary - lower_boundary);
 	mov	a,_bp
 	add	a,#0xf6
 	mov	r0,a
@@ -2854,8 +2920,8 @@ _fuzzy_ramp:
 	push	ar5
 	push	ar6
 	push	ar7
-	C$fuzzy.h$926$1_0$56 ==.
-;	../../fuzzy.h:926: ramp_up
+	C$fuzzy.h$1079$1_0$60 ==.
+;	../../fuzzy.h:1079: ramp_up
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -2878,8 +2944,8 @@ _fuzzy_ramp:
 	mov	r0,a
 	mov	a,@r0
 	jz	00115$
-	C$fuzzy.h$927$2_0$60 ==.
-;	../../fuzzy.h:927: ? normalized
+	C$fuzzy.h$1080$2_0$64 ==.
+;	../../fuzzy.h:1080: ? normalized
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -2892,8 +2958,8 @@ _fuzzy_ramp:
 	mov	@r0,ar7
 	sjmp	00116$
 00115$:
-	C$fuzzy.h$928$1_0$56 ==.
-;	../../fuzzy.h:928: : LEVEL_HI - normalized;
+	C$fuzzy.h$1081$1_0$60 ==.
+;	../../fuzzy.h:1081: : LEVEL_HI - normalized;
 	push	ar4
 	push	ar5
 	push	ar6
@@ -2928,8 +2994,8 @@ _fuzzy_ramp:
 	inc	r0
 	mov	ar4,@r0
 00108$:
-	C$fuzzy.h$932$1_0$56 ==.
-;	../../fuzzy.h:932: result,
+	C$fuzzy.h$1085$1_0$60 ==.
+;	../../fuzzy.h:1085: result,
 	mov	a,_bp
 	add	a,#0xf4
 	mov	r0,a
@@ -2950,11 +3016,11 @@ _fuzzy_ramp:
 	mov	b, r6
 	mov	a, r7
 00109$:
-	C$fuzzy.h$935$1_0$56 ==.
-;	../../fuzzy.h:935: }
+	C$fuzzy.h$1088$1_0$60 ==.
+;	../../fuzzy.h:1088: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$935$1_0$56 ==.
+	C$fuzzy.h$1088$1_0$60 ==.
 	XG$fuzzy_ramp$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -2978,8 +3044,8 @@ _fuzzy_ramp:
 ;sloc4         Allocated to stack - _bp +13 +4 
 ;------------------------------------------------------------
 	G$fuzzy_function_array$0$0 ==.
-	C$fuzzy.h$972$1_0$62 ==.
-;	../../fuzzy.h:972: float fuzzy_function_array(
+	C$fuzzy.h$1128$1_0$66 ==.
+;	../../fuzzy.h:1128: float fuzzy_function_array(
 ;	-----------------------------------------
 ;	 function fuzzy_function_array
 ;	-----------------------------------------
@@ -2990,8 +3056,8 @@ _fuzzy_function_array:
 	add	a,#0x1c
 	mov	sp,a
 	mov	r7, dpl
-	C$fuzzy.h$994$1_0$62 ==.
-;	../../fuzzy.h:994: if (parameters == NULL) {
+	C$fuzzy.h$1150$1_0$66 ==.
+;	../../fuzzy.h:1150: if (parameters == NULL) {
 	mov	a,_bp
 	add	a,#0xf4
 	mov	r0,a
@@ -2999,15 +3065,15 @@ _fuzzy_function_array:
 	inc	r0
 	orl	a,@r0
 	jnz	00102$
-	C$fuzzy.h$995$2_0$63 ==.
-;	../../fuzzy.h:995: return LEVEL_LO;
+	C$fuzzy.h$1151$2_0$67 ==.
+;	../../fuzzy.h:1151: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00145$
 00102$:
-	C$fuzzy.h$998$1_0$62 ==.
-;	../../fuzzy.h:998: switch (shape) {
+	C$fuzzy.h$1154$1_0$66 ==.
+;	../../fuzzy.h:1154: switch (shape) {
 	mov	a,r7
 	add	a,#0xff - 0x07
 	jnc	00267$
@@ -3041,11 +3107,11 @@ _fuzzy_function_array:
 	.db	00142$>>8
 	.db	00142$>>8
 	.db	00142$>>8
-	C$fuzzy.h$999$2_0$64 ==.
-;	../../fuzzy.h:999: case FUZZY_SHAPE_RAMP:
+	C$fuzzy.h$1155$2_0$68 ==.
+;	../../fuzzy.h:1155: case FUZZY_SHAPE_RAMP:
 00103$:
-	C$fuzzy.h$1000$2_0$64 ==.
-;	../../fuzzy.h:1000: if (parameter_count != 3u) {
+	C$fuzzy.h$1156$2_0$68 ==.
+;	../../fuzzy.h:1156: if (parameter_count != 3u) {
 	mov	a,_bp
 	add	a,#0xf7
 	mov	r0,a
@@ -3054,15 +3120,15 @@ _fuzzy_function_array:
 	cjne	@r0,#0x00,00270$
 	sjmp	00105$
 00270$:
-	C$fuzzy.h$1001$3_0$65 ==.
-;	../../fuzzy.h:1001: return LEVEL_LO;
+	C$fuzzy.h$1157$3_0$69 ==.
+;	../../fuzzy.h:1157: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00145$
 00105$:
-	C$fuzzy.h$1004$2_0$64 ==.
-;	../../fuzzy.h:1004: parameter_1 = parameters[0];
+	C$fuzzy.h$1160$2_0$68 ==.
+;	../../fuzzy.h:1160: parameter_1 = parameters[0];
 	mov	a,_bp
 	add	a,#0xf4
 	mov	r0,a
@@ -3090,8 +3156,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1005$2_0$64 ==.
-;	../../fuzzy.h:1005: parameter_2 = parameters[1];
+	C$fuzzy.h$1161$2_0$68 ==.
+;	../../fuzzy.h:1161: parameter_2 = parameters[1];
 	mov	a,#0x04
 	add	a, r2
 	mov	r5,a
@@ -3119,8 +3185,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1006$2_0$64 ==.
-;	../../fuzzy.h:1006: ramp_up = parameters[2] != 0.0f;
+	C$fuzzy.h$1162$2_0$68 ==.
+;	../../fuzzy.h:1162: ramp_up = parameters[2] != 0.0f;
 	mov	a,#0x08
 	add	a, r2
 	mov	r2,a
@@ -3157,8 +3223,8 @@ _fuzzy_function_array:
 	clr	a
 	rlc	a
 	mov	r7,a
-	C$fuzzy.h$1009$2_0$64 ==.
-;	../../fuzzy.h:1009: parameter_1,
+	C$fuzzy.h$1165$2_0$68 ==.
+;	../../fuzzy.h:1165: parameter_1,
 	mov	a,_bp
 	add	a,#0xf9
 	mov	r0,a
@@ -3215,11 +3281,11 @@ _fuzzy_function_array:
 	mov	b, r6
 	mov	a, r7
 	ljmp	00145$
-	C$fuzzy.h$1016$2_0$64 ==.
-;	../../fuzzy.h:1016: case FUZZY_SHAPE_TRIANGLE:
+	C$fuzzy.h$1172$2_0$68 ==.
+;	../../fuzzy.h:1172: case FUZZY_SHAPE_TRIANGLE:
 00106$:
-	C$fuzzy.h$1017$2_0$64 ==.
-;	../../fuzzy.h:1017: if (parameter_count != 3u) {
+	C$fuzzy.h$1173$2_0$68 ==.
+;	../../fuzzy.h:1173: if (parameter_count != 3u) {
 	mov	a,_bp
 	add	a,#0xf7
 	mov	r0,a
@@ -3228,15 +3294,15 @@ _fuzzy_function_array:
 	cjne	@r0,#0x00,00272$
 	sjmp	00108$
 00272$:
-	C$fuzzy.h$1018$3_0$66 ==.
-;	../../fuzzy.h:1018: return LEVEL_LO;
+	C$fuzzy.h$1174$3_0$70 ==.
+;	../../fuzzy.h:1174: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00145$
 00108$:
-	C$fuzzy.h$1021$2_0$64 ==.
-;	../../fuzzy.h:1021: parameter_1 = parameters[0];
+	C$fuzzy.h$1177$2_0$68 ==.
+;	../../fuzzy.h:1177: parameter_1 = parameters[0];
 	mov	a,_bp
 	add	a,#0xf4
 	mov	r0,a
@@ -3265,8 +3331,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1022$2_0$64 ==.
-;	../../fuzzy.h:1022: parameter_2 = parameters[1];
+	C$fuzzy.h$1178$2_0$68 ==.
+;	../../fuzzy.h:1178: parameter_2 = parameters[1];
 	mov	a,#0x04
 	add	a, r2
 	mov	r7,a
@@ -3294,8 +3360,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1023$2_0$64 ==.
-;	../../fuzzy.h:1023: parameter_3 = parameters[2];
+	C$fuzzy.h$1179$2_0$68 ==.
+;	../../fuzzy.h:1179: parameter_3 = parameters[2];
 	mov	a,#0x08
 	add	a, r2
 	mov	r2,a
@@ -3317,8 +3383,8 @@ _fuzzy_function_array:
 	inc	dptr
 	lcall	__gptrget
 	mov	r4,a
-	C$fuzzy.h$1026$1_0$62 ==.
-;	../../fuzzy.h:1026: parameter_1 >= parameter_2 ||
+	C$fuzzy.h$1182$1_0$66 ==.
+;	../../fuzzy.h:1182: parameter_1 >= parameter_2 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3361,8 +3427,8 @@ _fuzzy_function_array:
 	jc	00273$
 	ljmp	00115$
 00273$:
-	C$fuzzy.h$1027$1_0$62 ==.
-;	../../fuzzy.h:1027: parameter_2 >= parameter_3 ||
+	C$fuzzy.h$1183$1_0$66 ==.
+;	../../fuzzy.h:1183: parameter_2 >= parameter_3 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3393,8 +3459,8 @@ _fuzzy_function_array:
 	add	a,#0xff
 	mov	b0,c
 	jnc	00115$
-	C$fuzzy.h$1028$1_0$62 ==.
-;	../../fuzzy.h:1028: value <= parameter_1 ||
+	C$fuzzy.h$1184$1_0$66 ==.
+;	../../fuzzy.h:1184: value <= parameter_1 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3435,8 +3501,8 @@ _fuzzy_function_array:
 	add	a,#0xff
 	mov	b0,c
 	jnc	00115$
-	C$fuzzy.h$1030$1_0$62 ==.
-;	../../fuzzy.h:1030: ) {
+	C$fuzzy.h$1186$1_0$66 ==.
+;	../../fuzzy.h:1186: ) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3468,8 +3534,8 @@ _fuzzy_function_array:
 	mov	b0,c
 	jc	00116$
 00115$:
-	C$fuzzy.h$1031$3_0$67 ==.
-;	../../fuzzy.h:1031: result = LEVEL_LO;
+	C$fuzzy.h$1187$3_0$71 ==.
+;	../../fuzzy.h:1187: result = LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -3483,8 +3549,8 @@ _fuzzy_function_array:
 	mov	@r0,a
 	ljmp	00144$
 00116$:
-	C$fuzzy.h$1033$1_0$62 ==.
-;	../../fuzzy.h:1033: else if (value == parameter_2) {
+	C$fuzzy.h$1189$1_0$66 ==.
+;	../../fuzzy.h:1189: else if (value == parameter_2) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3524,8 +3590,8 @@ _fuzzy_function_array:
 	pop	ar7
 	mov	a,r3
 	jz	00113$
-	C$fuzzy.h$1034$3_0$68 ==.
-;	../../fuzzy.h:1034: result = LEVEL_HI;
+	C$fuzzy.h$1190$3_0$72 ==.
+;	../../fuzzy.h:1190: result = LEVEL_HI;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -3539,8 +3605,8 @@ _fuzzy_function_array:
 	mov	@r0,#0x3f
 	ljmp	00144$
 00113$:
-	C$fuzzy.h$1036$1_0$62 ==.
-;	../../fuzzy.h:1036: else if (value < parameter_2) {
+	C$fuzzy.h$1192$1_0$66 ==.
+;	../../fuzzy.h:1192: else if (value < parameter_2) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3582,8 +3648,8 @@ _fuzzy_function_array:
 	jnz	00278$
 	ljmp	00110$
 00278$:
-	C$fuzzy.h$1038$1_0$62 ==.
-;	../../fuzzy.h:1038: (value - parameter_1) /
+	C$fuzzy.h$1194$1_0$66 ==.
+;	../../fuzzy.h:1194: (value - parameter_1) /
 	mov	a,_bp
 	add	a,#0x11
 	mov	r0,a
@@ -3598,8 +3664,8 @@ _fuzzy_function_array:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$1039$1_0$62 ==.
-;	../../fuzzy.h:1039: (parameter_2 - parameter_1);
+	C$fuzzy.h$1195$1_0$66 ==.
+;	../../fuzzy.h:1195: (parameter_2 - parameter_1);
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -3700,8 +3766,8 @@ _fuzzy_function_array:
 	mov	sp,a
 	ljmp	00144$
 00110$:
-	C$fuzzy.h$1043$1_0$62 ==.
-;	../../fuzzy.h:1043: (parameter_3 - value) /
+	C$fuzzy.h$1199$1_0$66 ==.
+;	../../fuzzy.h:1199: (parameter_3 - value) /
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3720,8 +3786,8 @@ _fuzzy_function_array:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$1044$1_0$62 ==.
-;	../../fuzzy.h:1044: (parameter_3 - parameter_2);
+	C$fuzzy.h$1200$1_0$66 ==.
+;	../../fuzzy.h:1200: (parameter_3 - parameter_2);
 	mov	dpl, r5
 	mov	dph, r6
 	mov	b, r7
@@ -3773,8 +3839,8 @@ _fuzzy_function_array:
 	push	ar5
 	push	ar6
 	push	ar7
-	C$fuzzy.h$1046$1_0$62 ==.
-;	../../fuzzy.h:1046: break;
+	C$fuzzy.h$1202$1_0$66 ==.
+;	../../fuzzy.h:1202: break;
 	mov	r0,_bp
 	inc	r0
 	mov	dpl, @r0
@@ -3800,11 +3866,11 @@ _fuzzy_function_array:
 	add	a,#0xfc
 	mov	sp,a
 	ljmp	00144$
-	C$fuzzy.h$1048$2_0$64 ==.
-;	../../fuzzy.h:1048: case FUZZY_SHAPE_TRAPEZOID:
+	C$fuzzy.h$1204$2_0$68 ==.
+;	../../fuzzy.h:1204: case FUZZY_SHAPE_TRAPEZOID:
 00121$:
-	C$fuzzy.h$1049$2_0$64 ==.
-;	../../fuzzy.h:1049: if (parameter_count != 4u) {
+	C$fuzzy.h$1205$2_0$68 ==.
+;	../../fuzzy.h:1205: if (parameter_count != 4u) {
 	mov	a,_bp
 	add	a,#0xf7
 	mov	r0,a
@@ -3813,15 +3879,15 @@ _fuzzy_function_array:
 	cjne	@r0,#0x00,00279$
 	sjmp	00123$
 00279$:
-	C$fuzzy.h$1050$3_0$71 ==.
-;	../../fuzzy.h:1050: return LEVEL_LO;
+	C$fuzzy.h$1206$3_0$75 ==.
+;	../../fuzzy.h:1206: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00145$
 00123$:
-	C$fuzzy.h$1053$2_0$64 ==.
-;	../../fuzzy.h:1053: parameter_1 = parameters[0];
+	C$fuzzy.h$1209$2_0$68 ==.
+;	../../fuzzy.h:1209: parameter_1 = parameters[0];
 	mov	a,_bp
 	add	a,#0xf4
 	mov	r0,a
@@ -3850,8 +3916,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1054$2_0$64 ==.
-;	../../fuzzy.h:1054: parameter_2 = parameters[1];
+	C$fuzzy.h$1210$2_0$68 ==.
+;	../../fuzzy.h:1210: parameter_2 = parameters[1];
 	mov	a,#0x04
 	add	a, r5
 	mov	r2,a
@@ -3878,8 +3944,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1055$2_0$64 ==.
-;	../../fuzzy.h:1055: parameter_3 = parameters[2];
+	C$fuzzy.h$1211$2_0$68 ==.
+;	../../fuzzy.h:1211: parameter_3 = parameters[2];
 	mov	a,#0x08
 	add	a, r5
 	mov	r2,a
@@ -3907,8 +3973,8 @@ _fuzzy_function_array:
 	lcall	__gptrget
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1056$2_0$64 ==.
-;	../../fuzzy.h:1056: parameter_4 = parameters[3];
+	C$fuzzy.h$1212$2_0$68 ==.
+;	../../fuzzy.h:1212: parameter_4 = parameters[3];
 	mov	a,#0x0c
 	add	a, r5
 	mov	r5,a
@@ -3929,8 +3995,8 @@ _fuzzy_function_array:
 	inc	dptr
 	lcall	__gptrget
 	mov	r4,a
-	C$fuzzy.h$1059$1_0$62 ==.
-;	../../fuzzy.h:1059: parameter_1 >= parameter_2 ||
+	C$fuzzy.h$1215$1_0$66 ==.
+;	../../fuzzy.h:1215: parameter_1 >= parameter_2 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -3972,8 +4038,8 @@ _fuzzy_function_array:
 	jc	00280$
 	ljmp	00131$
 00280$:
-	C$fuzzy.h$1060$1_0$62 ==.
-;	../../fuzzy.h:1060: parameter_2 > parameter_3 ||
+	C$fuzzy.h$1216$1_0$66 ==.
+;	../../fuzzy.h:1216: parameter_2 > parameter_3 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4014,8 +4080,8 @@ _fuzzy_function_array:
 	jz	00281$
 	ljmp	00131$
 00281$:
-	C$fuzzy.h$1061$1_0$62 ==.
-;	../../fuzzy.h:1061: parameter_3 >= parameter_4 ||
+	C$fuzzy.h$1217$1_0$66 ==.
+;	../../fuzzy.h:1217: parameter_3 >= parameter_4 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4046,8 +4112,8 @@ _fuzzy_function_array:
 	add	a,#0xff
 	mov	b0,c
 	jnc	00131$
-	C$fuzzy.h$1062$1_0$62 ==.
-;	../../fuzzy.h:1062: value <= parameter_1 ||
+	C$fuzzy.h$1218$1_0$66 ==.
+;	../../fuzzy.h:1218: value <= parameter_1 ||
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4088,8 +4154,8 @@ _fuzzy_function_array:
 	add	a,#0xff
 	mov	b0,c
 	jnc	00131$
-	C$fuzzy.h$1064$1_0$62 ==.
-;	../../fuzzy.h:1064: ) {
+	C$fuzzy.h$1220$1_0$66 ==.
+;	../../fuzzy.h:1220: ) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4121,8 +4187,8 @@ _fuzzy_function_array:
 	mov	b0,c
 	jc	00132$
 00131$:
-	C$fuzzy.h$1065$3_0$72 ==.
-;	../../fuzzy.h:1065: result = LEVEL_LO;
+	C$fuzzy.h$1221$3_0$76 ==.
+;	../../fuzzy.h:1221: result = LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -4136,8 +4202,8 @@ _fuzzy_function_array:
 	mov	@r0,a
 	ljmp	00144$
 00132$:
-	C$fuzzy.h$1068$1_0$62 ==.
-;	../../fuzzy.h:1068: value >= parameter_2 &&
+	C$fuzzy.h$1224$1_0$66 ==.
+;	../../fuzzy.h:1224: value >= parameter_2 &&
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4177,8 +4243,8 @@ _fuzzy_function_array:
 	add	a,#0xff
 	mov	b0,c
 	jc	00128$
-	C$fuzzy.h$1070$1_0$62 ==.
-;	../../fuzzy.h:1070: ) {
+	C$fuzzy.h$1226$1_0$66 ==.
+;	../../fuzzy.h:1226: ) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4219,8 +4285,8 @@ _fuzzy_function_array:
 	add	a,#0xff
 	mov	b0,c
 	jc	00128$
-	C$fuzzy.h$1071$3_0$73 ==.
-;	../../fuzzy.h:1071: result = LEVEL_HI;
+	C$fuzzy.h$1227$3_0$77 ==.
+;	../../fuzzy.h:1227: result = LEVEL_HI;
 	mov	a,_bp
 	add	a,#0x05
 	mov	r0,a
@@ -4234,8 +4300,8 @@ _fuzzy_function_array:
 	mov	@r0,#0x3f
 	ljmp	00144$
 00128$:
-	C$fuzzy.h$1073$1_0$62 ==.
-;	../../fuzzy.h:1073: else if (value < parameter_2) {
+	C$fuzzy.h$1229$1_0$66 ==.
+;	../../fuzzy.h:1229: else if (value < parameter_2) {
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4276,8 +4342,8 @@ _fuzzy_function_array:
 	jnz	00287$
 	ljmp	00125$
 00287$:
-	C$fuzzy.h$1075$1_0$62 ==.
-;	../../fuzzy.h:1075: (value - parameter_1) /
+	C$fuzzy.h$1231$1_0$66 ==.
+;	../../fuzzy.h:1231: (value - parameter_1) /
 	mov	a,_bp
 	add	a,#0x09
 	mov	r0,a
@@ -4292,8 +4358,8 @@ _fuzzy_function_array:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$1076$1_0$62 ==.
-;	../../fuzzy.h:1076: (parameter_2 - parameter_1);
+	C$fuzzy.h$1232$1_0$66 ==.
+;	../../fuzzy.h:1232: (parameter_2 - parameter_1);
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -4393,8 +4459,8 @@ _fuzzy_function_array:
 	mov	sp,a
 	ljmp	00144$
 00125$:
-	C$fuzzy.h$1080$1_0$62 ==.
-;	../../fuzzy.h:1080: (parameter_4 - value) /
+	C$fuzzy.h$1236$1_0$66 ==.
+;	../../fuzzy.h:1236: (parameter_4 - value) /
 	push	ar7
 	push	ar6
 	push	ar5
@@ -4413,8 +4479,8 @@ _fuzzy_function_array:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$1081$1_0$62 ==.
-;	../../fuzzy.h:1081: (parameter_4 - parameter_3);
+	C$fuzzy.h$1237$1_0$66 ==.
+;	../../fuzzy.h:1237: (parameter_4 - parameter_3);
 	mov	dpl, r5
 	mov	dph, r6
 	mov	b, r7
@@ -4468,8 +4534,8 @@ _fuzzy_function_array:
 	push	ar5
 	push	ar6
 	push	ar7
-	C$fuzzy.h$1083$1_0$62 ==.
-;	../../fuzzy.h:1083: break;
+	C$fuzzy.h$1239$1_0$66 ==.
+;	../../fuzzy.h:1239: break;
 	mov	a,_bp
 	add	a,#0x0d
 	mov	r0,a
@@ -4495,30 +4561,30 @@ _fuzzy_function_array:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-	C$fuzzy.h$1229$2_0$64 ==.
-;	../../fuzzy.h:1229: case FUZZY_SHAPE_SIGMOID:
+	C$fuzzy.h$1385$2_0$68 ==.
+;	../../fuzzy.h:1385: case FUZZY_SHAPE_SIGMOID:
 	sjmp	00144$
 00142$:
-	C$fuzzy.h$1230$2_0$64 ==.
-;	../../fuzzy.h:1230: return LEVEL_LO;
+	C$fuzzy.h$1386$2_0$68 ==.
+;	../../fuzzy.h:1386: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
-	C$fuzzy.h$1234$2_0$64 ==.
-;	../../fuzzy.h:1234: default:
+	C$fuzzy.h$1390$2_0$68 ==.
+;	../../fuzzy.h:1390: default:
 	sjmp	00145$
 00143$:
-	C$fuzzy.h$1235$2_0$64 ==.
-;	../../fuzzy.h:1235: return LEVEL_LO;
+	C$fuzzy.h$1391$2_0$68 ==.
+;	../../fuzzy.h:1391: return LEVEL_LO;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
-	C$fuzzy.h$1236$1_0$62 ==.
-;	../../fuzzy.h:1236: }
+	C$fuzzy.h$1392$1_0$66 ==.
+;	../../fuzzy.h:1392: }
 	sjmp	00145$
 00144$:
-	C$fuzzy.h$1239$1_0$62 ==.
-;	../../fuzzy.h:1239: result,
+	C$fuzzy.h$1395$1_0$66 ==.
+;	../../fuzzy.h:1395: result,
 	mov	a,_bp
 	add	a,#0xf9
 	mov	r0,a
@@ -4545,11 +4611,11 @@ _fuzzy_function_array:
 	mov	b, r6
 	mov	a, r7
 00145$:
-	C$fuzzy.h$1242$1_0$62 ==.
-;	../../fuzzy.h:1242: }
+	C$fuzzy.h$1398$1_0$66 ==.
+;	../../fuzzy.h:1398: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$1242$1_0$62 ==.
+	C$fuzzy.h$1398$1_0$66 ==.
 	XG$fuzzy_function_array$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -4558,8 +4624,8 @@ _fuzzy_function_array:
 ;rules         Allocated to registers r5 r6 r7 
 ;------------------------------------------------------------
 	G$fuzzy_rules_create$0$0 ==.
-	C$fuzzy.h$1245$1_0$77 ==.
-;	../../fuzzy.h:1245: void fuzzy_rules_create(
+	C$fuzzy.h$1401$1_0$81 ==.
+;	../../fuzzy.h:1401: void fuzzy_rules_create(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_create
 ;	-----------------------------------------
@@ -4567,18 +4633,18 @@ _fuzzy_rules_create:
 	mov	r5, dpl
 	mov	r6, dph
 	mov	r7, b
-	C$fuzzy.h$1249$1_0$77 ==.
-;	../../fuzzy.h:1249: if (rules == NULL) {
+	C$fuzzy.h$1405$1_0$81 ==.
+;	../../fuzzy.h:1405: if (rules == NULL) {
 	mov	a,r5
 	orl	a,r6
 	jnz	00102$
-	C$fuzzy.h$1250$2_0$78 ==.
-;	../../fuzzy.h:1250: return;
+	C$fuzzy.h$1406$2_0$82 ==.
+;	../../fuzzy.h:1406: return;
 	sjmp	00103$
 00102$:
-	C$fuzzy.h$1253$1_0$77 ==.
-;	../../fuzzy.h:1253: rules->count = 0;
-	mov	a,#0x48
+	C$fuzzy.h$1409$1_0$81 ==.
+;	../../fuzzy.h:1409: rules->count = 0;
+	mov	a,#0x90
 	add	a, r5
 	mov	r5,a
 	clr	a
@@ -4592,9 +4658,9 @@ _fuzzy_rules_create:
 	inc	dptr
 	lcall	__gptrput
 00103$:
-	C$fuzzy.h$1254$1_0$77 ==.
-;	../../fuzzy.h:1254: }
-	C$fuzzy.h$1254$1_0$77 ==.
+	C$fuzzy.h$1410$1_0$81 ==.
+;	../../fuzzy.h:1410: }
+	C$fuzzy.h$1410$1_0$81 ==.
 	XG$fuzzy_rules_create$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -4611,8 +4677,8 @@ _fuzzy_rules_create:
 ;sloc3         Allocated to stack - _bp +9 +3 
 ;------------------------------------------------------------
 	G$fuzzy_rules_add$0$0 ==.
-	C$fuzzy.h$1257$1_0$80 ==.
-;	../../fuzzy.h:1257: bool fuzzy_rules_add(
+	C$fuzzy.h$1413$1_0$84 ==.
+;	../../fuzzy.h:1413: bool fuzzy_rules_add(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_add
 ;	-----------------------------------------
@@ -4625,13 +4691,13 @@ _fuzzy_rules_add:
 	mov	r2, dpl
 	mov	r3, dph
 	mov	r4, b
-	C$fuzzy.h$1267$1_0$80 ==.
-;	../../fuzzy.h:1267: rules == NULL ||
+	C$fuzzy.h$1423$1_0$84 ==.
+;	../../fuzzy.h:1423: rules == NULL ||
 	mov	a,r2
 	orl	a,r3
 	jz	00101$
-	C$fuzzy.h$1268$1_0$80 ==.
-;	../../fuzzy.h:1268: output_function == NULL
+	C$fuzzy.h$1424$1_0$84 ==.
+;	../../fuzzy.h:1424: output_function == NULL
 	mov	a,_bp
 	add	a,#0xf5
 	mov	r0,a
@@ -4640,17 +4706,17 @@ _fuzzy_rules_add:
 	orl	a,@r0
 	jnz	00102$
 00101$:
-	C$fuzzy.h$1270$2_0$81 ==.
-;	../../fuzzy.h:1270: return false;
+	C$fuzzy.h$1426$2_0$85 ==.
+;	../../fuzzy.h:1426: return false;
 	mov	dpl, #0x00
 	ljmp	00106$
 00102$:
-	C$fuzzy.h$1273$1_0$80 ==.
-;	../../fuzzy.h:1273: if (rules->count >= FUZZY_MAX_RULES) {
+	C$fuzzy.h$1429$1_0$84 ==.
+;	../../fuzzy.h:1429: if (rules->count >= FUZZY_MAX_RULES) {
 	mov	a,_bp
 	add	a,#0x09
 	mov	r0,a
-	mov	a,#0x48
+	mov	a,#0x90
 	add	a, r2
 	mov	@r0,a
 	clr	a
@@ -4674,17 +4740,17 @@ _fuzzy_rules_add:
 	mov	r6,a
 	clr	c
 	mov	a,r7
-	subb	a,#0x08
+	subb	a,#0x10
 	mov	a,r6
 	subb	a,#0x00
 	jc	00105$
-	C$fuzzy.h$1274$2_0$82 ==.
-;	../../fuzzy.h:1274: return false;
+	C$fuzzy.h$1430$2_0$86 ==.
+;	../../fuzzy.h:1430: return false;
 	mov	dpl, #0x00
 	ljmp	00106$
 00105$:
-	C$fuzzy.h$1280$1_0$80 ==.
-;	../../fuzzy.h:1280: rules->rules[index].name =
+	C$fuzzy.h$1436$1_0$84 ==.
+;	../../fuzzy.h:1436: rules->rules[index].name =
 	push	ar4
 	push	ar3
 	push	ar2
@@ -4728,8 +4794,8 @@ _fuzzy_rules_add:
 	inc	r0
 	mov	a,@r0
 	lcall	__gptrput
-	C$fuzzy.h$1283$1_0$80 ==.
-;	../../fuzzy.h:1283: rules->rules[index].value =
+	C$fuzzy.h$1439$1_0$84 ==.
+;	../../fuzzy.h:1439: rules->rules[index].value =
 	mov	r0,_bp
 	inc	r0
 	mov	a,_bp
@@ -4763,8 +4829,8 @@ _fuzzy_rules_add:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1284$1_0$80 ==.
-;	../../fuzzy.h:1284: fuzzy_clamp(value);
+	C$fuzzy.h$1440$1_0$84 ==.
+;	../../fuzzy.h:1440: fuzzy_clamp(value);
 	mov	a,_bp
 	add	a,#0xf7
 	mov	r0,a
@@ -4799,8 +4865,8 @@ _fuzzy_rules_add:
 	inc	dptr
 	mov	a,r7
 	lcall	__gptrput
-	C$fuzzy.h$1286$1_0$80 ==.
-;	../../fuzzy.h:1286: rules->rules[index].output_function =
+	C$fuzzy.h$1442$1_0$84 ==.
+;	../../fuzzy.h:1442: rules->rules[index].output_function =
 	mov	a,_bp
 	add	a,#0x03
 	mov	r0,a
@@ -4825,8 +4891,8 @@ _fuzzy_rules_add:
 	inc	r0
 	mov	a,@r0
 	lcall	__gptrput
-	C$fuzzy.h$1289$1_0$80 ==.
-;	../../fuzzy.h:1289: rules->count++;
+	C$fuzzy.h$1445$1_0$84 ==.
+;	../../fuzzy.h:1445: rules->count++;
 	mov	a,_bp
 	add	a,#0x09
 	mov	r0,a
@@ -4857,15 +4923,15 @@ _fuzzy_rules_add:
 	inc	dptr
 	mov	a,r7
 	lcall	__gptrput
-	C$fuzzy.h$1291$1_0$80 ==.
-;	../../fuzzy.h:1291: return true;
+	C$fuzzy.h$1447$1_0$84 ==.
+;	../../fuzzy.h:1447: return true;
 	mov	dpl, #0x01
 00106$:
-	C$fuzzy.h$1292$1_0$80 ==.
-;	../../fuzzy.h:1292: }
+	C$fuzzy.h$1448$1_0$84 ==.
+;	../../fuzzy.h:1448: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$1292$1_0$80 ==.
+	C$fuzzy.h$1448$1_0$84 ==.
 	XG$fuzzy_rules_add$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -4896,8 +4962,8 @@ _fuzzy_rules_add:
 ;sloc4         Allocated to stack - _bp +16 +4 
 ;------------------------------------------------------------
 	G$fuzzy_rules_defuzzify$0$0 ==.
-	C$fuzzy.h$1340$1_0$84 ==.
-;	../../fuzzy.h:1340: float fuzzy_rules_defuzzify(
+	C$fuzzy.h$1496$1_0$88 ==.
+;	../../fuzzy.h:1496: float fuzzy_rules_defuzzify(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_defuzzify
 ;	-----------------------------------------
@@ -4910,8 +4976,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,sp
 	add	a,#0x39
 	mov	sp,a
-	C$fuzzy.h$1368$1_0$84 ==.
-;	../../fuzzy.h:1368: rules == NULL ||
+	C$fuzzy.h$1524$1_0$88 ==.
+;	../../fuzzy.h:1524: rules == NULL ||
 	mov	r0,_bp
 	inc	r0
 	mov	a,@r0
@@ -4920,14 +4986,14 @@ _fuzzy_rules_defuzzify:
 	jnz	00277$
 	ljmp	00101$
 00277$:
-	C$fuzzy.h$1369$1_0$84 ==.
-;	../../fuzzy.h:1369: rules->count == 0 ||
+	C$fuzzy.h$1525$1_0$88 ==.
+;	../../fuzzy.h:1525: rules->count == 0 ||
 	mov	r0,_bp
 	inc	r0
 	mov	a,_bp
 	add	a,#0x04
 	mov	r1,a
-	mov	a,#0x48
+	mov	a,#0x90
 	add	a, @r0
 	mov	@r1,a
 	clr	a
@@ -4953,8 +5019,8 @@ _fuzzy_rules_defuzzify:
 	lcall	__gptrget
 	orl	a,r6
 	jz	00101$
-	C$fuzzy.h$1370$1_0$84 ==.
-;	../../fuzzy.h:1370: lower > upper ||
+	C$fuzzy.h$1526$1_0$88 ==.
+;	../../fuzzy.h:1526: lower > upper ||
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -4986,8 +5052,8 @@ _fuzzy_rules_defuzzify:
 	mov	sp,a
 	mov	a,r7
 	jnz	00101$
-	C$fuzzy.h$1372$1_0$84 ==.
-;	../../fuzzy.h:1372: ) {
+	C$fuzzy.h$1528$1_0$88 ==.
+;	../../fuzzy.h:1528: ) {
 	mov	a,_bp
 	add	a,#0xf2
 	mov	r0,a
@@ -5014,53 +5080,53 @@ _fuzzy_rules_defuzzify:
 	mov	b0,c
 	jc	00102$
 00101$:
-	C$fuzzy.h$1373$2_0$85 ==.
-;	../../fuzzy.h:1373: return 0.0f;
+	C$fuzzy.h$1529$2_0$89 ==.
+;	../../fuzzy.h:1529: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00137$
 00102$:
-	C$fuzzy.h$1377$1_0$84 ==.
-;	../../fuzzy.h:1377: method != FUZZY_DEFUZZ_COG &&
+	C$fuzzy.h$1533$1_0$88 ==.
+;	../../fuzzy.h:1533: method != FUZZY_DEFUZZ_COG &&
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
 	mov	a,@r0
 	jz	00107$
-	C$fuzzy.h$1378$1_0$84 ==.
-;	../../fuzzy.h:1378: method != FUZZY_DEFUZZ_MOM &&
+	C$fuzzy.h$1534$1_0$88 ==.
+;	../../fuzzy.h:1534: method != FUZZY_DEFUZZ_MOM &&
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
 	cjne	@r0,#0x01,00282$
 	sjmp	00107$
 00282$:
-	C$fuzzy.h$1379$1_0$84 ==.
-;	../../fuzzy.h:1379: method != FUZZY_DEFUZZ_SOM &&
+	C$fuzzy.h$1535$1_0$88 ==.
+;	../../fuzzy.h:1535: method != FUZZY_DEFUZZ_SOM &&
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
 	cjne	@r0,#0x02,00283$
 	sjmp	00107$
 00283$:
-	C$fuzzy.h$1381$1_0$84 ==.
-;	../../fuzzy.h:1381: ) {
+	C$fuzzy.h$1537$1_0$88 ==.
+;	../../fuzzy.h:1537: ) {
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
 	cjne	@r0,#0x03,00284$
 	sjmp	00107$
 00284$:
-	C$fuzzy.h$1382$2_0$86 ==.
-;	../../fuzzy.h:1382: return 0.0f;
+	C$fuzzy.h$1538$2_0$90 ==.
+;	../../fuzzy.h:1538: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00137$
 00107$:
-	C$fuzzy.h$1386$1_0$84 ==.
-;	../../fuzzy.h:1386: 0.0f;
+	C$fuzzy.h$1542$1_0$88 ==.
+;	../../fuzzy.h:1542: 0.0f;
 	mov	a,_bp
 	add	a,#0x14
 	mov	r0,a
@@ -5072,8 +5138,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1389$1_0$84 ==.
-;	../../fuzzy.h:1389: 0.0f;
+	C$fuzzy.h$1545$1_0$88 ==.
+;	../../fuzzy.h:1545: 0.0f;
 	mov	a,_bp
 	add	a,#0x18
 	mov	r0,a
@@ -5085,8 +5151,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1392$1_0$84 ==.
-;	../../fuzzy.h:1392: LEVEL_LO;
+	C$fuzzy.h$1548$1_0$88 ==.
+;	../../fuzzy.h:1548: LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x1c
 	mov	r0,a
@@ -5098,8 +5164,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1395$1_0$84 ==.
-;	../../fuzzy.h:1395: 0.0f;
+	C$fuzzy.h$1551$1_0$88 ==.
+;	../../fuzzy.h:1551: 0.0f;
 	mov	a,_bp
 	add	a,#0x20
 	mov	r0,a
@@ -5111,8 +5177,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1398$1_0$84 ==.
-;	../../fuzzy.h:1398: lower;
+	C$fuzzy.h$1554$1_0$88 ==.
+;	../../fuzzy.h:1554: lower;
 	mov	a,_bp
 	add	a,#0xfa
 	mov	r0,a
@@ -5133,8 +5199,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1401$1_0$84 ==.
-;	../../fuzzy.h:1401: lower;
+	C$fuzzy.h$1557$1_0$88 ==.
+;	../../fuzzy.h:1557: lower;
 	mov	a,_bp
 	add	a,#0x24
 	mov	r0,a
@@ -5155,8 +5221,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1404$1_0$84 ==.
-;	../../fuzzy.h:1404: 0u;
+	C$fuzzy.h$1560$1_0$88 ==.
+;	../../fuzzy.h:1560: 0u;
 	mov	a,_bp
 	add	a,#0x38
 	mov	r0,a
@@ -5164,14 +5230,14 @@ _fuzzy_rules_defuzzify:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1407$1_0$84 ==.
-;	../../fuzzy.h:1407: false;
+	C$fuzzy.h$1563$1_0$88 ==.
+;	../../fuzzy.h:1563: false;
 	mov	a,_bp
 	add	a,#0x3c
 	mov	r0,a
 	mov	@r0,#0x00
-	C$fuzzy.h$1410$2_0$87 ==.
-;	../../fuzzy.h:1410: value = lower;
+	C$fuzzy.h$1566$2_0$91 ==.
+;	../../fuzzy.h:1566: value = lower;
 	mov	a,_bp
 	add	a,#0x24
 	mov	r0,a
@@ -5208,8 +5274,8 @@ _fuzzy_rules_defuzzify:
 	inc	r1
 	mov	@r1,a
 00135$:
-	C$fuzzy.h$1411$1_0$84 ==.
-;	../../fuzzy.h:1411: value <= upper;
+	C$fuzzy.h$1567$1_0$88 ==.
+;	../../fuzzy.h:1567: value <= upper;
 	mov	a,_bp
 	add	a,#0x2c
 	mov	r0,a
@@ -5244,8 +5310,8 @@ _fuzzy_rules_defuzzify:
 	jnc	00285$
 	ljmp	00118$
 00285$:
-	C$fuzzy.h$1415$3_0$88 ==.
-;	../../fuzzy.h:1415: LEVEL_LO;
+	C$fuzzy.h$1571$3_0$92 ==.
+;	../../fuzzy.h:1571: LEVEL_LO;
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -5257,8 +5323,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0,a
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1424$1_0$84 ==.
-;	../../fuzzy.h:1424: i = 0;
+	C$fuzzy.h$1580$1_0$88 ==.
+;	../../fuzzy.h:1580: i = 0;
 	mov	a,_bp
 	add	a,#0x3a
 	mov	r0,a
@@ -5274,8 +5340,8 @@ _fuzzy_rules_defuzzify:
 	inc	r0
 	mov	@r0,a
 00132$:
-	C$fuzzy.h$1425$1_0$84 ==.
-;	../../fuzzy.h:1425: i < rules->count;
+	C$fuzzy.h$1581$1_0$88 ==.
+;	../../fuzzy.h:1581: i < rules->count;
 	mov	a,_bp
 	add	a,#0x04
 	mov	r0,a
@@ -5301,8 +5367,8 @@ _fuzzy_rules_defuzzify:
 	jc	00286$
 	ljmp	00111$
 00286$:
-	C$fuzzy.h$1429$1_0$84 ==.
-;	../../fuzzy.h:1429: rules->rules[i]
+	C$fuzzy.h$1585$1_0$88 ==.
+;	../../fuzzy.h:1585: rules->rules[i]
 	mov	a,_bp
 	add	a,#0x0d
 	mov	r0,a
@@ -5333,8 +5399,8 @@ _fuzzy_rules_defuzzify:
 	inc	dptr
 	lcall	__gptrget
 	mov	r3,a
-	C$fuzzy.h$1431$5_0$90 ==.
-;	../../fuzzy.h:1431: value
+	C$fuzzy.h$1587$5_0$94 ==.
+;	../../fuzzy.h:1587: value
 	lcall	00287$
 	sjmp	00288$
 00287$:
@@ -5352,8 +5418,8 @@ _fuzzy_rules_defuzzify:
 	mov	a, @r0
 	ret
 00288$:
-	C$fuzzy.h$1436$5_0$90 ==.
-;	../../fuzzy.h:1436: output_membership
+	C$fuzzy.h$1592$5_0$94 ==.
+;	../../fuzzy.h:1592: output_membership
 	lcall	_fuzzy_clamp
 	xch	a,r0
 	mov	a,_bp
@@ -5366,8 +5432,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0, b
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1440$5_0$90 ==.
-;	../../fuzzy.h:1440: rules->rules[i].value <
+	C$fuzzy.h$1596$5_0$94 ==.
+;	../../fuzzy.h:1596: rules->rules[i].value <
 	mov	r0,_bp
 	inc	r0
 	mov	a,_bp
@@ -5440,8 +5506,8 @@ _fuzzy_rules_defuzzify:
 	mov	sp,a
 	mov	a,r7
 	jz	00139$
-	C$fuzzy.h$1442$5_0$90 ==.
-;	../../fuzzy.h:1442: ? rules->rules[i].value
+	C$fuzzy.h$1598$5_0$94 ==.
+;	../../fuzzy.h:1598: ? rules->rules[i].value
 	mov	a,_bp
 	add	a,#0x10
 	mov	r0,a
@@ -5454,8 +5520,8 @@ _fuzzy_rules_defuzzify:
 	mov	ar7,@r0
 	sjmp	00140$
 00139$:
-	C$fuzzy.h$1443$5_0$90 ==.
-;	../../fuzzy.h:1443: : output_membership;
+	C$fuzzy.h$1599$5_0$94 ==.
+;	../../fuzzy.h:1599: : output_membership;
 	mov	a,_bp
 	add	a,#0x34
 	mov	r0,a
@@ -5467,8 +5533,8 @@ _fuzzy_rules_defuzzify:
 	inc	r0
 	mov	ar7,@r0
 00140$:
-	C$fuzzy.h$1448$1_0$84 ==.
-;	../../fuzzy.h:1448: ? aggregated_height
+	C$fuzzy.h$1604$1_0$88 ==.
+;	../../fuzzy.h:1604: ? aggregated_height
 	push	ar7
 	push	ar5
 	push	ar4
@@ -5524,8 +5590,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r1,a
 	sjmp	00142$
 00141$:
-	C$fuzzy.h$1449$5_0$90 ==.
-;	../../fuzzy.h:1449: : clipped_height;
+	C$fuzzy.h$1605$5_0$94 ==.
+;	../../fuzzy.h:1605: : clipped_height;
 	mov	a,_bp
 	add	a,#0x10
 	mov	r0,a
@@ -5557,8 +5623,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1426$1_0$84 ==.
-;	../../fuzzy.h:1426: i++
+	C$fuzzy.h$1582$1_0$88 ==.
+;	../../fuzzy.h:1582: i++
 	mov	a,_bp
 	add	a,#0x0b
 	mov	r0,a
@@ -5579,8 +5645,8 @@ _fuzzy_rules_defuzzify:
 00291$:
 	ljmp	00132$
 00111$:
-	C$fuzzy.h$1454$3_0$88 ==.
-;	../../fuzzy.h:1454: aggregated_height
+	C$fuzzy.h$1610$3_0$92 ==.
+;	../../fuzzy.h:1610: aggregated_height
 	mov	a,_bp
 	add	a,#0x07
 	mov	r0,a
@@ -5603,8 +5669,8 @@ _fuzzy_rules_defuzzify:
 	mov	@r0, b
 	inc	r0
 	mov	@r0,a
-	C$fuzzy.h$1462$1_0$84 ==.
-;	../../fuzzy.h:1462: aggregated_height;
+	C$fuzzy.h$1618$1_0$88 ==.
+;	../../fuzzy.h:1618: aggregated_height;
 	mov	a,_bp
 	add	a,#0x30
 	mov	r0,a
@@ -5641,8 +5707,8 @@ _fuzzy_rules_defuzzify:
 	push	ar3
 	push	ar6
 	push	ar7
-	C$fuzzy.h$1465$1_0$84 ==.
-;	../../fuzzy.h:1465: aggregated_height;
+	C$fuzzy.h$1621$1_0$88 ==.
+;	../../fuzzy.h:1621: aggregated_height;
 	mov	a,_bp
 	add	a,#0x14
 	mov	r0,a
@@ -5682,8 +5748,8 @@ _fuzzy_rules_defuzzify:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$1473$1_0$84 ==.
-;	../../fuzzy.h:1473: !maximum_found ||
+	C$fuzzy.h$1629$1_0$88 ==.
+;	../../fuzzy.h:1629: !maximum_found ||
 	mov	a,_bp
 	add	a,#0x18
 	mov	r0,a
@@ -5714,8 +5780,8 @@ _fuzzy_rules_defuzzify:
 	mov	r0,a
 	mov	a,@r0
 	jz	00114$
-	C$fuzzy.h$1475$1_0$84 ==.
-;	../../fuzzy.h:1475: ) {
+	C$fuzzy.h$1631$1_0$88 ==.
+;	../../fuzzy.h:1631: ) {
 	mov	a,_bp
 	add	a,#0x30
 	mov	r0,a
@@ -5748,8 +5814,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,r7
 	jz	00115$
 00114$:
-	C$fuzzy.h$1477$4_0$91 ==.
-;	../../fuzzy.h:1477: aggregated_height;
+	C$fuzzy.h$1633$4_0$95 ==.
+;	../../fuzzy.h:1633: aggregated_height;
 	mov	a,_bp
 	add	a,#0x30
 	mov	r0,a
@@ -5770,8 +5836,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1480$4_0$91 ==.
-;	../../fuzzy.h:1480: value;
+	C$fuzzy.h$1636$4_0$95 ==.
+;	../../fuzzy.h:1636: value;
 	mov	a,_bp
 	add	a,#0x2c
 	mov	r0,a
@@ -5792,8 +5858,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1483$4_0$91 ==.
-;	../../fuzzy.h:1483: value;
+	C$fuzzy.h$1639$4_0$95 ==.
+;	../../fuzzy.h:1639: value;
 	mov	a,_bp
 	add	a,#0x2c
 	mov	r0,a
@@ -5814,8 +5880,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1486$4_0$91 ==.
-;	../../fuzzy.h:1486: value;
+	C$fuzzy.h$1642$4_0$95 ==.
+;	../../fuzzy.h:1642: value;
 	mov	a,_bp
 	add	a,#0x2c
 	mov	r0,a
@@ -5836,24 +5902,24 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1489$4_0$91 ==.
-;	../../fuzzy.h:1489: 1u;
+	C$fuzzy.h$1645$4_0$95 ==.
+;	../../fuzzy.h:1645: 1u;
 	mov	a,_bp
 	add	a,#0x38
 	mov	r0,a
 	mov	@r0,#0x01
 	inc	r0
 	mov	@r0,#0x00
-	C$fuzzy.h$1492$4_0$91 ==.
-;	../../fuzzy.h:1492: true;
+	C$fuzzy.h$1648$4_0$95 ==.
+;	../../fuzzy.h:1648: true;
 	mov	a,_bp
 	add	a,#0x3c
 	mov	r0,a
 	mov	@r0,#0x01
 	ljmp	00136$
 00115$:
-	C$fuzzy.h$1496$1_0$84 ==.
-;	../../fuzzy.h:1496: ) {
+	C$fuzzy.h$1652$1_0$88 ==.
+;	../../fuzzy.h:1652: ) {
 	mov	a,_bp
 	add	a,#0x1c
 	mov	r0,a
@@ -5885,8 +5951,8 @@ _fuzzy_rules_defuzzify:
 	mov	sp,a
 	mov	a,r7
 	jz	00136$
-	C$fuzzy.h$1498$4_0$92 ==.
-;	../../fuzzy.h:1498: value;
+	C$fuzzy.h$1654$4_0$96 ==.
+;	../../fuzzy.h:1654: value;
 	mov	a,_bp
 	add	a,#0x2c
 	mov	r0,a
@@ -5907,8 +5973,8 @@ _fuzzy_rules_defuzzify:
 	mov	a,@r0
 	inc	r1
 	mov	@r1,a
-	C$fuzzy.h$1501$1_0$84 ==.
-;	../../fuzzy.h:1501: value;
+	C$fuzzy.h$1657$1_0$88 ==.
+;	../../fuzzy.h:1657: value;
 	mov	a,_bp
 	add	a,#0x2c
 	mov	r0,a
@@ -5923,8 +5989,8 @@ _fuzzy_rules_defuzzify:
 	inc	r0
 	mov	a,@r0
 	push	acc
-	C$fuzzy.h$1503$1_0$84 ==.
-;	../../fuzzy.h:1503: maximum_count++;
+	C$fuzzy.h$1659$1_0$88 ==.
+;	../../fuzzy.h:1659: maximum_count++;
 	mov	a,_bp
 	add	a,#0x20
 	mov	r0,a
@@ -5959,8 +6025,8 @@ _fuzzy_rules_defuzzify:
 	inc	@r0
 00295$:
 00136$:
-	C$fuzzy.h$1413$1_0$84 ==.
-;	../../fuzzy.h:1413: ) {
+	C$fuzzy.h$1569$1_0$88 ==.
+;	../../fuzzy.h:1569: ) {
 	mov	a,_bp
 	add	a,#0xf2
 	mov	r0,a
@@ -6002,15 +6068,15 @@ _fuzzy_rules_defuzzify:
 	mov	sp,a
 	ljmp	00135$
 00118$:
-	C$fuzzy.h$1511$1_0$84 ==.
-;	../../fuzzy.h:1511: !maximum_found ||
+	C$fuzzy.h$1667$1_0$88 ==.
+;	../../fuzzy.h:1667: !maximum_found ||
 	mov	a,_bp
 	add	a,#0x3c
 	mov	r0,a
 	mov	a,@r0
 	jz	00119$
-	C$fuzzy.h$1512$1_0$84 ==.
-;	../../fuzzy.h:1512: maximum_height <= LEVEL_LO ||
+	C$fuzzy.h$1668$1_0$88 ==.
+;	../../fuzzy.h:1668: maximum_height <= LEVEL_LO ||
 	mov	a,_bp
 	add	a,#0x1c
 	mov	r0,a
@@ -6036,8 +6102,8 @@ _fuzzy_rules_defuzzify:
 	add	a,#0xff
 	mov	b0,c
 	jnc	00119$
-	C$fuzzy.h$1514$1_0$84 ==.
-;	../../fuzzy.h:1514: ) {
+	C$fuzzy.h$1670$1_0$88 ==.
+;	../../fuzzy.h:1670: ) {
 	mov	a,_bp
 	add	a,#0x18
 	mov	r0,a
@@ -6064,15 +6130,15 @@ _fuzzy_rules_defuzzify:
 	mov	b0,c
 	jc	00120$
 00119$:
-	C$fuzzy.h$1515$2_0$93 ==.
-;	../../fuzzy.h:1515: return 0.0f;
+	C$fuzzy.h$1671$2_0$97 ==.
+;	../../fuzzy.h:1671: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00137$
 00120$:
-	C$fuzzy.h$1518$1_0$84 ==.
-;	../../fuzzy.h:1518: switch (method) {
+	C$fuzzy.h$1674$1_0$88 ==.
+;	../../fuzzy.h:1674: switch (method) {
 	mov	a,_bp
 	add	a,#0xf1
 	mov	r0,a
@@ -6094,11 +6160,11 @@ _fuzzy_rules_defuzzify:
 	ljmp	00124$
 	ljmp	00127$
 	ljmp	00128$
-	C$fuzzy.h$1519$2_0$94 ==.
-;	../../fuzzy.h:1519: case FUZZY_DEFUZZ_COG:
+	C$fuzzy.h$1675$2_0$98 ==.
+;	../../fuzzy.h:1675: case FUZZY_DEFUZZ_COG:
 00123$:
-	C$fuzzy.h$1521$1_0$84 ==.
-;	../../fuzzy.h:1521: height_sum;
+	C$fuzzy.h$1677$1_0$88 ==.
+;	../../fuzzy.h:1677: height_sum;
 	mov	a,_bp
 	add	a,#0x18
 	mov	r0,a
@@ -6136,11 +6202,11 @@ _fuzzy_rules_defuzzify:
 	mov	b, r6
 	mov	a, r7
 	ljmp	00137$
-	C$fuzzy.h$1523$2_0$94 ==.
-;	../../fuzzy.h:1523: case FUZZY_DEFUZZ_MOM:
+	C$fuzzy.h$1679$2_0$98 ==.
+;	../../fuzzy.h:1679: case FUZZY_DEFUZZ_MOM:
 00124$:
-	C$fuzzy.h$1524$2_0$94 ==.
-;	../../fuzzy.h:1524: if (maximum_count == 0u) {
+	C$fuzzy.h$1680$2_0$98 ==.
+;	../../fuzzy.h:1680: if (maximum_count == 0u) {
 	mov	a,_bp
 	add	a,#0x38
 	mov	r0,a
@@ -6148,15 +6214,15 @@ _fuzzy_rules_defuzzify:
 	inc	r0
 	orl	a,@r0
 	jnz	00126$
-	C$fuzzy.h$1525$3_0$95 ==.
-;	../../fuzzy.h:1525: return 0.0f;
+	C$fuzzy.h$1681$3_0$99 ==.
+;	../../fuzzy.h:1681: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00137$
 00126$:
-	C$fuzzy.h$1529$1_0$84 ==.
-;	../../fuzzy.h:1529: (float)maximum_count;
+	C$fuzzy.h$1685$1_0$88 ==.
+;	../../fuzzy.h:1685: (float)maximum_count;
 	mov	a,_bp
 	add	a,#0x38
 	mov	r0,a
@@ -6194,12 +6260,12 @@ _fuzzy_rules_defuzzify:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$fuzzy.h$1531$2_0$94 ==.
-;	../../fuzzy.h:1531: case FUZZY_DEFUZZ_SOM:
+	C$fuzzy.h$1687$2_0$98 ==.
+;	../../fuzzy.h:1687: case FUZZY_DEFUZZ_SOM:
 	sjmp	00137$
 00127$:
-	C$fuzzy.h$1532$2_0$94 ==.
-;	../../fuzzy.h:1532: return smallest_maximum;
+	C$fuzzy.h$1688$2_0$98 ==.
+;	../../fuzzy.h:1688: return smallest_maximum;
 	mov	a,_bp
 	add	a,#0x24
 	mov	r0,a
@@ -6210,12 +6276,12 @@ _fuzzy_rules_defuzzify:
 	mov	b, @r0
 	inc	r0
 	mov	a, @r0
-	C$fuzzy.h$1534$2_0$94 ==.
-;	../../fuzzy.h:1534: case FUZZY_DEFUZZ_LOM:
+	C$fuzzy.h$1690$2_0$98 ==.
+;	../../fuzzy.h:1690: case FUZZY_DEFUZZ_LOM:
 	sjmp	00137$
 00128$:
-	C$fuzzy.h$1535$2_0$94 ==.
-;	../../fuzzy.h:1535: return largest_maximum;
+	C$fuzzy.h$1691$2_0$98 ==.
+;	../../fuzzy.h:1691: return largest_maximum;
 	mov	a,_bp
 	add	a,#0x28
 	mov	r0,a
@@ -6226,23 +6292,23 @@ _fuzzy_rules_defuzzify:
 	mov	b, @r0
 	inc	r0
 	mov	a, @r0
-	C$fuzzy.h$1537$2_0$94 ==.
-;	../../fuzzy.h:1537: default:
+	C$fuzzy.h$1693$2_0$98 ==.
+;	../../fuzzy.h:1693: default:
 	sjmp	00137$
 00129$:
-	C$fuzzy.h$1538$2_0$94 ==.
-;	../../fuzzy.h:1538: return 0.0f;
+	C$fuzzy.h$1694$2_0$98 ==.
+;	../../fuzzy.h:1694: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
-	C$fuzzy.h$1539$1_0$84 ==.
-;	../../fuzzy.h:1539: }
+	C$fuzzy.h$1695$1_0$88 ==.
+;	../../fuzzy.h:1695: }
 00137$:
-	C$fuzzy.h$1540$1_0$84 ==.
-;	../../fuzzy.h:1540: }
+	C$fuzzy.h$1696$1_0$88 ==.
+;	../../fuzzy.h:1696: }
 	mov	sp,_bp
 	pop	_bp
-	C$fuzzy.h$1540$1_0$84 ==.
+	C$fuzzy.h$1696$1_0$88 ==.
 	XG$fuzzy_rules_defuzzify$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6254,8 +6320,8 @@ _fuzzy_rules_defuzzify:
 ;rules         Allocated to registers r5 r6 r7 
 ;------------------------------------------------------------
 	G$fuzzy_rules_cog$0$0 ==.
-	C$fuzzy.h$1546$1_0$97 ==.
-;	../../fuzzy.h:1546: float fuzzy_rules_cog(
+	C$fuzzy.h$1702$1_0$101 ==.
+;	../../fuzzy.h:1702: float fuzzy_rules_cog(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_cog
 ;	-----------------------------------------
@@ -6265,8 +6331,8 @@ _fuzzy_rules_cog:
 	mov	r5, dpl
 	mov	r6, dph
 	mov	r7, b
-	C$fuzzy.h$1554$1_0$97 ==.
-;	../../fuzzy.h:1554: rules,
+	C$fuzzy.h$1710$1_0$101 ==.
+;	../../fuzzy.h:1710: rules,
 	clr	a
 	push	acc
 	mov	a,_bp
@@ -6326,10 +6392,10 @@ _fuzzy_rules_cog:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$fuzzy.h$1560$1_0$97 ==.
-;	../../fuzzy.h:1560: }
+	C$fuzzy.h$1716$1_0$101 ==.
+;	../../fuzzy.h:1716: }
 	pop	_bp
-	C$fuzzy.h$1560$1_0$97 ==.
+	C$fuzzy.h$1716$1_0$101 ==.
 	XG$fuzzy_rules_cog$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6338,8 +6404,8 @@ _fuzzy_rules_cog:
 ;rules         Allocated to registers r5 r6 r7 
 ;------------------------------------------------------------
 	G$fuzzy_rules_free$0$0 ==.
-	C$fuzzy.h$1562$1_0$99 ==.
-;	../../fuzzy.h:1562: void fuzzy_rules_free(
+	C$fuzzy.h$1718$1_0$103 ==.
+;	../../fuzzy.h:1718: void fuzzy_rules_free(
 ;	-----------------------------------------
 ;	 function fuzzy_rules_free
 ;	-----------------------------------------
@@ -6347,18 +6413,18 @@ _fuzzy_rules_free:
 	mov	r5, dpl
 	mov	r6, dph
 	mov	r7, b
-	C$fuzzy.h$1566$1_0$99 ==.
-;	../../fuzzy.h:1566: if (rules == NULL) {
+	C$fuzzy.h$1722$1_0$103 ==.
+;	../../fuzzy.h:1722: if (rules == NULL) {
 	mov	a,r5
 	orl	a,r6
 	jnz	00102$
-	C$fuzzy.h$1567$2_0$100 ==.
-;	../../fuzzy.h:1567: return;
+	C$fuzzy.h$1723$2_0$104 ==.
+;	../../fuzzy.h:1723: return;
 	sjmp	00103$
 00102$:
-	C$fuzzy.h$1575$1_0$99 ==.
-;	../../fuzzy.h:1575: rules->count = 0;
-	mov	a,#0x48
+	C$fuzzy.h$1731$1_0$103 ==.
+;	../../fuzzy.h:1731: rules->count = 0;
+	mov	a,#0x90
 	add	a, r5
 	mov	r5,a
 	clr	a
@@ -6372,9 +6438,9 @@ _fuzzy_rules_free:
 	inc	dptr
 	lcall	__gptrput
 00103$:
-	C$fuzzy.h$1576$1_0$99 ==.
-;	../../fuzzy.h:1576: }
-	C$fuzzy.h$1576$1_0$99 ==.
+	C$fuzzy.h$1732$1_0$103 ==.
+;	../../fuzzy.h:1732: }
+	C$fuzzy.h$1732$1_0$103 ==.
 	XG$fuzzy_rules_free$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6383,7 +6449,7 @@ _fuzzy_rules_free:
 ;value         Allocated to registers r4 r5 r6 r7 
 ;------------------------------------------------------------
 	Fcontroller_8051$temperature_low$0$0 ==.
-	C$controller_8051.c$59$1_0$102 ==.
+	C$controller_8051.c$59$1_0$106 ==.
 ;	../../controller_8051.c:59: static float temperature_low(
 ;	-----------------------------------------
 ;	 function temperature_low
@@ -6393,13 +6459,13 @@ _temperature_low:
 	mov	r5,dph
 	mov	r6,b
 	mov	r7,a
-	C$controller_8051.c$68$1_0$102 ==.
+	C$controller_8051.c$68$1_0$106 ==.
 ;	../../controller_8051.c:68: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
-	C$controller_8051.c$64$1_0$102 ==.
+	C$controller_8051.c$64$1_0$106 ==.
 ;	../../controller_8051.c:64: 20.0f,
 	push	ar3
 	clr	a
@@ -6429,9 +6495,9 @@ _temperature_low:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$controller_8051.c$70$1_0$102 ==.
+	C$controller_8051.c$70$1_0$106 ==.
 ;	../../controller_8051.c:70: }
-	C$controller_8051.c$70$1_0$102 ==.
+	C$controller_8051.c$70$1_0$106 ==.
 	XFcontroller_8051$temperature_low$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6440,7 +6506,7 @@ _temperature_low:
 ;value         Allocated to registers r4 r5 r6 r7 
 ;------------------------------------------------------------
 	Fcontroller_8051$temperature_high$0$0 ==.
-	C$controller_8051.c$73$1_0$104 ==.
+	C$controller_8051.c$73$1_0$108 ==.
 ;	../../controller_8051.c:73: static float temperature_high(
 ;	-----------------------------------------
 ;	 function temperature_high
@@ -6450,13 +6516,13 @@ _temperature_high:
 	mov	r5,dph
 	mov	r6,b
 	mov	r7,a
-	C$controller_8051.c$82$1_0$104 ==.
+	C$controller_8051.c$82$1_0$108 ==.
 ;	../../controller_8051.c:82: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
-	C$controller_8051.c$78$1_0$104 ==.
+	C$controller_8051.c$78$1_0$108 ==.
 ;	../../controller_8051.c:78: 30.0f,
 	push	ar3
 	mov	a,#0x01
@@ -6487,9 +6553,9 @@ _temperature_high:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$controller_8051.c$84$1_0$104 ==.
+	C$controller_8051.c$84$1_0$108 ==.
 ;	../../controller_8051.c:84: }
-	C$controller_8051.c$84$1_0$104 ==.
+	C$controller_8051.c$84$1_0$108 ==.
 	XFcontroller_8051$temperature_high$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6498,7 +6564,7 @@ _temperature_high:
 ;value         Allocated to registers r4 r5 r6 r7 
 ;------------------------------------------------------------
 	Fcontroller_8051$fan_slow$0$0 ==.
-	C$controller_8051.c$91$1_0$106 ==.
+	C$controller_8051.c$91$1_0$110 ==.
 ;	../../controller_8051.c:91: static float fan_slow(
 ;	-----------------------------------------
 ;	 function fan_slow
@@ -6508,13 +6574,13 @@ _fan_slow:
 	mov	r5,dph
 	mov	r6,b
 	mov	r7,a
-	C$controller_8051.c$100$1_0$106 ==.
+	C$controller_8051.c$100$1_0$110 ==.
 ;	../../controller_8051.c:100: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
-	C$controller_8051.c$96$1_0$106 ==.
+	C$controller_8051.c$96$1_0$110 ==.
 ;	../../controller_8051.c:96: 20.0f,
 	push	ar3
 	clr	a
@@ -6544,9 +6610,9 @@ _fan_slow:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$controller_8051.c$102$1_0$106 ==.
+	C$controller_8051.c$102$1_0$110 ==.
 ;	../../controller_8051.c:102: }
-	C$controller_8051.c$102$1_0$106 ==.
+	C$controller_8051.c$102$1_0$110 ==.
 	XFcontroller_8051$fan_slow$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6555,7 +6621,7 @@ _fan_slow:
 ;value         Allocated to registers r4 r5 r6 r7 
 ;------------------------------------------------------------
 	Fcontroller_8051$fan_fast$0$0 ==.
-	C$controller_8051.c$105$1_0$108 ==.
+	C$controller_8051.c$105$1_0$112 ==.
 ;	../../controller_8051.c:105: static float fan_fast(
 ;	-----------------------------------------
 ;	 function fan_fast
@@ -6565,13 +6631,13 @@ _fan_fast:
 	mov	r5,dph
 	mov	r6,b
 	mov	r7,a
-	C$controller_8051.c$114$1_0$108 ==.
+	C$controller_8051.c$114$1_0$112 ==.
 ;	../../controller_8051.c:114: hedges.none
 	mov	dptr,#_hedges
 	clr	a
 	movc	a,@a+dptr
 	mov	r3,a
-	C$controller_8051.c$110$1_0$108 ==.
+	C$controller_8051.c$110$1_0$112 ==.
 ;	../../controller_8051.c:110: 40.0f,
 	push	ar3
 	mov	a,#0x01
@@ -6601,21 +6667,21 @@ _fan_fast:
 	mov	dph, r5
 	mov	b, r6
 	mov	a, r7
-	C$controller_8051.c$116$1_0$108 ==.
+	C$controller_8051.c$116$1_0$112 ==.
 ;	../../controller_8051.c:116: }
-	C$controller_8051.c$116$1_0$108 ==.
+	C$controller_8051.c$116$1_0$112 ==.
 	XFcontroller_8051$fan_fast$0$0 ==.
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'calculate_fan_speed'
 ;------------------------------------------------------------
 ;temperature   Allocated to stack - _bp +1 +4 
-;rules         Allocated to stack - _bp +9 +74 
-;result        Allocated to stack - _bp +83 +4 
+;rules         Allocated to stack - _bp +9 +146 
+;result        Allocated to stack - _bp +155 +4 
 ;sloc0         Allocated to stack - _bp +5 +4 
 ;------------------------------------------------------------
 	Fcontroller_8051$calculate_fan_speed$0$0 ==.
-	C$controller_8051.c$123$1_0$110 ==.
+	C$controller_8051.c$123$1_0$114 ==.
 ;	../../controller_8051.c:123: static float calculate_fan_speed(
 ;	-----------------------------------------
 ;	 function calculate_fan_speed
@@ -6628,9 +6694,9 @@ _calculate_fan_speed:
 	push	b
 	push	acc
 	mov	a,sp
-	add	a,#0x52
+	add	a,#0x9a
 	mov	sp,a
-	C$controller_8051.c$132$1_0$110 ==.
+	C$controller_8051.c$132$1_0$114 ==.
 ;	../../controller_8051.c:132: );
 	mov	a,_bp
 	add	a,#0x09
@@ -6643,7 +6709,7 @@ _calculate_fan_speed:
 	mov	b, r7
 	push	ar3
 	lcall	_fuzzy_rules_create
-	C$controller_8051.c$134$1_0$110 ==.
+	C$controller_8051.c$134$1_0$114 ==.
 ;	../../controller_8051.c:134: if (!FUZZY_RULE_ADD(
 	mov	r0,_bp
 	inc	r0
@@ -6705,7 +6771,7 @@ _calculate_fan_speed:
 	mov	sp,a
 	pop	ar3
 	mov	a,r7
-	C$controller_8051.c$141$2_0$111 ==.
+	C$controller_8051.c$141$2_0$115 ==.
 ;	../../controller_8051.c:141: );
 	jnz	00102$
 	mov	ar5,r3
@@ -6715,14 +6781,14 @@ _calculate_fan_speed:
 	mov	dph, r6
 	mov	b, r7
 	lcall	_fuzzy_rules_free
-	C$controller_8051.c$143$2_0$111 ==.
+	C$controller_8051.c$143$2_0$115 ==.
 ;	../../controller_8051.c:143: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	ljmp	00105$
 00102$:
-	C$controller_8051.c$146$1_0$110 ==.
+	C$controller_8051.c$146$1_0$114 ==.
 ;	../../controller_8051.c:146: if (!FUZZY_RULE_ADD(
 	mov	r0,_bp
 	inc	r0
@@ -6785,7 +6851,7 @@ _calculate_fan_speed:
 	mov	sp,a
 	pop	ar3
 	mov	a,r7
-	C$controller_8051.c$153$2_0$112 ==.
+	C$controller_8051.c$153$2_0$116 ==.
 ;	../../controller_8051.c:153: );
 	jnz	00104$
 	mov	ar5,r3
@@ -6795,14 +6861,14 @@ _calculate_fan_speed:
 	mov	dph, r6
 	mov	b, r7
 	lcall	_fuzzy_rules_free
-	C$controller_8051.c$155$2_0$112 ==.
+	C$controller_8051.c$155$2_0$116 ==.
 ;	../../controller_8051.c:155: return 0.0f;
 	mov	dptr,#0x0000
 	clr	a
 	mov	b,a
 	sjmp	00105$
 00104$:
-	C$controller_8051.c$160$1_0$110 ==.
+	C$controller_8051.c$160$1_0$114 ==.
 ;	../../controller_8051.c:160: &rules,
 	mov	ar5,r3
 	mov	r6,#0x00
@@ -6835,7 +6901,7 @@ _calculate_fan_speed:
 	lcall	_fuzzy_rules_defuzzify
 	xch	a,r0
 	mov	a,_bp
-	add	a,#0x53
+	add	a,#0x9b
 	xch	a,r0
 	mov	@r0, dpl
 	inc	r0
@@ -6848,7 +6914,7 @@ _calculate_fan_speed:
 	add	a,#0xf3
 	mov	sp,a
 	pop	ar3
-	C$controller_8051.c$169$1_0$110 ==.
+	C$controller_8051.c$169$1_0$114 ==.
 ;	../../controller_8051.c:169: );
 	mov	ar2,r3
 	mov	r3,#0x00
@@ -6857,10 +6923,10 @@ _calculate_fan_speed:
 	mov	dph, r3
 	mov	b, r7
 	lcall	_fuzzy_rules_free
-	C$controller_8051.c$171$1_0$110 ==.
+	C$controller_8051.c$171$1_0$114 ==.
 ;	../../controller_8051.c:171: return result;
 	mov	a,_bp
-	add	a,#0x53
+	add	a,#0x9b
 	mov	r0,a
 	mov	dpl, @r0
 	inc	r0
@@ -6870,11 +6936,11 @@ _calculate_fan_speed:
 	inc	r0
 	mov	a, @r0
 00105$:
-	C$controller_8051.c$172$1_0$110 ==.
+	C$controller_8051.c$172$1_0$114 ==.
 ;	../../controller_8051.c:172: }
 	mov	sp,_bp
 	pop	_bp
-	C$controller_8051.c$172$1_0$110 ==.
+	C$controller_8051.c$172$1_0$114 ==.
 	XFcontroller_8051$calculate_fan_speed$0$0 ==.
 	ret
 ;------------------------------------------------------------
@@ -6883,7 +6949,7 @@ _calculate_fan_speed:
 ;fan_speed     Allocated to registers r4 r5 r6 r7 
 ;------------------------------------------------------------
 	Fcontroller_8051$fan_speed_to_pwm$0$0 ==.
-	C$controller_8051.c$179$1_0$114 ==.
+	C$controller_8051.c$179$1_0$118 ==.
 ;	../../controller_8051.c:179: static unsigned char fan_speed_to_pwm(
 ;	-----------------------------------------
 ;	 function fan_speed_to_pwm
@@ -6893,7 +6959,7 @@ _fan_speed_to_pwm:
 	mov	r5,dph
 	mov	r6,b
 	mov	r7,a
-	C$controller_8051.c$183$1_0$114 ==.
+	C$controller_8051.c$183$1_0$118 ==.
 ;	../../controller_8051.c:183: if (fan_speed <= 0.0f) {
 	push	ar7
 	push	ar6
@@ -6918,12 +6984,12 @@ _fan_speed_to_pwm:
 	add	a,#0xff
 	mov	b0,c
 	jc	00102$
-	C$controller_8051.c$184$2_0$115 ==.
+	C$controller_8051.c$184$2_0$119 ==.
 ;	../../controller_8051.c:184: return 0u;
 	mov	dpl, #0x00
 	sjmp	00105$
 00102$:
-	C$controller_8051.c$187$1_0$114 ==.
+	C$controller_8051.c$187$1_0$118 ==.
 ;	../../controller_8051.c:187: if (fan_speed >= 100.0f) {
 	push	ar7
 	push	ar6
@@ -6952,12 +7018,12 @@ _fan_speed_to_pwm:
 	add	a,#0xff
 	mov	b0,c
 	jc	00104$
-	C$controller_8051.c$188$2_0$116 ==.
+	C$controller_8051.c$188$2_0$120 ==.
 ;	../../controller_8051.c:188: return 100u;
 	mov	dpl, #0x64
 	sjmp	00105$
 00104$:
-	C$controller_8051.c$193$1_0$114 ==.
+	C$controller_8051.c$193$1_0$118 ==.
 ;	../../controller_8051.c:193: );
 	clr	a
 	push	acc
@@ -6983,34 +7049,34 @@ _fan_speed_to_pwm:
 	mov	a, r7
 	lcall	___fs2uchar
 00105$:
-	C$controller_8051.c$194$1_0$114 ==.
+	C$controller_8051.c$194$1_0$118 ==.
 ;	../../controller_8051.c:194: }
-	C$controller_8051.c$194$1_0$114 ==.
+	C$controller_8051.c$194$1_0$118 ==.
 	XFcontroller_8051$fan_speed_to_pwm$0$0 ==.
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'main'
 ;------------------------------------------------------------
 	G$main$0$0 ==.
-	C$controller_8051.c$211$1_0$118 ==.
+	C$controller_8051.c$211$1_0$122 ==.
 ;	../../controller_8051.c:211: void main(void)
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-	C$controller_8051.c$219$1_0$118 ==.
+	C$controller_8051.c$219$1_0$122 ==.
 ;	../../controller_8051.c:219: 42u;
 	mov	_test_temperature,#0x2a
-	C$controller_8051.c$225$1_0$118 ==.
+	C$controller_8051.c$225$1_0$122 ==.
 ;	../../controller_8051.c:225: 0x55u;
 	mov	_P0,#0x55
-	C$controller_8051.c$228$1_0$118 ==.
+	C$controller_8051.c$228$1_0$122 ==.
 ;	../../controller_8051.c:228: 0x00u;
 	mov	_P1,#0x00
-	C$controller_8051.c$234$1_0$118 ==.
+	C$controller_8051.c$234$1_0$122 ==.
 ;	../../controller_8051.c:234: test_temperature = P2;
 	mov	_test_temperature,_P2
-	C$controller_8051.c$239$2_0$118 ==.
+	C$controller_8051.c$239$2_0$122 ==.
 ;	../../controller_8051.c:239: );
 	mov	dpl, _test_temperature
 	lcall	___uchar2fs
@@ -7019,7 +7085,7 @@ _main:
 	mov	(_test_fan_speed + 1),dph
 	mov	(_test_fan_speed + 2),b
 	mov	(_test_fan_speed + 3),a
-	C$controller_8051.c$243$1_0$118 ==.
+	C$controller_8051.c$243$1_0$122 ==.
 ;	../../controller_8051.c:243: test_fan_speed
 	mov	dpl, _test_fan_speed
 	mov	dph, (_test_fan_speed + 1)
@@ -7027,17 +7093,17 @@ _main:
 	mov	a, (_test_fan_speed + 3)
 	lcall	_fan_speed_to_pwm
 	mov	_test_pwm,dpl
-	C$controller_8051.c$250$1_0$118 ==.
+	C$controller_8051.c$250$1_0$122 ==.
 ;	../../controller_8051.c:250: test_pwm;
 	mov	_P1,_test_pwm
-	C$controller_8051.c$256$1_0$118 ==.
+	C$controller_8051.c$256$1_0$122 ==.
 ;	../../controller_8051.c:256: 0xAAu;
 	mov	_P0,#0xaa
 00103$:
 	sjmp	00103$
-	C$controller_8051.c$261$2_0$118 ==.
+	C$controller_8051.c$261$2_0$122 ==.
 ;	../../controller_8051.c:261: }
-	C$controller_8051.c$261$2_0$118 ==.
+	C$controller_8051.c$261$2_0$122 ==.
 	XG$main$0$0 ==.
 	ret
 	.area CSEG    (CODE)

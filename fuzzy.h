@@ -108,8 +108,7 @@ static float *fuzzy_values_initialize(void)
         index < FUZZY_MAX_VALUES;
         index++
     ) {
-        fuzzy_values_buffer[index] =
-            0.0f;
+        fuzzy_values_buffer[index] = 0.0f;
     }
 
     return fuzzy_values_buffer;
@@ -267,8 +266,6 @@ typedef struct FuzzyRule {
 } fuzzy_rule_t;
 
 
-
-
 typedef struct FuzzyRules {
     fuzzy_rule_t rules[FUZZY_MAX_RULES];
     size_t count;
@@ -306,9 +303,7 @@ typedef struct FuzzyRules {
  * Available on desktop and 8051.
  * ========================================================== */
 
-float fuzzy_not(
-    float membership
-);
+float fuzzy_not(float membership);
 
 
 /*
@@ -658,9 +653,6 @@ bool fuzzy_cog_sweep(
     const fuzzy_cog_sweep_t *sweep
 );
 
-bool fuzzy_demo(void);
-
-
 #endif /* FUZZY_8051 */
 
 #endif /* FUZZY_H */
@@ -699,8 +691,7 @@ float fuzzy_not(
 )
 {
     return LEVEL_HI -
-        fuzzy_clamp(
-            membership
+        fuzzy_clamp( membership
         );
 }
 
@@ -718,8 +709,7 @@ static float fuzzy_apply_hedge(
 )
 {
     membership =
-        fuzzy_clamp(
-            membership
+        fuzzy_clamp( membership
         );
 
 #ifdef FUZZY_8051
@@ -728,13 +718,11 @@ static float fuzzy_apply_hedge(
         LEVEL_HI;
 
     if (hedge == 0u) {
-        hedge =
-            1u;
+        hedge = 1u;
     }
 
     while (hedge > 0u) {
-        result *=
-            membership;
+        result *= membership;
 
         hedge--;
     }
@@ -1722,13 +1710,9 @@ float fuzzy_rules_cog(
     );
 }
 
-void fuzzy_rules_free(
-    fuzzy_rules_t *rules
-)
+void fuzzy_rules_free(fuzzy_rules_t *rules)
 {
-    if (rules == NULL) {
-        return;
-    }
+    if (rules == NULL) return;
 
     /*
      * Static storage requires no deallocation.
@@ -1773,12 +1757,8 @@ bool fuzzy_rules_plot_cog(
         filename
     );
 
-    if (
-        written < 0 ||
-        (size_t)written >= sizeof(plot_filename)
-    ) {
-        return false;
-    }
+    if (written < 0 || (size_t)written >= sizeof(plot_filename)) return false;
+    
 
     fuzzy_plot_t plot;
 
@@ -1800,9 +1780,7 @@ bool fuzzy_rules_plot_cog(
     int top = plot.padding;
     int bottom = plot.height - plot.padding;
 
-    size_t sample_count = (size_t)ceilf(
-        (upper - lower) / step
-    );
+    size_t sample_count = (size_t)ceilf((upper - lower) / step);
 
     /*
      * Draw the aggregated Mamdani output.
@@ -1815,18 +1793,14 @@ bool fuzzy_rules_plot_cog(
     );
 
     for (size_t sample = 0; sample <= sample_count; sample++) {
-        float value =
-            lower + (float)sample * step;
+        float value = lower + (float)sample * step;
 
-        if (value > upper) {
-            value = upper;
-        }
+        if (value > upper) value = upper;
 
         float aggregated_height = LEVEL_LO;
 
         for (size_t i = 0; i < rules->count; i++) {
-            float output_membership =
-                rules->rules[i].output_function(value);
+            float output_membership =     rules->rules[i].output_function(value);
 
             float clipped_height =
                 rules->rules[i].value < output_membership
@@ -1839,21 +1813,13 @@ bool fuzzy_rules_plot_cog(
                     : clipped_height;
         }
 
-        aggregated_height =
-            fuzzy_clamp(aggregated_height);
+        aggregated_height = fuzzy_clamp(aggregated_height);
 
-        float ratio =
-            (value - lower) /
-            (upper - lower);
+        float ratio = (value - lower) / (upper - lower);
 
-        float x =
-            (float)left +
-            ratio * (float)(right - left);
+        float x = (float)left + ratio * (float)(right - left);
 
-        float y =
-            (float)bottom -
-            aggregated_height *
-            (float)(bottom - top);
+        float y = (float)bottom - aggregated_height * (float)(bottom - top);
 
         fprintf(
             file,
@@ -1862,9 +1828,7 @@ bool fuzzy_rules_plot_cog(
             y
         );
 
-        if (sample < sample_count) {
-            fputc(' ', file);
-        }
+        if (sample < sample_count) fputc(' ', file);
     }
 
     fprintf(file, "\" />\n");
@@ -1872,15 +1836,11 @@ bool fuzzy_rules_plot_cog(
     /*
      * Draw a vertical line at the calculated COG.
      */
-    float cog_ratio =
-        (cog - lower) /
-        (upper - lower);
+    float cog_ratio = (cog - lower) / (upper - lower);
 
     cog_ratio = fuzzy_clamp(cog_ratio);
 
-    float cog_x =
-        (float)left +
-        cog_ratio * (float)(right - left);
+    float cog_x = (float)left + cog_ratio * (float)(right - left);
 
     fprintf(
         file,
@@ -1957,10 +1917,7 @@ bool fuzzy_rules_plot_cog(
     return true;
 }
 
-static void fuzzy_plot_write_text(
-    FILE *file,
-    const char *text
-)
+static void fuzzy_plot_write_text(FILE *file, const char *text)
 {
     if (file == NULL || text == NULL) {
         return;
@@ -2017,9 +1974,7 @@ bool fuzzy_plot_begin(
 
     plot->file = fopen(filename, "w");
 
-    if (plot->file == NULL) {
-        return false;
-    }
+    if (plot->file == NULL) return false;
 
     plot->lower = lower;
     plot->upper = upper;
@@ -2076,9 +2031,7 @@ bool fuzzy_plot_begin(
     for (int i = 0; i <= 10; i++) {
         float membership = (float)i / 10.0f;
 
-        float y =
-            (float)bottom -
-            membership * (float)(bottom - top);
+        float y = (float)bottom - membership * (float)(bottom - top);
 
         fprintf(
             file,
@@ -2395,327 +2348,6 @@ bool fuzzy_plot_many(
     return true;
 }
 
-/* ==========================================================
- * Built-in membership-function SVG demonstration
- * ========================================================== */
-
-static float fuzzy_demo_ramp(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_RAMP,
-        value,
-        1.0f,
-        20.0,
-        80.0,
-        true
-    );
-}
-
-static float fuzzy_demo_triangle(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRIANGLE,
-        value,
-        1.0f,
-        20.0,
-        50.0,
-        80.0
-    );
-}
-
-static float fuzzy_demo_trapezoid(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        1.0f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float fuzzy_demo_trapezoid_normal(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        1.0f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float fuzzy_demo_trapezoid_very(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        2.0f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float fuzzy_demo_trapezoid_extremely(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        3.0f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float fuzzy_demo_trapezoid_somewhat(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        0.5f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float fuzzy_demo_trapezoid_slightly(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        0.75f,
-        10.0,
-        30.0,
-        70.0,
-        90.0
-    );
-}
-
-static float fuzzy_demo_smf(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SMF,
-        value,
-        1.0f,
-        20.0,
-        80.0
-    );
-}
-
-static float fuzzy_demo_zmf(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_ZMF,
-        value,
-        1.0f,
-        20.0,
-        80.0
-    );
-}
-
-static float fuzzy_demo_gauss(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_GAUSSIAN,
-        value,
-        1.0f,
-        50.0,
-        15.0
-    );
-}
-
-static float fuzzy_demo_bell(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_BELL,
-        value,
-        1.0f,
-        30.0,
-        2.0,
-        50.0
-    );
-}
-
-static float fuzzy_demo_sigmoid(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SIGMOID,
-        value,
-        1.0f,
-        0.12,
-        50.0
-    );
-}
-
-typedef struct FuzzyDemoFunction {
-    const char *filename;
-    const char *title;
-    const char *name;
-    const char *color;
-    fuzzy_output_function_t function;
-} fuzzy_demo_function_t;
-
-bool fuzzy_demo(void)
-{
-    const fuzzy_demo_function_t demos[] = {
-        {
-            .filename = "demo-svg/ramp",
-            .title = "Ramp Membership Function",
-            .name = "Ramp",
-            .color = "#ef4444",
-            .function = fuzzy_demo_ramp
-        },
-        {
-            .filename = "demo-svg/triangle",
-            .title = "Triangular Membership Function",
-            .name = "Triangle",
-            .color = "#eab308",
-            .function = fuzzy_demo_triangle
-        },
-        {
-            .filename = "demo-svg/trapezoid",
-            .title = "Trapezoidal Membership Function",
-            .name = "Trapezoid",
-            .color = "#f97316",
-            .function = fuzzy_demo_trapezoid
-        },
-        {
-            .filename = "demo-svg/smf",
-            .title = "S-Shaped Membership Function",
-            .name = "SMF",
-            .color = "#22c55e",
-            .function = fuzzy_demo_smf
-        },
-        {
-            .filename = "demo-svg/zmf",
-            .title = "Z-Shaped Membership Function",
-            .name = "ZMF",
-            .color = "#3b82f6",
-            .function = fuzzy_demo_zmf
-        },
-        {
-            .filename = "demo-svg/gauss",
-            .title = "Gaussian Membership Function",
-            .name = "Gaussian",
-            .color = "#a855f7",
-            .function = fuzzy_demo_gauss
-        },
-        {
-            .filename = "demo-svg/bell",
-            .title = "Generalized Bell Membership Function",
-            .name = "Bell",
-            .color = "#f97316",
-            .function = fuzzy_demo_bell
-        },
-        {
-            .filename = "demo-svg/sigmoid",
-            .title = "Sigmoid Membership Function",
-            .name = "Sigmoid",
-            .color = "#06b6d4",
-            .function = fuzzy_demo_sigmoid
-        }
-    };
-
-    const size_t demo_count = sizeof(demos) / sizeof(demos[0]);
-
-    for (size_t i = 0; i < demo_count; i++) {
-        const fuzzy_plot_series_t series[] = {
-            {
-                .name = demos[i].name,
-                .color = demos[i].color,
-                .function = demos[i].function
-            }
-        };
-
-        if (!fuzzy_plot_many(
-            demos[i].filename,
-            demos[i].title,
-            0.0f,
-            100.0f,
-            1.0f,
-            series,
-            sizeof(series) / sizeof(series[0])
-        )) {
-            fprintf(
-                stderr,
-                "[FAILED] Could not generate %s.svg\n",
-                demos[i].filename
-            );
-
-            return false;
-        }
-
-        printf(
-            "[OK] Generated %s.svg\n",
-            demos[i].filename
-        );
-    }
-        if (!FUZZY_PLOT(
-        "demo-svg/trapezoid_hedges",
-        "Trapezoidal Membership Function Hedges",
-        0.0f,
-        100.0f,
-        1.0f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Normal",
-            "#111827",
-            fuzzy_demo_trapezoid_normal
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Very",
-            "#ef4444",
-            fuzzy_demo_trapezoid_very
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Extremely",
-            "#a855f7",
-            fuzzy_demo_trapezoid_extremely
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Somewhat",
-            "#22c55e",
-            fuzzy_demo_trapezoid_somewhat
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Slightly",
-            "#3b82f6",
-            fuzzy_demo_trapezoid_slightly
-        )
-    )) {
-        fprintf(
-            stderr,
-            "[FAILED] Could not generate trapezoid_hedges.svg\n"
-        );
-
-        return false;
-    }
-
-    printf("[OK] Generated trapezoid_hedges.svg\n");
-
-    printf(
-        "\nGenerated all %zu membership-function SVG demos.\n",
-        demo_count
-    );
-
-    return true;
-}
-
-
 /*
  * Write the parsed N-dimensional COG sweep as SVG.
  *
@@ -2805,16 +2437,13 @@ static bool fuzzy_sweep_write_svg(
             parsed_cog_values[point] <
             minimum_cog
         ) {
-            minimum_cog =
-                parsed_cog_values[point];
+            minimum_cog = parsed_cog_values[point];
         }
 
         if (
-            parsed_cog_values[point] >
-            maximum_cog
+            parsed_cog_values[point] > maximum_cog
         ) {
-            maximum_cog =
-                parsed_cog_values[point];
+            maximum_cog = parsed_cog_values[point];
         }
     }
 
@@ -2912,34 +2541,15 @@ static bool fuzzy_sweep_write_svg(
         );
 
         for (int tick = 0; tick <= 10; tick++) {
-            float ratio =
-                (float)tick / 10.0f;
+            float ratio = (float)tick / 10.0f;
 
-            float x =
-                (float)left +
-                ratio *
-                (float)plot_width;
+            float x = (float)left + ratio * (float)plot_width;
 
-            float y =
-                (float)bottom -
-                ratio *
-                (float)plot_height;
+            float y = (float)bottom - ratio * (float)plot_height;
 
-            float input_value =
-                sweep->dimensions[0].lower +
-                ratio *
-                (
-                    sweep->dimensions[0].upper -
-                    sweep->dimensions[0].lower
-                );
+            float input_value = sweep->dimensions[0].lower + ratio * (sweep->dimensions[0].upper - sweep->dimensions[0].lower );
 
-            float cog_value =
-                minimum_cog +
-                ratio *
-                (
-                    maximum_cog -
-                    minimum_cog
-                );
+            float cog_value = minimum_cog + ratio * (maximum_cog - minimum_cog);
 
             fprintf(
                 file,
@@ -2997,40 +2607,17 @@ static bool fuzzy_sweep_write_svg(
             "points=\""
         );
 
-        for (
-            size_t point = 0;
-            point < total_points;
-            point++
-        ) {
-            float input_value =
-                parsed_inputs[point];
+        for (size_t point = 0; point < total_points; point++)
+        {
+            float input_value = parsed_inputs[point];
 
-            float input_ratio =
-                (
-                    input_value -
-                    sweep->dimensions[0].lower
-                ) /
-                (
-                    sweep->dimensions[0].upper -
-                    sweep->dimensions[0].lower
-                );
+            float input_ratio = (input_value - sweep->dimensions[0].lower ) / (sweep->dimensions[0].upper - sweep->dimensions[0].lower);
 
-            float cog_ratio =
-                (
-                    parsed_cog_values[point] -
-                    minimum_cog
-                ) /
-                cog_range;
+            float cog_ratio = (parsed_cog_values[point] - minimum_cog ) / cog_range;
 
-            float x =
-                (float)left +
-                input_ratio *
-                (float)plot_width;
+            float x = (float)left + input_ratio * (float)plot_width;
 
-            float y =
-                (float)bottom -
-                cog_ratio *
-                (float)plot_height;
+            float y = (float)bottom - cog_ratio * (float)plot_height;
 
             fprintf(
                 file,
@@ -3093,22 +2680,15 @@ static bool fuzzy_sweep_write_svg(
          * Slider movement recalculates flat point indices
          * and repaints the existing heatmap cells.
          */
-        const size_t x_count =
-            sample_counts[0];
+        const size_t x_count = sample_counts[0];
 
-        const size_t y_count =
-            sample_counts[1];
+        const size_t y_count = sample_counts[1];
 
-        const size_t cell_count =
-            x_count * y_count;
+        const size_t cell_count = x_count * y_count;
 
-        float cell_width =
-            (float)plot_width /
-            (float)x_count;
+        float cell_width = (float)plot_width / (float)x_count;
 
-        float cell_height =
-            (float)plot_height /
-            (float)y_count;
+        float cell_height = (float)plot_height / (float)y_count;
 
         /*
          * Heatmap background and border.
@@ -4270,25 +3850,15 @@ bool fuzzy_cog_sweep(
          *
          * The final dimension changes fastest.
          */
-        for (
-            size_t dimension = dimension_count;
-            dimension > 0;
-            dimension--
-        ) {
-            size_t index =
-                dimension - 1u;
+        for (size_t dimension = dimension_count; dimension > 0; dimension--)
+        {
+            size_t index = dimension - 1u;
 
             indices[index]++;
 
-            if (
-                indices[index] <
-                sample_counts[index]
-            ) {
-                break;
-            }
+            if (indices[index] < sample_counts[index]) break;
 
-            indices[index] =
-                0;
+            indices[index] = 0;
         }
     }
 
@@ -4296,10 +3866,7 @@ bool fuzzy_cog_sweep(
      * Ensure the CSV was written successfully.
      */
     if (ferror(csv_file)) {
-        fprintf(stderr, 
-            "Failed while writing %s.\n",
-            csv_filename
-        );
+        fprintf(stderr, "Failed while writing %s.\n", csv_filename);
 
         fclose(csv_file);
 

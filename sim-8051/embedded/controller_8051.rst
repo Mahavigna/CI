@@ -414,6654 +414,6720 @@
                                     414 ; internal ram data
                                     415 ;--------------------------------------------------------
                                     416 	.area DSEG    (DATA)
-                           000000   417 G$test_temperature$0_0$0==.
-      000008                        418 _test_temperature::
-      000008                        419 	.ds 1
-                           000001   420 G$test_pwm$0_0$0==.
-      000009                        421 _test_pwm::
-      000009                        422 	.ds 1
-                           000002   423 G$test_fan_speed$0_0$0==.
-      00000A                        424 _test_fan_speed::
-      00000A                        425 	.ds 4
-                                    426 ;--------------------------------------------------------
-                                    427 ; overlayable items in internal ram
-                                    428 ;--------------------------------------------------------
+                           000000   417 Fcontroller_8051$fuzzy_values_buffer$0_0$0==.
+      000021                        418 _fuzzy_values_buffer:
+      000021                        419 	.ds 64
+                           000040   420 G$test_temperature$0_0$0==.
+      000061                        421 _test_temperature::
+      000061                        422 	.ds 1
+                           000041   423 G$test_pwm$0_0$0==.
+      000062                        424 _test_pwm::
+      000062                        425 	.ds 1
+                           000042   426 G$test_fan_speed$0_0$0==.
+      000063                        427 _test_fan_speed::
+      000063                        428 	.ds 4
                                     429 ;--------------------------------------------------------
-                                    430 ; Stack segment in internal ram
+                                    430 ; overlayable items in internal ram
                                     431 ;--------------------------------------------------------
-                                    432 	.area SSEG
-      000021                        433 __start__stack:
-      000021                        434 	.ds	1
-                                    435 
-                                    436 ;--------------------------------------------------------
-                                    437 ; indirectly addressable internal ram data
-                                    438 ;--------------------------------------------------------
-                                    439 	.area ISEG    (DATA)
-                                    440 ;--------------------------------------------------------
-                                    441 ; absolute internal ram data
-                                    442 ;--------------------------------------------------------
-                                    443 	.area IABS    (ABS,DATA)
-                                    444 	.area IABS    (ABS,DATA)
+                                    432 ;--------------------------------------------------------
+                                    433 ; Stack segment in internal ram
+                                    434 ;--------------------------------------------------------
+                                    435 	.area SSEG
+      000067                        436 __start__stack:
+      000067                        437 	.ds	1
+                                    438 
+                                    439 ;--------------------------------------------------------
+                                    440 ; indirectly addressable internal ram data
+                                    441 ;--------------------------------------------------------
+                                    442 	.area ISEG    (DATA)
+                                    443 ;--------------------------------------------------------
+                                    444 ; absolute internal ram data
                                     445 ;--------------------------------------------------------
-                                    446 ; bit data
-                                    447 ;--------------------------------------------------------
-                                    448 	.area BSEG    (BIT)
-                                    449 ;--------------------------------------------------------
-                                    450 ; paged external ram data
-                                    451 ;--------------------------------------------------------
-                                    452 	.area PSEG    (PAG,XDATA)
-                                    453 ;--------------------------------------------------------
-                                    454 ; uninitialized external ram data
-                                    455 ;--------------------------------------------------------
-                                    456 	.area XSEG    (XDATA)
-                                    457 ;--------------------------------------------------------
-                                    458 ; absolute external ram data
-                                    459 ;--------------------------------------------------------
-                                    460 	.area XABS    (ABS,XDATA)
-                                    461 ;--------------------------------------------------------
-                                    462 ; initialized external ram data
-                                    463 ;--------------------------------------------------------
-                                    464 	.area XISEG   (XDATA)
-                                    465 	.area HOME    (CODE)
-                                    466 	.area GSINIT0 (CODE)
-                                    467 	.area GSINIT1 (CODE)
-                                    468 	.area GSINIT2 (CODE)
-                                    469 	.area GSINIT3 (CODE)
-                                    470 	.area GSINIT4 (CODE)
-                                    471 	.area GSINIT5 (CODE)
-                                    472 	.area GSINIT  (CODE)
-                                    473 	.area GSFINAL (CODE)
-                                    474 	.area CSEG    (CODE)
-                                    475 ;--------------------------------------------------------
-                                    476 ; interrupt vector
-                                    477 ;--------------------------------------------------------
-                                    478 	.area HOME    (CODE)
-      000000                        479 __interrupt_vect:
-      000000 02 00 4C         [24]  480 	ljmp	__sdcc_gsinit_startup
-                                    481 ; restartable atomic support routines
-      000003                        482 	.ds	5
-      000008                        483 sdcc_atomic_exchange_rollback_start::
-      000008 00               [12]  484 	nop
-      000009 00               [12]  485 	nop
-      00000A                        486 sdcc_atomic_exchange_pdata_impl:
-      00000A E2               [24]  487 	movx	a, @r0
-      00000B FB               [12]  488 	mov	r3, a
-      00000C EA               [12]  489 	mov	a, r2
-      00000D F2               [24]  490 	movx	@r0, a
-      00000E 80 2C            [24]  491 	sjmp	sdcc_atomic_exchange_exit
-      000010 00               [12]  492 	nop
-      000011 00               [12]  493 	nop
-      000012                        494 sdcc_atomic_exchange_xdata_impl:
-      000012 E0               [24]  495 	movx	a, @dptr
-      000013 FB               [12]  496 	mov	r3, a
-      000014 EA               [12]  497 	mov	a, r2
-      000015 F0               [24]  498 	movx	@dptr, a
-      000016 80 24            [24]  499 	sjmp	sdcc_atomic_exchange_exit
-      000018                        500 sdcc_atomic_compare_exchange_idata_impl:
-      000018 E6               [12]  501 	mov	a, @r0
-      000019 B5 02 02         [24]  502 	cjne	a, ar2, .+#5
-      00001C EB               [12]  503 	mov	a, r3
-      00001D F6               [12]  504 	mov	@r0, a
-      00001E 22               [24]  505 	ret
-      00001F 00               [12]  506 	nop
-      000020                        507 sdcc_atomic_compare_exchange_pdata_impl:
-      000020 E2               [24]  508 	movx	a, @r0
-      000021 B5 02 02         [24]  509 	cjne	a, ar2, .+#5
-      000024 EB               [12]  510 	mov	a, r3
-      000025 F2               [24]  511 	movx	@r0, a
-      000026 22               [24]  512 	ret
-      000027 00               [12]  513 	nop
-      000028                        514 sdcc_atomic_compare_exchange_xdata_impl:
-      000028 E0               [24]  515 	movx	a, @dptr
-      000029 B5 02 02         [24]  516 	cjne	a, ar2, .+#5
-      00002C EB               [12]  517 	mov	a, r3
-      00002D F0               [24]  518 	movx	@dptr, a
-      00002E 22               [24]  519 	ret
-      00002F                        520 sdcc_atomic_exchange_rollback_end::
-                                    521 
-      00002F                        522 sdcc_atomic_exchange_gptr_impl::
-      00002F 30 F6 E0         [24]  523 	jnb	b.6, sdcc_atomic_exchange_xdata_impl
-      000032 A8 82            [24]  524 	mov	r0, dpl
-      000034 20 F5 D3         [24]  525 	jb	b.5, sdcc_atomic_exchange_pdata_impl
-      000037                        526 sdcc_atomic_exchange_idata_impl:
-      000037 EA               [12]  527 	mov	a, r2
-      000038 C6               [12]  528 	xch	a, @r0
-      000039 F5 82            [12]  529 	mov	dpl, a
-      00003B 22               [24]  530 	ret
-      00003C                        531 sdcc_atomic_exchange_exit:
-      00003C 8B 82            [24]  532 	mov	dpl, r3
-      00003E 22               [24]  533 	ret
-      00003F                        534 sdcc_atomic_compare_exchange_gptr_impl::
-      00003F 30 F6 E6         [24]  535 	jnb	b.6, sdcc_atomic_compare_exchange_xdata_impl
-      000042 A8 82            [24]  536 	mov	r0, dpl
-      000044 20 F5 D9         [24]  537 	jb	b.5, sdcc_atomic_compare_exchange_pdata_impl
-      000047 80 CF            [24]  538 	sjmp	sdcc_atomic_compare_exchange_idata_impl
-                                    539 ;--------------------------------------------------------
-                                    540 ; global & static initialisations
-                                    541 ;--------------------------------------------------------
-                                    542 	.area HOME    (CODE)
-                                    543 	.area GSINIT  (CODE)
-                                    544 	.area GSFINAL (CODE)
-                                    545 	.area GSINIT  (CODE)
-                                    546 	.globl __sdcc_gsinit_startup
-                                    547 	.globl __sdcc_program_startup
-                                    548 	.globl __start__stack
-                                    549 	.globl __mcs51_genXINIT
-                                    550 	.globl __mcs51_genXRAMCLEAR
-                                    551 	.globl __mcs51_genRAMCLEAR
-                           000000   552 	C$controller_8051.c$25$2_0$118 ==.
-                                    553 ;	../../controller_8051.c:25: volatile unsigned char test_temperature = 0u;
-      0000A5 75 08 00         [24]  554 	mov	_test_temperature,#0x00
-                           000003   555 	C$controller_8051.c$26$2_0$118 ==.
-                                    556 ;	../../controller_8051.c:26: volatile unsigned char test_pwm = 0u;
-      0000A8 75 09 00         [24]  557 	mov	_test_pwm,#0x00
-                           000006   558 	C$controller_8051.c$27$2_0$118 ==.
-                                    559 ;	../../controller_8051.c:27: volatile float test_fan_speed = 0.0f;
-      0000AB E4               [12]  560 	clr	a
-      0000AC F5 0A            [12]  561 	mov	_test_fan_speed,a
-      0000AE F5 0B            [12]  562 	mov	(_test_fan_speed + 1),a
-      0000B0 F5 0C            [12]  563 	mov	(_test_fan_speed + 2),a
-      0000B2 F5 0D            [12]  564 	mov	(_test_fan_speed + 3),a
-                                    565 	.area GSFINAL (CODE)
-      0000B4 02 00 49         [24]  566 	ljmp	__sdcc_program_startup
-                                    567 ;--------------------------------------------------------
-                                    568 ; Home
-                                    569 ;--------------------------------------------------------
-                                    570 	.area HOME    (CODE)
-                                    571 	.area HOME    (CODE)
-      000049                        572 __sdcc_program_startup:
-      000049 02 22 92         [24]  573 	ljmp	_main
-                                    574 ;	return from main will return to caller
-                                    575 ;--------------------------------------------------------
-                                    576 ; code
-                                    577 ;--------------------------------------------------------
-                                    578 	.area CSEG    (CODE)
-                                    579 ;------------------------------------------------------------
-                                    580 ;Allocation info for local variables in function 'fuzzy_clamp'
-                                    581 ;------------------------------------------------------------
-                                    582 ;value         Allocated to registers r4 r5 r6 r7 
-                                    583 ;------------------------------------------------------------
-                           000000   584 	Fcontroller_8051$fuzzy_clamp$0$0 ==.
-                           000000   585 	C$fuzzy.h$521$0_0$16 ==.
-                                    586 ;	../../fuzzy.h:521: static float fuzzy_clamp(float value)
-                                    587 ;	-----------------------------------------
-                                    588 ;	 function fuzzy_clamp
-                                    589 ;	-----------------------------------------
-      0000B7                        590 _fuzzy_clamp:
-                           000007   591 	ar7 = 0x07
-                           000006   592 	ar6 = 0x06
-                           000005   593 	ar5 = 0x05
-                           000004   594 	ar4 = 0x04
-                           000003   595 	ar3 = 0x03
-                           000002   596 	ar2 = 0x02
-                           000001   597 	ar1 = 0x01
-                           000000   598 	ar0 = 0x00
-      0000B7 AC 82            [24]  599 	mov	r4,dpl
-      0000B9 AD 83            [24]  600 	mov	r5,dph
-      0000BB AE F0            [24]  601 	mov	r6,b
-      0000BD FF               [12]  602 	mov	r7,a
-                           000007   603 	C$fuzzy.h$523$1_0$16 ==.
-                                    604 ;	../../fuzzy.h:523: if (value < LEVEL_LO) {
-      0000BE C0 07            [24]  605 	push	ar7
-      0000C0 C0 06            [24]  606 	push	ar6
-      0000C2 C0 05            [24]  607 	push	ar5
-      0000C4 C0 04            [24]  608 	push	ar4
-      0000C6 E4               [12]  609 	clr	a
-      0000C7 C0 E0            [24]  610 	push	acc
-      0000C9 C0 E0            [24]  611 	push	acc
-      0000CB C0 E0            [24]  612 	push	acc
-      0000CD C0 E0            [24]  613 	push	acc
-      0000CF 8C 82            [24]  614 	mov	dpl, r4
-      0000D1 8D 83            [24]  615 	mov	dph, r5
-      0000D3 8E F0            [24]  616 	mov	b, r6
-      0000D5 EF               [12]  617 	mov	a, r7
-      0000D6 12 24 07         [24]  618 	lcall	___fslt
-      0000D9 AB 82            [24]  619 	mov	r3, dpl
-      0000DB E5 81            [12]  620 	mov	a,sp
-      0000DD 24 FC            [12]  621 	add	a,#0xfc
-      0000DF F5 81            [12]  622 	mov	sp,a
-      0000E1 D0 04            [24]  623 	pop	ar4
-      0000E3 D0 05            [24]  624 	pop	ar5
-      0000E5 D0 06            [24]  625 	pop	ar6
-      0000E7 D0 07            [24]  626 	pop	ar7
-      0000E9 EB               [12]  627 	mov	a,r3
-      0000EA 60 08            [24]  628 	jz	00102$
-                           000035   629 	C$fuzzy.h$524$2_0$17 ==.
-                                    630 ;	../../fuzzy.h:524: return LEVEL_LO;
-      0000EC 90 00 00         [24]  631 	mov	dptr,#0x0000
-      0000EF E4               [12]  632 	clr	a
-      0000F0 F5 F0            [12]  633 	mov	b,a
-      0000F2 80 3F            [24]  634 	sjmp	00105$
-      0000F4                        635 00102$:
-                           00003D   636 	C$fuzzy.h$527$1_0$16 ==.
-                                    637 ;	../../fuzzy.h:527: if (value > LEVEL_HI) {
-      0000F4 C0 07            [24]  638 	push	ar7
-      0000F6 C0 06            [24]  639 	push	ar6
-      0000F8 C0 05            [24]  640 	push	ar5
-      0000FA C0 04            [24]  641 	push	ar4
-      0000FC C0 04            [24]  642 	push	ar4
-      0000FE C0 05            [24]  643 	push	ar5
-      000100 C0 06            [24]  644 	push	ar6
-      000102 C0 07            [24]  645 	push	ar7
-      000104 90 00 00         [24]  646 	mov	dptr,#0x0000
-      000107 75 F0 80         [24]  647 	mov	b, #0x80
-      00010A 74 3F            [12]  648 	mov	a, #0x3f
-      00010C 12 24 07         [24]  649 	lcall	___fslt
-      00010F AB 82            [24]  650 	mov	r3, dpl
-      000111 E5 81            [12]  651 	mov	a,sp
-      000113 24 FC            [12]  652 	add	a,#0xfc
-      000115 F5 81            [12]  653 	mov	sp,a
-      000117 D0 04            [24]  654 	pop	ar4
-      000119 D0 05            [24]  655 	pop	ar5
-      00011B D0 06            [24]  656 	pop	ar6
-      00011D D0 07            [24]  657 	pop	ar7
-      00011F EB               [12]  658 	mov	a,r3
-      000120 60 0A            [24]  659 	jz	00104$
-                           00006B   660 	C$fuzzy.h$528$2_0$18 ==.
-                                    661 ;	../../fuzzy.h:528: return LEVEL_HI;
-      000122 90 00 00         [24]  662 	mov	dptr,#0x0000
-      000125 75 F0 80         [24]  663 	mov	b, #0x80
-      000128 74 3F            [12]  664 	mov	a, #0x3f
-      00012A 80 07            [24]  665 	sjmp	00105$
-      00012C                        666 00104$:
-                           000075   667 	C$fuzzy.h$531$1_0$16 ==.
-                                    668 ;	../../fuzzy.h:531: return value;
-      00012C 8C 82            [24]  669 	mov	dpl, r4
-      00012E 8D 83            [24]  670 	mov	dph, r5
-      000130 8E F0            [24]  671 	mov	b, r6
-      000132 EF               [12]  672 	mov	a, r7
-      000133                        673 00105$:
-                           00007C   674 	C$fuzzy.h$532$1_0$16 ==.
-                                    675 ;	../../fuzzy.h:532: }
-                           00007C   676 	C$fuzzy.h$532$1_0$16 ==.
-                           00007C   677 	XFcontroller_8051$fuzzy_clamp$0$0 ==.
-      000133 22               [24]  678 	ret
-                                    679 ;------------------------------------------------------------
-                                    680 ;Allocation info for local variables in function 'fuzzy_not'
-                                    681 ;------------------------------------------------------------
-                                    682 ;membership    Allocated to registers r4 r5 r6 r7 
-                                    683 ;------------------------------------------------------------
-                           00007D   684 	G$fuzzy_not$0$0 ==.
-                           00007D   685 	C$fuzzy.h$537$1_0$20 ==.
-                                    686 ;	../../fuzzy.h:537: float fuzzy_not(
-                                    687 ;	-----------------------------------------
-                                    688 ;	 function fuzzy_not
-                                    689 ;	-----------------------------------------
-      000134                        690 _fuzzy_not:
-                           00007D   691 	C$fuzzy.h$543$1_0$20 ==.
-                                    692 ;	../../fuzzy.h:543: membership
-      000134 12 00 B7         [24]  693 	lcall	_fuzzy_clamp
-      000137 AC 82            [24]  694 	mov	r4, dpl
-      000139 AD 83            [24]  695 	mov	r5, dph
-      00013B AE F0            [24]  696 	mov	r6, b
-      00013D FF               [12]  697 	mov	r7, a
-      00013E C0 04            [24]  698 	push	ar4
-      000140 C0 05            [24]  699 	push	ar5
-      000142 C0 06            [24]  700 	push	ar6
-      000144 C0 07            [24]  701 	push	ar7
-      000146 90 00 00         [24]  702 	mov	dptr,#0x0000
-      000149 75 F0 80         [24]  703 	mov	b, #0x80
-      00014C 74 3F            [12]  704 	mov	a, #0x3f
-      00014E 12 22 CC         [24]  705 	lcall	___fssub
-      000151 AC 82            [24]  706 	mov	r4, dpl
-      000153 AD 83            [24]  707 	mov	r5, dph
-      000155 AE F0            [24]  708 	mov	r6, b
-      000157 FF               [12]  709 	mov	r7, a
-      000158 E5 81            [12]  710 	mov	a,sp
-      00015A 24 FC            [12]  711 	add	a,#0xfc
-      00015C F5 81            [12]  712 	mov	sp,a
-      00015E 8C 82            [24]  713 	mov	dpl, r4
-      000160 8D 83            [24]  714 	mov	dph, r5
-      000162 8E F0            [24]  715 	mov	b, r6
-      000164 EF               [12]  716 	mov	a, r7
-                           0000AE   717 	C$fuzzy.h$545$1_0$20 ==.
-                                    718 ;	../../fuzzy.h:545: }
-                           0000AE   719 	C$fuzzy.h$545$1_0$20 ==.
-                           0000AE   720 	XG$fuzzy_not$0$0 ==.
-      000165 22               [24]  721 	ret
-                                    722 ;------------------------------------------------------------
-                                    723 ;Allocation info for local variables in function 'fuzzy_apply_hedge'
-                                    724 ;------------------------------------------------------------
-                                    725 ;hedge         Allocated to stack - _bp -3 +1 
-                                    726 ;membership    Allocated to stack - _bp +1 +4 
-                                    727 ;result        Allocated to registers r2 r3 r6 r7 
-                                    728 ;------------------------------------------------------------
-                           0000AF   729 	Fcontroller_8051$fuzzy_apply_hedge$0$0 ==.
-                           0000AF   730 	C$fuzzy.h$555$1_0$22 ==.
-                                    731 ;	../../fuzzy.h:555: static float fuzzy_apply_hedge(
-                                    732 ;	-----------------------------------------
-                                    733 ;	 function fuzzy_apply_hedge
-                                    734 ;	-----------------------------------------
-      000166                        735 _fuzzy_apply_hedge:
-      000166 C0 0E            [24]  736 	push	_bp
-      000168 85 81 0E         [24]  737 	mov	_bp,sp
-      00016B AC 82            [24]  738 	mov	r4,dpl
-      00016D AD 83            [24]  739 	mov	r5,dph
-      00016F AE F0            [24]  740 	mov	r6,b
-      000171 FF               [12]  741 	mov	r7,a
-      000172 E5 81            [12]  742 	mov	a,sp
-      000174 24 04            [12]  743 	add	a,#0x04
-      000176 F5 81            [12]  744 	mov	sp,a
-                           0000C1   745 	C$fuzzy.h$562$1_0$22 ==.
-                                    746 ;	../../fuzzy.h:562: membership
-      000178 8C 82            [24]  747 	mov	dpl, r4
-      00017A 8D 83            [24]  748 	mov	dph, r5
-      00017C 8E F0            [24]  749 	mov	b, r6
-      00017E EF               [12]  750 	mov	a, r7
-      00017F 12 00 B7         [24]  751 	lcall	_fuzzy_clamp
-      000182 A8 0E            [24]  752 	mov	r0,_bp
-      000184 08               [12]  753 	inc	r0
-      000185 A6 82            [24]  754 	mov	@r0, dpl
-      000187 08               [12]  755 	inc	r0
-      000188 A6 83            [24]  756 	mov	@r0, dph
-      00018A 08               [12]  757 	inc	r0
-      00018B A6 F0            [24]  758 	mov	@r0, b
-      00018D 08               [12]  759 	inc	r0
-      00018E F6               [12]  760 	mov	@r0,a
-                           0000D8   761 	C$fuzzy.h$567$2_0$23 ==.
-                                    762 ;	../../fuzzy.h:567: float result =
-      00018F 7A 00            [12]  763 	mov	r2,#0x00
-      000191 7B 00            [12]  764 	mov	r3,#0x00
-      000193 7E 80            [12]  765 	mov	r6,#0x80
-      000195 7F 3F            [12]  766 	mov	r7,#0x3f
-                           0000E0   767 	C$fuzzy.h$570$1_1$23 ==.
-                                    768 ;	../../fuzzy.h:570: if (hedge == 0u) {
-      000197 E5 0E            [12]  769 	mov	a,_bp
-      000199 24 FD            [12]  770 	add	a,#0xfd
-      00019B F8               [12]  771 	mov	r0,a
-      00019C E6               [12]  772 	mov	a,@r0
-      00019D 70 07            [24]  773 	jnz	00110$
-                           0000E8   774 	C$fuzzy.h$572$2_1$24 ==.
-                                    775 ;	../../fuzzy.h:572: 1u;
-      00019F E5 0E            [12]  776 	mov	a,_bp
-      0001A1 24 FD            [12]  777 	add	a,#0xfd
-      0001A3 F8               [12]  778 	mov	r0,a
-      0001A4 76 01            [12]  779 	mov	@r0,#0x01
-                           0000EF   780 	C$fuzzy.h$575$1_1$22 ==.
-                                    781 ;	../../fuzzy.h:575: while (hedge > 0u) {
-      0001A6                        782 00110$:
-      0001A6 E5 0E            [12]  783 	mov	a,_bp
-      0001A8 24 FD            [12]  784 	add	a,#0xfd
-      0001AA F8               [12]  785 	mov	r0,a
-      0001AB 86 05            [24]  786 	mov	ar5,@r0
-      0001AD                        787 00103$:
-      0001AD ED               [12]  788 	mov	a,r5
-      0001AE 60 30            [24]  789 	jz	00105$
-                           0000F9   790 	C$fuzzy.h$577$1_1$22 ==.
-                                    791 ;	../../fuzzy.h:577: membership;
-      0001B0 C0 05            [24]  792 	push	ar5
-      0001B2 A8 0E            [24]  793 	mov	r0,_bp
-      0001B4 08               [12]  794 	inc	r0
-      0001B5 E6               [12]  795 	mov	a,@r0
-      0001B6 C0 E0            [24]  796 	push	acc
-      0001B8 08               [12]  797 	inc	r0
-      0001B9 E6               [12]  798 	mov	a,@r0
-      0001BA C0 E0            [24]  799 	push	acc
-      0001BC 08               [12]  800 	inc	r0
-      0001BD E6               [12]  801 	mov	a,@r0
-      0001BE C0 E0            [24]  802 	push	acc
-      0001C0 08               [12]  803 	inc	r0
-      0001C1 E6               [12]  804 	mov	a,@r0
-      0001C2 C0 E0            [24]  805 	push	acc
-                           00010D   806 	C$fuzzy.h$579$1_1$22 ==.
-                                    807 ;	../../fuzzy.h:579: hedge--;
-      0001C4 8A 82            [24]  808 	mov	dpl, r2
-      0001C6 8B 83            [24]  809 	mov	dph, r3
-      0001C8 8E F0            [24]  810 	mov	b, r6
-      0001CA EF               [12]  811 	mov	a, r7
-      0001CB 12 22 D7         [24]  812 	lcall	___fsmul
-      0001CE AA 82            [24]  813 	mov	r2, dpl
-      0001D0 AB 83            [24]  814 	mov	r3, dph
-      0001D2 AE F0            [24]  815 	mov	r6, b
-      0001D4 FF               [12]  816 	mov	r7, a
-      0001D5 E5 81            [12]  817 	mov	a,sp
-      0001D7 24 FC            [12]  818 	add	a,#0xfc
-      0001D9 F5 81            [12]  819 	mov	sp,a
-      0001DB D0 05            [24]  820 	pop	ar5
-      0001DD 1D               [12]  821 	dec	r5
-      0001DE 80 CD            [24]  822 	sjmp	00103$
-      0001E0                        823 00105$:
-                           000129   824 	C$fuzzy.h$583$1_1$23 ==.
-                                    825 ;	../../fuzzy.h:583: result
-      0001E0 8A 82            [24]  826 	mov	dpl, r2
-      0001E2 8B 83            [24]  827 	mov	dph, r3
-      0001E4 8E F0            [24]  828 	mov	b, r6
-      0001E6 EF               [12]  829 	mov	a, r7
-      0001E7 12 00 B7         [24]  830 	lcall	_fuzzy_clamp
-                           000133   831 	C$fuzzy.h$599$1_1$22 ==.
-                                    832 ;	../../fuzzy.h:599: }
-      0001EA 85 0E 81         [24]  833 	mov	sp,_bp
-      0001ED D0 0E            [24]  834 	pop	_bp
-                           000138   835 	C$fuzzy.h$599$1_1$22 ==.
-                           000138   836 	XFcontroller_8051$fuzzy_apply_hedge$0$0 ==.
-      0001EF 22               [24]  837 	ret
-                                    838 ;------------------------------------------------------------
-                                    839 ;Allocation info for local variables in function 'fuzzy_and_array'
-                                    840 ;------------------------------------------------------------
-                                    841 ;count         Allocated to stack - _bp -4 +2 
-                                    842 ;args          Allocated to stack - _bp -7 +3 
-                                    843 ;method        Allocated to registers r5 
-                                    844 ;result        Allocated to stack - _bp +5 +4 
-                                    845 ;next          Allocated to stack - _bp +9 +4 
-                                    846 ;index         Allocated to stack - _bp +13 +2 
-                                    847 ;sloc0         Allocated to stack - _bp +1 +3 
-                                    848 ;sloc1         Allocated to stack - _bp +4 +1 
-                                    849 ;------------------------------------------------------------
-                           000139   850 	G$fuzzy_and_array$0$0 ==.
-                           000139   851 	C$fuzzy.h$613$1_1$27 ==.
-                                    852 ;	../../fuzzy.h:613: float fuzzy_and_array(
-                                    853 ;	-----------------------------------------
-                                    854 ;	 function fuzzy_and_array
-                                    855 ;	-----------------------------------------
-      0001F0                        856 _fuzzy_and_array:
-      0001F0 C0 0E            [24]  857 	push	_bp
-      0001F2 E5 81            [12]  858 	mov	a,sp
-      0001F4 F5 0E            [12]  859 	mov	_bp,a
-      0001F6 24 0E            [12]  860 	add	a,#0x0e
-      0001F8 F5 81            [12]  861 	mov	sp,a
-      0001FA AD 82            [24]  862 	mov	r5, dpl
-                           000145   863 	C$fuzzy.h$624$1_0$27 ==.
-                                    864 ;	../../fuzzy.h:624: args == NULL ||
-      0001FC E5 0E            [12]  865 	mov	a,_bp
-      0001FE 24 F9            [12]  866 	add	a,#0xf9
-      000200 F8               [12]  867 	mov	r0,a
-      000201 E6               [12]  868 	mov	a,@r0
-      000202 08               [12]  869 	inc	r0
-      000203 46               [12]  870 	orl	a,@r0
-      000204 60 0A            [24]  871 	jz	00101$
-                           00014F   872 	C$fuzzy.h$625$1_0$27 ==.
-                                    873 ;	../../fuzzy.h:625: count == 0u
-      000206 E5 0E            [12]  874 	mov	a,_bp
-      000208 24 FC            [12]  875 	add	a,#0xfc
-      00020A F8               [12]  876 	mov	r0,a
-      00020B E6               [12]  877 	mov	a,@r0
-      00020C 08               [12]  878 	inc	r0
-      00020D 46               [12]  879 	orl	a,@r0
-      00020E 70 0B            [24]  880 	jnz	00102$
-      000210                        881 00101$:
-                           000159   882 	C$fuzzy.h$627$2_0$28 ==.
-                                    883 ;	../../fuzzy.h:627: return LEVEL_HI;
-      000210 90 00 00         [24]  884 	mov	dptr,#0x0000
-      000213 75 F0 80         [24]  885 	mov	b, #0x80
-      000216 74 3F            [12]  886 	mov	a, #0x3f
-      000218 02 04 89         [24]  887 	ljmp	00121$
-      00021B                        888 00102$:
-                           000164   889 	C$fuzzy.h$631$1_0$27 ==.
-                                    890 ;	../../fuzzy.h:631: method != FUZZY_LOGIC_STANDARD &&
-      00021B ED               [12]  891 	mov	a,r5
-      00021C 60 13            [24]  892 	jz	00105$
-                           000167   893 	C$fuzzy.h$632$1_0$27 ==.
-                                    894 ;	../../fuzzy.h:632: method != FUZZY_LOGIC_ALGEBRAIC &&
-      00021E BD 01 02         [24]  895 	cjne	r5,#0x01,00192$
-      000221 80 0E            [24]  896 	sjmp	00105$
-      000223                        897 00192$:
-                           00016C   898 	C$fuzzy.h$634$1_0$27 ==.
-                                    899 ;	../../fuzzy.h:634: ) {
-      000223 BD 02 02         [24]  900 	cjne	r5,#0x02,00193$
-      000226 80 09            [24]  901 	sjmp	00105$
-      000228                        902 00193$:
-                           000171   903 	C$fuzzy.h$635$2_0$29 ==.
-                                    904 ;	../../fuzzy.h:635: return LEVEL_LO;
-      000228 90 00 00         [24]  905 	mov	dptr,#0x0000
-      00022B E4               [12]  906 	clr	a
-      00022C F5 F0            [12]  907 	mov	b,a
-      00022E 02 04 89         [24]  908 	ljmp	00121$
-      000231                        909 00105$:
-                           00017A   910 	C$fuzzy.h$640$1_0$27 ==.
-                                    911 ;	../../fuzzy.h:640: args[0]
-      000231 E5 0E            [12]  912 	mov	a,_bp
-      000233 24 F9            [12]  913 	add	a,#0xf9
-      000235 F8               [12]  914 	mov	r0,a
-      000236 A9 0E            [24]  915 	mov	r1,_bp
-      000238 09               [12]  916 	inc	r1
-      000239 E6               [12]  917 	mov	a,@r0
-      00023A F7               [12]  918 	mov	@r1,a
-      00023B 08               [12]  919 	inc	r0
-      00023C E6               [12]  920 	mov	a,@r0
-      00023D 09               [12]  921 	inc	r1
-      00023E F7               [12]  922 	mov	@r1,a
-      00023F 08               [12]  923 	inc	r0
-      000240 E6               [12]  924 	mov	a,@r0
-      000241 09               [12]  925 	inc	r1
-      000242 F7               [12]  926 	mov	@r1,a
-      000243 A8 0E            [24]  927 	mov	r0,_bp
-      000245 08               [12]  928 	inc	r0
-      000246 86 82            [24]  929 	mov	dpl,@r0
-      000248 08               [12]  930 	inc	r0
-      000249 86 83            [24]  931 	mov	dph,@r0
-      00024B 08               [12]  932 	inc	r0
-      00024C 86 F0            [24]  933 	mov	b,@r0
-      00024E 12 26 33         [24]  934 	lcall	__gptrget
-      000251 FA               [12]  935 	mov	r2,a
-      000252 A3               [24]  936 	inc	dptr
-      000253 12 26 33         [24]  937 	lcall	__gptrget
-      000256 FB               [12]  938 	mov	r3,a
-      000257 A3               [24]  939 	inc	dptr
-      000258 12 26 33         [24]  940 	lcall	__gptrget
-      00025B FE               [12]  941 	mov	r6,a
-      00025C A3               [24]  942 	inc	dptr
-      00025D 12 26 33         [24]  943 	lcall	__gptrget
-      000260 8A 82            [24]  944 	mov	dpl,r2
-      000262 8B 83            [24]  945 	mov	dph,r3
-      000264 8E F0            [24]  946 	mov	b,r6
-      000266 C0 05            [24]  947 	push	ar5
-      000268 12 00 B7         [24]  948 	lcall	_fuzzy_clamp
-      00026B C8               [12]  949 	xch	a,r0
-      00026C E5 0E            [12]  950 	mov	a,_bp
-      00026E 24 05            [12]  951 	add	a,#0x05
-      000270 C8               [12]  952 	xch	a,r0
-      000271 A6 82            [24]  953 	mov	@r0, dpl
-      000273 08               [12]  954 	inc	r0
-      000274 A6 83            [24]  955 	mov	@r0, dph
-      000276 08               [12]  956 	inc	r0
-      000277 A6 F0            [24]  957 	mov	@r0, b
-      000279 08               [12]  958 	inc	r0
-      00027A F6               [12]  959 	mov	@r0,a
-      00027B D0 05            [24]  960 	pop	ar5
-                           0001C6   961 	C$fuzzy.h$644$3_0$31 ==.
-                                    962 ;	../../fuzzy.h:644: index = 1u;
-      00027D E4               [12]  963 	clr	a
-      00027E BD 00 01         [24]  964 	cjne	r5,#0x00,00194$
-      000281 04               [12]  965 	inc	a
-      000282                        966 00194$:
-      000282 FB               [12]  967 	mov	r3,a
-      000283 BD 01 03         [24]  968 	cjne	r5,#0x01,00196$
-      000286 ED               [12]  969 	mov	a,r5
-      000287 80 01            [24]  970 	sjmp	00197$
-      000289                        971 00196$:
-      000289 E4               [12]  972 	clr	a
-      00028A                        973 00197$:
-      00028A FA               [12]  974 	mov	r2,a
-      00028B E5 0E            [12]  975 	mov	a,_bp
-      00028D 24 04            [12]  976 	add	a,#0x04
-      00028F F8               [12]  977 	mov	r0,a
-      000290 E4               [12]  978 	clr	a
-      000291 BD 02 01         [24]  979 	cjne	r5,#0x02,00198$
-      000294 04               [12]  980 	inc	a
-      000295                        981 00198$:
-      000295 F6               [12]  982 	mov	@r0,a
-      000296 E5 0E            [12]  983 	mov	a,_bp
-      000298 24 0D            [12]  984 	add	a,#0x0d
-      00029A F8               [12]  985 	mov	r0,a
-      00029B 76 01            [12]  986 	mov	@r0,#0x01
-      00029D 08               [12]  987 	inc	r0
-      00029E 76 00            [12]  988 	mov	@r0,#0x00
-      0002A0                        989 00119$:
-                           0001E9   990 	C$fuzzy.h$645$2_0$30 ==.
-                                    991 ;	../../fuzzy.h:645: index < count;
-      0002A0 E5 0E            [12]  992 	mov	a,_bp
-      0002A2 24 0D            [12]  993 	add	a,#0x0d
-      0002A4 F8               [12]  994 	mov	r0,a
-      0002A5 E5 0E            [12]  995 	mov	a,_bp
-      0002A7 24 FC            [12]  996 	add	a,#0xfc
-      0002A9 F9               [12]  997 	mov	r1,a
-      0002AA C3               [12]  998 	clr	c
-      0002AB E6               [12]  999 	mov	a,@r0
-      0002AC 97               [12] 1000 	subb	a,@r1
-      0002AD 08               [12] 1001 	inc	r0
-      0002AE E6               [12] 1002 	mov	a,@r0
-      0002AF 09               [12] 1003 	inc	r1
-      0002B0 97               [12] 1004 	subb	a,@r1
-      0002B1 40 03            [24] 1005 	jc	00200$
-      0002B3 02 04 77         [24] 1006 	ljmp	00117$
-      0002B6                       1007 00200$:
-                           0001FF  1008 	C$fuzzy.h$650$1_0$27 ==.
-                                   1009 ;	../../fuzzy.h:650: args[index]
-      0002B6 C0 02            [24] 1010 	push	ar2
-      0002B8 E5 0E            [12] 1011 	mov	a,_bp
-      0002BA 24 0D            [12] 1012 	add	a,#0x0d
-      0002BC F8               [12] 1013 	mov	r0,a
-      0002BD E6               [12] 1014 	mov	a,@r0
-      0002BE 26               [12] 1015 	add	a,@r0
-      0002BF FD               [12] 1016 	mov	r5,a
-      0002C0 08               [12] 1017 	inc	r0
-      0002C1 E6               [12] 1018 	mov	a,@r0
-      0002C2 33               [12] 1019 	rlc	a
-      0002C3 FC               [12] 1020 	mov	r4,a
-      0002C4 ED               [12] 1021 	mov	a,r5
-      0002C5 2D               [12] 1022 	add	a,r5
-      0002C6 FD               [12] 1023 	mov	r5,a
-      0002C7 EC               [12] 1024 	mov	a,r4
-      0002C8 33               [12] 1025 	rlc	a
-      0002C9 FC               [12] 1026 	mov	r4,a
-      0002CA A8 0E            [24] 1027 	mov	r0,_bp
-      0002CC 08               [12] 1028 	inc	r0
-      0002CD ED               [12] 1029 	mov	a,r5
-      0002CE 26               [12] 1030 	add	a, @r0
-      0002CF FA               [12] 1031 	mov	r2,a
-      0002D0 EC               [12] 1032 	mov	a,r4
-      0002D1 08               [12] 1033 	inc	r0
-      0002D2 36               [12] 1034 	addc	a, @r0
-      0002D3 FC               [12] 1035 	mov	r4,a
-      0002D4 08               [12] 1036 	inc	r0
-      0002D5 86 05            [24] 1037 	mov	ar5,@r0
-      0002D7 8A 82            [24] 1038 	mov	dpl,r2
-      0002D9 8C 83            [24] 1039 	mov	dph,r4
-      0002DB 8D F0            [24] 1040 	mov	b,r5
-      0002DD 12 26 33         [24] 1041 	lcall	__gptrget
-      0002E0 FA               [12] 1042 	mov	r2,a
-      0002E1 A3               [24] 1043 	inc	dptr
-      0002E2 12 26 33         [24] 1044 	lcall	__gptrget
-      0002E5 FC               [12] 1045 	mov	r4,a
-      0002E6 A3               [24] 1046 	inc	dptr
-      0002E7 12 26 33         [24] 1047 	lcall	__gptrget
-      0002EA FD               [12] 1048 	mov	r5,a
-      0002EB A3               [24] 1049 	inc	dptr
-      0002EC 12 26 33         [24] 1050 	lcall	__gptrget
-      0002EF 8A 82            [24] 1051 	mov	dpl,r2
-      0002F1 8C 83            [24] 1052 	mov	dph,r4
-      0002F3 8D F0            [24] 1053 	mov	b,r5
-      0002F5 C0 03            [24] 1054 	push	ar3
-      0002F7 C0 02            [24] 1055 	push	ar2
-      0002F9 12 00 B7         [24] 1056 	lcall	_fuzzy_clamp
-      0002FC C8               [12] 1057 	xch	a,r0
-      0002FD E5 0E            [12] 1058 	mov	a,_bp
-      0002FF 24 09            [12] 1059 	add	a,#0x09
-      000301 C8               [12] 1060 	xch	a,r0
-      000302 A6 82            [24] 1061 	mov	@r0, dpl
-      000304 08               [12] 1062 	inc	r0
-      000305 A6 83            [24] 1063 	mov	@r0, dph
-      000307 08               [12] 1064 	inc	r0
-      000308 A6 F0            [24] 1065 	mov	@r0, b
-      00030A 08               [12] 1066 	inc	r0
-      00030B F6               [12] 1067 	mov	@r0,a
-      00030C D0 02            [24] 1068 	pop	ar2
-      00030E D0 03            [24] 1069 	pop	ar3
-                           000259  1070 	C$fuzzy.h$653$1_0$27 ==.
-                                   1071 ;	../../fuzzy.h:653: switch (method) {
-      000310 D0 02            [24] 1072 	pop	ar2
-      000312 EB               [12] 1073 	mov	a,r3
-      000313 70 11            [24] 1074 	jnz	00108$
-      000315 EA               [12] 1075 	mov	a,r2
-      000316 70 65            [24] 1076 	jnz	00111$
-      000318 E5 0E            [12] 1077 	mov	a,_bp
-      00031A 24 04            [12] 1078 	add	a,#0x04
-      00031C F8               [12] 1079 	mov	r0,a
-      00031D E6               [12] 1080 	mov	a,@r0
-      00031E 60 03            [24] 1081 	jz	00203$
-      000320 02 03 C4         [24] 1082 	ljmp	00112$
-      000323                       1083 00203$:
-      000323 02 04 61         [24] 1084 	ljmp	00115$
-                           00026F  1085 	C$fuzzy.h$654$4_0$32 ==.
-                                   1086 ;	../../fuzzy.h:654: case FUZZY_LOGIC_STANDARD:
-      000326                       1087 00108$:
-                           00026F  1088 	C$fuzzy.h$655$1_0$27 ==.
-                                   1089 ;	../../fuzzy.h:655: if (next < result) {
-      000326 C0 03            [24] 1090 	push	ar3
-      000328 C0 02            [24] 1091 	push	ar2
-      00032A E5 0E            [12] 1092 	mov	a,_bp
-      00032C 24 05            [12] 1093 	add	a,#0x05
-      00032E F8               [12] 1094 	mov	r0,a
-      00032F E6               [12] 1095 	mov	a,@r0
-      000330 C0 E0            [24] 1096 	push	acc
-      000332 08               [12] 1097 	inc	r0
-      000333 E6               [12] 1098 	mov	a,@r0
-      000334 C0 E0            [24] 1099 	push	acc
-      000336 08               [12] 1100 	inc	r0
-      000337 E6               [12] 1101 	mov	a,@r0
-      000338 C0 E0            [24] 1102 	push	acc
-      00033A 08               [12] 1103 	inc	r0
-      00033B E6               [12] 1104 	mov	a,@r0
-      00033C C0 E0            [24] 1105 	push	acc
-      00033E E5 0E            [12] 1106 	mov	a,_bp
-      000340 24 09            [12] 1107 	add	a,#0x09
-      000342 F8               [12] 1108 	mov	r0,a
-      000343 86 82            [24] 1109 	mov	dpl, @r0
-      000345 08               [12] 1110 	inc	r0
-      000346 86 83            [24] 1111 	mov	dph, @r0
-      000348 08               [12] 1112 	inc	r0
-      000349 86 F0            [24] 1113 	mov	b, @r0
-      00034B 08               [12] 1114 	inc	r0
-      00034C E6               [12] 1115 	mov	a, @r0
-      00034D 12 24 07         [24] 1116 	lcall	___fslt
-      000350 AF 82            [24] 1117 	mov	r7, dpl
-      000352 E5 81            [12] 1118 	mov	a,sp
-      000354 24 FC            [12] 1119 	add	a,#0xfc
-      000356 F5 81            [12] 1120 	mov	sp,a
-      000358 D0 02            [24] 1121 	pop	ar2
-      00035A D0 03            [24] 1122 	pop	ar3
-      00035C EF               [12] 1123 	mov	a,r7
-      00035D 70 03            [24] 1124 	jnz	00204$
-      00035F 02 04 69         [24] 1125 	ljmp	00120$
-      000362                       1126 00204$:
-                           0002AB  1127 	C$fuzzy.h$656$5_0$33 ==.
-                                   1128 ;	../../fuzzy.h:656: result = next;
-      000362 E5 0E            [12] 1129 	mov	a,_bp
-      000364 24 09            [12] 1130 	add	a,#0x09
-      000366 F8               [12] 1131 	mov	r0,a
-      000367 E5 0E            [12] 1132 	mov	a,_bp
-      000369 24 05            [12] 1133 	add	a,#0x05
-      00036B F9               [12] 1134 	mov	r1,a
-      00036C E6               [12] 1135 	mov	a,@r0
-      00036D F7               [12] 1136 	mov	@r1,a
-      00036E 08               [12] 1137 	inc	r0
-      00036F E6               [12] 1138 	mov	a,@r0
-      000370 09               [12] 1139 	inc	r1
-      000371 F7               [12] 1140 	mov	@r1,a
-      000372 08               [12] 1141 	inc	r0
-      000373 E6               [12] 1142 	mov	a,@r0
-      000374 09               [12] 1143 	inc	r1
-      000375 F7               [12] 1144 	mov	@r1,a
-      000376 08               [12] 1145 	inc	r0
-      000377 E6               [12] 1146 	mov	a,@r0
-      000378 09               [12] 1147 	inc	r1
-      000379 F7               [12] 1148 	mov	@r1,a
-                           0002C3  1149 	C$fuzzy.h$658$4_0$32 ==.
-                                   1150 ;	../../fuzzy.h:658: break;
-      00037A 02 04 69         [24] 1151 	ljmp	00120$
-                           0002C6  1152 	C$fuzzy.h$660$4_0$32 ==.
-                                   1153 ;	../../fuzzy.h:660: case FUZZY_LOGIC_ALGEBRAIC:
-      00037D                       1154 00111$:
-                           0002C6  1155 	C$fuzzy.h$662$1_0$27 ==.
-                                   1156 ;	../../fuzzy.h:662: next;
-      00037D C0 03            [24] 1157 	push	ar3
-      00037F C0 02            [24] 1158 	push	ar2
-      000381 E5 0E            [12] 1159 	mov	a,_bp
-      000383 24 09            [12] 1160 	add	a,#0x09
-      000385 F8               [12] 1161 	mov	r0,a
-      000386 E6               [12] 1162 	mov	a,@r0
-      000387 C0 E0            [24] 1163 	push	acc
-      000389 08               [12] 1164 	inc	r0
-      00038A E6               [12] 1165 	mov	a,@r0
-      00038B C0 E0            [24] 1166 	push	acc
-      00038D 08               [12] 1167 	inc	r0
-      00038E E6               [12] 1168 	mov	a,@r0
-      00038F C0 E0            [24] 1169 	push	acc
-      000391 08               [12] 1170 	inc	r0
-      000392 E6               [12] 1171 	mov	a,@r0
-      000393 C0 E0            [24] 1172 	push	acc
-                           0002DE  1173 	C$fuzzy.h$663$1_0$27 ==.
-                                   1174 ;	../../fuzzy.h:663: break;
-      000395 E5 0E            [12] 1175 	mov	a,_bp
-      000397 24 05            [12] 1176 	add	a,#0x05
-      000399 F8               [12] 1177 	mov	r0,a
-      00039A 86 82            [24] 1178 	mov	dpl, @r0
-      00039C 08               [12] 1179 	inc	r0
-      00039D 86 83            [24] 1180 	mov	dph, @r0
-      00039F 08               [12] 1181 	inc	r0
-      0003A0 86 F0            [24] 1182 	mov	b, @r0
-      0003A2 08               [12] 1183 	inc	r0
-      0003A3 E6               [12] 1184 	mov	a, @r0
-      0003A4 12 22 D7         [24] 1185 	lcall	___fsmul
-      0003A7 C8               [12] 1186 	xch	a,r0
-      0003A8 E5 0E            [12] 1187 	mov	a,_bp
-      0003AA 24 05            [12] 1188 	add	a,#0x05
-      0003AC C8               [12] 1189 	xch	a,r0
-      0003AD A6 82            [24] 1190 	mov	@r0, dpl
-      0003AF 08               [12] 1191 	inc	r0
-      0003B0 A6 83            [24] 1192 	mov	@r0, dph
-      0003B2 08               [12] 1193 	inc	r0
-      0003B3 A6 F0            [24] 1194 	mov	@r0, b
-      0003B5 08               [12] 1195 	inc	r0
-      0003B6 F6               [12] 1196 	mov	@r0,a
-      0003B7 E5 81            [12] 1197 	mov	a,sp
-      0003B9 24 FC            [12] 1198 	add	a,#0xfc
-      0003BB F5 81            [12] 1199 	mov	sp,a
-      0003BD D0 02            [24] 1200 	pop	ar2
-      0003BF D0 03            [24] 1201 	pop	ar3
-      0003C1 02 04 69         [24] 1202 	ljmp	00120$
-                           00030D  1203 	C$fuzzy.h$665$4_0$32 ==.
-                                   1204 ;	../../fuzzy.h:665: case FUZZY_LOGIC_BOUNDED:
-      0003C4                       1205 00112$:
-                           00030D  1206 	C$fuzzy.h$668$1_0$27 ==.
-                                   1207 ;	../../fuzzy.h:668: next -
-      0003C4 C0 03            [24] 1208 	push	ar3
-      0003C6 C0 02            [24] 1209 	push	ar2
-      0003C8 E5 0E            [12] 1210 	mov	a,_bp
-      0003CA 24 09            [12] 1211 	add	a,#0x09
-      0003CC F8               [12] 1212 	mov	r0,a
-      0003CD E6               [12] 1213 	mov	a,@r0
-      0003CE C0 E0            [24] 1214 	push	acc
-      0003D0 08               [12] 1215 	inc	r0
-      0003D1 E6               [12] 1216 	mov	a,@r0
-      0003D2 C0 E0            [24] 1217 	push	acc
-      0003D4 08               [12] 1218 	inc	r0
-      0003D5 E6               [12] 1219 	mov	a,@r0
-      0003D6 C0 E0            [24] 1220 	push	acc
-      0003D8 08               [12] 1221 	inc	r0
-      0003D9 E6               [12] 1222 	mov	a,@r0
-      0003DA C0 E0            [24] 1223 	push	acc
-      0003DC E5 0E            [12] 1224 	mov	a,_bp
-      0003DE 24 05            [12] 1225 	add	a,#0x05
-      0003E0 F8               [12] 1226 	mov	r0,a
-      0003E1 86 82            [24] 1227 	mov	dpl, @r0
-      0003E3 08               [12] 1228 	inc	r0
-      0003E4 86 83            [24] 1229 	mov	dph, @r0
-      0003E6 08               [12] 1230 	inc	r0
-      0003E7 86 F0            [24] 1231 	mov	b, @r0
-      0003E9 08               [12] 1232 	inc	r0
-      0003EA E6               [12] 1233 	mov	a, @r0
-      0003EB 12 24 59         [24] 1234 	lcall	___fsadd
-      0003EE AC 82            [24] 1235 	mov	r4, dpl
-      0003F0 AD 83            [24] 1236 	mov	r5, dph
-      0003F2 AE F0            [24] 1237 	mov	r6, b
-      0003F4 FF               [12] 1238 	mov	r7, a
-      0003F5 E5 81            [12] 1239 	mov	a,sp
-      0003F7 24 FC            [12] 1240 	add	a,#0xfc
-      0003F9 F5 81            [12] 1241 	mov	sp,a
-      0003FB E4               [12] 1242 	clr	a
-      0003FC C0 E0            [24] 1243 	push	acc
-      0003FE C0 E0            [24] 1244 	push	acc
-      000400 74 80            [12] 1245 	mov	a,#0x80
-      000402 C0 E0            [24] 1246 	push	acc
-      000404 74 3F            [12] 1247 	mov	a,#0x3f
-      000406 C0 E0            [24] 1248 	push	acc
-                           000351  1249 	C$fuzzy.h$671$1_0$27 ==.
-                                   1250 ;	../../fuzzy.h:671: if (result < LEVEL_LO) {
-      000408 8C 82            [24] 1251 	mov	dpl, r4
-      00040A 8D 83            [24] 1252 	mov	dph, r5
-      00040C 8E F0            [24] 1253 	mov	b, r6
-      00040E EF               [12] 1254 	mov	a, r7
-      00040F 12 22 CC         [24] 1255 	lcall	___fssub
-      000412 C8               [12] 1256 	xch	a,r0
-      000413 E5 0E            [12] 1257 	mov	a,_bp
-      000415 24 05            [12] 1258 	add	a,#0x05
-      000417 C8               [12] 1259 	xch	a,r0
-      000418 A6 82            [24] 1260 	mov	@r0, dpl
-      00041A 08               [12] 1261 	inc	r0
-      00041B A6 83            [24] 1262 	mov	@r0, dph
-      00041D 08               [12] 1263 	inc	r0
-      00041E A6 F0            [24] 1264 	mov	@r0, b
-      000420 08               [12] 1265 	inc	r0
-      000421 F6               [12] 1266 	mov	@r0,a
-      000422 E5 81            [12] 1267 	mov	a,sp
-      000424 24 FC            [12] 1268 	add	a,#0xfc
-      000426 F5 81            [12] 1269 	mov	sp,a
-      000428 E4               [12] 1270 	clr	a
-      000429 C0 E0            [24] 1271 	push	acc
-      00042B C0 E0            [24] 1272 	push	acc
-      00042D C0 E0            [24] 1273 	push	acc
-      00042F C0 E0            [24] 1274 	push	acc
-      000431 E5 0E            [12] 1275 	mov	a,_bp
-      000433 24 05            [12] 1276 	add	a,#0x05
-      000435 F8               [12] 1277 	mov	r0,a
-      000436 86 82            [24] 1278 	mov	dpl, @r0
-      000438 08               [12] 1279 	inc	r0
-      000439 86 83            [24] 1280 	mov	dph, @r0
-      00043B 08               [12] 1281 	inc	r0
-      00043C 86 F0            [24] 1282 	mov	b, @r0
-      00043E 08               [12] 1283 	inc	r0
-      00043F E6               [12] 1284 	mov	a, @r0
-      000440 12 24 07         [24] 1285 	lcall	___fslt
-      000443 AF 82            [24] 1286 	mov	r7, dpl
-      000445 E5 81            [12] 1287 	mov	a,sp
-      000447 24 FC            [12] 1288 	add	a,#0xfc
-      000449 F5 81            [12] 1289 	mov	sp,a
-      00044B D0 02            [24] 1290 	pop	ar2
-      00044D D0 03            [24] 1291 	pop	ar3
-      00044F EF               [12] 1292 	mov	a,r7
-      000450 60 17            [24] 1293 	jz	00120$
-                           00039B  1294 	C$fuzzy.h$672$5_0$34 ==.
-                                   1295 ;	../../fuzzy.h:672: result = LEVEL_LO;
-      000452 E5 0E            [12] 1296 	mov	a,_bp
-      000454 24 05            [12] 1297 	add	a,#0x05
-      000456 F8               [12] 1298 	mov	r0,a
-      000457 E4               [12] 1299 	clr	a
-      000458 F6               [12] 1300 	mov	@r0,a
-      000459 08               [12] 1301 	inc	r0
-      00045A F6               [12] 1302 	mov	@r0,a
-      00045B 08               [12] 1303 	inc	r0
-      00045C F6               [12] 1304 	mov	@r0,a
-      00045D 08               [12] 1305 	inc	r0
-      00045E F6               [12] 1306 	mov	@r0,a
-                           0003A8  1307 	C$fuzzy.h$674$4_0$32 ==.
-                                   1308 ;	../../fuzzy.h:674: break;
-                           0003A8  1309 	C$fuzzy.h$676$4_0$32 ==.
-                                   1310 ;	../../fuzzy.h:676: default:
-      00045F 80 08            [24] 1311 	sjmp	00120$
-      000461                       1312 00115$:
-                           0003AA  1313 	C$fuzzy.h$677$4_0$32 ==.
-                                   1314 ;	../../fuzzy.h:677: return LEVEL_LO;
-      000461 90 00 00         [24] 1315 	mov	dptr,#0x0000
-      000464 E4               [12] 1316 	clr	a
-      000465 F5 F0            [12] 1317 	mov	b,a
-                           0003B0  1318 	C$fuzzy.h$678$3_0$31 ==.
-                                   1319 ;	../../fuzzy.h:678: }
-      000467 80 20            [24] 1320 	sjmp	00121$
-      000469                       1321 00120$:
-                           0003B2  1322 	C$fuzzy.h$646$2_0$30 ==.
-                                   1323 ;	../../fuzzy.h:646: index++
-      000469 E5 0E            [12] 1324 	mov	a,_bp
-      00046B 24 0D            [12] 1325 	add	a,#0x0d
-      00046D F8               [12] 1326 	mov	r0,a
-      00046E 06               [12] 1327 	inc	@r0
-      00046F B6 00 02         [24] 1328 	cjne	@r0,#0x00,00206$
-      000472 08               [12] 1329 	inc	r0
-      000473 06               [12] 1330 	inc	@r0
-      000474                       1331 00206$:
-      000474 02 02 A0         [24] 1332 	ljmp	00119$
-      000477                       1333 00117$:
-                           0003C0  1334 	C$fuzzy.h$682$1_0$27 ==.
-                                   1335 ;	../../fuzzy.h:682: result
-      000477 E5 0E            [12] 1336 	mov	a,_bp
-      000479 24 05            [12] 1337 	add	a,#0x05
-      00047B F8               [12] 1338 	mov	r0,a
-      00047C 86 82            [24] 1339 	mov	dpl, @r0
-      00047E 08               [12] 1340 	inc	r0
-      00047F 86 83            [24] 1341 	mov	dph, @r0
-      000481 08               [12] 1342 	inc	r0
-      000482 86 F0            [24] 1343 	mov	b, @r0
-      000484 08               [12] 1344 	inc	r0
-      000485 E6               [12] 1345 	mov	a, @r0
-      000486 12 00 B7         [24] 1346 	lcall	_fuzzy_clamp
-      000489                       1347 00121$:
-                           0003D2  1348 	C$fuzzy.h$684$1_0$27 ==.
-                                   1349 ;	../../fuzzy.h:684: }
-      000489 85 0E 81         [24] 1350 	mov	sp,_bp
-      00048C D0 0E            [24] 1351 	pop	_bp
-                           0003D7  1352 	C$fuzzy.h$684$1_0$27 ==.
-                           0003D7  1353 	XG$fuzzy_and_array$0$0 ==.
-      00048E 22               [24] 1354 	ret
-                                   1355 ;------------------------------------------------------------
-                                   1356 ;Allocation info for local variables in function 'fuzzy_or_array'
-                                   1357 ;------------------------------------------------------------
-                                   1358 ;count         Allocated to stack - _bp -4 +2 
-                                   1359 ;args          Allocated to stack - _bp -7 +3 
-                                   1360 ;method        Allocated to registers r5 
-                                   1361 ;result        Allocated to stack - _bp +10 +4 
-                                   1362 ;next          Allocated to registers r4 r5 r6 r3 
-                                   1363 ;index         Allocated to stack - _bp +14 +2 
-                                   1364 ;sloc0         Allocated to stack - _bp +1 +3 
-                                   1365 ;sloc1         Allocated to stack - _bp +4 +1 
-                                   1366 ;sloc2         Allocated to stack - _bp +5 +1 
-                                   1367 ;sloc3         Allocated to stack - _bp +6 +4 
-                                   1368 ;------------------------------------------------------------
-                           0003D8  1369 	G$fuzzy_or_array$0$0 ==.
-                           0003D8  1370 	C$fuzzy.h$699$1_0$36 ==.
-                                   1371 ;	../../fuzzy.h:699: float fuzzy_or_array(
-                                   1372 ;	-----------------------------------------
-                                   1373 ;	 function fuzzy_or_array
-                                   1374 ;	-----------------------------------------
-      00048F                       1375 _fuzzy_or_array:
-      00048F C0 0E            [24] 1376 	push	_bp
-      000491 E5 81            [12] 1377 	mov	a,sp
-      000493 F5 0E            [12] 1378 	mov	_bp,a
-      000495 24 0F            [12] 1379 	add	a,#0x0f
-      000497 F5 81            [12] 1380 	mov	sp,a
-      000499 AD 82            [24] 1381 	mov	r5, dpl
-                           0003E4  1382 	C$fuzzy.h$710$1_0$36 ==.
-                                   1383 ;	../../fuzzy.h:710: args == NULL ||
-      00049B E5 0E            [12] 1384 	mov	a,_bp
-      00049D 24 F9            [12] 1385 	add	a,#0xf9
-      00049F F8               [12] 1386 	mov	r0,a
-      0004A0 E6               [12] 1387 	mov	a,@r0
-      0004A1 08               [12] 1388 	inc	r0
-      0004A2 46               [12] 1389 	orl	a,@r0
-      0004A3 60 0A            [24] 1390 	jz	00101$
-                           0003EE  1391 	C$fuzzy.h$711$1_0$36 ==.
-                                   1392 ;	../../fuzzy.h:711: count == 0u
-      0004A5 E5 0E            [12] 1393 	mov	a,_bp
-      0004A7 24 FC            [12] 1394 	add	a,#0xfc
-      0004A9 F8               [12] 1395 	mov	r0,a
-      0004AA E6               [12] 1396 	mov	a,@r0
-      0004AB 08               [12] 1397 	inc	r0
-      0004AC 46               [12] 1398 	orl	a,@r0
-      0004AD 70 09            [24] 1399 	jnz	00102$
-      0004AF                       1400 00101$:
-                           0003F8  1401 	C$fuzzy.h$713$2_0$37 ==.
-                                   1402 ;	../../fuzzy.h:713: return LEVEL_LO;
-      0004AF 90 00 00         [24] 1403 	mov	dptr,#0x0000
-      0004B2 E4               [12] 1404 	clr	a
-      0004B3 F5 F0            [12] 1405 	mov	b,a
-      0004B5 02 07 4B         [24] 1406 	ljmp	00121$
-      0004B8                       1407 00102$:
-                           000401  1408 	C$fuzzy.h$717$1_0$36 ==.
-                                   1409 ;	../../fuzzy.h:717: method != FUZZY_LOGIC_STANDARD &&
-      0004B8 ED               [12] 1410 	mov	a,r5
-      0004B9 60 13            [24] 1411 	jz	00105$
-                           000404  1412 	C$fuzzy.h$718$1_0$36 ==.
-                                   1413 ;	../../fuzzy.h:718: method != FUZZY_LOGIC_ALGEBRAIC &&
-      0004BB BD 01 02         [24] 1414 	cjne	r5,#0x01,00192$
-      0004BE 80 0E            [24] 1415 	sjmp	00105$
-      0004C0                       1416 00192$:
-                           000409  1417 	C$fuzzy.h$720$1_0$36 ==.
-                                   1418 ;	../../fuzzy.h:720: ) {
-      0004C0 BD 02 02         [24] 1419 	cjne	r5,#0x02,00193$
-      0004C3 80 09            [24] 1420 	sjmp	00105$
-      0004C5                       1421 00193$:
-                           00040E  1422 	C$fuzzy.h$721$2_0$38 ==.
-                                   1423 ;	../../fuzzy.h:721: return LEVEL_LO;
-      0004C5 90 00 00         [24] 1424 	mov	dptr,#0x0000
-      0004C8 E4               [12] 1425 	clr	a
-      0004C9 F5 F0            [12] 1426 	mov	b,a
-      0004CB 02 07 4B         [24] 1427 	ljmp	00121$
-      0004CE                       1428 00105$:
-                           000417  1429 	C$fuzzy.h$726$1_0$36 ==.
-                                   1430 ;	../../fuzzy.h:726: args[0]
-      0004CE E5 0E            [12] 1431 	mov	a,_bp
-      0004D0 24 F9            [12] 1432 	add	a,#0xf9
-      0004D2 F8               [12] 1433 	mov	r0,a
-      0004D3 A9 0E            [24] 1434 	mov	r1,_bp
-      0004D5 09               [12] 1435 	inc	r1
-      0004D6 E6               [12] 1436 	mov	a,@r0
-      0004D7 F7               [12] 1437 	mov	@r1,a
-      0004D8 08               [12] 1438 	inc	r0
-      0004D9 E6               [12] 1439 	mov	a,@r0
-      0004DA 09               [12] 1440 	inc	r1
-      0004DB F7               [12] 1441 	mov	@r1,a
-      0004DC 08               [12] 1442 	inc	r0
-      0004DD E6               [12] 1443 	mov	a,@r0
-      0004DE 09               [12] 1444 	inc	r1
-      0004DF F7               [12] 1445 	mov	@r1,a
-      0004E0 A8 0E            [24] 1446 	mov	r0,_bp
-      0004E2 08               [12] 1447 	inc	r0
-      0004E3 86 82            [24] 1448 	mov	dpl,@r0
-      0004E5 08               [12] 1449 	inc	r0
-      0004E6 86 83            [24] 1450 	mov	dph,@r0
-      0004E8 08               [12] 1451 	inc	r0
-      0004E9 86 F0            [24] 1452 	mov	b,@r0
-      0004EB 12 26 33         [24] 1453 	lcall	__gptrget
-      0004EE FA               [12] 1454 	mov	r2,a
-      0004EF A3               [24] 1455 	inc	dptr
-      0004F0 12 26 33         [24] 1456 	lcall	__gptrget
-      0004F3 FB               [12] 1457 	mov	r3,a
-      0004F4 A3               [24] 1458 	inc	dptr
-      0004F5 12 26 33         [24] 1459 	lcall	__gptrget
-      0004F8 FE               [12] 1460 	mov	r6,a
-      0004F9 A3               [24] 1461 	inc	dptr
-      0004FA 12 26 33         [24] 1462 	lcall	__gptrget
-      0004FD 8A 82            [24] 1463 	mov	dpl,r2
-      0004FF 8B 83            [24] 1464 	mov	dph,r3
-      000501 8E F0            [24] 1465 	mov	b,r6
-      000503 C0 05            [24] 1466 	push	ar5
-      000505 12 00 B7         [24] 1467 	lcall	_fuzzy_clamp
-      000508 C8               [12] 1468 	xch	a,r0
-      000509 E5 0E            [12] 1469 	mov	a,_bp
-      00050B 24 0A            [12] 1470 	add	a,#0x0a
-      00050D C8               [12] 1471 	xch	a,r0
-      00050E A6 82            [24] 1472 	mov	@r0, dpl
-      000510 08               [12] 1473 	inc	r0
-      000511 A6 83            [24] 1474 	mov	@r0, dph
-      000513 08               [12] 1475 	inc	r0
-      000514 A6 F0            [24] 1476 	mov	@r0, b
-      000516 08               [12] 1477 	inc	r0
-      000517 F6               [12] 1478 	mov	@r0,a
-      000518 D0 05            [24] 1479 	pop	ar5
-                           000463  1480 	C$fuzzy.h$730$3_0$40 ==.
-                                   1481 ;	../../fuzzy.h:730: index = 1u;
-      00051A E5 0E            [12] 1482 	mov	a,_bp
-      00051C 24 05            [12] 1483 	add	a,#0x05
-      00051E F8               [12] 1484 	mov	r0,a
-      00051F E4               [12] 1485 	clr	a
-      000520 BD 00 01         [24] 1486 	cjne	r5,#0x00,00194$
-      000523 04               [12] 1487 	inc	a
-      000524                       1488 00194$:
-      000524 F6               [12] 1489 	mov	@r0,a
-      000525 BD 01 03         [24] 1490 	cjne	r5,#0x01,00196$
-      000528 ED               [12] 1491 	mov	a,r5
-      000529 80 01            [24] 1492 	sjmp	00197$
-      00052B                       1493 00196$:
-      00052B E4               [12] 1494 	clr	a
-      00052C                       1495 00197$:
-      00052C FA               [12] 1496 	mov	r2,a
-      00052D E5 0E            [12] 1497 	mov	a,_bp
-      00052F 24 04            [12] 1498 	add	a,#0x04
-      000531 F8               [12] 1499 	mov	r0,a
-      000532 E4               [12] 1500 	clr	a
-      000533 BD 02 01         [24] 1501 	cjne	r5,#0x02,00198$
-      000536 04               [12] 1502 	inc	a
-      000537                       1503 00198$:
-      000537 F6               [12] 1504 	mov	@r0,a
-      000538 E5 0E            [12] 1505 	mov	a,_bp
-      00053A 24 0E            [12] 1506 	add	a,#0x0e
-      00053C F8               [12] 1507 	mov	r0,a
-      00053D 76 01            [12] 1508 	mov	@r0,#0x01
-      00053F 08               [12] 1509 	inc	r0
-      000540 76 00            [12] 1510 	mov	@r0,#0x00
-      000542                       1511 00119$:
-                           00048B  1512 	C$fuzzy.h$731$2_0$39 ==.
-                                   1513 ;	../../fuzzy.h:731: index < count;
-      000542 E5 0E            [12] 1514 	mov	a,_bp
-      000544 24 0E            [12] 1515 	add	a,#0x0e
-      000546 F8               [12] 1516 	mov	r0,a
-      000547 E5 0E            [12] 1517 	mov	a,_bp
-      000549 24 FC            [12] 1518 	add	a,#0xfc
-      00054B F9               [12] 1519 	mov	r1,a
-      00054C C3               [12] 1520 	clr	c
-      00054D E6               [12] 1521 	mov	a,@r0
-      00054E 97               [12] 1522 	subb	a,@r1
-      00054F 08               [12] 1523 	inc	r0
-      000550 E6               [12] 1524 	mov	a,@r0
-      000551 09               [12] 1525 	inc	r1
-      000552 97               [12] 1526 	subb	a,@r1
-      000553 40 03            [24] 1527 	jc	00200$
-      000555 02 07 39         [24] 1528 	ljmp	00117$
-      000558                       1529 00200$:
-                           0004A1  1530 	C$fuzzy.h$736$1_0$36 ==.
-                                   1531 ;	../../fuzzy.h:736: args[index]
-      000558 C0 02            [24] 1532 	push	ar2
-      00055A E5 0E            [12] 1533 	mov	a,_bp
-      00055C 24 0E            [12] 1534 	add	a,#0x0e
-      00055E F8               [12] 1535 	mov	r0,a
-      00055F E6               [12] 1536 	mov	a,@r0
-      000560 26               [12] 1537 	add	a,@r0
-      000561 FD               [12] 1538 	mov	r5,a
-      000562 08               [12] 1539 	inc	r0
-      000563 E6               [12] 1540 	mov	a,@r0
-      000564 33               [12] 1541 	rlc	a
-      000565 FC               [12] 1542 	mov	r4,a
-      000566 ED               [12] 1543 	mov	a,r5
-      000567 2D               [12] 1544 	add	a,r5
-      000568 FD               [12] 1545 	mov	r5,a
-      000569 EC               [12] 1546 	mov	a,r4
-      00056A 33               [12] 1547 	rlc	a
-      00056B FC               [12] 1548 	mov	r4,a
-      00056C A8 0E            [24] 1549 	mov	r0,_bp
-      00056E 08               [12] 1550 	inc	r0
-      00056F ED               [12] 1551 	mov	a,r5
-      000570 26               [12] 1552 	add	a, @r0
-      000571 FA               [12] 1553 	mov	r2,a
-      000572 EC               [12] 1554 	mov	a,r4
-      000573 08               [12] 1555 	inc	r0
-      000574 36               [12] 1556 	addc	a, @r0
-      000575 FC               [12] 1557 	mov	r4,a
-      000576 08               [12] 1558 	inc	r0
-      000577 86 05            [24] 1559 	mov	ar5,@r0
-      000579 8A 82            [24] 1560 	mov	dpl,r2
-      00057B 8C 83            [24] 1561 	mov	dph,r4
-      00057D 8D F0            [24] 1562 	mov	b,r5
-      00057F 12 26 33         [24] 1563 	lcall	__gptrget
-      000582 FA               [12] 1564 	mov	r2,a
-      000583 A3               [24] 1565 	inc	dptr
-      000584 12 26 33         [24] 1566 	lcall	__gptrget
-      000587 FC               [12] 1567 	mov	r4,a
-      000588 A3               [24] 1568 	inc	dptr
-      000589 12 26 33         [24] 1569 	lcall	__gptrget
-      00058C FD               [12] 1570 	mov	r5,a
-      00058D A3               [24] 1571 	inc	dptr
-      00058E 12 26 33         [24] 1572 	lcall	__gptrget
-      000591 8A 82            [24] 1573 	mov	dpl,r2
-      000593 8C 83            [24] 1574 	mov	dph,r4
-      000595 8D F0            [24] 1575 	mov	b,r5
-      000597 C0 02            [24] 1576 	push	ar2
-      000599 12 00 B7         [24] 1577 	lcall	_fuzzy_clamp
-      00059C AC 82            [24] 1578 	mov	r4, dpl
-      00059E AD 83            [24] 1579 	mov	r5, dph
-      0005A0 AE F0            [24] 1580 	mov	r6, b
-      0005A2 FB               [12] 1581 	mov	r3, a
-      0005A3 D0 02            [24] 1582 	pop	ar2
-                           0004EE  1583 	C$fuzzy.h$739$1_0$36 ==.
-                                   1584 ;	../../fuzzy.h:739: switch (method) {
-      0005A5 D0 02            [24] 1585 	pop	ar2
-      0005A7 E5 0E            [12] 1586 	mov	a,_bp
-      0005A9 24 05            [12] 1587 	add	a,#0x05
-      0005AB F8               [12] 1588 	mov	r0,a
-      0005AC E6               [12] 1589 	mov	a,@r0
-      0005AD 70 11            [24] 1590 	jnz	00108$
-      0005AF EA               [12] 1591 	mov	a,r2
-      0005B0 70 5D            [24] 1592 	jnz	00111$
-      0005B2 E5 0E            [12] 1593 	mov	a,_bp
-      0005B4 24 04            [12] 1594 	add	a,#0x04
-      0005B6 F8               [12] 1595 	mov	r0,a
-      0005B7 E6               [12] 1596 	mov	a,@r0
-      0005B8 60 03            [24] 1597 	jz	00203$
-      0005BA 02 06 B4         [24] 1598 	ljmp	00112$
-      0005BD                       1599 00203$:
-      0005BD 02 07 23         [24] 1600 	ljmp	00115$
-                           000509  1601 	C$fuzzy.h$740$4_0$41 ==.
-                                   1602 ;	../../fuzzy.h:740: case FUZZY_LOGIC_STANDARD:
-      0005C0                       1603 00108$:
-                           000509  1604 	C$fuzzy.h$741$1_0$36 ==.
-                                   1605 ;	../../fuzzy.h:741: if (next > result) {
-      0005C0 C0 06            [24] 1606 	push	ar6
-      0005C2 C0 05            [24] 1607 	push	ar5
-      0005C4 C0 04            [24] 1608 	push	ar4
-      0005C6 C0 03            [24] 1609 	push	ar3
-      0005C8 C0 02            [24] 1610 	push	ar2
-      0005CA C0 04            [24] 1611 	push	ar4
-      0005CC C0 05            [24] 1612 	push	ar5
-      0005CE C0 06            [24] 1613 	push	ar6
-      0005D0 C0 03            [24] 1614 	push	ar3
-      0005D2 E5 0E            [12] 1615 	mov	a,_bp
-      0005D4 24 0A            [12] 1616 	add	a,#0x0a
-      0005D6 F8               [12] 1617 	mov	r0,a
-      0005D7 86 82            [24] 1618 	mov	dpl, @r0
-      0005D9 08               [12] 1619 	inc	r0
-      0005DA 86 83            [24] 1620 	mov	dph, @r0
-      0005DC 08               [12] 1621 	inc	r0
-      0005DD 86 F0            [24] 1622 	mov	b, @r0
-      0005DF 08               [12] 1623 	inc	r0
-      0005E0 E6               [12] 1624 	mov	a, @r0
-      0005E1 12 24 07         [24] 1625 	lcall	___fslt
-      0005E4 AF 82            [24] 1626 	mov	r7, dpl
-      0005E6 E5 81            [12] 1627 	mov	a,sp
-      0005E8 24 FC            [12] 1628 	add	a,#0xfc
-      0005EA F5 81            [12] 1629 	mov	sp,a
-      0005EC D0 02            [24] 1630 	pop	ar2
-      0005EE D0 03            [24] 1631 	pop	ar3
-      0005F0 D0 04            [24] 1632 	pop	ar4
-      0005F2 D0 05            [24] 1633 	pop	ar5
-      0005F4 D0 06            [24] 1634 	pop	ar6
-      0005F6 EF               [12] 1635 	mov	a,r7
-      0005F7 70 03            [24] 1636 	jnz	00204$
-      0005F9 02 07 2B         [24] 1637 	ljmp	00120$
-      0005FC                       1638 00204$:
-                           000545  1639 	C$fuzzy.h$742$5_0$42 ==.
-                                   1640 ;	../../fuzzy.h:742: result = next;
-      0005FC E5 0E            [12] 1641 	mov	a,_bp
-      0005FE 24 0A            [12] 1642 	add	a,#0x0a
-      000600 F8               [12] 1643 	mov	r0,a
-      000601 A6 04            [24] 1644 	mov	@r0,ar4
-      000603 08               [12] 1645 	inc	r0
-      000604 A6 05            [24] 1646 	mov	@r0,ar5
-      000606 08               [12] 1647 	inc	r0
-      000607 A6 06            [24] 1648 	mov	@r0,ar6
-      000609 08               [12] 1649 	inc	r0
-      00060A A6 03            [24] 1650 	mov	@r0,ar3
-                           000555  1651 	C$fuzzy.h$744$4_0$41 ==.
-                                   1652 ;	../../fuzzy.h:744: break;
-      00060C 02 07 2B         [24] 1653 	ljmp	00120$
-                           000558  1654 	C$fuzzy.h$746$4_0$41 ==.
-                                   1655 ;	../../fuzzy.h:746: case FUZZY_LOGIC_ALGEBRAIC:
-      00060F                       1656 00111$:
-                           000558  1657 	C$fuzzy.h$749$1_0$36 ==.
-                                   1658 ;	../../fuzzy.h:749: next -
-      00060F C0 02            [24] 1659 	push	ar2
-      000611 C0 06            [24] 1660 	push	ar6
-      000613 C0 05            [24] 1661 	push	ar5
-      000615 C0 04            [24] 1662 	push	ar4
-      000617 C0 03            [24] 1663 	push	ar3
-      000619 C0 02            [24] 1664 	push	ar2
-      00061B C0 04            [24] 1665 	push	ar4
-      00061D C0 05            [24] 1666 	push	ar5
-      00061F C0 06            [24] 1667 	push	ar6
-      000621 C0 03            [24] 1668 	push	ar3
-                           00056C  1669 	C$fuzzy.h$750$1_0$36 ==.
-                                   1670 ;	../../fuzzy.h:750: result * next;
-      000623 E5 0E            [12] 1671 	mov	a,_bp
-      000625 24 0A            [12] 1672 	add	a,#0x0a
-      000627 F8               [12] 1673 	mov	r0,a
-      000628 86 82            [24] 1674 	mov	dpl, @r0
-      00062A 08               [12] 1675 	inc	r0
-      00062B 86 83            [24] 1676 	mov	dph, @r0
-      00062D 08               [12] 1677 	inc	r0
-      00062E 86 F0            [24] 1678 	mov	b, @r0
-      000630 08               [12] 1679 	inc	r0
-      000631 E6               [12] 1680 	mov	a, @r0
-      000632 12 24 59         [24] 1681 	lcall	___fsadd
-      000635 C8               [12] 1682 	xch	a,r0
-      000636 E5 0E            [12] 1683 	mov	a,_bp
-      000638 24 06            [12] 1684 	add	a,#0x06
-      00063A C8               [12] 1685 	xch	a,r0
-      00063B A6 82            [24] 1686 	mov	@r0, dpl
-      00063D 08               [12] 1687 	inc	r0
-      00063E A6 83            [24] 1688 	mov	@r0, dph
-      000640 08               [12] 1689 	inc	r0
-      000641 A6 F0            [24] 1690 	mov	@r0, b
-      000643 08               [12] 1691 	inc	r0
-      000644 F6               [12] 1692 	mov	@r0,a
-      000645 E5 81            [12] 1693 	mov	a,sp
-      000647 24 FC            [12] 1694 	add	a,#0xfc
-      000649 F5 81            [12] 1695 	mov	sp,a
-      00064B D0 02            [24] 1696 	pop	ar2
-      00064D D0 03            [24] 1697 	pop	ar3
-      00064F D0 04            [24] 1698 	pop	ar4
-      000651 D0 05            [24] 1699 	pop	ar5
-      000653 D0 06            [24] 1700 	pop	ar6
-      000655 C0 04            [24] 1701 	push	ar4
-      000657 C0 05            [24] 1702 	push	ar5
-      000659 C0 06            [24] 1703 	push	ar6
-      00065B C0 03            [24] 1704 	push	ar3
-      00065D E5 0E            [12] 1705 	mov	a,_bp
-      00065F 24 0A            [12] 1706 	add	a,#0x0a
-      000661 F8               [12] 1707 	mov	r0,a
-      000662 86 82            [24] 1708 	mov	dpl, @r0
-      000664 08               [12] 1709 	inc	r0
-      000665 86 83            [24] 1710 	mov	dph, @r0
-      000667 08               [12] 1711 	inc	r0
-      000668 86 F0            [24] 1712 	mov	b, @r0
-      00066A 08               [12] 1713 	inc	r0
-      00066B E6               [12] 1714 	mov	a, @r0
-      00066C 12 22 D7         [24] 1715 	lcall	___fsmul
-      00066F AA 82            [24] 1716 	mov	r2, dpl
-      000671 AB 83            [24] 1717 	mov	r3, dph
-      000673 AE F0            [24] 1718 	mov	r6, b
-      000675 FF               [12] 1719 	mov	r7, a
-      000676 E5 81            [12] 1720 	mov	a,sp
-      000678 24 FC            [12] 1721 	add	a,#0xfc
-      00067A F5 81            [12] 1722 	mov	sp,a
-      00067C C0 02            [24] 1723 	push	ar2
-      00067E C0 02            [24] 1724 	push	ar2
-      000680 C0 03            [24] 1725 	push	ar3
-      000682 C0 06            [24] 1726 	push	ar6
-      000684 C0 07            [24] 1727 	push	ar7
-                           0005CF  1728 	C$fuzzy.h$751$1_0$36 ==.
-                                   1729 ;	../../fuzzy.h:751: break;
-      000686 E5 0E            [12] 1730 	mov	a,_bp
-      000688 24 06            [12] 1731 	add	a,#0x06
-      00068A F8               [12] 1732 	mov	r0,a
-      00068B 86 82            [24] 1733 	mov	dpl, @r0
-      00068D 08               [12] 1734 	inc	r0
-      00068E 86 83            [24] 1735 	mov	dph, @r0
-      000690 08               [12] 1736 	inc	r0
-      000691 86 F0            [24] 1737 	mov	b, @r0
-      000693 08               [12] 1738 	inc	r0
-      000694 E6               [12] 1739 	mov	a, @r0
-      000695 12 22 CC         [24] 1740 	lcall	___fssub
-      000698 C8               [12] 1741 	xch	a,r0
-      000699 E5 0E            [12] 1742 	mov	a,_bp
-      00069B 24 0A            [12] 1743 	add	a,#0x0a
-      00069D C8               [12] 1744 	xch	a,r0
-      00069E A6 82            [24] 1745 	mov	@r0, dpl
-      0006A0 08               [12] 1746 	inc	r0
-      0006A1 A6 83            [24] 1747 	mov	@r0, dph
-      0006A3 08               [12] 1748 	inc	r0
-      0006A4 A6 F0            [24] 1749 	mov	@r0, b
-      0006A6 08               [12] 1750 	inc	r0
-      0006A7 F6               [12] 1751 	mov	@r0,a
-      0006A8 E5 81            [12] 1752 	mov	a,sp
-      0006AA 24 FC            [12] 1753 	add	a,#0xfc
-      0006AC F5 81            [12] 1754 	mov	sp,a
-      0006AE D0 02            [24] 1755 	pop	ar2
-      0006B0 D0 02            [24] 1756 	pop	ar2
-                           0005FB  1757 	C$fuzzy.h$753$4_0$41 ==.
-                                   1758 ;	../../fuzzy.h:753: case FUZZY_LOGIC_BOUNDED:
-      0006B2 80 77            [24] 1759 	sjmp	00120$
-      0006B4                       1760 00112$:
-                           0005FD  1761 	C$fuzzy.h$755$1_0$36 ==.
-                                   1762 ;	../../fuzzy.h:755: next;
-      0006B4 C0 02            [24] 1763 	push	ar2
-      0006B6 C0 04            [24] 1764 	push	ar4
-      0006B8 C0 05            [24] 1765 	push	ar5
-      0006BA C0 06            [24] 1766 	push	ar6
-      0006BC C0 03            [24] 1767 	push	ar3
-                           000607  1768 	C$fuzzy.h$757$1_0$36 ==.
-                                   1769 ;	../../fuzzy.h:757: if (result > LEVEL_HI) {
-      0006BE E5 0E            [12] 1770 	mov	a,_bp
-      0006C0 24 0A            [12] 1771 	add	a,#0x0a
-      0006C2 F8               [12] 1772 	mov	r0,a
-      0006C3 86 82            [24] 1773 	mov	dpl, @r0
-      0006C5 08               [12] 1774 	inc	r0
-      0006C6 86 83            [24] 1775 	mov	dph, @r0
-      0006C8 08               [12] 1776 	inc	r0
-      0006C9 86 F0            [24] 1777 	mov	b, @r0
-      0006CB 08               [12] 1778 	inc	r0
-      0006CC E6               [12] 1779 	mov	a, @r0
-      0006CD 12 24 59         [24] 1780 	lcall	___fsadd
-      0006D0 C8               [12] 1781 	xch	a,r0
-      0006D1 E5 0E            [12] 1782 	mov	a,_bp
-      0006D3 24 0A            [12] 1783 	add	a,#0x0a
-      0006D5 C8               [12] 1784 	xch	a,r0
-      0006D6 A6 82            [24] 1785 	mov	@r0, dpl
-      0006D8 08               [12] 1786 	inc	r0
-      0006D9 A6 83            [24] 1787 	mov	@r0, dph
-      0006DB 08               [12] 1788 	inc	r0
-      0006DC A6 F0            [24] 1789 	mov	@r0, b
-      0006DE 08               [12] 1790 	inc	r0
-      0006DF F6               [12] 1791 	mov	@r0,a
-      0006E0 E5 81            [12] 1792 	mov	a,sp
-      0006E2 24 FC            [12] 1793 	add	a,#0xfc
-      0006E4 F5 81            [12] 1794 	mov	sp,a
-      0006E6 E5 0E            [12] 1795 	mov	a,_bp
-      0006E8 24 0A            [12] 1796 	add	a,#0x0a
-      0006EA F8               [12] 1797 	mov	r0,a
-      0006EB E6               [12] 1798 	mov	a,@r0
-      0006EC C0 E0            [24] 1799 	push	acc
-      0006EE 08               [12] 1800 	inc	r0
-      0006EF E6               [12] 1801 	mov	a,@r0
-      0006F0 C0 E0            [24] 1802 	push	acc
-      0006F2 08               [12] 1803 	inc	r0
-      0006F3 E6               [12] 1804 	mov	a,@r0
-      0006F4 C0 E0            [24] 1805 	push	acc
-      0006F6 08               [12] 1806 	inc	r0
-      0006F7 E6               [12] 1807 	mov	a,@r0
-      0006F8 C0 E0            [24] 1808 	push	acc
-      0006FA 90 00 00         [24] 1809 	mov	dptr,#0x0000
-      0006FD 75 F0 80         [24] 1810 	mov	b, #0x80
-      000700 74 3F            [12] 1811 	mov	a, #0x3f
-      000702 12 24 07         [24] 1812 	lcall	___fslt
-      000705 AF 82            [24] 1813 	mov	r7, dpl
-      000707 E5 81            [12] 1814 	mov	a,sp
-      000709 24 FC            [12] 1815 	add	a,#0xfc
-      00070B F5 81            [12] 1816 	mov	sp,a
-      00070D D0 02            [24] 1817 	pop	ar2
-      00070F EF               [12] 1818 	mov	a,r7
-      000710 60 19            [24] 1819 	jz	00120$
-                           00065B  1820 	C$fuzzy.h$758$5_0$43 ==.
-                                   1821 ;	../../fuzzy.h:758: result = LEVEL_HI;
-      000712 E5 0E            [12] 1822 	mov	a,_bp
-      000714 24 0A            [12] 1823 	add	a,#0x0a
-      000716 F8               [12] 1824 	mov	r0,a
-      000717 E4               [12] 1825 	clr	a
-      000718 F6               [12] 1826 	mov	@r0,a
-      000719 08               [12] 1827 	inc	r0
-      00071A F6               [12] 1828 	mov	@r0,a
-      00071B 08               [12] 1829 	inc	r0
-      00071C 76 80            [12] 1830 	mov	@r0,#0x80
-      00071E 08               [12] 1831 	inc	r0
-      00071F 76 3F            [12] 1832 	mov	@r0,#0x3f
-                           00066A  1833 	C$fuzzy.h$760$4_0$41 ==.
-                                   1834 ;	../../fuzzy.h:760: break;
-                           00066A  1835 	C$fuzzy.h$762$4_0$41 ==.
-                                   1836 ;	../../fuzzy.h:762: default:
-      000721 80 08            [24] 1837 	sjmp	00120$
-      000723                       1838 00115$:
-                           00066C  1839 	C$fuzzy.h$763$4_0$41 ==.
-                                   1840 ;	../../fuzzy.h:763: return LEVEL_LO;
-      000723 90 00 00         [24] 1841 	mov	dptr,#0x0000
-      000726 E4               [12] 1842 	clr	a
-      000727 F5 F0            [12] 1843 	mov	b,a
-                           000672  1844 	C$fuzzy.h$764$3_0$40 ==.
-                                   1845 ;	../../fuzzy.h:764: }
-      000729 80 20            [24] 1846 	sjmp	00121$
-      00072B                       1847 00120$:
-                           000674  1848 	C$fuzzy.h$732$2_0$39 ==.
-                                   1849 ;	../../fuzzy.h:732: index++
-      00072B E5 0E            [12] 1850 	mov	a,_bp
-      00072D 24 0E            [12] 1851 	add	a,#0x0e
-      00072F F8               [12] 1852 	mov	r0,a
-      000730 06               [12] 1853 	inc	@r0
-      000731 B6 00 02         [24] 1854 	cjne	@r0,#0x00,00206$
-      000734 08               [12] 1855 	inc	r0
-      000735 06               [12] 1856 	inc	@r0
-      000736                       1857 00206$:
-      000736 02 05 42         [24] 1858 	ljmp	00119$
-      000739                       1859 00117$:
-                           000682  1860 	C$fuzzy.h$768$1_0$36 ==.
-                                   1861 ;	../../fuzzy.h:768: result
-      000739 E5 0E            [12] 1862 	mov	a,_bp
-      00073B 24 0A            [12] 1863 	add	a,#0x0a
-      00073D F8               [12] 1864 	mov	r0,a
-      00073E 86 82            [24] 1865 	mov	dpl, @r0
-      000740 08               [12] 1866 	inc	r0
-      000741 86 83            [24] 1867 	mov	dph, @r0
-      000743 08               [12] 1868 	inc	r0
-      000744 86 F0            [24] 1869 	mov	b, @r0
-      000746 08               [12] 1870 	inc	r0
-      000747 E6               [12] 1871 	mov	a, @r0
-      000748 12 00 B7         [24] 1872 	lcall	_fuzzy_clamp
-      00074B                       1873 00121$:
-                           000694  1874 	C$fuzzy.h$770$1_0$36 ==.
-                                   1875 ;	../../fuzzy.h:770: }
-      00074B 85 0E 81         [24] 1876 	mov	sp,_bp
-      00074E D0 0E            [24] 1877 	pop	_bp
-                           000699  1878 	C$fuzzy.h$770$1_0$36 ==.
-                           000699  1879 	XG$fuzzy_or_array$0$0 ==.
-      000750 22               [24] 1880 	ret
-                                   1881 ;------------------------------------------------------------
-                                   1882 ;Allocation info for local variables in function 'fuzzy_sugeno_weighted_average_array'
-                                   1883 ;------------------------------------------------------------
-                                   1884 ;values        Allocated to stack - _bp -5 +3 
-                                   1885 ;value_count   Allocated to stack - _bp +1 +2 
-                                   1886 ;weighted_sum  Allocated to stack - _bp +3 +4 
-                                   1887 ;firing_sum    Allocated to stack - _bp +7 +4 
-                                   1888 ;firing_strength Allocated to stack - _bp +11 +4 
-                                   1889 ;consequent    Allocated to registers r4 r5 r3 r2 
-                                   1890 ;index         Allocated to registers r6 r7 
-                                   1891 ;------------------------------------------------------------
-                           00069A  1892 	G$fuzzy_sugeno_weighted_average_array$0$0 ==.
-                           00069A  1893 	C$fuzzy.h$781$1_0$45 ==.
-                                   1894 ;	../../fuzzy.h:781: float fuzzy_sugeno_weighted_average_array(
-                                   1895 ;	-----------------------------------------
-                                   1896 ;	 function fuzzy_sugeno_weighted_average_array
-                                   1897 ;	-----------------------------------------
-      000751                       1898 _fuzzy_sugeno_weighted_average_array:
-      000751 C0 0E            [24] 1899 	push	_bp
-      000753 85 81 0E         [24] 1900 	mov	_bp,sp
-      000756 C0 82            [24] 1901 	push	dpl
-      000758 C0 83            [24] 1902 	push	dph
-      00075A E5 81            [12] 1903 	mov	a,sp
-      00075C 24 0C            [12] 1904 	add	a,#0x0c
-      00075E F5 81            [12] 1905 	mov	sp,a
-                           0006A9  1906 	C$fuzzy.h$794$1_0$45 ==.
-                                   1907 ;	../../fuzzy.h:794: values == NULL ||
-      000760 E5 0E            [12] 1908 	mov	a,_bp
-      000762 24 FB            [12] 1909 	add	a,#0xfb
-      000764 F8               [12] 1910 	mov	r0,a
-      000765 E6               [12] 1911 	mov	a,@r0
-      000766 08               [12] 1912 	inc	r0
-      000767 46               [12] 1913 	orl	a,@r0
-      000768 60 0F            [24] 1914 	jz	00101$
-                           0006B3  1915 	C$fuzzy.h$795$1_0$45 ==.
-                                   1916 ;	../../fuzzy.h:795: value_count == 0u ||
-      00076A A8 0E            [24] 1917 	mov	r0,_bp
-      00076C 08               [12] 1918 	inc	r0
-      00076D E6               [12] 1919 	mov	a,@r0
-      00076E 08               [12] 1920 	inc	r0
-      00076F 46               [12] 1921 	orl	a,@r0
-      000770 60 07            [24] 1922 	jz	00101$
-                           0006BB  1923 	C$fuzzy.h$796$1_0$45 ==.
-                                   1924 ;	../../fuzzy.h:796: value_count % 2u != 0u
-      000772 A8 0E            [24] 1925 	mov	r0,_bp
-      000774 08               [12] 1926 	inc	r0
-      000775 E6               [12] 1927 	mov	a,@r0
-      000776 30 E0 09         [24] 1928 	jnb	acc.0,00102$
-      000779                       1929 00101$:
-                           0006C2  1930 	C$fuzzy.h$798$2_0$46 ==.
-                                   1931 ;	../../fuzzy.h:798: return 0.0f;
-      000779 90 00 00         [24] 1932 	mov	dptr,#0x0000
-      00077C E4               [12] 1933 	clr	a
-      00077D F5 F0            [12] 1934 	mov	b,a
-      00077F 02 09 4C         [24] 1935 	ljmp	00111$
-      000782                       1936 00102$:
-                           0006CB  1937 	C$fuzzy.h$802$1_0$45 ==.
-                                   1938 ;	../../fuzzy.h:802: 0.0f;
-      000782 E5 0E            [12] 1939 	mov	a,_bp
-      000784 24 03            [12] 1940 	add	a,#0x03
-      000786 F8               [12] 1941 	mov	r0,a
-      000787 E4               [12] 1942 	clr	a
-      000788 F6               [12] 1943 	mov	@r0,a
-      000789 08               [12] 1944 	inc	r0
-      00078A F6               [12] 1945 	mov	@r0,a
-      00078B 08               [12] 1946 	inc	r0
-      00078C F6               [12] 1947 	mov	@r0,a
-      00078D 08               [12] 1948 	inc	r0
-      00078E F6               [12] 1949 	mov	@r0,a
-                           0006D8  1950 	C$fuzzy.h$805$1_0$45 ==.
-                                   1951 ;	../../fuzzy.h:805: 0.0f;
-      00078F E5 0E            [12] 1952 	mov	a,_bp
-      000791 24 07            [12] 1953 	add	a,#0x07
-      000793 F8               [12] 1954 	mov	r0,a
-      000794 E4               [12] 1955 	clr	a
-      000795 F6               [12] 1956 	mov	@r0,a
-      000796 08               [12] 1957 	inc	r0
-      000797 F6               [12] 1958 	mov	@r0,a
-      000798 08               [12] 1959 	inc	r0
-      000799 F6               [12] 1960 	mov	@r0,a
-      00079A 08               [12] 1961 	inc	r0
-      00079B F6               [12] 1962 	mov	@r0,a
-                           0006E5  1963 	C$fuzzy.h$808$1_0$45 ==.
-                                   1964 ;	../../fuzzy.h:808: index = 0u;
-      00079C FE               [12] 1965 	mov	r6,a
-      00079D FF               [12] 1966 	mov	r7,a
-      00079E                       1967 00109$:
-                           0006E7  1968 	C$fuzzy.h$809$2_0$47 ==.
-                                   1969 ;	../../fuzzy.h:809: index < value_count;
-      00079E A8 0E            [24] 1970 	mov	r0,_bp
-      0007A0 08               [12] 1971 	inc	r0
-      0007A1 C3               [12] 1972 	clr	c
-      0007A2 EE               [12] 1973 	mov	a,r6
-      0007A3 96               [12] 1974 	subb	a,@r0
-      0007A4 EF               [12] 1975 	mov	a,r7
-      0007A5 08               [12] 1976 	inc	r0
-      0007A6 96               [12] 1977 	subb	a,@r0
-      0007A7 40 03            [24] 1978 	jc	00147$
-      0007A9 02 08 DF         [24] 1979 	ljmp	00105$
-      0007AC                       1980 00147$:
-                           0006F5  1981 	C$fuzzy.h$814$3_0$48 ==.
-                                   1982 ;	../../fuzzy.h:814: values[index]
-      0007AC EE               [12] 1983 	mov	a,r6
-      0007AD 2E               [12] 1984 	add	a,r6
-      0007AE FC               [12] 1985 	mov	r4,a
-      0007AF EF               [12] 1986 	mov	a,r7
-      0007B0 33               [12] 1987 	rlc	a
-      0007B1 FD               [12] 1988 	mov	r5,a
-      0007B2 EC               [12] 1989 	mov	a,r4
-      0007B3 2C               [12] 1990 	add	a,r4
-      0007B4 FC               [12] 1991 	mov	r4,a
-      0007B5 ED               [12] 1992 	mov	a,r5
-      0007B6 33               [12] 1993 	rlc	a
-      0007B7 FD               [12] 1994 	mov	r5,a
-      0007B8 E5 0E            [12] 1995 	mov	a,_bp
-      0007BA 24 FB            [12] 1996 	add	a,#0xfb
-      0007BC F8               [12] 1997 	mov	r0,a
-      0007BD EC               [12] 1998 	mov	a,r4
-      0007BE 26               [12] 1999 	add	a, @r0
-      0007BF FC               [12] 2000 	mov	r4,a
-      0007C0 ED               [12] 2001 	mov	a,r5
-      0007C1 08               [12] 2002 	inc	r0
-      0007C2 36               [12] 2003 	addc	a, @r0
-      0007C3 FD               [12] 2004 	mov	r5,a
-      0007C4 08               [12] 2005 	inc	r0
-      0007C5 86 03            [24] 2006 	mov	ar3,@r0
-      0007C7 8C 82            [24] 2007 	mov	dpl,r4
-      0007C9 8D 83            [24] 2008 	mov	dph,r5
-      0007CB 8B F0            [24] 2009 	mov	b,r3
-      0007CD 12 26 33         [24] 2010 	lcall	__gptrget
-      0007D0 FC               [12] 2011 	mov	r4,a
-      0007D1 A3               [24] 2012 	inc	dptr
-      0007D2 12 26 33         [24] 2013 	lcall	__gptrget
-      0007D5 FD               [12] 2014 	mov	r5,a
-      0007D6 A3               [24] 2015 	inc	dptr
-      0007D7 12 26 33         [24] 2016 	lcall	__gptrget
-      0007DA FB               [12] 2017 	mov	r3,a
-      0007DB A3               [24] 2018 	inc	dptr
-      0007DC 12 26 33         [24] 2019 	lcall	__gptrget
-      0007DF 8C 82            [24] 2020 	mov	dpl,r4
-      0007E1 8D 83            [24] 2021 	mov	dph,r5
-      0007E3 8B F0            [24] 2022 	mov	b,r3
-      0007E5 C0 07            [24] 2023 	push	ar7
-      0007E7 C0 06            [24] 2024 	push	ar6
-      0007E9 12 00 B7         [24] 2025 	lcall	_fuzzy_clamp
-      0007EC C8               [12] 2026 	xch	a,r0
-      0007ED E5 0E            [12] 2027 	mov	a,_bp
-      0007EF 24 0B            [12] 2028 	add	a,#0x0b
-      0007F1 C8               [12] 2029 	xch	a,r0
-      0007F2 A6 82            [24] 2030 	mov	@r0, dpl
-      0007F4 08               [12] 2031 	inc	r0
-      0007F5 A6 83            [24] 2032 	mov	@r0, dph
-      0007F7 08               [12] 2033 	inc	r0
-      0007F8 A6 F0            [24] 2034 	mov	@r0, b
-      0007FA 08               [12] 2035 	inc	r0
-      0007FB F6               [12] 2036 	mov	@r0,a
-      0007FC D0 06            [24] 2037 	pop	ar6
-      0007FE D0 07            [24] 2038 	pop	ar7
-                           000749  2039 	C$fuzzy.h$818$3_0$48 ==.
-                                   2040 ;	../../fuzzy.h:818: values[index + 1u];
-      000800 74 01            [12] 2041 	mov	a,#0x01
-      000802 2E               [12] 2042 	add	a, r6
-      000803 FC               [12] 2043 	mov	r4,a
-      000804 E4               [12] 2044 	clr	a
-      000805 3F               [12] 2045 	addc	a, r7
-      000806 FD               [12] 2046 	mov	r5,a
-      000807 EC               [12] 2047 	mov	a,r4
-      000808 2C               [12] 2048 	add	a,r4
-      000809 FC               [12] 2049 	mov	r4,a
-      00080A ED               [12] 2050 	mov	a,r5
-      00080B 33               [12] 2051 	rlc	a
-      00080C FD               [12] 2052 	mov	r5,a
-      00080D EC               [12] 2053 	mov	a,r4
-      00080E 2C               [12] 2054 	add	a,r4
-      00080F FC               [12] 2055 	mov	r4,a
-      000810 ED               [12] 2056 	mov	a,r5
-      000811 33               [12] 2057 	rlc	a
-      000812 FD               [12] 2058 	mov	r5,a
-      000813 E5 0E            [12] 2059 	mov	a,_bp
-      000815 24 FB            [12] 2060 	add	a,#0xfb
-      000817 F8               [12] 2061 	mov	r0,a
-      000818 EC               [12] 2062 	mov	a,r4
-      000819 26               [12] 2063 	add	a, @r0
-      00081A FC               [12] 2064 	mov	r4,a
-      00081B ED               [12] 2065 	mov	a,r5
-      00081C 08               [12] 2066 	inc	r0
-      00081D 36               [12] 2067 	addc	a, @r0
-      00081E FD               [12] 2068 	mov	r5,a
-      00081F 08               [12] 2069 	inc	r0
-      000820 86 03            [24] 2070 	mov	ar3,@r0
-      000822 8C 82            [24] 2071 	mov	dpl,r4
-      000824 8D 83            [24] 2072 	mov	dph,r5
-      000826 8B F0            [24] 2073 	mov	b,r3
-      000828 12 26 33         [24] 2074 	lcall	__gptrget
-      00082B FC               [12] 2075 	mov	r4,a
-      00082C A3               [24] 2076 	inc	dptr
-      00082D 12 26 33         [24] 2077 	lcall	__gptrget
-      000830 FD               [12] 2078 	mov	r5,a
-      000831 A3               [24] 2079 	inc	dptr
-      000832 12 26 33         [24] 2080 	lcall	__gptrget
-      000835 FB               [12] 2081 	mov	r3,a
-      000836 A3               [24] 2082 	inc	dptr
-      000837 12 26 33         [24] 2083 	lcall	__gptrget
-      00083A FA               [12] 2084 	mov	r2,a
-                           000784  2085 	C$fuzzy.h$823$1_0$45 ==.
-                                   2086 ;	../../fuzzy.h:823: consequent;
-      00083B C0 07            [24] 2087 	push	ar7
-      00083D C0 06            [24] 2088 	push	ar6
-      00083F C0 04            [24] 2089 	push	ar4
-      000841 C0 05            [24] 2090 	push	ar5
-      000843 C0 03            [24] 2091 	push	ar3
-      000845 C0 02            [24] 2092 	push	ar2
-      000847 E5 0E            [12] 2093 	mov	a,_bp
-      000849 24 0B            [12] 2094 	add	a,#0x0b
-      00084B F8               [12] 2095 	mov	r0,a
-      00084C 86 82            [24] 2096 	mov	dpl, @r0
-      00084E 08               [12] 2097 	inc	r0
-      00084F 86 83            [24] 2098 	mov	dph, @r0
-      000851 08               [12] 2099 	inc	r0
-      000852 86 F0            [24] 2100 	mov	b, @r0
-      000854 08               [12] 2101 	inc	r0
-      000855 E6               [12] 2102 	mov	a, @r0
-      000856 12 22 D7         [24] 2103 	lcall	___fsmul
-      000859 AA 82            [24] 2104 	mov	r2, dpl
-      00085B AB 83            [24] 2105 	mov	r3, dph
-      00085D AC F0            [24] 2106 	mov	r4, b
-      00085F FD               [12] 2107 	mov	r5, a
-      000860 E5 81            [12] 2108 	mov	a,sp
-      000862 24 FC            [12] 2109 	add	a,#0xfc
-      000864 F5 81            [12] 2110 	mov	sp,a
-      000866 C0 02            [24] 2111 	push	ar2
-      000868 C0 03            [24] 2112 	push	ar3
-      00086A C0 04            [24] 2113 	push	ar4
-      00086C C0 05            [24] 2114 	push	ar5
-                           0007B7  2115 	C$fuzzy.h$826$1_0$45 ==.
-                                   2116 ;	../../fuzzy.h:826: firing_strength;
-      00086E E5 0E            [12] 2117 	mov	a,_bp
-      000870 24 03            [12] 2118 	add	a,#0x03
-      000872 F8               [12] 2119 	mov	r0,a
-      000873 86 82            [24] 2120 	mov	dpl, @r0
-      000875 08               [12] 2121 	inc	r0
-      000876 86 83            [24] 2122 	mov	dph, @r0
-      000878 08               [12] 2123 	inc	r0
-      000879 86 F0            [24] 2124 	mov	b, @r0
-      00087B 08               [12] 2125 	inc	r0
-      00087C E6               [12] 2126 	mov	a, @r0
-      00087D 12 24 59         [24] 2127 	lcall	___fsadd
-      000880 A8 0E            [24] 2128 	mov	r0,_bp
-      000882 08               [12] 2129 	inc	r0
-      000883 08               [12] 2130 	inc	r0
-      000884 08               [12] 2131 	inc	r0
-      000885 A6 82            [24] 2132 	mov	@r0, dpl
-      000887 08               [12] 2133 	inc	r0
-      000888 A6 83            [24] 2134 	mov	@r0, dph
-      00088A 08               [12] 2135 	inc	r0
-      00088B A6 F0            [24] 2136 	mov	@r0, b
-      00088D 08               [12] 2137 	inc	r0
-      00088E F6               [12] 2138 	mov	@r0,a
-      00088F E5 81            [12] 2139 	mov	a,sp
-      000891 24 FC            [12] 2140 	add	a,#0xfc
-      000893 F5 81            [12] 2141 	mov	sp,a
-      000895 E5 0E            [12] 2142 	mov	a,_bp
-      000897 24 0B            [12] 2143 	add	a,#0x0b
-      000899 F8               [12] 2144 	mov	r0,a
-      00089A E6               [12] 2145 	mov	a,@r0
-      00089B C0 E0            [24] 2146 	push	acc
-      00089D 08               [12] 2147 	inc	r0
-      00089E E6               [12] 2148 	mov	a,@r0
-      00089F C0 E0            [24] 2149 	push	acc
-      0008A1 08               [12] 2150 	inc	r0
-      0008A2 E6               [12] 2151 	mov	a,@r0
-      0008A3 C0 E0            [24] 2152 	push	acc
-      0008A5 08               [12] 2153 	inc	r0
-      0008A6 E6               [12] 2154 	mov	a,@r0
-      0008A7 C0 E0            [24] 2155 	push	acc
-                           0007F2  2156 	C$fuzzy.h$811$1_0$45 ==.
-                                   2157 ;	../../fuzzy.h:811: ) {
-      0008A9 E5 0E            [12] 2158 	mov	a,_bp
-      0008AB 24 07            [12] 2159 	add	a,#0x07
-      0008AD F8               [12] 2160 	mov	r0,a
-      0008AE 86 82            [24] 2161 	mov	dpl, @r0
-      0008B0 08               [12] 2162 	inc	r0
-      0008B1 86 83            [24] 2163 	mov	dph, @r0
-      0008B3 08               [12] 2164 	inc	r0
-      0008B4 86 F0            [24] 2165 	mov	b, @r0
-      0008B6 08               [12] 2166 	inc	r0
-      0008B7 E6               [12] 2167 	mov	a, @r0
-      0008B8 12 24 59         [24] 2168 	lcall	___fsadd
-      0008BB C8               [12] 2169 	xch	a,r0
-      0008BC E5 0E            [12] 2170 	mov	a,_bp
-      0008BE 24 07            [12] 2171 	add	a,#0x07
-      0008C0 C8               [12] 2172 	xch	a,r0
-      0008C1 A6 82            [24] 2173 	mov	@r0, dpl
-      0008C3 08               [12] 2174 	inc	r0
-      0008C4 A6 83            [24] 2175 	mov	@r0, dph
-      0008C6 08               [12] 2176 	inc	r0
-      0008C7 A6 F0            [24] 2177 	mov	@r0, b
-      0008C9 08               [12] 2178 	inc	r0
-      0008CA F6               [12] 2179 	mov	@r0,a
-      0008CB E5 81            [12] 2180 	mov	a,sp
-      0008CD 24 FC            [12] 2181 	add	a,#0xfc
-      0008CF F5 81            [12] 2182 	mov	sp,a
-      0008D1 D0 06            [24] 2183 	pop	ar6
-      0008D3 D0 07            [24] 2184 	pop	ar7
-      0008D5 74 02            [12] 2185 	mov	a,#0x02
-      0008D7 2E               [12] 2186 	add	a, r6
-      0008D8 FE               [12] 2187 	mov	r6,a
-      0008D9 E4               [12] 2188 	clr	a
-      0008DA 3F               [12] 2189 	addc	a, r7
-      0008DB FF               [12] 2190 	mov	r7,a
-      0008DC 02 07 9E         [24] 2191 	ljmp	00109$
-      0008DF                       2192 00105$:
-                           000828  2193 	C$fuzzy.h$829$1_0$45 ==.
-                                   2194 ;	../../fuzzy.h:829: if (firing_sum <= LEVEL_LO) {
-      0008DF E5 0E            [12] 2195 	mov	a,_bp
-      0008E1 24 07            [12] 2196 	add	a,#0x07
-      0008E3 F8               [12] 2197 	mov	r0,a
-      0008E4 E6               [12] 2198 	mov	a,@r0
-      0008E5 C0 E0            [24] 2199 	push	acc
-      0008E7 08               [12] 2200 	inc	r0
-      0008E8 E6               [12] 2201 	mov	a,@r0
-      0008E9 C0 E0            [24] 2202 	push	acc
-      0008EB 08               [12] 2203 	inc	r0
-      0008EC E6               [12] 2204 	mov	a,@r0
-      0008ED C0 E0            [24] 2205 	push	acc
-      0008EF 08               [12] 2206 	inc	r0
-      0008F0 E6               [12] 2207 	mov	a,@r0
-      0008F1 C0 E0            [24] 2208 	push	acc
-      0008F3 90 00 00         [24] 2209 	mov	dptr,#0x0000
-      0008F6 E4               [12] 2210 	clr	a
-      0008F7 F5 F0            [12] 2211 	mov	b,a
-      0008F9 12 24 07         [24] 2212 	lcall	___fslt
-      0008FC E5 81            [12] 2213 	mov	a,sp
-      0008FE 24 FC            [12] 2214 	add	a,#0xfc
-      000900 F5 81            [12] 2215 	mov	sp,a
-      000902 E5 82            [12] 2216 	mov	a, dpl
-      000904 24 FF            [12] 2217 	add	a,#0xff
-      000906 92 00            [24] 2218 	mov	b0,c
-      000908 40 08            [24] 2219 	jc	00107$
-                           000853  2220 	C$fuzzy.h$830$2_0$49 ==.
-                                   2221 ;	../../fuzzy.h:830: return 0.0f;
-      00090A 90 00 00         [24] 2222 	mov	dptr,#0x0000
-      00090D E4               [12] 2223 	clr	a
-      00090E F5 F0            [12] 2224 	mov	b,a
-      000910 80 3A            [24] 2225 	sjmp	00111$
-      000912                       2226 00107$:
-                           00085B  2227 	C$fuzzy.h$834$1_0$45 ==.
-                                   2228 ;	../../fuzzy.h:834: firing_sum;
-      000912 E5 0E            [12] 2229 	mov	a,_bp
-      000914 24 07            [12] 2230 	add	a,#0x07
-      000916 F8               [12] 2231 	mov	r0,a
-      000917 E6               [12] 2232 	mov	a,@r0
-      000918 C0 E0            [24] 2233 	push	acc
-      00091A 08               [12] 2234 	inc	r0
-      00091B E6               [12] 2235 	mov	a,@r0
-      00091C C0 E0            [24] 2236 	push	acc
-      00091E 08               [12] 2237 	inc	r0
-      00091F E6               [12] 2238 	mov	a,@r0
-      000920 C0 E0            [24] 2239 	push	acc
-      000922 08               [12] 2240 	inc	r0
-      000923 E6               [12] 2241 	mov	a,@r0
-      000924 C0 E0            [24] 2242 	push	acc
-      000926 E5 0E            [12] 2243 	mov	a,_bp
-      000928 24 03            [12] 2244 	add	a,#0x03
-      00092A F8               [12] 2245 	mov	r0,a
-      00092B 86 82            [24] 2246 	mov	dpl, @r0
-      00092D 08               [12] 2247 	inc	r0
-      00092E 86 83            [24] 2248 	mov	dph, @r0
-      000930 08               [12] 2249 	inc	r0
-      000931 86 F0            [24] 2250 	mov	b, @r0
-      000933 08               [12] 2251 	inc	r0
-      000934 E6               [12] 2252 	mov	a, @r0
-      000935 12 25 70         [24] 2253 	lcall	___fsdiv
-      000938 AC 82            [24] 2254 	mov	r4, dpl
-      00093A AD 83            [24] 2255 	mov	r5, dph
-      00093C AE F0            [24] 2256 	mov	r6, b
-      00093E FF               [12] 2257 	mov	r7, a
-      00093F E5 81            [12] 2258 	mov	a,sp
-      000941 24 FC            [12] 2259 	add	a,#0xfc
-      000943 F5 81            [12] 2260 	mov	sp,a
-      000945 8C 82            [24] 2261 	mov	dpl, r4
-      000947 8D 83            [24] 2262 	mov	dph, r5
-      000949 8E F0            [24] 2263 	mov	b, r6
-      00094B EF               [12] 2264 	mov	a, r7
-      00094C                       2265 00111$:
-                           000895  2266 	C$fuzzy.h$835$1_0$45 ==.
-                                   2267 ;	../../fuzzy.h:835: }
-      00094C 85 0E 81         [24] 2268 	mov	sp,_bp
-      00094F D0 0E            [24] 2269 	pop	_bp
-                           00089A  2270 	C$fuzzy.h$835$1_0$45 ==.
-                           00089A  2271 	XG$fuzzy_sugeno_weighted_average_array$0$0 ==.
-      000951 22               [24] 2272 	ret
-                                   2273 ;------------------------------------------------------------
-                                   2274 ;Allocation info for local variables in function 'fuzzy_sugeno_weighted_sum_array'
-                                   2275 ;------------------------------------------------------------
-                                   2276 ;values        Allocated to stack - _bp -5 +3 
-                                   2277 ;value_count   Allocated to registers r6 r7 
-                                   2278 ;weighted_sum  Allocated to stack - _bp +1 +4 
-                                   2279 ;firing_strength Allocated to stack - _bp +5 +4 
-                                   2280 ;consequent    Allocated to registers r6 r7 r3 r2 
-                                   2281 ;index         Allocated to registers r4 r5 
-                                   2282 ;------------------------------------------------------------
-                           00089B  2283 	G$fuzzy_sugeno_weighted_sum_array$0$0 ==.
-                           00089B  2284 	C$fuzzy.h$845$1_0$51 ==.
-                                   2285 ;	../../fuzzy.h:845: float fuzzy_sugeno_weighted_sum_array(
-                                   2286 ;	-----------------------------------------
-                                   2287 ;	 function fuzzy_sugeno_weighted_sum_array
-                                   2288 ;	-----------------------------------------
-      000952                       2289 _fuzzy_sugeno_weighted_sum_array:
-      000952 C0 0E            [24] 2290 	push	_bp
-      000954 E5 81            [12] 2291 	mov	a,sp
-      000956 F5 0E            [12] 2292 	mov	_bp,a
-      000958 24 08            [12] 2293 	add	a,#0x08
-      00095A F5 81            [12] 2294 	mov	sp,a
-      00095C AE 82            [24] 2295 	mov	r6, dpl
-      00095E AF 83            [24] 2296 	mov	r7, dph
-                           0008A9  2297 	C$fuzzy.h$857$1_0$51 ==.
-                                   2298 ;	../../fuzzy.h:857: values == NULL ||
-      000960 E5 0E            [12] 2299 	mov	a,_bp
-      000962 24 FB            [12] 2300 	add	a,#0xfb
-      000964 F8               [12] 2301 	mov	r0,a
-      000965 E6               [12] 2302 	mov	a,@r0
-      000966 08               [12] 2303 	inc	r0
-      000967 46               [12] 2304 	orl	a,@r0
-      000968 60 08            [24] 2305 	jz	00101$
-                           0008B3  2306 	C$fuzzy.h$858$1_0$51 ==.
-                                   2307 ;	../../fuzzy.h:858: value_count == 0u ||
-      00096A EE               [12] 2308 	mov	a,r6
-      00096B 4F               [12] 2309 	orl	a,r7
-      00096C 60 04            [24] 2310 	jz	00101$
-                           0008B7  2311 	C$fuzzy.h$859$1_0$51 ==.
-                                   2312 ;	../../fuzzy.h:859: value_count % 2u != 0u
-      00096E EE               [12] 2313 	mov	a,r6
-      00096F 30 E0 09         [24] 2314 	jnb	acc.0,00102$
-      000972                       2315 00101$:
-                           0008BB  2316 	C$fuzzy.h$861$2_0$52 ==.
-                                   2317 ;	../../fuzzy.h:861: return 0.0f;
-      000972 90 00 00         [24] 2318 	mov	dptr,#0x0000
-      000975 E4               [12] 2319 	clr	a
-      000976 F5 F0            [12] 2320 	mov	b,a
-      000978 02 0A B3         [24] 2321 	ljmp	00109$
-      00097B                       2322 00102$:
-                           0008C4  2323 	C$fuzzy.h$865$1_0$51 ==.
-                                   2324 ;	../../fuzzy.h:865: 0.0f;
-      00097B A8 0E            [24] 2325 	mov	r0,_bp
-      00097D 08               [12] 2326 	inc	r0
-      00097E E4               [12] 2327 	clr	a
-      00097F F6               [12] 2328 	mov	@r0,a
-      000980 08               [12] 2329 	inc	r0
-      000981 F6               [12] 2330 	mov	@r0,a
-      000982 08               [12] 2331 	inc	r0
-      000983 F6               [12] 2332 	mov	@r0,a
-      000984 08               [12] 2333 	inc	r0
-      000985 F6               [12] 2334 	mov	@r0,a
-                           0008CF  2335 	C$fuzzy.h$868$1_0$51 ==.
-                                   2336 ;	../../fuzzy.h:868: index = 0u;
-      000986 FC               [12] 2337 	mov	r4,a
-      000987 FD               [12] 2338 	mov	r5,a
-      000988                       2339 00107$:
-                           0008D1  2340 	C$fuzzy.h$869$2_0$53 ==.
-                                   2341 ;	../../fuzzy.h:869: index < value_count;
-      000988 C3               [12] 2342 	clr	c
-      000989 EC               [12] 2343 	mov	a,r4
-      00098A 9E               [12] 2344 	subb	a,r6
-      00098B ED               [12] 2345 	mov	a,r5
-      00098C 9F               [12] 2346 	subb	a,r7
-      00098D 40 03            [24] 2347 	jc	00139$
-      00098F 02 0A A6         [24] 2348 	ljmp	00105$
-      000992                       2349 00139$:
-                           0008DB  2350 	C$fuzzy.h$874$1_0$51 ==.
-                                   2351 ;	../../fuzzy.h:874: values[index]
-      000992 C0 06            [24] 2352 	push	ar6
-      000994 C0 07            [24] 2353 	push	ar7
-      000996 EC               [12] 2354 	mov	a,r4
-      000997 2C               [12] 2355 	add	a,r4
-      000998 FA               [12] 2356 	mov	r2,a
-      000999 ED               [12] 2357 	mov	a,r5
-      00099A 33               [12] 2358 	rlc	a
-      00099B FB               [12] 2359 	mov	r3,a
-      00099C EA               [12] 2360 	mov	a,r2
-      00099D 2A               [12] 2361 	add	a,r2
-      00099E FA               [12] 2362 	mov	r2,a
-      00099F EB               [12] 2363 	mov	a,r3
-      0009A0 33               [12] 2364 	rlc	a
-      0009A1 FB               [12] 2365 	mov	r3,a
-      0009A2 E5 0E            [12] 2366 	mov	a,_bp
-      0009A4 24 FB            [12] 2367 	add	a,#0xfb
-      0009A6 F8               [12] 2368 	mov	r0,a
-      0009A7 EA               [12] 2369 	mov	a,r2
-      0009A8 26               [12] 2370 	add	a, @r0
-      0009A9 FA               [12] 2371 	mov	r2,a
-      0009AA EB               [12] 2372 	mov	a,r3
-      0009AB 08               [12] 2373 	inc	r0
-      0009AC 36               [12] 2374 	addc	a, @r0
-      0009AD FB               [12] 2375 	mov	r3,a
-      0009AE 08               [12] 2376 	inc	r0
-      0009AF 86 07            [24] 2377 	mov	ar7,@r0
-      0009B1 8A 82            [24] 2378 	mov	dpl,r2
-      0009B3 8B 83            [24] 2379 	mov	dph,r3
-      0009B5 8F F0            [24] 2380 	mov	b,r7
-      0009B7 12 26 33         [24] 2381 	lcall	__gptrget
-      0009BA FA               [12] 2382 	mov	r2,a
-      0009BB A3               [24] 2383 	inc	dptr
-      0009BC 12 26 33         [24] 2384 	lcall	__gptrget
-      0009BF FB               [12] 2385 	mov	r3,a
-      0009C0 A3               [24] 2386 	inc	dptr
-      0009C1 12 26 33         [24] 2387 	lcall	__gptrget
-      0009C4 FF               [12] 2388 	mov	r7,a
-      0009C5 A3               [24] 2389 	inc	dptr
-      0009C6 12 26 33         [24] 2390 	lcall	__gptrget
-      0009C9 FE               [12] 2391 	mov	r6,a
-      0009CA 8A 82            [24] 2392 	mov	dpl,r2
-      0009CC 8B 83            [24] 2393 	mov	dph,r3
-      0009CE 8F F0            [24] 2394 	mov	b,r7
-      0009D0 C0 07            [24] 2395 	push	ar7
-      0009D2 C0 06            [24] 2396 	push	ar6
-      0009D4 C0 05            [24] 2397 	push	ar5
-      0009D6 C0 04            [24] 2398 	push	ar4
-      0009D8 12 00 B7         [24] 2399 	lcall	_fuzzy_clamp
-      0009DB C8               [12] 2400 	xch	a,r0
-      0009DC E5 0E            [12] 2401 	mov	a,_bp
-      0009DE 24 05            [12] 2402 	add	a,#0x05
-      0009E0 C8               [12] 2403 	xch	a,r0
-      0009E1 A6 82            [24] 2404 	mov	@r0, dpl
-      0009E3 08               [12] 2405 	inc	r0
-      0009E4 A6 83            [24] 2406 	mov	@r0, dph
-      0009E6 08               [12] 2407 	inc	r0
-      0009E7 A6 F0            [24] 2408 	mov	@r0, b
-      0009E9 08               [12] 2409 	inc	r0
-      0009EA F6               [12] 2410 	mov	@r0,a
-      0009EB D0 04            [24] 2411 	pop	ar4
-      0009ED D0 05            [24] 2412 	pop	ar5
-      0009EF D0 06            [24] 2413 	pop	ar6
-      0009F1 D0 07            [24] 2414 	pop	ar7
-                           00093C  2415 	C$fuzzy.h$878$3_0$54 ==.
-                                   2416 ;	../../fuzzy.h:878: values[index + 1u];
-      0009F3 74 01            [12] 2417 	mov	a,#0x01
-      0009F5 2C               [12] 2418 	add	a, r4
-      0009F6 FE               [12] 2419 	mov	r6,a
-      0009F7 E4               [12] 2420 	clr	a
-      0009F8 3D               [12] 2421 	addc	a, r5
-      0009F9 FF               [12] 2422 	mov	r7,a
-      0009FA EE               [12] 2423 	mov	a,r6
-      0009FB 2E               [12] 2424 	add	a,r6
-      0009FC FE               [12] 2425 	mov	r6,a
-      0009FD EF               [12] 2426 	mov	a,r7
-      0009FE 33               [12] 2427 	rlc	a
-      0009FF FF               [12] 2428 	mov	r7,a
-      000A00 EE               [12] 2429 	mov	a,r6
-      000A01 2E               [12] 2430 	add	a,r6
-      000A02 FE               [12] 2431 	mov	r6,a
-      000A03 EF               [12] 2432 	mov	a,r7
-      000A04 33               [12] 2433 	rlc	a
-      000A05 FF               [12] 2434 	mov	r7,a
-      000A06 E5 0E            [12] 2435 	mov	a,_bp
-      000A08 24 FB            [12] 2436 	add	a,#0xfb
-      000A0A F8               [12] 2437 	mov	r0,a
-      000A0B EE               [12] 2438 	mov	a,r6
-      000A0C 26               [12] 2439 	add	a, @r0
-      000A0D FE               [12] 2440 	mov	r6,a
-      000A0E EF               [12] 2441 	mov	a,r7
-      000A0F 08               [12] 2442 	inc	r0
-      000A10 36               [12] 2443 	addc	a, @r0
-      000A11 FF               [12] 2444 	mov	r7,a
-      000A12 08               [12] 2445 	inc	r0
-      000A13 86 03            [24] 2446 	mov	ar3,@r0
-      000A15 8E 82            [24] 2447 	mov	dpl,r6
-      000A17 8F 83            [24] 2448 	mov	dph,r7
-      000A19 8B F0            [24] 2449 	mov	b,r3
-      000A1B 12 26 33         [24] 2450 	lcall	__gptrget
-      000A1E FE               [12] 2451 	mov	r6,a
-      000A1F A3               [24] 2452 	inc	dptr
-      000A20 12 26 33         [24] 2453 	lcall	__gptrget
-      000A23 FF               [12] 2454 	mov	r7,a
-      000A24 A3               [24] 2455 	inc	dptr
-      000A25 12 26 33         [24] 2456 	lcall	__gptrget
-      000A28 FB               [12] 2457 	mov	r3,a
-      000A29 A3               [24] 2458 	inc	dptr
-      000A2A 12 26 33         [24] 2459 	lcall	__gptrget
-      000A2D FA               [12] 2460 	mov	r2,a
-                           000977  2461 	C$fuzzy.h$883$1_0$51 ==.
-                                   2462 ;	../../fuzzy.h:883: consequent;
-      000A2E C0 05            [24] 2463 	push	ar5
-      000A30 C0 04            [24] 2464 	push	ar4
-      000A32 C0 06            [24] 2465 	push	ar6
-      000A34 C0 07            [24] 2466 	push	ar7
-      000A36 C0 03            [24] 2467 	push	ar3
-      000A38 C0 02            [24] 2468 	push	ar2
-      000A3A E5 0E            [12] 2469 	mov	a,_bp
-      000A3C 24 05            [12] 2470 	add	a,#0x05
-      000A3E F8               [12] 2471 	mov	r0,a
-      000A3F 86 82            [24] 2472 	mov	dpl, @r0
-      000A41 08               [12] 2473 	inc	r0
-      000A42 86 83            [24] 2474 	mov	dph, @r0
-      000A44 08               [12] 2475 	inc	r0
-      000A45 86 F0            [24] 2476 	mov	b, @r0
-      000A47 08               [12] 2477 	inc	r0
-      000A48 E6               [12] 2478 	mov	a, @r0
-      000A49 12 22 D7         [24] 2479 	lcall	___fsmul
-      000A4C AA 82            [24] 2480 	mov	r2, dpl
-      000A4E AB 83            [24] 2481 	mov	r3, dph
-      000A50 AE F0            [24] 2482 	mov	r6, b
-      000A52 FF               [12] 2483 	mov	r7, a
-      000A53 E5 81            [12] 2484 	mov	a,sp
-      000A55 24 FC            [12] 2485 	add	a,#0xfc
-      000A57 F5 81            [12] 2486 	mov	sp,a
-      000A59 D0 04            [24] 2487 	pop	ar4
-      000A5B D0 05            [24] 2488 	pop	ar5
-      000A5D C0 07            [24] 2489 	push	ar7
-      000A5F C0 06            [24] 2490 	push	ar6
-      000A61 C0 05            [24] 2491 	push	ar5
-      000A63 C0 04            [24] 2492 	push	ar4
-      000A65 C0 02            [24] 2493 	push	ar2
-      000A67 C0 03            [24] 2494 	push	ar3
-      000A69 C0 06            [24] 2495 	push	ar6
-      000A6B C0 07            [24] 2496 	push	ar7
-                           0009B6  2497 	C$fuzzy.h$871$1_0$51 ==.
-                                   2498 ;	../../fuzzy.h:871: ) {
-      000A6D A8 0E            [24] 2499 	mov	r0,_bp
-      000A6F 08               [12] 2500 	inc	r0
-      000A70 86 82            [24] 2501 	mov	dpl, @r0
-      000A72 08               [12] 2502 	inc	r0
-      000A73 86 83            [24] 2503 	mov	dph, @r0
-      000A75 08               [12] 2504 	inc	r0
-      000A76 86 F0            [24] 2505 	mov	b, @r0
-      000A78 08               [12] 2506 	inc	r0
-      000A79 E6               [12] 2507 	mov	a, @r0
-      000A7A 12 24 59         [24] 2508 	lcall	___fsadd
-      000A7D A8 0E            [24] 2509 	mov	r0,_bp
-      000A7F 08               [12] 2510 	inc	r0
-      000A80 A6 82            [24] 2511 	mov	@r0, dpl
-      000A82 08               [12] 2512 	inc	r0
-      000A83 A6 83            [24] 2513 	mov	@r0, dph
-      000A85 08               [12] 2514 	inc	r0
-      000A86 A6 F0            [24] 2515 	mov	@r0, b
-      000A88 08               [12] 2516 	inc	r0
-      000A89 F6               [12] 2517 	mov	@r0,a
-      000A8A E5 81            [12] 2518 	mov	a,sp
-      000A8C 24 FC            [12] 2519 	add	a,#0xfc
-      000A8E F5 81            [12] 2520 	mov	sp,a
-      000A90 D0 04            [24] 2521 	pop	ar4
-      000A92 D0 05            [24] 2522 	pop	ar5
-      000A94 D0 06            [24] 2523 	pop	ar6
-      000A96 D0 07            [24] 2524 	pop	ar7
-      000A98 74 02            [12] 2525 	mov	a,#0x02
-      000A9A 2C               [12] 2526 	add	a, r4
-      000A9B FC               [12] 2527 	mov	r4,a
-      000A9C E4               [12] 2528 	clr	a
-      000A9D 3D               [12] 2529 	addc	a, r5
-      000A9E FD               [12] 2530 	mov	r5,a
-      000A9F D0 07            [24] 2531 	pop	ar7
-      000AA1 D0 06            [24] 2532 	pop	ar6
-      000AA3 02 09 88         [24] 2533 	ljmp	00107$
-      000AA6                       2534 00105$:
-                           0009EF  2535 	C$fuzzy.h$886$1_0$51 ==.
-                                   2536 ;	../../fuzzy.h:886: return weighted_sum;
-      000AA6 A8 0E            [24] 2537 	mov	r0,_bp
-      000AA8 08               [12] 2538 	inc	r0
-      000AA9 86 82            [24] 2539 	mov	dpl, @r0
-      000AAB 08               [12] 2540 	inc	r0
-      000AAC 86 83            [24] 2541 	mov	dph, @r0
-      000AAE 08               [12] 2542 	inc	r0
-      000AAF 86 F0            [24] 2543 	mov	b, @r0
-      000AB1 08               [12] 2544 	inc	r0
-      000AB2 E6               [12] 2545 	mov	a, @r0
-      000AB3                       2546 00109$:
-                           0009FC  2547 	C$fuzzy.h$887$1_0$51 ==.
-                                   2548 ;	../../fuzzy.h:887: }
-      000AB3 85 0E 81         [24] 2549 	mov	sp,_bp
-      000AB6 D0 0E            [24] 2550 	pop	_bp
-                           000A01  2551 	C$fuzzy.h$887$1_0$51 ==.
-                           000A01  2552 	XG$fuzzy_sugeno_weighted_sum_array$0$0 ==.
-      000AB8 22               [24] 2553 	ret
-                                   2554 ;------------------------------------------------------------
-                                   2555 ;Allocation info for local variables in function 'fuzzy_ramp'
-                                   2556 ;------------------------------------------------------------
-                                   2557 ;upper_boundary Allocated to stack - _bp -6 +4 
-                                   2558 ;value         Allocated to stack - _bp -10 +4 
-                                   2559 ;ramp_up       Allocated to stack - _bp -11 +1 
-                                   2560 ;hedge         Allocated to stack - _bp -12 +1 
-                                   2561 ;lower_boundary Allocated to registers r7 r6 r5 r4 
-                                   2562 ;result        Allocated to stack - _bp +5 +4 
-                                   2563 ;normalized    Allocated to registers r4 r5 r6 r7 
-                                   2564 ;sloc0         Allocated to stack - _bp +13 +4 
-                                   2565 ;sloc1         Allocated to stack - _bp +1 +4 
-                                   2566 ;------------------------------------------------------------
-                           000A02  2567 	G$fuzzy_ramp$0$0 ==.
-                           000A02  2568 	C$fuzzy.h$893$1_0$56 ==.
-                                   2569 ;	../../fuzzy.h:893: float fuzzy_ramp(
-                                   2570 ;	-----------------------------------------
-                                   2571 ;	 function fuzzy_ramp
-                                   2572 ;	-----------------------------------------
-      000AB9                       2573 _fuzzy_ramp:
-      000AB9 C0 0E            [24] 2574 	push	_bp
-      000ABB 85 81 0E         [24] 2575 	mov	_bp,sp
-      000ABE AF 82            [24] 2576 	mov	r7,dpl
-      000AC0 AE 83            [24] 2577 	mov	r6,dph
-      000AC2 AD F0            [24] 2578 	mov	r5,b
-      000AC4 FC               [12] 2579 	mov	r4,a
-      000AC5 E5 81            [12] 2580 	mov	a,sp
-      000AC7 24 08            [12] 2581 	add	a,#0x08
-      000AC9 F5 81            [12] 2582 	mov	sp,a
-                           000A14  2583 	C$fuzzy.h$904$1_0$56 ==.
-                                   2584 ;	../../fuzzy.h:904: if (lower_boundary >= upper_boundary) {
-      000ACB C0 07            [24] 2585 	push	ar7
-      000ACD C0 06            [24] 2586 	push	ar6
-      000ACF C0 05            [24] 2587 	push	ar5
-      000AD1 C0 04            [24] 2588 	push	ar4
-      000AD3 E5 0E            [12] 2589 	mov	a,_bp
-      000AD5 24 FA            [12] 2590 	add	a,#0xfa
-      000AD7 F8               [12] 2591 	mov	r0,a
-      000AD8 E6               [12] 2592 	mov	a,@r0
-      000AD9 C0 E0            [24] 2593 	push	acc
-      000ADB 08               [12] 2594 	inc	r0
-      000ADC E6               [12] 2595 	mov	a,@r0
-      000ADD C0 E0            [24] 2596 	push	acc
-      000ADF 08               [12] 2597 	inc	r0
-      000AE0 E6               [12] 2598 	mov	a,@r0
-      000AE1 C0 E0            [24] 2599 	push	acc
-      000AE3 08               [12] 2600 	inc	r0
-      000AE4 E6               [12] 2601 	mov	a,@r0
-      000AE5 C0 E0            [24] 2602 	push	acc
-      000AE7 8F 82            [24] 2603 	mov	dpl, r7
-      000AE9 8E 83            [24] 2604 	mov	dph, r6
-      000AEB 8D F0            [24] 2605 	mov	b, r5
-      000AED EC               [12] 2606 	mov	a, r4
-      000AEE 12 24 07         [24] 2607 	lcall	___fslt
-      000AF1 E5 81            [12] 2608 	mov	a,sp
-      000AF3 24 FC            [12] 2609 	add	a,#0xfc
-      000AF5 F5 81            [12] 2610 	mov	sp,a
-      000AF7 D0 04            [24] 2611 	pop	ar4
-      000AF9 D0 05            [24] 2612 	pop	ar5
-      000AFB D0 06            [24] 2613 	pop	ar6
-      000AFD D0 07            [24] 2614 	pop	ar7
-      000AFF E5 82            [12] 2615 	mov	a, dpl
-      000B01 24 FF            [12] 2616 	add	a,#0xff
-      000B03 92 00            [24] 2617 	mov	b0,c
-      000B05 40 09            [24] 2618 	jc	00102$
-                           000A50  2619 	C$fuzzy.h$905$2_0$57 ==.
-                                   2620 ;	../../fuzzy.h:905: return LEVEL_LO;
-      000B07 90 00 00         [24] 2621 	mov	dptr,#0x0000
-      000B0A E4               [12] 2622 	clr	a
-      000B0B F5 F0            [12] 2623 	mov	b,a
-      000B0D 02 0C F0         [24] 2624 	ljmp	00109$
-      000B10                       2625 00102$:
-                           000A59  2626 	C$fuzzy.h$908$1_0$56 ==.
-                                   2627 ;	../../fuzzy.h:908: if (value <= lower_boundary) {
-      000B10 C0 07            [24] 2628 	push	ar7
-      000B12 C0 06            [24] 2629 	push	ar6
-      000B14 C0 05            [24] 2630 	push	ar5
-      000B16 C0 04            [24] 2631 	push	ar4
-      000B18 E5 0E            [12] 2632 	mov	a,_bp
-      000B1A 24 F6            [12] 2633 	add	a,#0xf6
-      000B1C F8               [12] 2634 	mov	r0,a
-      000B1D E6               [12] 2635 	mov	a,@r0
-      000B1E C0 E0            [24] 2636 	push	acc
-      000B20 08               [12] 2637 	inc	r0
-      000B21 E6               [12] 2638 	mov	a,@r0
-      000B22 C0 E0            [24] 2639 	push	acc
-      000B24 08               [12] 2640 	inc	r0
-      000B25 E6               [12] 2641 	mov	a,@r0
-      000B26 C0 E0            [24] 2642 	push	acc
-      000B28 08               [12] 2643 	inc	r0
-      000B29 E6               [12] 2644 	mov	a,@r0
-      000B2A C0 E0            [24] 2645 	push	acc
-      000B2C 8F 82            [24] 2646 	mov	dpl, r7
-      000B2E 8E 83            [24] 2647 	mov	dph, r6
-      000B30 8D F0            [24] 2648 	mov	b, r5
-      000B32 EC               [12] 2649 	mov	a, r4
-      000B33 12 24 07         [24] 2650 	lcall	___fslt
-      000B36 E5 81            [12] 2651 	mov	a,sp
-      000B38 24 FC            [12] 2652 	add	a,#0xfc
-      000B3A F5 81            [12] 2653 	mov	sp,a
-      000B3C D0 04            [24] 2654 	pop	ar4
-      000B3E D0 05            [24] 2655 	pop	ar5
-      000B40 D0 06            [24] 2656 	pop	ar6
-      000B42 D0 07            [24] 2657 	pop	ar7
-      000B44 E5 82            [12] 2658 	mov	a, dpl
-      000B46 24 FF            [12] 2659 	add	a,#0xff
-      000B48 92 00            [24] 2660 	mov	b0,c
-      000B4A 40 39            [24] 2661 	jc	00107$
-                           000A95  2662 	C$fuzzy.h$910$2_0$58 ==.
-                                   2663 ;	../../fuzzy.h:910: ramp_up
-      000B4C E5 0E            [12] 2664 	mov	a,_bp
-      000B4E 24 F5            [12] 2665 	add	a,#0xf5
-      000B50 F8               [12] 2666 	mov	r0,a
-      000B51 E6               [12] 2667 	mov	a,@r0
-      000B52 60 0F            [24] 2668 	jz	00111$
-                           000A9D  2669 	C$fuzzy.h$911$2_0$58 ==.
-                                   2670 ;	../../fuzzy.h:911: ? LEVEL_LO
-      000B54 E5 0E            [12] 2671 	mov	a,_bp
-      000B56 24 05            [12] 2672 	add	a,#0x05
-      000B58 F8               [12] 2673 	mov	r0,a
-      000B59 E4               [12] 2674 	clr	a
-      000B5A F6               [12] 2675 	mov	@r0,a
-      000B5B 08               [12] 2676 	inc	r0
-      000B5C F6               [12] 2677 	mov	@r0,a
-      000B5D 08               [12] 2678 	inc	r0
-      000B5E F6               [12] 2679 	mov	@r0,a
-      000B5F 08               [12] 2680 	inc	r0
-      000B60 F6               [12] 2681 	mov	@r0,a
-      000B61 80 0F            [24] 2682 	sjmp	00112$
-      000B63                       2683 00111$:
-                           000AAC  2684 	C$fuzzy.h$912$2_0$58 ==.
-                                   2685 ;	../../fuzzy.h:912: : LEVEL_HI;
-      000B63 E5 0E            [12] 2686 	mov	a,_bp
-      000B65 24 05            [12] 2687 	add	a,#0x05
-      000B67 F8               [12] 2688 	mov	r0,a
-      000B68 E4               [12] 2689 	clr	a
-      000B69 F6               [12] 2690 	mov	@r0,a
-      000B6A 08               [12] 2691 	inc	r0
-      000B6B F6               [12] 2692 	mov	@r0,a
-      000B6C 08               [12] 2693 	inc	r0
-      000B6D 76 80            [12] 2694 	mov	@r0,#0x80
-      000B6F 08               [12] 2695 	inc	r0
-      000B70 76 3F            [12] 2696 	mov	@r0,#0x3f
-      000B72                       2697 00112$:
-      000B72 E5 0E            [12] 2698 	mov	a,_bp
-      000B74 24 05            [12] 2699 	add	a,#0x05
-      000B76 F8               [12] 2700 	mov	r0,a
-      000B77 86 07            [24] 2701 	mov	ar7,@r0
-      000B79 08               [12] 2702 	inc	r0
-      000B7A 86 06            [24] 2703 	mov	ar6,@r0
-      000B7C 08               [12] 2704 	inc	r0
-      000B7D 86 05            [24] 2705 	mov	ar5,@r0
-      000B7F 08               [12] 2706 	inc	r0
-      000B80 86 04            [24] 2707 	mov	ar4,@r0
-      000B82 02 0C CE         [24] 2708 	ljmp	00108$
-      000B85                       2709 00107$:
-                           000ACE  2710 	C$fuzzy.h$914$1_0$56 ==.
-                                   2711 ;	../../fuzzy.h:914: else if (value >= upper_boundary) {
-      000B85 C0 07            [24] 2712 	push	ar7
-      000B87 C0 06            [24] 2713 	push	ar6
-      000B89 C0 05            [24] 2714 	push	ar5
-      000B8B C0 04            [24] 2715 	push	ar4
-      000B8D E5 0E            [12] 2716 	mov	a,_bp
-      000B8F 24 FA            [12] 2717 	add	a,#0xfa
-      000B91 F8               [12] 2718 	mov	r0,a
-      000B92 E6               [12] 2719 	mov	a,@r0
-      000B93 C0 E0            [24] 2720 	push	acc
-      000B95 08               [12] 2721 	inc	r0
-      000B96 E6               [12] 2722 	mov	a,@r0
-      000B97 C0 E0            [24] 2723 	push	acc
-      000B99 08               [12] 2724 	inc	r0
-      000B9A E6               [12] 2725 	mov	a,@r0
-      000B9B C0 E0            [24] 2726 	push	acc
-      000B9D 08               [12] 2727 	inc	r0
-      000B9E E6               [12] 2728 	mov	a,@r0
-      000B9F C0 E0            [24] 2729 	push	acc
-      000BA1 E5 0E            [12] 2730 	mov	a,_bp
-      000BA3 24 F6            [12] 2731 	add	a,#0xf6
-      000BA5 F8               [12] 2732 	mov	r0,a
-      000BA6 86 82            [24] 2733 	mov	dpl, @r0
-      000BA8 08               [12] 2734 	inc	r0
-      000BA9 86 83            [24] 2735 	mov	dph, @r0
-      000BAB 08               [12] 2736 	inc	r0
-      000BAC 86 F0            [24] 2737 	mov	b, @r0
-      000BAE 08               [12] 2738 	inc	r0
-      000BAF E6               [12] 2739 	mov	a, @r0
-      000BB0 12 24 07         [24] 2740 	lcall	___fslt
-      000BB3 E5 81            [12] 2741 	mov	a,sp
-      000BB5 24 FC            [12] 2742 	add	a,#0xfc
-      000BB7 F5 81            [12] 2743 	mov	sp,a
-      000BB9 D0 04            [24] 2744 	pop	ar4
-      000BBB D0 05            [24] 2745 	pop	ar5
-      000BBD D0 06            [24] 2746 	pop	ar6
-      000BBF D0 07            [24] 2747 	pop	ar7
-      000BC1 E5 82            [12] 2748 	mov	a, dpl
-      000BC3 24 FF            [12] 2749 	add	a,#0xff
-      000BC5 92 00            [24] 2750 	mov	b0,c
-      000BC7 40 39            [24] 2751 	jc	00104$
-                           000B12  2752 	C$fuzzy.h$916$2_0$59 ==.
-                                   2753 ;	../../fuzzy.h:916: ramp_up
-      000BC9 E5 0E            [12] 2754 	mov	a,_bp
-      000BCB 24 F5            [12] 2755 	add	a,#0xf5
-      000BCD F8               [12] 2756 	mov	r0,a
-      000BCE E6               [12] 2757 	mov	a,@r0
-      000BCF 60 11            [24] 2758 	jz	00113$
-                           000B1A  2759 	C$fuzzy.h$917$2_0$59 ==.
-                                   2760 ;	../../fuzzy.h:917: ? LEVEL_HI
-      000BD1 E5 0E            [12] 2761 	mov	a,_bp
-      000BD3 24 05            [12] 2762 	add	a,#0x05
-      000BD5 F8               [12] 2763 	mov	r0,a
-      000BD6 E4               [12] 2764 	clr	a
-      000BD7 F6               [12] 2765 	mov	@r0,a
-      000BD8 08               [12] 2766 	inc	r0
-      000BD9 F6               [12] 2767 	mov	@r0,a
-      000BDA 08               [12] 2768 	inc	r0
-      000BDB 76 80            [12] 2769 	mov	@r0,#0x80
-      000BDD 08               [12] 2770 	inc	r0
-      000BDE 76 3F            [12] 2771 	mov	@r0,#0x3f
-      000BE0 80 0D            [24] 2772 	sjmp	00114$
-      000BE2                       2773 00113$:
-                           000B2B  2774 	C$fuzzy.h$918$2_0$59 ==.
-                                   2775 ;	../../fuzzy.h:918: : LEVEL_LO;
-      000BE2 E5 0E            [12] 2776 	mov	a,_bp
-      000BE4 24 05            [12] 2777 	add	a,#0x05
-      000BE6 F8               [12] 2778 	mov	r0,a
-      000BE7 E4               [12] 2779 	clr	a
-      000BE8 F6               [12] 2780 	mov	@r0,a
-      000BE9 08               [12] 2781 	inc	r0
-      000BEA F6               [12] 2782 	mov	@r0,a
-      000BEB 08               [12] 2783 	inc	r0
-      000BEC F6               [12] 2784 	mov	@r0,a
-      000BED 08               [12] 2785 	inc	r0
-      000BEE F6               [12] 2786 	mov	@r0,a
-      000BEF                       2787 00114$:
-      000BEF E5 0E            [12] 2788 	mov	a,_bp
-      000BF1 24 05            [12] 2789 	add	a,#0x05
-      000BF3 F8               [12] 2790 	mov	r0,a
-      000BF4 86 07            [24] 2791 	mov	ar7,@r0
-      000BF6 08               [12] 2792 	inc	r0
-      000BF7 86 06            [24] 2793 	mov	ar6,@r0
-      000BF9 08               [12] 2794 	inc	r0
-      000BFA 86 05            [24] 2795 	mov	ar5,@r0
-      000BFC 08               [12] 2796 	inc	r0
-      000BFD 86 04            [24] 2797 	mov	ar4,@r0
-      000BFF 02 0C CE         [24] 2798 	ljmp	00108$
-      000C02                       2799 00104$:
-                           000B4B  2800 	C$fuzzy.h$922$1_0$56 ==.
-                                   2801 ;	../../fuzzy.h:922: (value - lower_boundary) /
-      000C02 C0 07            [24] 2802 	push	ar7
-      000C04 C0 06            [24] 2803 	push	ar6
-      000C06 C0 05            [24] 2804 	push	ar5
-      000C08 C0 04            [24] 2805 	push	ar4
-      000C0A C0 07            [24] 2806 	push	ar7
-      000C0C C0 06            [24] 2807 	push	ar6
-      000C0E C0 05            [24] 2808 	push	ar5
-      000C10 C0 04            [24] 2809 	push	ar4
-                           000B5B  2810 	C$fuzzy.h$923$1_0$56 ==.
-                                   2811 ;	../../fuzzy.h:923: (upper_boundary - lower_boundary);
-      000C12 E5 0E            [12] 2812 	mov	a,_bp
-      000C14 24 F6            [12] 2813 	add	a,#0xf6
-      000C16 F8               [12] 2814 	mov	r0,a
-      000C17 86 82            [24] 2815 	mov	dpl, @r0
-      000C19 08               [12] 2816 	inc	r0
-      000C1A 86 83            [24] 2817 	mov	dph, @r0
-      000C1C 08               [12] 2818 	inc	r0
-      000C1D 86 F0            [24] 2819 	mov	b, @r0
-      000C1F 08               [12] 2820 	inc	r0
-      000C20 E6               [12] 2821 	mov	a, @r0
-      000C21 12 22 CC         [24] 2822 	lcall	___fssub
-      000C24 A8 0E            [24] 2823 	mov	r0,_bp
-      000C26 08               [12] 2824 	inc	r0
-      000C27 A6 82            [24] 2825 	mov	@r0, dpl
-      000C29 08               [12] 2826 	inc	r0
-      000C2A A6 83            [24] 2827 	mov	@r0, dph
-      000C2C 08               [12] 2828 	inc	r0
-      000C2D A6 F0            [24] 2829 	mov	@r0, b
-      000C2F 08               [12] 2830 	inc	r0
-      000C30 F6               [12] 2831 	mov	@r0,a
-      000C31 E5 81            [12] 2832 	mov	a,sp
-      000C33 24 FC            [12] 2833 	add	a,#0xfc
-      000C35 F5 81            [12] 2834 	mov	sp,a
-      000C37 E5 0E            [12] 2835 	mov	a,_bp
-      000C39 24 FA            [12] 2836 	add	a,#0xfa
-      000C3B F8               [12] 2837 	mov	r0,a
-      000C3C 86 82            [24] 2838 	mov	dpl, @r0
-      000C3E 08               [12] 2839 	inc	r0
-      000C3F 86 83            [24] 2840 	mov	dph, @r0
-      000C41 08               [12] 2841 	inc	r0
-      000C42 86 F0            [24] 2842 	mov	b, @r0
-      000C44 08               [12] 2843 	inc	r0
-      000C45 E6               [12] 2844 	mov	a, @r0
-      000C46 12 22 CC         [24] 2845 	lcall	___fssub
-      000C49 AC 82            [24] 2846 	mov	r4, dpl
-      000C4B AD 83            [24] 2847 	mov	r5, dph
-      000C4D AE F0            [24] 2848 	mov	r6, b
-      000C4F FF               [12] 2849 	mov	r7, a
-      000C50 E5 81            [12] 2850 	mov	a,sp
-      000C52 24 FC            [12] 2851 	add	a,#0xfc
-      000C54 F5 81            [12] 2852 	mov	sp,a
-      000C56 C0 04            [24] 2853 	push	ar4
-      000C58 C0 05            [24] 2854 	push	ar5
-      000C5A C0 06            [24] 2855 	push	ar6
-      000C5C C0 07            [24] 2856 	push	ar7
-                           000BA7  2857 	C$fuzzy.h$926$1_0$56 ==.
-                                   2858 ;	../../fuzzy.h:926: ramp_up
-      000C5E A8 0E            [24] 2859 	mov	r0,_bp
-      000C60 08               [12] 2860 	inc	r0
-      000C61 86 82            [24] 2861 	mov	dpl, @r0
-      000C63 08               [12] 2862 	inc	r0
-      000C64 86 83            [24] 2863 	mov	dph, @r0
-      000C66 08               [12] 2864 	inc	r0
-      000C67 86 F0            [24] 2865 	mov	b, @r0
-      000C69 08               [12] 2866 	inc	r0
-      000C6A E6               [12] 2867 	mov	a, @r0
-      000C6B 12 25 70         [24] 2868 	lcall	___fsdiv
-      000C6E AC 82            [24] 2869 	mov	r4, dpl
-      000C70 AD 83            [24] 2870 	mov	r5, dph
-      000C72 AE F0            [24] 2871 	mov	r6, b
-      000C74 FF               [12] 2872 	mov	r7, a
-      000C75 E5 81            [12] 2873 	mov	a,sp
-      000C77 24 FC            [12] 2874 	add	a,#0xfc
-      000C79 F5 81            [12] 2875 	mov	sp,a
-      000C7B E5 0E            [12] 2876 	mov	a,_bp
-      000C7D 24 F5            [12] 2877 	add	a,#0xf5
-      000C7F F8               [12] 2878 	mov	r0,a
-      000C80 E6               [12] 2879 	mov	a,@r0
-      000C81 60 12            [24] 2880 	jz	00115$
-                           000BCC  2881 	C$fuzzy.h$927$2_0$60 ==.
-                                   2882 ;	../../fuzzy.h:927: ? normalized
-      000C83 E5 0E            [12] 2883 	mov	a,_bp
-      000C85 24 05            [12] 2884 	add	a,#0x05
-      000C87 F8               [12] 2885 	mov	r0,a
-      000C88 A6 04            [24] 2886 	mov	@r0,ar4
-      000C8A 08               [12] 2887 	inc	r0
-      000C8B A6 05            [24] 2888 	mov	@r0,ar5
-      000C8D 08               [12] 2889 	inc	r0
-      000C8E A6 06            [24] 2890 	mov	@r0,ar6
-      000C90 08               [12] 2891 	inc	r0
-      000C91 A6 07            [24] 2892 	mov	@r0,ar7
-      000C93 80 29            [24] 2893 	sjmp	00116$
-      000C95                       2894 00115$:
-                           000BDE  2895 	C$fuzzy.h$928$1_0$56 ==.
-                                   2896 ;	../../fuzzy.h:928: : LEVEL_HI - normalized;
-      000C95 C0 04            [24] 2897 	push	ar4
-      000C97 C0 05            [24] 2898 	push	ar5
-      000C99 C0 06            [24] 2899 	push	ar6
-      000C9B C0 07            [24] 2900 	push	ar7
-      000C9D 90 00 00         [24] 2901 	mov	dptr,#0x0000
-      000CA0 75 F0 80         [24] 2902 	mov	b, #0x80
-      000CA3 74 3F            [12] 2903 	mov	a, #0x3f
-      000CA5 12 22 CC         [24] 2904 	lcall	___fssub
-      000CA8 C8               [12] 2905 	xch	a,r0
-      000CA9 E5 0E            [12] 2906 	mov	a,_bp
-      000CAB 24 05            [12] 2907 	add	a,#0x05
-      000CAD C8               [12] 2908 	xch	a,r0
-      000CAE A6 82            [24] 2909 	mov	@r0, dpl
-      000CB0 08               [12] 2910 	inc	r0
-      000CB1 A6 83            [24] 2911 	mov	@r0, dph
-      000CB3 08               [12] 2912 	inc	r0
-      000CB4 A6 F0            [24] 2913 	mov	@r0, b
-      000CB6 08               [12] 2914 	inc	r0
-      000CB7 F6               [12] 2915 	mov	@r0,a
-      000CB8 E5 81            [12] 2916 	mov	a,sp
-      000CBA 24 FC            [12] 2917 	add	a,#0xfc
-      000CBC F5 81            [12] 2918 	mov	sp,a
-      000CBE                       2919 00116$:
-      000CBE E5 0E            [12] 2920 	mov	a,_bp
-      000CC0 24 05            [12] 2921 	add	a,#0x05
-      000CC2 F8               [12] 2922 	mov	r0,a
-      000CC3 86 07            [24] 2923 	mov	ar7,@r0
-      000CC5 08               [12] 2924 	inc	r0
-      000CC6 86 06            [24] 2925 	mov	ar6,@r0
-      000CC8 08               [12] 2926 	inc	r0
-      000CC9 86 05            [24] 2927 	mov	ar5,@r0
-      000CCB 08               [12] 2928 	inc	r0
-      000CCC 86 04            [24] 2929 	mov	ar4,@r0
-      000CCE                       2930 00108$:
-                           000C17  2931 	C$fuzzy.h$932$1_0$56 ==.
-                                   2932 ;	../../fuzzy.h:932: result,
-      000CCE E5 0E            [12] 2933 	mov	a,_bp
-      000CD0 24 F4            [12] 2934 	add	a,#0xf4
-      000CD2 F8               [12] 2935 	mov	r0,a
-      000CD3 E6               [12] 2936 	mov	a,@r0
-      000CD4 C0 E0            [24] 2937 	push	acc
-      000CD6 8F 82            [24] 2938 	mov	dpl, r7
-      000CD8 8E 83            [24] 2939 	mov	dph, r6
-      000CDA 8D F0            [24] 2940 	mov	b, r5
-      000CDC EC               [12] 2941 	mov	a, r4
-      000CDD 12 01 66         [24] 2942 	lcall	_fuzzy_apply_hedge
-      000CE0 AC 82            [24] 2943 	mov	r4, dpl
-      000CE2 AD 83            [24] 2944 	mov	r5, dph
-      000CE4 AE F0            [24] 2945 	mov	r6, b
-      000CE6 FF               [12] 2946 	mov	r7, a
-      000CE7 15 81            [12] 2947 	dec	sp
-      000CE9 8C 82            [24] 2948 	mov	dpl, r4
-      000CEB 8D 83            [24] 2949 	mov	dph, r5
-      000CED 8E F0            [24] 2950 	mov	b, r6
-      000CEF EF               [12] 2951 	mov	a, r7
-      000CF0                       2952 00109$:
-                           000C39  2953 	C$fuzzy.h$935$1_0$56 ==.
-                                   2954 ;	../../fuzzy.h:935: }
-      000CF0 85 0E 81         [24] 2955 	mov	sp,_bp
-      000CF3 D0 0E            [24] 2956 	pop	_bp
-                           000C3E  2957 	C$fuzzy.h$935$1_0$56 ==.
-                           000C3E  2958 	XG$fuzzy_ramp$0$0 ==.
-      000CF5 22               [24] 2959 	ret
-                                   2960 ;------------------------------------------------------------
-                                   2961 ;Allocation info for local variables in function 'fuzzy_function_array'
-                                   2962 ;------------------------------------------------------------
-                                   2963 ;value         Allocated to stack - _bp -6 +4 
-                                   2964 ;hedge         Allocated to stack - _bp -7 +1 
-                                   2965 ;parameter_count Allocated to stack - _bp -9 +2 
-                                   2966 ;parameters    Allocated to stack - _bp -12 +3 
-                                   2967 ;shape         Allocated to registers r7 
-                                   2968 ;result        Allocated to stack - _bp +5 +4 
-                                   2969 ;parameter_1   Allocated to stack - _bp +17 +4 
-                                   2970 ;parameter_2   Allocated to stack - _bp +21 +4 
-                                   2971 ;parameter_3   Allocated to stack - _bp +25 +4 
-                                   2972 ;parameter_4   Allocated to registers r5 r6 r7 r4 
-                                   2973 ;ramp_up       Allocated to registers r7 
-                                   2974 ;sloc0         Allocated to stack - _bp +23 +3 
-                                   2975 ;sloc1         Allocated to stack - _bp +1 +4 
-                                   2976 ;sloc2         Allocated to stack - _bp +5 +4 
-                                   2977 ;sloc3         Allocated to stack - _bp +9 +4 
-                                   2978 ;sloc4         Allocated to stack - _bp +13 +4 
-                                   2979 ;------------------------------------------------------------
-                           000C3F  2980 	G$fuzzy_function_array$0$0 ==.
-                           000C3F  2981 	C$fuzzy.h$972$1_0$62 ==.
-                                   2982 ;	../../fuzzy.h:972: float fuzzy_function_array(
-                                   2983 ;	-----------------------------------------
-                                   2984 ;	 function fuzzy_function_array
-                                   2985 ;	-----------------------------------------
-      000CF6                       2986 _fuzzy_function_array:
-      000CF6 C0 0E            [24] 2987 	push	_bp
-      000CF8 E5 81            [12] 2988 	mov	a,sp
-      000CFA F5 0E            [12] 2989 	mov	_bp,a
-      000CFC 24 1C            [12] 2990 	add	a,#0x1c
-      000CFE F5 81            [12] 2991 	mov	sp,a
-      000D00 AF 82            [24] 2992 	mov	r7, dpl
-                           000C4B  2993 	C$fuzzy.h$994$1_0$62 ==.
-                                   2994 ;	../../fuzzy.h:994: if (parameters == NULL) {
-      000D02 E5 0E            [12] 2995 	mov	a,_bp
-      000D04 24 F4            [12] 2996 	add	a,#0xf4
-      000D06 F8               [12] 2997 	mov	r0,a
-      000D07 E6               [12] 2998 	mov	a,@r0
-      000D08 08               [12] 2999 	inc	r0
-      000D09 46               [12] 3000 	orl	a,@r0
-      000D0A 70 09            [24] 3001 	jnz	00102$
-                           000C55  3002 	C$fuzzy.h$995$2_0$63 ==.
-                                   3003 ;	../../fuzzy.h:995: return LEVEL_LO;
-      000D0C 90 00 00         [24] 3004 	mov	dptr,#0x0000
-      000D0F E4               [12] 3005 	clr	a
-      000D10 F5 F0            [12] 3006 	mov	b,a
-      000D12 02 16 2A         [24] 3007 	ljmp	00145$
-      000D15                       3008 00102$:
-                           000C5E  3009 	C$fuzzy.h$998$1_0$62 ==.
-                                   3010 ;	../../fuzzy.h:998: switch (shape) {
-      000D15 EF               [12] 3011 	mov	a,r7
-      000D16 24 F8            [12] 3012 	add	a,#0xff - 0x07
-      000D18 50 03            [24] 3013 	jnc	00267$
-      000D1A 02 15 F8         [24] 3014 	ljmp	00143$
-      000D1D                       3015 00267$:
-      000D1D EF               [12] 3016 	mov	a,r7
-      000D1E 24 0A            [12] 3017 	add	a,#(00268$-3-.)
-      000D20 83               [24] 3018 	movc	a,@a+pc
-      000D21 F5 82            [12] 3019 	mov	dpl,a
-      000D23 EF               [12] 3020 	mov	a,r7
-      000D24 24 0C            [12] 3021 	add	a,#(00269$-3-.)
-      000D26 83               [24] 3022 	movc	a,@a+pc
-      000D27 F5 83            [12] 3023 	mov	dph,a
-      000D29 E4               [12] 3024 	clr	a
-      000D2A 73               [24] 3025 	jmp	@a+dptr
-      000D2B                       3026 00268$:
-      000D2B 3B                    3027 	.db	00103$
-      000D2C 39                    3028 	.db	00106$
-      000D2D BF                    3029 	.db	00121$
-      000D2E F0                    3030 	.db	00142$
-      000D2F F0                    3031 	.db	00142$
-      000D30 F0                    3032 	.db	00142$
-      000D31 F0                    3033 	.db	00142$
-      000D32 F0                    3034 	.db	00142$
-      000D33                       3035 00269$:
-      000D33 0D                    3036 	.db	00103$>>8
-      000D34 0E                    3037 	.db	00106$>>8
-      000D35 11                    3038 	.db	00121$>>8
-      000D36 15                    3039 	.db	00142$>>8
-      000D37 15                    3040 	.db	00142$>>8
-      000D38 15                    3041 	.db	00142$>>8
-      000D39 15                    3042 	.db	00142$>>8
-      000D3A 15                    3043 	.db	00142$>>8
-                           000C84  3044 	C$fuzzy.h$999$2_0$64 ==.
-                                   3045 ;	../../fuzzy.h:999: case FUZZY_SHAPE_RAMP:
-      000D3B                       3046 00103$:
-                           000C84  3047 	C$fuzzy.h$1000$2_0$64 ==.
-                                   3048 ;	../../fuzzy.h:1000: if (parameter_count != 3u) {
-      000D3B E5 0E            [12] 3049 	mov	a,_bp
-      000D3D 24 F7            [12] 3050 	add	a,#0xf7
-      000D3F F8               [12] 3051 	mov	r0,a
-      000D40 B6 03 06         [24] 3052 	cjne	@r0,#0x03,00270$
-      000D43 08               [12] 3053 	inc	r0
-      000D44 B6 00 02         [24] 3054 	cjne	@r0,#0x00,00270$
-      000D47 80 09            [24] 3055 	sjmp	00105$
-      000D49                       3056 00270$:
-                           000C92  3057 	C$fuzzy.h$1001$3_0$65 ==.
-                                   3058 ;	../../fuzzy.h:1001: return LEVEL_LO;
-      000D49 90 00 00         [24] 3059 	mov	dptr,#0x0000
-      000D4C E4               [12] 3060 	clr	a
-      000D4D F5 F0            [12] 3061 	mov	b,a
-      000D4F 02 16 2A         [24] 3062 	ljmp	00145$
-      000D52                       3063 00105$:
-                           000C9B  3064 	C$fuzzy.h$1004$2_0$64 ==.
-                                   3065 ;	../../fuzzy.h:1004: parameter_1 = parameters[0];
-      000D52 E5 0E            [12] 3066 	mov	a,_bp
-      000D54 24 F4            [12] 3067 	add	a,#0xf4
-      000D56 F8               [12] 3068 	mov	r0,a
-      000D57 86 02            [24] 3069 	mov	ar2,@r0
-      000D59 08               [12] 3070 	inc	r0
-      000D5A 86 03            [24] 3071 	mov	ar3,@r0
-      000D5C 08               [12] 3072 	inc	r0
-      000D5D 86 04            [24] 3073 	mov	ar4,@r0
-      000D5F 8A 82            [24] 3074 	mov	dpl,r2
-      000D61 8B 83            [24] 3075 	mov	dph,r3
-      000D63 8C F0            [24] 3076 	mov	b,r4
-      000D65 A8 0E            [24] 3077 	mov	r0,_bp
-      000D67 08               [12] 3078 	inc	r0
-      000D68 12 26 33         [24] 3079 	lcall	__gptrget
-      000D6B F6               [12] 3080 	mov	@r0,a
-      000D6C A3               [24] 3081 	inc	dptr
-      000D6D 12 26 33         [24] 3082 	lcall	__gptrget
-      000D70 08               [12] 3083 	inc	r0
-      000D71 F6               [12] 3084 	mov	@r0,a
-      000D72 A3               [24] 3085 	inc	dptr
-      000D73 12 26 33         [24] 3086 	lcall	__gptrget
-      000D76 08               [12] 3087 	inc	r0
-      000D77 F6               [12] 3088 	mov	@r0,a
-      000D78 A3               [24] 3089 	inc	dptr
-      000D79 12 26 33         [24] 3090 	lcall	__gptrget
-      000D7C 08               [12] 3091 	inc	r0
-      000D7D F6               [12] 3092 	mov	@r0,a
-                           000CC7  3093 	C$fuzzy.h$1005$2_0$64 ==.
-                                   3094 ;	../../fuzzy.h:1005: parameter_2 = parameters[1];
-      000D7E 74 04            [12] 3095 	mov	a,#0x04
-      000D80 2A               [12] 3096 	add	a, r2
-      000D81 FD               [12] 3097 	mov	r5,a
-      000D82 E4               [12] 3098 	clr	a
-      000D83 3B               [12] 3099 	addc	a, r3
-      000D84 FE               [12] 3100 	mov	r6,a
-      000D85 8C 07            [24] 3101 	mov	ar7,r4
-      000D87 8D 82            [24] 3102 	mov	dpl,r5
-      000D89 8E 83            [24] 3103 	mov	dph,r6
-      000D8B 8F F0            [24] 3104 	mov	b,r7
-      000D8D E5 0E            [12] 3105 	mov	a,_bp
-      000D8F 24 05            [12] 3106 	add	a,#0x05
-      000D91 F8               [12] 3107 	mov	r0,a
-      000D92 12 26 33         [24] 3108 	lcall	__gptrget
-      000D95 F6               [12] 3109 	mov	@r0,a
-      000D96 A3               [24] 3110 	inc	dptr
-      000D97 12 26 33         [24] 3111 	lcall	__gptrget
-      000D9A 08               [12] 3112 	inc	r0
-      000D9B F6               [12] 3113 	mov	@r0,a
-      000D9C A3               [24] 3114 	inc	dptr
-      000D9D 12 26 33         [24] 3115 	lcall	__gptrget
-      000DA0 08               [12] 3116 	inc	r0
-      000DA1 F6               [12] 3117 	mov	@r0,a
-      000DA2 A3               [24] 3118 	inc	dptr
-      000DA3 12 26 33         [24] 3119 	lcall	__gptrget
-      000DA6 08               [12] 3120 	inc	r0
-      000DA7 F6               [12] 3121 	mov	@r0,a
-                           000CF1  3122 	C$fuzzy.h$1006$2_0$64 ==.
-                                   3123 ;	../../fuzzy.h:1006: ramp_up = parameters[2] != 0.0f;
-      000DA8 74 08            [12] 3124 	mov	a,#0x08
-      000DAA 2A               [12] 3125 	add	a, r2
-      000DAB FA               [12] 3126 	mov	r2,a
-      000DAC E4               [12] 3127 	clr	a
-      000DAD 3B               [12] 3128 	addc	a, r3
-      000DAE FB               [12] 3129 	mov	r3,a
-      000DAF 8C 07            [24] 3130 	mov	ar7,r4
-      000DB1 8A 82            [24] 3131 	mov	dpl,r2
-      000DB3 8B 83            [24] 3132 	mov	dph,r3
-      000DB5 8F F0            [24] 3133 	mov	b,r7
-      000DB7 12 26 33         [24] 3134 	lcall	__gptrget
-      000DBA FA               [12] 3135 	mov	r2,a
-      000DBB A3               [24] 3136 	inc	dptr
-      000DBC 12 26 33         [24] 3137 	lcall	__gptrget
-      000DBF FB               [12] 3138 	mov	r3,a
-      000DC0 A3               [24] 3139 	inc	dptr
-      000DC1 12 26 33         [24] 3140 	lcall	__gptrget
-      000DC4 FF               [12] 3141 	mov	r7,a
-      000DC5 A3               [24] 3142 	inc	dptr
-      000DC6 12 26 33         [24] 3143 	lcall	__gptrget
-      000DC9 FE               [12] 3144 	mov	r6,a
-      000DCA 8A F0            [24] 3145 	mov	b,r2
-      000DCC EB               [12] 3146 	mov	a,r3
-      000DCD 42 F0            [12] 3147 	orl	b,a
-      000DCF EF               [12] 3148 	mov	a,r7
-      000DD0 42 F0            [12] 3149 	orl	b,a
-      000DD2 EE               [12] 3150 	mov	a,r6
-      000DD3 54 7F            [12] 3151 	anl	a,#0x7F
-      000DD5 45 F0            [12] 3152 	orl	a,b
-      000DD7 B4 01 00         [24] 3153 	cjne	a,#0x01,00271$
-      000DDA                       3154 00271$:
-      000DDA B3               [12] 3155 	cpl	c
-      000DDB 92 00            [24] 3156 	mov	b0,c
-      000DDD E4               [12] 3157 	clr	a
-      000DDE 33               [12] 3158 	rlc	a
-      000DDF FF               [12] 3159 	mov	r7,a
-                           000D29  3160 	C$fuzzy.h$1009$2_0$64 ==.
-                                   3161 ;	../../fuzzy.h:1009: parameter_1,
-      000DE0 E5 0E            [12] 3162 	mov	a,_bp
-      000DE2 24 F9            [12] 3163 	add	a,#0xf9
-      000DE4 F8               [12] 3164 	mov	r0,a
-      000DE5 E6               [12] 3165 	mov	a,@r0
-      000DE6 C0 E0            [24] 3166 	push	acc
-      000DE8 C0 07            [24] 3167 	push	ar7
-      000DEA E5 0E            [12] 3168 	mov	a,_bp
-      000DEC 24 FA            [12] 3169 	add	a,#0xfa
-      000DEE F8               [12] 3170 	mov	r0,a
-      000DEF E6               [12] 3171 	mov	a,@r0
-      000DF0 C0 E0            [24] 3172 	push	acc
-      000DF2 08               [12] 3173 	inc	r0
-      000DF3 E6               [12] 3174 	mov	a,@r0
-      000DF4 C0 E0            [24] 3175 	push	acc
-      000DF6 08               [12] 3176 	inc	r0
-      000DF7 E6               [12] 3177 	mov	a,@r0
-      000DF8 C0 E0            [24] 3178 	push	acc
-      000DFA 08               [12] 3179 	inc	r0
-      000DFB E6               [12] 3180 	mov	a,@r0
-      000DFC C0 E0            [24] 3181 	push	acc
-      000DFE E5 0E            [12] 3182 	mov	a,_bp
-      000E00 24 05            [12] 3183 	add	a,#0x05
-      000E02 F8               [12] 3184 	mov	r0,a
-      000E03 E6               [12] 3185 	mov	a,@r0
-      000E04 C0 E0            [24] 3186 	push	acc
-      000E06 08               [12] 3187 	inc	r0
-      000E07 E6               [12] 3188 	mov	a,@r0
-      000E08 C0 E0            [24] 3189 	push	acc
-      000E0A 08               [12] 3190 	inc	r0
-      000E0B E6               [12] 3191 	mov	a,@r0
-      000E0C C0 E0            [24] 3192 	push	acc
-      000E0E 08               [12] 3193 	inc	r0
-      000E0F E6               [12] 3194 	mov	a,@r0
-      000E10 C0 E0            [24] 3195 	push	acc
-      000E12 A8 0E            [24] 3196 	mov	r0,_bp
-      000E14 08               [12] 3197 	inc	r0
-      000E15 86 82            [24] 3198 	mov	dpl, @r0
-      000E17 08               [12] 3199 	inc	r0
-      000E18 86 83            [24] 3200 	mov	dph, @r0
-      000E1A 08               [12] 3201 	inc	r0
-      000E1B 86 F0            [24] 3202 	mov	b, @r0
-      000E1D 08               [12] 3203 	inc	r0
-      000E1E E6               [12] 3204 	mov	a, @r0
-      000E1F 12 0A B9         [24] 3205 	lcall	_fuzzy_ramp
-      000E22 AC 82            [24] 3206 	mov	r4, dpl
-      000E24 AD 83            [24] 3207 	mov	r5, dph
-      000E26 AE F0            [24] 3208 	mov	r6, b
-      000E28 FF               [12] 3209 	mov	r7, a
-      000E29 E5 81            [12] 3210 	mov	a,sp
-      000E2B 24 F6            [12] 3211 	add	a,#0xf6
-      000E2D F5 81            [12] 3212 	mov	sp,a
-      000E2F 8C 82            [24] 3213 	mov	dpl, r4
-      000E31 8D 83            [24] 3214 	mov	dph, r5
-      000E33 8E F0            [24] 3215 	mov	b, r6
-      000E35 EF               [12] 3216 	mov	a, r7
-      000E36 02 16 2A         [24] 3217 	ljmp	00145$
-                           000D82  3218 	C$fuzzy.h$1016$2_0$64 ==.
-                                   3219 ;	../../fuzzy.h:1016: case FUZZY_SHAPE_TRIANGLE:
-      000E39                       3220 00106$:
-                           000D82  3221 	C$fuzzy.h$1017$2_0$64 ==.
-                                   3222 ;	../../fuzzy.h:1017: if (parameter_count != 3u) {
-      000E39 E5 0E            [12] 3223 	mov	a,_bp
-      000E3B 24 F7            [12] 3224 	add	a,#0xf7
-      000E3D F8               [12] 3225 	mov	r0,a
-      000E3E B6 03 06         [24] 3226 	cjne	@r0,#0x03,00272$
-      000E41 08               [12] 3227 	inc	r0
-      000E42 B6 00 02         [24] 3228 	cjne	@r0,#0x00,00272$
-      000E45 80 09            [24] 3229 	sjmp	00108$
-      000E47                       3230 00272$:
-                           000D90  3231 	C$fuzzy.h$1018$3_0$66 ==.
-                                   3232 ;	../../fuzzy.h:1018: return LEVEL_LO;
-      000E47 90 00 00         [24] 3233 	mov	dptr,#0x0000
-      000E4A E4               [12] 3234 	clr	a
-      000E4B F5 F0            [12] 3235 	mov	b,a
-      000E4D 02 16 2A         [24] 3236 	ljmp	00145$
-      000E50                       3237 00108$:
-                           000D99  3238 	C$fuzzy.h$1021$2_0$64 ==.
-                                   3239 ;	../../fuzzy.h:1021: parameter_1 = parameters[0];
-      000E50 E5 0E            [12] 3240 	mov	a,_bp
-      000E52 24 F4            [12] 3241 	add	a,#0xf4
-      000E54 F8               [12] 3242 	mov	r0,a
-      000E55 86 02            [24] 3243 	mov	ar2,@r0
-      000E57 08               [12] 3244 	inc	r0
-      000E58 86 03            [24] 3245 	mov	ar3,@r0
-      000E5A 08               [12] 3246 	inc	r0
-      000E5B 86 04            [24] 3247 	mov	ar4,@r0
-      000E5D 8A 82            [24] 3248 	mov	dpl,r2
-      000E5F 8B 83            [24] 3249 	mov	dph,r3
-      000E61 8C F0            [24] 3250 	mov	b,r4
-      000E63 E5 0E            [12] 3251 	mov	a,_bp
-      000E65 24 11            [12] 3252 	add	a,#0x11
-      000E67 F8               [12] 3253 	mov	r0,a
-      000E68 12 26 33         [24] 3254 	lcall	__gptrget
-      000E6B F6               [12] 3255 	mov	@r0,a
-      000E6C A3               [24] 3256 	inc	dptr
-      000E6D 12 26 33         [24] 3257 	lcall	__gptrget
-      000E70 08               [12] 3258 	inc	r0
-      000E71 F6               [12] 3259 	mov	@r0,a
-      000E72 A3               [24] 3260 	inc	dptr
-      000E73 12 26 33         [24] 3261 	lcall	__gptrget
-      000E76 08               [12] 3262 	inc	r0
-      000E77 F6               [12] 3263 	mov	@r0,a
-      000E78 A3               [24] 3264 	inc	dptr
-      000E79 12 26 33         [24] 3265 	lcall	__gptrget
-      000E7C 08               [12] 3266 	inc	r0
-      000E7D F6               [12] 3267 	mov	@r0,a
-                           000DC7  3268 	C$fuzzy.h$1022$2_0$64 ==.
-                                   3269 ;	../../fuzzy.h:1022: parameter_2 = parameters[1];
-      000E7E 74 04            [12] 3270 	mov	a,#0x04
-      000E80 2A               [12] 3271 	add	a, r2
-      000E81 FF               [12] 3272 	mov	r7,a
-      000E82 E4               [12] 3273 	clr	a
-      000E83 3B               [12] 3274 	addc	a, r3
-      000E84 FD               [12] 3275 	mov	r5,a
-      000E85 8C 06            [24] 3276 	mov	ar6,r4
-      000E87 8F 82            [24] 3277 	mov	dpl,r7
-      000E89 8D 83            [24] 3278 	mov	dph,r5
-      000E8B 8E F0            [24] 3279 	mov	b,r6
-      000E8D E5 0E            [12] 3280 	mov	a,_bp
-      000E8F 24 15            [12] 3281 	add	a,#0x15
-      000E91 F8               [12] 3282 	mov	r0,a
-      000E92 12 26 33         [24] 3283 	lcall	__gptrget
-      000E95 F6               [12] 3284 	mov	@r0,a
-      000E96 A3               [24] 3285 	inc	dptr
-      000E97 12 26 33         [24] 3286 	lcall	__gptrget
-      000E9A 08               [12] 3287 	inc	r0
-      000E9B F6               [12] 3288 	mov	@r0,a
-      000E9C A3               [24] 3289 	inc	dptr
-      000E9D 12 26 33         [24] 3290 	lcall	__gptrget
-      000EA0 08               [12] 3291 	inc	r0
-      000EA1 F6               [12] 3292 	mov	@r0,a
-      000EA2 A3               [24] 3293 	inc	dptr
-      000EA3 12 26 33         [24] 3294 	lcall	__gptrget
-      000EA6 08               [12] 3295 	inc	r0
-      000EA7 F6               [12] 3296 	mov	@r0,a
-                           000DF1  3297 	C$fuzzy.h$1023$2_0$64 ==.
-                                   3298 ;	../../fuzzy.h:1023: parameter_3 = parameters[2];
-      000EA8 74 08            [12] 3299 	mov	a,#0x08
-      000EAA 2A               [12] 3300 	add	a, r2
-      000EAB FA               [12] 3301 	mov	r2,a
-      000EAC E4               [12] 3302 	clr	a
-      000EAD 3B               [12] 3303 	addc	a, r3
-      000EAE FB               [12] 3304 	mov	r3,a
-      000EAF 8C 07            [24] 3305 	mov	ar7,r4
-      000EB1 8A 82            [24] 3306 	mov	dpl,r2
-      000EB3 8B 83            [24] 3307 	mov	dph,r3
-      000EB5 8F F0            [24] 3308 	mov	b,r7
-      000EB7 12 26 33         [24] 3309 	lcall	__gptrget
-      000EBA FD               [12] 3310 	mov	r5,a
-      000EBB A3               [24] 3311 	inc	dptr
-      000EBC 12 26 33         [24] 3312 	lcall	__gptrget
-      000EBF FE               [12] 3313 	mov	r6,a
-      000EC0 A3               [24] 3314 	inc	dptr
-      000EC1 12 26 33         [24] 3315 	lcall	__gptrget
-      000EC4 FF               [12] 3316 	mov	r7,a
-      000EC5 A3               [24] 3317 	inc	dptr
-      000EC6 12 26 33         [24] 3318 	lcall	__gptrget
-      000EC9 FC               [12] 3319 	mov	r4,a
-                           000E13  3320 	C$fuzzy.h$1026$1_0$62 ==.
-                                   3321 ;	../../fuzzy.h:1026: parameter_1 >= parameter_2 ||
-      000ECA C0 07            [24] 3322 	push	ar7
-      000ECC C0 06            [24] 3323 	push	ar6
-      000ECE C0 05            [24] 3324 	push	ar5
-      000ED0 C0 04            [24] 3325 	push	ar4
-      000ED2 E5 0E            [12] 3326 	mov	a,_bp
-      000ED4 24 15            [12] 3327 	add	a,#0x15
-      000ED6 F8               [12] 3328 	mov	r0,a
-      000ED7 E6               [12] 3329 	mov	a,@r0
-      000ED8 C0 E0            [24] 3330 	push	acc
-      000EDA 08               [12] 3331 	inc	r0
-      000EDB E6               [12] 3332 	mov	a,@r0
-      000EDC C0 E0            [24] 3333 	push	acc
-      000EDE 08               [12] 3334 	inc	r0
-      000EDF E6               [12] 3335 	mov	a,@r0
-      000EE0 C0 E0            [24] 3336 	push	acc
-      000EE2 08               [12] 3337 	inc	r0
-      000EE3 E6               [12] 3338 	mov	a,@r0
-      000EE4 C0 E0            [24] 3339 	push	acc
-      000EE6 E5 0E            [12] 3340 	mov	a,_bp
-      000EE8 24 11            [12] 3341 	add	a,#0x11
-      000EEA F8               [12] 3342 	mov	r0,a
-      000EEB 86 82            [24] 3343 	mov	dpl, @r0
-      000EED 08               [12] 3344 	inc	r0
-      000EEE 86 83            [24] 3345 	mov	dph, @r0
-      000EF0 08               [12] 3346 	inc	r0
-      000EF1 86 F0            [24] 3347 	mov	b, @r0
-      000EF3 08               [12] 3348 	inc	r0
-      000EF4 E6               [12] 3349 	mov	a, @r0
-      000EF5 12 24 07         [24] 3350 	lcall	___fslt
-      000EF8 E5 81            [12] 3351 	mov	a,sp
-      000EFA 24 FC            [12] 3352 	add	a,#0xfc
-      000EFC F5 81            [12] 3353 	mov	sp,a
-      000EFE D0 04            [24] 3354 	pop	ar4
-      000F00 D0 05            [24] 3355 	pop	ar5
-      000F02 D0 06            [24] 3356 	pop	ar6
-      000F04 D0 07            [24] 3357 	pop	ar7
-      000F06 E5 82            [12] 3358 	mov	a, dpl
-      000F08 24 FF            [12] 3359 	add	a,#0xff
-      000F0A 92 00            [24] 3360 	mov	b0,c
-      000F0C 40 03            [24] 3361 	jc	00273$
-      000F0E 02 0F C5         [24] 3362 	ljmp	00115$
-      000F11                       3363 00273$:
-                           000E5A  3364 	C$fuzzy.h$1027$1_0$62 ==.
-                                   3365 ;	../../fuzzy.h:1027: parameter_2 >= parameter_3 ||
-      000F11 C0 07            [24] 3366 	push	ar7
-      000F13 C0 06            [24] 3367 	push	ar6
-      000F15 C0 05            [24] 3368 	push	ar5
-      000F17 C0 04            [24] 3369 	push	ar4
-      000F19 C0 05            [24] 3370 	push	ar5
-      000F1B C0 06            [24] 3371 	push	ar6
-      000F1D C0 07            [24] 3372 	push	ar7
-      000F1F C0 04            [24] 3373 	push	ar4
-      000F21 E5 0E            [12] 3374 	mov	a,_bp
-      000F23 24 15            [12] 3375 	add	a,#0x15
-      000F25 F8               [12] 3376 	mov	r0,a
-      000F26 86 82            [24] 3377 	mov	dpl, @r0
-      000F28 08               [12] 3378 	inc	r0
-      000F29 86 83            [24] 3379 	mov	dph, @r0
-      000F2B 08               [12] 3380 	inc	r0
-      000F2C 86 F0            [24] 3381 	mov	b, @r0
-      000F2E 08               [12] 3382 	inc	r0
-      000F2F E6               [12] 3383 	mov	a, @r0
-      000F30 12 24 07         [24] 3384 	lcall	___fslt
-      000F33 E5 81            [12] 3385 	mov	a,sp
-      000F35 24 FC            [12] 3386 	add	a,#0xfc
-      000F37 F5 81            [12] 3387 	mov	sp,a
-      000F39 D0 04            [24] 3388 	pop	ar4
-      000F3B D0 05            [24] 3389 	pop	ar5
-      000F3D D0 06            [24] 3390 	pop	ar6
-      000F3F D0 07            [24] 3391 	pop	ar7
-      000F41 E5 82            [12] 3392 	mov	a, dpl
-      000F43 24 FF            [12] 3393 	add	a,#0xff
-      000F45 92 00            [24] 3394 	mov	b0,c
-      000F47 50 7C            [24] 3395 	jnc	00115$
-                           000E92  3396 	C$fuzzy.h$1028$1_0$62 ==.
-                                   3397 ;	../../fuzzy.h:1028: value <= parameter_1 ||
-      000F49 C0 07            [24] 3398 	push	ar7
-      000F4B C0 06            [24] 3399 	push	ar6
-      000F4D C0 05            [24] 3400 	push	ar5
-      000F4F C0 04            [24] 3401 	push	ar4
-      000F51 E5 0E            [12] 3402 	mov	a,_bp
-      000F53 24 FA            [12] 3403 	add	a,#0xfa
-      000F55 F8               [12] 3404 	mov	r0,a
-      000F56 E6               [12] 3405 	mov	a,@r0
-      000F57 C0 E0            [24] 3406 	push	acc
-      000F59 08               [12] 3407 	inc	r0
-      000F5A E6               [12] 3408 	mov	a,@r0
-      000F5B C0 E0            [24] 3409 	push	acc
-      000F5D 08               [12] 3410 	inc	r0
-      000F5E E6               [12] 3411 	mov	a,@r0
-      000F5F C0 E0            [24] 3412 	push	acc
-      000F61 08               [12] 3413 	inc	r0
-      000F62 E6               [12] 3414 	mov	a,@r0
-      000F63 C0 E0            [24] 3415 	push	acc
-      000F65 E5 0E            [12] 3416 	mov	a,_bp
-      000F67 24 11            [12] 3417 	add	a,#0x11
-      000F69 F8               [12] 3418 	mov	r0,a
-      000F6A 86 82            [24] 3419 	mov	dpl, @r0
-      000F6C 08               [12] 3420 	inc	r0
-      000F6D 86 83            [24] 3421 	mov	dph, @r0
-      000F6F 08               [12] 3422 	inc	r0
-      000F70 86 F0            [24] 3423 	mov	b, @r0
-      000F72 08               [12] 3424 	inc	r0
-      000F73 E6               [12] 3425 	mov	a, @r0
-      000F74 12 24 07         [24] 3426 	lcall	___fslt
-      000F77 E5 81            [12] 3427 	mov	a,sp
-      000F79 24 FC            [12] 3428 	add	a,#0xfc
-      000F7B F5 81            [12] 3429 	mov	sp,a
-      000F7D D0 04            [24] 3430 	pop	ar4
-      000F7F D0 05            [24] 3431 	pop	ar5
-      000F81 D0 06            [24] 3432 	pop	ar6
-      000F83 D0 07            [24] 3433 	pop	ar7
-      000F85 E5 82            [12] 3434 	mov	a, dpl
-      000F87 24 FF            [12] 3435 	add	a,#0xff
-      000F89 92 00            [24] 3436 	mov	b0,c
-      000F8B 50 38            [24] 3437 	jnc	00115$
-                           000ED6  3438 	C$fuzzy.h$1030$1_0$62 ==.
-                                   3439 ;	../../fuzzy.h:1030: ) {
-      000F8D C0 07            [24] 3440 	push	ar7
-      000F8F C0 06            [24] 3441 	push	ar6
-      000F91 C0 05            [24] 3442 	push	ar5
-      000F93 C0 04            [24] 3443 	push	ar4
-      000F95 C0 05            [24] 3444 	push	ar5
-      000F97 C0 06            [24] 3445 	push	ar6
-      000F99 C0 07            [24] 3446 	push	ar7
-      000F9B C0 04            [24] 3447 	push	ar4
-      000F9D E5 0E            [12] 3448 	mov	a,_bp
-      000F9F 24 FA            [12] 3449 	add	a,#0xfa
-      000FA1 F8               [12] 3450 	mov	r0,a
-      000FA2 86 82            [24] 3451 	mov	dpl, @r0
-      000FA4 08               [12] 3452 	inc	r0
-      000FA5 86 83            [24] 3453 	mov	dph, @r0
-      000FA7 08               [12] 3454 	inc	r0
-      000FA8 86 F0            [24] 3455 	mov	b, @r0
-      000FAA 08               [12] 3456 	inc	r0
-      000FAB E6               [12] 3457 	mov	a, @r0
-      000FAC 12 24 07         [24] 3458 	lcall	___fslt
-      000FAF E5 81            [12] 3459 	mov	a,sp
-      000FB1 24 FC            [12] 3460 	add	a,#0xfc
-      000FB3 F5 81            [12] 3461 	mov	sp,a
-      000FB5 D0 04            [24] 3462 	pop	ar4
-      000FB7 D0 05            [24] 3463 	pop	ar5
-      000FB9 D0 06            [24] 3464 	pop	ar6
-      000FBB D0 07            [24] 3465 	pop	ar7
-      000FBD E5 82            [12] 3466 	mov	a, dpl
-      000FBF 24 FF            [12] 3467 	add	a,#0xff
-      000FC1 92 00            [24] 3468 	mov	b0,c
-      000FC3 40 10            [24] 3469 	jc	00116$
-      000FC5                       3470 00115$:
-                           000F0E  3471 	C$fuzzy.h$1031$3_0$67 ==.
-                                   3472 ;	../../fuzzy.h:1031: result = LEVEL_LO;
-      000FC5 E5 0E            [12] 3473 	mov	a,_bp
-      000FC7 24 05            [12] 3474 	add	a,#0x05
-      000FC9 F8               [12] 3475 	mov	r0,a
-      000FCA E4               [12] 3476 	clr	a
-      000FCB F6               [12] 3477 	mov	@r0,a
-      000FCC 08               [12] 3478 	inc	r0
-      000FCD F6               [12] 3479 	mov	@r0,a
-      000FCE 08               [12] 3480 	inc	r0
-      000FCF F6               [12] 3481 	mov	@r0,a
-      000FD0 08               [12] 3482 	inc	r0
-      000FD1 F6               [12] 3483 	mov	@r0,a
-      000FD2 02 16 00         [24] 3484 	ljmp	00144$
-      000FD5                       3485 00116$:
-                           000F1E  3486 	C$fuzzy.h$1033$1_0$62 ==.
-                                   3487 ;	../../fuzzy.h:1033: else if (value == parameter_2) {
-      000FD5 C0 07            [24] 3488 	push	ar7
-      000FD7 C0 06            [24] 3489 	push	ar6
-      000FD9 C0 05            [24] 3490 	push	ar5
-      000FDB C0 04            [24] 3491 	push	ar4
-      000FDD E5 0E            [12] 3492 	mov	a,_bp
-      000FDF 24 15            [12] 3493 	add	a,#0x15
-      000FE1 F8               [12] 3494 	mov	r0,a
-      000FE2 E6               [12] 3495 	mov	a,@r0
-      000FE3 C0 E0            [24] 3496 	push	acc
-      000FE5 08               [12] 3497 	inc	r0
-      000FE6 E6               [12] 3498 	mov	a,@r0
-      000FE7 C0 E0            [24] 3499 	push	acc
-      000FE9 08               [12] 3500 	inc	r0
-      000FEA E6               [12] 3501 	mov	a,@r0
-      000FEB C0 E0            [24] 3502 	push	acc
-      000FED 08               [12] 3503 	inc	r0
-      000FEE E6               [12] 3504 	mov	a,@r0
-      000FEF C0 E0            [24] 3505 	push	acc
-      000FF1 E5 0E            [12] 3506 	mov	a,_bp
-      000FF3 24 FA            [12] 3507 	add	a,#0xfa
-      000FF5 F8               [12] 3508 	mov	r0,a
-      000FF6 86 82            [24] 3509 	mov	dpl, @r0
-      000FF8 08               [12] 3510 	inc	r0
-      000FF9 86 83            [24] 3511 	mov	dph, @r0
-      000FFB 08               [12] 3512 	inc	r0
-      000FFC 86 F0            [24] 3513 	mov	b, @r0
-      000FFE 08               [12] 3514 	inc	r0
-      000FFF E6               [12] 3515 	mov	a, @r0
-      001000 12 23 DB         [24] 3516 	lcall	___fseq
-      001003 AB 82            [24] 3517 	mov	r3, dpl
-      001005 E5 81            [12] 3518 	mov	a,sp
-      001007 24 FC            [12] 3519 	add	a,#0xfc
-      001009 F5 81            [12] 3520 	mov	sp,a
-      00100B D0 04            [24] 3521 	pop	ar4
-      00100D D0 05            [24] 3522 	pop	ar5
-      00100F D0 06            [24] 3523 	pop	ar6
-      001011 D0 07            [24] 3524 	pop	ar7
-      001013 EB               [12] 3525 	mov	a,r3
-      001014 60 12            [24] 3526 	jz	00113$
-                           000F5F  3527 	C$fuzzy.h$1034$3_0$68 ==.
-                                   3528 ;	../../fuzzy.h:1034: result = LEVEL_HI;
-      001016 E5 0E            [12] 3529 	mov	a,_bp
-      001018 24 05            [12] 3530 	add	a,#0x05
-      00101A F8               [12] 3531 	mov	r0,a
-      00101B E4               [12] 3532 	clr	a
-      00101C F6               [12] 3533 	mov	@r0,a
-      00101D 08               [12] 3534 	inc	r0
-      00101E F6               [12] 3535 	mov	@r0,a
-      00101F 08               [12] 3536 	inc	r0
-      001020 76 80            [12] 3537 	mov	@r0,#0x80
-      001022 08               [12] 3538 	inc	r0
-      001023 76 3F            [12] 3539 	mov	@r0,#0x3f
-      001025 02 16 00         [24] 3540 	ljmp	00144$
-      001028                       3541 00113$:
-                           000F71  3542 	C$fuzzy.h$1036$1_0$62 ==.
-                                   3543 ;	../../fuzzy.h:1036: else if (value < parameter_2) {
-      001028 C0 07            [24] 3544 	push	ar7
-      00102A C0 06            [24] 3545 	push	ar6
-      00102C C0 05            [24] 3546 	push	ar5
-      00102E C0 04            [24] 3547 	push	ar4
-      001030 E5 0E            [12] 3548 	mov	a,_bp
-      001032 24 15            [12] 3549 	add	a,#0x15
-      001034 F8               [12] 3550 	mov	r0,a
-      001035 E6               [12] 3551 	mov	a,@r0
-      001036 C0 E0            [24] 3552 	push	acc
-      001038 08               [12] 3553 	inc	r0
-      001039 E6               [12] 3554 	mov	a,@r0
-      00103A C0 E0            [24] 3555 	push	acc
-      00103C 08               [12] 3556 	inc	r0
-      00103D E6               [12] 3557 	mov	a,@r0
-      00103E C0 E0            [24] 3558 	push	acc
-      001040 08               [12] 3559 	inc	r0
-      001041 E6               [12] 3560 	mov	a,@r0
-      001042 C0 E0            [24] 3561 	push	acc
-      001044 E5 0E            [12] 3562 	mov	a,_bp
-      001046 24 FA            [12] 3563 	add	a,#0xfa
-      001048 F8               [12] 3564 	mov	r0,a
-      001049 86 82            [24] 3565 	mov	dpl, @r0
-      00104B 08               [12] 3566 	inc	r0
-      00104C 86 83            [24] 3567 	mov	dph, @r0
-      00104E 08               [12] 3568 	inc	r0
-      00104F 86 F0            [24] 3569 	mov	b, @r0
-      001051 08               [12] 3570 	inc	r0
-      001052 E6               [12] 3571 	mov	a, @r0
-      001053 12 24 07         [24] 3572 	lcall	___fslt
-      001056 AB 82            [24] 3573 	mov	r3, dpl
-      001058 E5 81            [12] 3574 	mov	a,sp
-      00105A 24 FC            [12] 3575 	add	a,#0xfc
-      00105C F5 81            [12] 3576 	mov	sp,a
-      00105E D0 04            [24] 3577 	pop	ar4
-      001060 D0 05            [24] 3578 	pop	ar5
-      001062 D0 06            [24] 3579 	pop	ar6
-      001064 D0 07            [24] 3580 	pop	ar7
-      001066 EB               [12] 3581 	mov	a,r3
-      001067 70 03            [24] 3582 	jnz	00278$
-      001069 02 11 22         [24] 3583 	ljmp	00110$
-      00106C                       3584 00278$:
-                           000FB5  3585 	C$fuzzy.h$1038$1_0$62 ==.
-                                   3586 ;	../../fuzzy.h:1038: (value - parameter_1) /
-      00106C E5 0E            [12] 3587 	mov	a,_bp
-      00106E 24 11            [12] 3588 	add	a,#0x11
-      001070 F8               [12] 3589 	mov	r0,a
-      001071 E6               [12] 3590 	mov	a,@r0
-      001072 C0 E0            [24] 3591 	push	acc
-      001074 08               [12] 3592 	inc	r0
-      001075 E6               [12] 3593 	mov	a,@r0
-      001076 C0 E0            [24] 3594 	push	acc
-      001078 08               [12] 3595 	inc	r0
-      001079 E6               [12] 3596 	mov	a,@r0
-      00107A C0 E0            [24] 3597 	push	acc
-      00107C 08               [12] 3598 	inc	r0
-      00107D E6               [12] 3599 	mov	a,@r0
-      00107E C0 E0            [24] 3600 	push	acc
-                           000FC9  3601 	C$fuzzy.h$1039$1_0$62 ==.
-                                   3602 ;	../../fuzzy.h:1039: (parameter_2 - parameter_1);
-      001080 E5 0E            [12] 3603 	mov	a,_bp
-      001082 24 FA            [12] 3604 	add	a,#0xfa
-      001084 F8               [12] 3605 	mov	r0,a
-      001085 86 82            [24] 3606 	mov	dpl, @r0
-      001087 08               [12] 3607 	inc	r0
-      001088 86 83            [24] 3608 	mov	dph, @r0
-      00108A 08               [12] 3609 	inc	r0
-      00108B 86 F0            [24] 3610 	mov	b, @r0
-      00108D 08               [12] 3611 	inc	r0
-      00108E E6               [12] 3612 	mov	a, @r0
-      00108F 12 22 CC         [24] 3613 	lcall	___fssub
-      001092 AF 82            [24] 3614 	mov	r7, dpl
-      001094 AE 83            [24] 3615 	mov	r6, dph
-      001096 AD F0            [24] 3616 	mov	r5, b
-      001098 FC               [12] 3617 	mov	r4, a
-      001099 E5 81            [12] 3618 	mov	a,sp
-      00109B 24 FC            [12] 3619 	add	a,#0xfc
-      00109D F5 81            [12] 3620 	mov	sp,a
-      00109F C0 07            [24] 3621 	push	ar7
-      0010A1 C0 06            [24] 3622 	push	ar6
-      0010A3 C0 05            [24] 3623 	push	ar5
-      0010A5 C0 04            [24] 3624 	push	ar4
-      0010A7 E5 0E            [12] 3625 	mov	a,_bp
-      0010A9 24 11            [12] 3626 	add	a,#0x11
-      0010AB F8               [12] 3627 	mov	r0,a
-      0010AC E6               [12] 3628 	mov	a,@r0
-      0010AD C0 E0            [24] 3629 	push	acc
-      0010AF 08               [12] 3630 	inc	r0
-      0010B0 E6               [12] 3631 	mov	a,@r0
-      0010B1 C0 E0            [24] 3632 	push	acc
-      0010B3 08               [12] 3633 	inc	r0
-      0010B4 E6               [12] 3634 	mov	a,@r0
-      0010B5 C0 E0            [24] 3635 	push	acc
-      0010B7 08               [12] 3636 	inc	r0
-      0010B8 E6               [12] 3637 	mov	a,@r0
-      0010B9 C0 E0            [24] 3638 	push	acc
-      0010BB E5 0E            [12] 3639 	mov	a,_bp
-      0010BD 24 15            [12] 3640 	add	a,#0x15
-      0010BF F8               [12] 3641 	mov	r0,a
-      0010C0 86 82            [24] 3642 	mov	dpl, @r0
-      0010C2 08               [12] 3643 	inc	r0
-      0010C3 86 83            [24] 3644 	mov	dph, @r0
-      0010C5 08               [12] 3645 	inc	r0
-      0010C6 86 F0            [24] 3646 	mov	b, @r0
-      0010C8 08               [12] 3647 	inc	r0
-      0010C9 E6               [12] 3648 	mov	a, @r0
-      0010CA 12 22 CC         [24] 3649 	lcall	___fssub
-      0010CD C8               [12] 3650 	xch	a,r0
-      0010CE E5 0E            [12] 3651 	mov	a,_bp
-      0010D0 24 09            [12] 3652 	add	a,#0x09
-      0010D2 C8               [12] 3653 	xch	a,r0
-      0010D3 A6 82            [24] 3654 	mov	@r0, dpl
-      0010D5 08               [12] 3655 	inc	r0
-      0010D6 A6 83            [24] 3656 	mov	@r0, dph
-      0010D8 08               [12] 3657 	inc	r0
-      0010D9 A6 F0            [24] 3658 	mov	@r0, b
-      0010DB 08               [12] 3659 	inc	r0
-      0010DC F6               [12] 3660 	mov	@r0,a
-      0010DD E5 81            [12] 3661 	mov	a,sp
-      0010DF 24 FC            [12] 3662 	add	a,#0xfc
-      0010E1 F5 81            [12] 3663 	mov	sp,a
-      0010E3 D0 04            [24] 3664 	pop	ar4
-      0010E5 D0 05            [24] 3665 	pop	ar5
-      0010E7 D0 06            [24] 3666 	pop	ar6
-      0010E9 D0 07            [24] 3667 	pop	ar7
-      0010EB E5 0E            [12] 3668 	mov	a,_bp
-      0010ED 24 09            [12] 3669 	add	a,#0x09
-      0010EF F8               [12] 3670 	mov	r0,a
-      0010F0 E6               [12] 3671 	mov	a,@r0
-      0010F1 C0 E0            [24] 3672 	push	acc
-      0010F3 08               [12] 3673 	inc	r0
-      0010F4 E6               [12] 3674 	mov	a,@r0
-      0010F5 C0 E0            [24] 3675 	push	acc
-      0010F7 08               [12] 3676 	inc	r0
-      0010F8 E6               [12] 3677 	mov	a,@r0
-      0010F9 C0 E0            [24] 3678 	push	acc
-      0010FB 08               [12] 3679 	inc	r0
-      0010FC E6               [12] 3680 	mov	a,@r0
-      0010FD C0 E0            [24] 3681 	push	acc
-      0010FF 8F 82            [24] 3682 	mov	dpl, r7
-      001101 8E 83            [24] 3683 	mov	dph, r6
-      001103 8D F0            [24] 3684 	mov	b, r5
-      001105 EC               [12] 3685 	mov	a, r4
-      001106 12 25 70         [24] 3686 	lcall	___fsdiv
-      001109 C8               [12] 3687 	xch	a,r0
-      00110A E5 0E            [12] 3688 	mov	a,_bp
-      00110C 24 05            [12] 3689 	add	a,#0x05
-      00110E C8               [12] 3690 	xch	a,r0
-      00110F A6 82            [24] 3691 	mov	@r0, dpl
-      001111 08               [12] 3692 	inc	r0
-      001112 A6 83            [24] 3693 	mov	@r0, dph
-      001114 08               [12] 3694 	inc	r0
-      001115 A6 F0            [24] 3695 	mov	@r0, b
-      001117 08               [12] 3696 	inc	r0
-      001118 F6               [12] 3697 	mov	@r0,a
-      001119 E5 81            [12] 3698 	mov	a,sp
-      00111B 24 FC            [12] 3699 	add	a,#0xfc
-      00111D F5 81            [12] 3700 	mov	sp,a
-      00111F 02 16 00         [24] 3701 	ljmp	00144$
-      001122                       3702 00110$:
-                           00106B  3703 	C$fuzzy.h$1043$1_0$62 ==.
-                                   3704 ;	../../fuzzy.h:1043: (parameter_3 - value) /
-      001122 C0 07            [24] 3705 	push	ar7
-      001124 C0 06            [24] 3706 	push	ar6
-      001126 C0 05            [24] 3707 	push	ar5
-      001128 C0 04            [24] 3708 	push	ar4
-      00112A E5 0E            [12] 3709 	mov	a,_bp
-      00112C 24 FA            [12] 3710 	add	a,#0xfa
-      00112E F8               [12] 3711 	mov	r0,a
-      00112F E6               [12] 3712 	mov	a,@r0
-      001130 C0 E0            [24] 3713 	push	acc
-      001132 08               [12] 3714 	inc	r0
-      001133 E6               [12] 3715 	mov	a,@r0
-      001134 C0 E0            [24] 3716 	push	acc
-      001136 08               [12] 3717 	inc	r0
-      001137 E6               [12] 3718 	mov	a,@r0
-      001138 C0 E0            [24] 3719 	push	acc
-      00113A 08               [12] 3720 	inc	r0
-      00113B E6               [12] 3721 	mov	a,@r0
-      00113C C0 E0            [24] 3722 	push	acc
-                           001087  3723 	C$fuzzy.h$1044$1_0$62 ==.
-                                   3724 ;	../../fuzzy.h:1044: (parameter_3 - parameter_2);
-      00113E 8D 82            [24] 3725 	mov	dpl, r5
-      001140 8E 83            [24] 3726 	mov	dph, r6
-      001142 8F F0            [24] 3727 	mov	b, r7
-      001144 EC               [12] 3728 	mov	a, r4
-      001145 12 22 CC         [24] 3729 	lcall	___fssub
-      001148 A8 0E            [24] 3730 	mov	r0,_bp
-      00114A 08               [12] 3731 	inc	r0
-      00114B A6 82            [24] 3732 	mov	@r0, dpl
-      00114D 08               [12] 3733 	inc	r0
-      00114E A6 83            [24] 3734 	mov	@r0, dph
-      001150 08               [12] 3735 	inc	r0
-      001151 A6 F0            [24] 3736 	mov	@r0, b
-      001153 08               [12] 3737 	inc	r0
-      001154 F6               [12] 3738 	mov	@r0,a
-      001155 E5 81            [12] 3739 	mov	a,sp
-      001157 24 FC            [12] 3740 	add	a,#0xfc
-      001159 F5 81            [12] 3741 	mov	sp,a
-      00115B D0 04            [24] 3742 	pop	ar4
-      00115D D0 05            [24] 3743 	pop	ar5
-      00115F D0 06            [24] 3744 	pop	ar6
-      001161 D0 07            [24] 3745 	pop	ar7
-      001163 E5 0E            [12] 3746 	mov	a,_bp
-      001165 24 15            [12] 3747 	add	a,#0x15
-      001167 F8               [12] 3748 	mov	r0,a
-      001168 E6               [12] 3749 	mov	a,@r0
-      001169 C0 E0            [24] 3750 	push	acc
-      00116B 08               [12] 3751 	inc	r0
-      00116C E6               [12] 3752 	mov	a,@r0
-      00116D C0 E0            [24] 3753 	push	acc
-      00116F 08               [12] 3754 	inc	r0
-      001170 E6               [12] 3755 	mov	a,@r0
-      001171 C0 E0            [24] 3756 	push	acc
-      001173 08               [12] 3757 	inc	r0
-      001174 E6               [12] 3758 	mov	a,@r0
-      001175 C0 E0            [24] 3759 	push	acc
-      001177 8D 82            [24] 3760 	mov	dpl, r5
-      001179 8E 83            [24] 3761 	mov	dph, r6
-      00117B 8F F0            [24] 3762 	mov	b, r7
-      00117D EC               [12] 3763 	mov	a, r4
-      00117E 12 22 CC         [24] 3764 	lcall	___fssub
-      001181 AC 82            [24] 3765 	mov	r4, dpl
-      001183 AD 83            [24] 3766 	mov	r5, dph
-      001185 AE F0            [24] 3767 	mov	r6, b
-      001187 FF               [12] 3768 	mov	r7, a
-      001188 E5 81            [12] 3769 	mov	a,sp
-      00118A 24 FC            [12] 3770 	add	a,#0xfc
-      00118C F5 81            [12] 3771 	mov	sp,a
-      00118E C0 04            [24] 3772 	push	ar4
-      001190 C0 05            [24] 3773 	push	ar5
-      001192 C0 06            [24] 3774 	push	ar6
-      001194 C0 07            [24] 3775 	push	ar7
-                           0010DF  3776 	C$fuzzy.h$1046$1_0$62 ==.
-                                   3777 ;	../../fuzzy.h:1046: break;
-      001196 A8 0E            [24] 3778 	mov	r0,_bp
-      001198 08               [12] 3779 	inc	r0
-      001199 86 82            [24] 3780 	mov	dpl, @r0
-      00119B 08               [12] 3781 	inc	r0
-      00119C 86 83            [24] 3782 	mov	dph, @r0
-      00119E 08               [12] 3783 	inc	r0
-      00119F 86 F0            [24] 3784 	mov	b, @r0
-      0011A1 08               [12] 3785 	inc	r0
-      0011A2 E6               [12] 3786 	mov	a, @r0
-      0011A3 12 25 70         [24] 3787 	lcall	___fsdiv
-      0011A6 C8               [12] 3788 	xch	a,r0
-      0011A7 E5 0E            [12] 3789 	mov	a,_bp
-      0011A9 24 05            [12] 3790 	add	a,#0x05
-      0011AB C8               [12] 3791 	xch	a,r0
-      0011AC A6 82            [24] 3792 	mov	@r0, dpl
-      0011AE 08               [12] 3793 	inc	r0
-      0011AF A6 83            [24] 3794 	mov	@r0, dph
-      0011B1 08               [12] 3795 	inc	r0
-      0011B2 A6 F0            [24] 3796 	mov	@r0, b
-      0011B4 08               [12] 3797 	inc	r0
-      0011B5 F6               [12] 3798 	mov	@r0,a
-      0011B6 E5 81            [12] 3799 	mov	a,sp
-      0011B8 24 FC            [12] 3800 	add	a,#0xfc
-      0011BA F5 81            [12] 3801 	mov	sp,a
-      0011BC 02 16 00         [24] 3802 	ljmp	00144$
-                           001108  3803 	C$fuzzy.h$1048$2_0$64 ==.
-                                   3804 ;	../../fuzzy.h:1048: case FUZZY_SHAPE_TRAPEZOID:
-      0011BF                       3805 00121$:
-                           001108  3806 	C$fuzzy.h$1049$2_0$64 ==.
-                                   3807 ;	../../fuzzy.h:1049: if (parameter_count != 4u) {
-      0011BF E5 0E            [12] 3808 	mov	a,_bp
-      0011C1 24 F7            [12] 3809 	add	a,#0xf7
-      0011C3 F8               [12] 3810 	mov	r0,a
-      0011C4 B6 04 06         [24] 3811 	cjne	@r0,#0x04,00279$
-      0011C7 08               [12] 3812 	inc	r0
-      0011C8 B6 00 02         [24] 3813 	cjne	@r0,#0x00,00279$
-      0011CB 80 09            [24] 3814 	sjmp	00123$
-      0011CD                       3815 00279$:
-                           001116  3816 	C$fuzzy.h$1050$3_0$71 ==.
-                                   3817 ;	../../fuzzy.h:1050: return LEVEL_LO;
-      0011CD 90 00 00         [24] 3818 	mov	dptr,#0x0000
-      0011D0 E4               [12] 3819 	clr	a
-      0011D1 F5 F0            [12] 3820 	mov	b,a
-      0011D3 02 16 2A         [24] 3821 	ljmp	00145$
-      0011D6                       3822 00123$:
-                           00111F  3823 	C$fuzzy.h$1053$2_0$64 ==.
-                                   3824 ;	../../fuzzy.h:1053: parameter_1 = parameters[0];
-      0011D6 E5 0E            [12] 3825 	mov	a,_bp
-      0011D8 24 F4            [12] 3826 	add	a,#0xf4
-      0011DA F8               [12] 3827 	mov	r0,a
-      0011DB 86 05            [24] 3828 	mov	ar5,@r0
-      0011DD 08               [12] 3829 	inc	r0
-      0011DE 86 06            [24] 3830 	mov	ar6,@r0
-      0011E0 08               [12] 3831 	inc	r0
-      0011E1 86 07            [24] 3832 	mov	ar7,@r0
-      0011E3 8D 82            [24] 3833 	mov	dpl,r5
-      0011E5 8E 83            [24] 3834 	mov	dph,r6
-      0011E7 8F F0            [24] 3835 	mov	b,r7
-      0011E9 E5 0E            [12] 3836 	mov	a,_bp
-      0011EB 24 09            [12] 3837 	add	a,#0x09
-      0011ED F8               [12] 3838 	mov	r0,a
-      0011EE 12 26 33         [24] 3839 	lcall	__gptrget
-      0011F1 F6               [12] 3840 	mov	@r0,a
-      0011F2 A3               [24] 3841 	inc	dptr
-      0011F3 12 26 33         [24] 3842 	lcall	__gptrget
-      0011F6 08               [12] 3843 	inc	r0
-      0011F7 F6               [12] 3844 	mov	@r0,a
-      0011F8 A3               [24] 3845 	inc	dptr
-      0011F9 12 26 33         [24] 3846 	lcall	__gptrget
-      0011FC 08               [12] 3847 	inc	r0
-      0011FD F6               [12] 3848 	mov	@r0,a
-      0011FE A3               [24] 3849 	inc	dptr
-      0011FF 12 26 33         [24] 3850 	lcall	__gptrget
-      001202 08               [12] 3851 	inc	r0
-      001203 F6               [12] 3852 	mov	@r0,a
-                           00114D  3853 	C$fuzzy.h$1054$2_0$64 ==.
-                                   3854 ;	../../fuzzy.h:1054: parameter_2 = parameters[1];
-      001204 74 04            [12] 3855 	mov	a,#0x04
-      001206 2D               [12] 3856 	add	a, r5
-      001207 FA               [12] 3857 	mov	r2,a
-      001208 E4               [12] 3858 	clr	a
-      001209 3E               [12] 3859 	addc	a, r6
-      00120A FB               [12] 3860 	mov	r3,a
-      00120B 8F 04            [24] 3861 	mov	ar4,r7
-      00120D 8A 82            [24] 3862 	mov	dpl,r2
-      00120F 8B 83            [24] 3863 	mov	dph,r3
-      001211 8C F0            [24] 3864 	mov	b,r4
-      001213 A8 0E            [24] 3865 	mov	r0,_bp
-      001215 08               [12] 3866 	inc	r0
-      001216 12 26 33         [24] 3867 	lcall	__gptrget
-      001219 F6               [12] 3868 	mov	@r0,a
-      00121A A3               [24] 3869 	inc	dptr
-      00121B 12 26 33         [24] 3870 	lcall	__gptrget
-      00121E 08               [12] 3871 	inc	r0
-      00121F F6               [12] 3872 	mov	@r0,a
-      001220 A3               [24] 3873 	inc	dptr
-      001221 12 26 33         [24] 3874 	lcall	__gptrget
-      001224 08               [12] 3875 	inc	r0
-      001225 F6               [12] 3876 	mov	@r0,a
-      001226 A3               [24] 3877 	inc	dptr
-      001227 12 26 33         [24] 3878 	lcall	__gptrget
-      00122A 08               [12] 3879 	inc	r0
-      00122B F6               [12] 3880 	mov	@r0,a
-                           001175  3881 	C$fuzzy.h$1055$2_0$64 ==.
-                                   3882 ;	../../fuzzy.h:1055: parameter_3 = parameters[2];
-      00122C 74 08            [12] 3883 	mov	a,#0x08
-      00122E 2D               [12] 3884 	add	a, r5
-      00122F FA               [12] 3885 	mov	r2,a
-      001230 E4               [12] 3886 	clr	a
-      001231 3E               [12] 3887 	addc	a, r6
-      001232 FB               [12] 3888 	mov	r3,a
-      001233 8F 04            [24] 3889 	mov	ar4,r7
-      001235 8A 82            [24] 3890 	mov	dpl,r2
-      001237 8B 83            [24] 3891 	mov	dph,r3
-      001239 8C F0            [24] 3892 	mov	b,r4
-      00123B E5 0E            [12] 3893 	mov	a,_bp
-      00123D 24 19            [12] 3894 	add	a,#0x19
-      00123F F8               [12] 3895 	mov	r0,a
-      001240 12 26 33         [24] 3896 	lcall	__gptrget
-      001243 F6               [12] 3897 	mov	@r0,a
-      001244 A3               [24] 3898 	inc	dptr
-      001245 12 26 33         [24] 3899 	lcall	__gptrget
-      001248 08               [12] 3900 	inc	r0
-      001249 F6               [12] 3901 	mov	@r0,a
-      00124A A3               [24] 3902 	inc	dptr
-      00124B 12 26 33         [24] 3903 	lcall	__gptrget
-      00124E 08               [12] 3904 	inc	r0
-      00124F F6               [12] 3905 	mov	@r0,a
-      001250 A3               [24] 3906 	inc	dptr
-      001251 12 26 33         [24] 3907 	lcall	__gptrget
-      001254 08               [12] 3908 	inc	r0
-      001255 F6               [12] 3909 	mov	@r0,a
-                           00119F  3910 	C$fuzzy.h$1056$2_0$64 ==.
-                                   3911 ;	../../fuzzy.h:1056: parameter_4 = parameters[3];
-      001256 74 0C            [12] 3912 	mov	a,#0x0c
-      001258 2D               [12] 3913 	add	a, r5
-      001259 FD               [12] 3914 	mov	r5,a
-      00125A E4               [12] 3915 	clr	a
-      00125B 3E               [12] 3916 	addc	a, r6
-      00125C FE               [12] 3917 	mov	r6,a
-      00125D 8D 82            [24] 3918 	mov	dpl,r5
-      00125F 8E 83            [24] 3919 	mov	dph,r6
-      001261 8F F0            [24] 3920 	mov	b,r7
-      001263 12 26 33         [24] 3921 	lcall	__gptrget
-      001266 FD               [12] 3922 	mov	r5,a
-      001267 A3               [24] 3923 	inc	dptr
-      001268 12 26 33         [24] 3924 	lcall	__gptrget
-      00126B FE               [12] 3925 	mov	r6,a
-      00126C A3               [24] 3926 	inc	dptr
-      00126D 12 26 33         [24] 3927 	lcall	__gptrget
-      001270 FF               [12] 3928 	mov	r7,a
-      001271 A3               [24] 3929 	inc	dptr
-      001272 12 26 33         [24] 3930 	lcall	__gptrget
-      001275 FC               [12] 3931 	mov	r4,a
-                           0011BF  3932 	C$fuzzy.h$1059$1_0$62 ==.
-                                   3933 ;	../../fuzzy.h:1059: parameter_1 >= parameter_2 ||
-      001276 C0 07            [24] 3934 	push	ar7
-      001278 C0 06            [24] 3935 	push	ar6
-      00127A C0 05            [24] 3936 	push	ar5
-      00127C C0 04            [24] 3937 	push	ar4
-      00127E A8 0E            [24] 3938 	mov	r0,_bp
-      001280 08               [12] 3939 	inc	r0
-      001281 E6               [12] 3940 	mov	a,@r0
-      001282 C0 E0            [24] 3941 	push	acc
-      001284 08               [12] 3942 	inc	r0
-      001285 E6               [12] 3943 	mov	a,@r0
-      001286 C0 E0            [24] 3944 	push	acc
-      001288 08               [12] 3945 	inc	r0
-      001289 E6               [12] 3946 	mov	a,@r0
-      00128A C0 E0            [24] 3947 	push	acc
-      00128C 08               [12] 3948 	inc	r0
-      00128D E6               [12] 3949 	mov	a,@r0
-      00128E C0 E0            [24] 3950 	push	acc
-      001290 E5 0E            [12] 3951 	mov	a,_bp
-      001292 24 09            [12] 3952 	add	a,#0x09
-      001294 F8               [12] 3953 	mov	r0,a
-      001295 86 82            [24] 3954 	mov	dpl, @r0
-      001297 08               [12] 3955 	inc	r0
-      001298 86 83            [24] 3956 	mov	dph, @r0
-      00129A 08               [12] 3957 	inc	r0
-      00129B 86 F0            [24] 3958 	mov	b, @r0
-      00129D 08               [12] 3959 	inc	r0
-      00129E E6               [12] 3960 	mov	a, @r0
-      00129F 12 24 07         [24] 3961 	lcall	___fslt
-      0012A2 E5 81            [12] 3962 	mov	a,sp
-      0012A4 24 FC            [12] 3963 	add	a,#0xfc
-      0012A6 F5 81            [12] 3964 	mov	sp,a
-      0012A8 D0 04            [24] 3965 	pop	ar4
-      0012AA D0 05            [24] 3966 	pop	ar5
-      0012AC D0 06            [24] 3967 	pop	ar6
-      0012AE D0 07            [24] 3968 	pop	ar7
-      0012B0 E5 82            [12] 3969 	mov	a, dpl
-      0012B2 24 FF            [12] 3970 	add	a,#0xff
-      0012B4 92 00            [24] 3971 	mov	b0,c
-      0012B6 40 03            [24] 3972 	jc	00280$
-      0012B8 02 13 B1         [24] 3973 	ljmp	00131$
-      0012BB                       3974 00280$:
-                           001204  3975 	C$fuzzy.h$1060$1_0$62 ==.
-                                   3976 ;	../../fuzzy.h:1060: parameter_2 > parameter_3 ||
-      0012BB C0 07            [24] 3977 	push	ar7
-      0012BD C0 06            [24] 3978 	push	ar6
-      0012BF C0 05            [24] 3979 	push	ar5
-      0012C1 C0 04            [24] 3980 	push	ar4
-      0012C3 A8 0E            [24] 3981 	mov	r0,_bp
-      0012C5 08               [12] 3982 	inc	r0
-      0012C6 E6               [12] 3983 	mov	a,@r0
-      0012C7 C0 E0            [24] 3984 	push	acc
-      0012C9 08               [12] 3985 	inc	r0
-      0012CA E6               [12] 3986 	mov	a,@r0
-      0012CB C0 E0            [24] 3987 	push	acc
-      0012CD 08               [12] 3988 	inc	r0
-      0012CE E6               [12] 3989 	mov	a,@r0
-      0012CF C0 E0            [24] 3990 	push	acc
-      0012D1 08               [12] 3991 	inc	r0
-      0012D2 E6               [12] 3992 	mov	a,@r0
-      0012D3 C0 E0            [24] 3993 	push	acc
-      0012D5 E5 0E            [12] 3994 	mov	a,_bp
-      0012D7 24 19            [12] 3995 	add	a,#0x19
-      0012D9 F8               [12] 3996 	mov	r0,a
-      0012DA 86 82            [24] 3997 	mov	dpl, @r0
-      0012DC 08               [12] 3998 	inc	r0
-      0012DD 86 83            [24] 3999 	mov	dph, @r0
-      0012DF 08               [12] 4000 	inc	r0
-      0012E0 86 F0            [24] 4001 	mov	b, @r0
-      0012E2 08               [12] 4002 	inc	r0
-      0012E3 E6               [12] 4003 	mov	a, @r0
-      0012E4 12 24 07         [24] 4004 	lcall	___fslt
-      0012E7 AB 82            [24] 4005 	mov	r3, dpl
-      0012E9 E5 81            [12] 4006 	mov	a,sp
-      0012EB 24 FC            [12] 4007 	add	a,#0xfc
-      0012ED F5 81            [12] 4008 	mov	sp,a
-      0012EF D0 04            [24] 4009 	pop	ar4
-      0012F1 D0 05            [24] 4010 	pop	ar5
-      0012F3 D0 06            [24] 4011 	pop	ar6
-      0012F5 D0 07            [24] 4012 	pop	ar7
-      0012F7 EB               [12] 4013 	mov	a,r3
-      0012F8 60 03            [24] 4014 	jz	00281$
-      0012FA 02 13 B1         [24] 4015 	ljmp	00131$
-      0012FD                       4016 00281$:
-                           001246  4017 	C$fuzzy.h$1061$1_0$62 ==.
-                                   4018 ;	../../fuzzy.h:1061: parameter_3 >= parameter_4 ||
-      0012FD C0 07            [24] 4019 	push	ar7
-      0012FF C0 06            [24] 4020 	push	ar6
-      001301 C0 05            [24] 4021 	push	ar5
-      001303 C0 04            [24] 4022 	push	ar4
-      001305 C0 05            [24] 4023 	push	ar5
-      001307 C0 06            [24] 4024 	push	ar6
-      001309 C0 07            [24] 4025 	push	ar7
-      00130B C0 04            [24] 4026 	push	ar4
-      00130D E5 0E            [12] 4027 	mov	a,_bp
-      00130F 24 19            [12] 4028 	add	a,#0x19
-      001311 F8               [12] 4029 	mov	r0,a
-      001312 86 82            [24] 4030 	mov	dpl, @r0
-      001314 08               [12] 4031 	inc	r0
-      001315 86 83            [24] 4032 	mov	dph, @r0
-      001317 08               [12] 4033 	inc	r0
-      001318 86 F0            [24] 4034 	mov	b, @r0
-      00131A 08               [12] 4035 	inc	r0
-      00131B E6               [12] 4036 	mov	a, @r0
-      00131C 12 24 07         [24] 4037 	lcall	___fslt
-      00131F E5 81            [12] 4038 	mov	a,sp
-      001321 24 FC            [12] 4039 	add	a,#0xfc
-      001323 F5 81            [12] 4040 	mov	sp,a
-      001325 D0 04            [24] 4041 	pop	ar4
-      001327 D0 05            [24] 4042 	pop	ar5
-      001329 D0 06            [24] 4043 	pop	ar6
-      00132B D0 07            [24] 4044 	pop	ar7
-      00132D E5 82            [12] 4045 	mov	a, dpl
-      00132F 24 FF            [12] 4046 	add	a,#0xff
-      001331 92 00            [24] 4047 	mov	b0,c
-      001333 50 7C            [24] 4048 	jnc	00131$
-                           00127E  4049 	C$fuzzy.h$1062$1_0$62 ==.
-                                   4050 ;	../../fuzzy.h:1062: value <= parameter_1 ||
-      001335 C0 07            [24] 4051 	push	ar7
-      001337 C0 06            [24] 4052 	push	ar6
-      001339 C0 05            [24] 4053 	push	ar5
-      00133B C0 04            [24] 4054 	push	ar4
-      00133D E5 0E            [12] 4055 	mov	a,_bp
-      00133F 24 FA            [12] 4056 	add	a,#0xfa
-      001341 F8               [12] 4057 	mov	r0,a
-      001342 E6               [12] 4058 	mov	a,@r0
-      001343 C0 E0            [24] 4059 	push	acc
-      001345 08               [12] 4060 	inc	r0
-      001346 E6               [12] 4061 	mov	a,@r0
-      001347 C0 E0            [24] 4062 	push	acc
-      001349 08               [12] 4063 	inc	r0
-      00134A E6               [12] 4064 	mov	a,@r0
-      00134B C0 E0            [24] 4065 	push	acc
-      00134D 08               [12] 4066 	inc	r0
-      00134E E6               [12] 4067 	mov	a,@r0
-      00134F C0 E0            [24] 4068 	push	acc
-      001351 E5 0E            [12] 4069 	mov	a,_bp
-      001353 24 09            [12] 4070 	add	a,#0x09
-      001355 F8               [12] 4071 	mov	r0,a
-      001356 86 82            [24] 4072 	mov	dpl, @r0
-      001358 08               [12] 4073 	inc	r0
-      001359 86 83            [24] 4074 	mov	dph, @r0
-      00135B 08               [12] 4075 	inc	r0
-      00135C 86 F0            [24] 4076 	mov	b, @r0
-      00135E 08               [12] 4077 	inc	r0
-      00135F E6               [12] 4078 	mov	a, @r0
-      001360 12 24 07         [24] 4079 	lcall	___fslt
-      001363 E5 81            [12] 4080 	mov	a,sp
-      001365 24 FC            [12] 4081 	add	a,#0xfc
-      001367 F5 81            [12] 4082 	mov	sp,a
-      001369 D0 04            [24] 4083 	pop	ar4
-      00136B D0 05            [24] 4084 	pop	ar5
-      00136D D0 06            [24] 4085 	pop	ar6
-      00136F D0 07            [24] 4086 	pop	ar7
-      001371 E5 82            [12] 4087 	mov	a, dpl
-      001373 24 FF            [12] 4088 	add	a,#0xff
-      001375 92 00            [24] 4089 	mov	b0,c
-      001377 50 38            [24] 4090 	jnc	00131$
-                           0012C2  4091 	C$fuzzy.h$1064$1_0$62 ==.
-                                   4092 ;	../../fuzzy.h:1064: ) {
-      001379 C0 07            [24] 4093 	push	ar7
-      00137B C0 06            [24] 4094 	push	ar6
-      00137D C0 05            [24] 4095 	push	ar5
-      00137F C0 04            [24] 4096 	push	ar4
-      001381 C0 05            [24] 4097 	push	ar5
-      001383 C0 06            [24] 4098 	push	ar6
-      001385 C0 07            [24] 4099 	push	ar7
-      001387 C0 04            [24] 4100 	push	ar4
-      001389 E5 0E            [12] 4101 	mov	a,_bp
-      00138B 24 FA            [12] 4102 	add	a,#0xfa
-      00138D F8               [12] 4103 	mov	r0,a
-      00138E 86 82            [24] 4104 	mov	dpl, @r0
-      001390 08               [12] 4105 	inc	r0
-      001391 86 83            [24] 4106 	mov	dph, @r0
-      001393 08               [12] 4107 	inc	r0
-      001394 86 F0            [24] 4108 	mov	b, @r0
-      001396 08               [12] 4109 	inc	r0
-      001397 E6               [12] 4110 	mov	a, @r0
-      001398 12 24 07         [24] 4111 	lcall	___fslt
-      00139B E5 81            [12] 4112 	mov	a,sp
-      00139D 24 FC            [12] 4113 	add	a,#0xfc
-      00139F F5 81            [12] 4114 	mov	sp,a
-      0013A1 D0 04            [24] 4115 	pop	ar4
-      0013A3 D0 05            [24] 4116 	pop	ar5
-      0013A5 D0 06            [24] 4117 	pop	ar6
-      0013A7 D0 07            [24] 4118 	pop	ar7
-      0013A9 E5 82            [12] 4119 	mov	a, dpl
-      0013AB 24 FF            [12] 4120 	add	a,#0xff
-      0013AD 92 00            [24] 4121 	mov	b0,c
-      0013AF 40 10            [24] 4122 	jc	00132$
-      0013B1                       4123 00131$:
-                           0012FA  4124 	C$fuzzy.h$1065$3_0$72 ==.
-                                   4125 ;	../../fuzzy.h:1065: result = LEVEL_LO;
-      0013B1 E5 0E            [12] 4126 	mov	a,_bp
-      0013B3 24 05            [12] 4127 	add	a,#0x05
-      0013B5 F8               [12] 4128 	mov	r0,a
-      0013B6 E4               [12] 4129 	clr	a
-      0013B7 F6               [12] 4130 	mov	@r0,a
-      0013B8 08               [12] 4131 	inc	r0
-      0013B9 F6               [12] 4132 	mov	@r0,a
-      0013BA 08               [12] 4133 	inc	r0
-      0013BB F6               [12] 4134 	mov	@r0,a
-      0013BC 08               [12] 4135 	inc	r0
-      0013BD F6               [12] 4136 	mov	@r0,a
-      0013BE 02 16 00         [24] 4137 	ljmp	00144$
-      0013C1                       4138 00132$:
-                           00130A  4139 	C$fuzzy.h$1068$1_0$62 ==.
-                                   4140 ;	../../fuzzy.h:1068: value >= parameter_2 &&
-      0013C1 C0 07            [24] 4141 	push	ar7
-      0013C3 C0 06            [24] 4142 	push	ar6
-      0013C5 C0 05            [24] 4143 	push	ar5
-      0013C7 C0 04            [24] 4144 	push	ar4
-      0013C9 A8 0E            [24] 4145 	mov	r0,_bp
-      0013CB 08               [12] 4146 	inc	r0
-      0013CC E6               [12] 4147 	mov	a,@r0
-      0013CD C0 E0            [24] 4148 	push	acc
-      0013CF 08               [12] 4149 	inc	r0
-      0013D0 E6               [12] 4150 	mov	a,@r0
-      0013D1 C0 E0            [24] 4151 	push	acc
-      0013D3 08               [12] 4152 	inc	r0
-      0013D4 E6               [12] 4153 	mov	a,@r0
-      0013D5 C0 E0            [24] 4154 	push	acc
-      0013D7 08               [12] 4155 	inc	r0
-      0013D8 E6               [12] 4156 	mov	a,@r0
-      0013D9 C0 E0            [24] 4157 	push	acc
-      0013DB E5 0E            [12] 4158 	mov	a,_bp
-      0013DD 24 FA            [12] 4159 	add	a,#0xfa
-      0013DF F8               [12] 4160 	mov	r0,a
-      0013E0 86 82            [24] 4161 	mov	dpl, @r0
-      0013E2 08               [12] 4162 	inc	r0
-      0013E3 86 83            [24] 4163 	mov	dph, @r0
-      0013E5 08               [12] 4164 	inc	r0
-      0013E6 86 F0            [24] 4165 	mov	b, @r0
-      0013E8 08               [12] 4166 	inc	r0
-      0013E9 E6               [12] 4167 	mov	a, @r0
-      0013EA 12 24 07         [24] 4168 	lcall	___fslt
-      0013ED E5 81            [12] 4169 	mov	a,sp
-      0013EF 24 FC            [12] 4170 	add	a,#0xfc
-      0013F1 F5 81            [12] 4171 	mov	sp,a
-      0013F3 D0 04            [24] 4172 	pop	ar4
-      0013F5 D0 05            [24] 4173 	pop	ar5
-      0013F7 D0 06            [24] 4174 	pop	ar6
-      0013F9 D0 07            [24] 4175 	pop	ar7
-      0013FB E5 82            [12] 4176 	mov	a, dpl
-      0013FD 24 FF            [12] 4177 	add	a,#0xff
-      0013FF 92 00            [24] 4178 	mov	b0,c
-      001401 40 56            [24] 4179 	jc	00128$
-                           00134C  4180 	C$fuzzy.h$1070$1_0$62 ==.
-                                   4181 ;	../../fuzzy.h:1070: ) {
-      001403 C0 07            [24] 4182 	push	ar7
-      001405 C0 06            [24] 4183 	push	ar6
-      001407 C0 05            [24] 4184 	push	ar5
-      001409 C0 04            [24] 4185 	push	ar4
-      00140B E5 0E            [12] 4186 	mov	a,_bp
-      00140D 24 FA            [12] 4187 	add	a,#0xfa
-      00140F F8               [12] 4188 	mov	r0,a
-      001410 E6               [12] 4189 	mov	a,@r0
-      001411 C0 E0            [24] 4190 	push	acc
-      001413 08               [12] 4191 	inc	r0
-      001414 E6               [12] 4192 	mov	a,@r0
-      001415 C0 E0            [24] 4193 	push	acc
-      001417 08               [12] 4194 	inc	r0
-      001418 E6               [12] 4195 	mov	a,@r0
-      001419 C0 E0            [24] 4196 	push	acc
-      00141B 08               [12] 4197 	inc	r0
-      00141C E6               [12] 4198 	mov	a,@r0
-      00141D C0 E0            [24] 4199 	push	acc
-      00141F E5 0E            [12] 4200 	mov	a,_bp
-      001421 24 19            [12] 4201 	add	a,#0x19
-      001423 F8               [12] 4202 	mov	r0,a
-      001424 86 82            [24] 4203 	mov	dpl, @r0
-      001426 08               [12] 4204 	inc	r0
-      001427 86 83            [24] 4205 	mov	dph, @r0
-      001429 08               [12] 4206 	inc	r0
-      00142A 86 F0            [24] 4207 	mov	b, @r0
-      00142C 08               [12] 4208 	inc	r0
-      00142D E6               [12] 4209 	mov	a, @r0
-      00142E 12 24 07         [24] 4210 	lcall	___fslt
-      001431 E5 81            [12] 4211 	mov	a,sp
-      001433 24 FC            [12] 4212 	add	a,#0xfc
-      001435 F5 81            [12] 4213 	mov	sp,a
-      001437 D0 04            [24] 4214 	pop	ar4
-      001439 D0 05            [24] 4215 	pop	ar5
-      00143B D0 06            [24] 4216 	pop	ar6
-      00143D D0 07            [24] 4217 	pop	ar7
-      00143F E5 82            [12] 4218 	mov	a, dpl
-      001441 24 FF            [12] 4219 	add	a,#0xff
-      001443 92 00            [24] 4220 	mov	b0,c
-      001445 40 12            [24] 4221 	jc	00128$
-                           001390  4222 	C$fuzzy.h$1071$3_0$73 ==.
-                                   4223 ;	../../fuzzy.h:1071: result = LEVEL_HI;
-      001447 E5 0E            [12] 4224 	mov	a,_bp
-      001449 24 05            [12] 4225 	add	a,#0x05
-      00144B F8               [12] 4226 	mov	r0,a
-      00144C E4               [12] 4227 	clr	a
-      00144D F6               [12] 4228 	mov	@r0,a
-      00144E 08               [12] 4229 	inc	r0
-      00144F F6               [12] 4230 	mov	@r0,a
-      001450 08               [12] 4231 	inc	r0
-      001451 76 80            [12] 4232 	mov	@r0,#0x80
-      001453 08               [12] 4233 	inc	r0
-      001454 76 3F            [12] 4234 	mov	@r0,#0x3f
-      001456 02 16 00         [24] 4235 	ljmp	00144$
-      001459                       4236 00128$:
-                           0013A2  4237 	C$fuzzy.h$1073$1_0$62 ==.
-                                   4238 ;	../../fuzzy.h:1073: else if (value < parameter_2) {
-      001459 C0 07            [24] 4239 	push	ar7
-      00145B C0 06            [24] 4240 	push	ar6
-      00145D C0 05            [24] 4241 	push	ar5
-      00145F C0 04            [24] 4242 	push	ar4
-      001461 A8 0E            [24] 4243 	mov	r0,_bp
-      001463 08               [12] 4244 	inc	r0
-      001464 E6               [12] 4245 	mov	a,@r0
-      001465 C0 E0            [24] 4246 	push	acc
-      001467 08               [12] 4247 	inc	r0
-      001468 E6               [12] 4248 	mov	a,@r0
-      001469 C0 E0            [24] 4249 	push	acc
-      00146B 08               [12] 4250 	inc	r0
-      00146C E6               [12] 4251 	mov	a,@r0
-      00146D C0 E0            [24] 4252 	push	acc
-      00146F 08               [12] 4253 	inc	r0
-      001470 E6               [12] 4254 	mov	a,@r0
-      001471 C0 E0            [24] 4255 	push	acc
-      001473 E5 0E            [12] 4256 	mov	a,_bp
-      001475 24 FA            [12] 4257 	add	a,#0xfa
-      001477 F8               [12] 4258 	mov	r0,a
-      001478 86 82            [24] 4259 	mov	dpl, @r0
-      00147A 08               [12] 4260 	inc	r0
-      00147B 86 83            [24] 4261 	mov	dph, @r0
-      00147D 08               [12] 4262 	inc	r0
-      00147E 86 F0            [24] 4263 	mov	b, @r0
-      001480 08               [12] 4264 	inc	r0
-      001481 E6               [12] 4265 	mov	a, @r0
-      001482 12 24 07         [24] 4266 	lcall	___fslt
-      001485 AB 82            [24] 4267 	mov	r3, dpl
-      001487 E5 81            [12] 4268 	mov	a,sp
-      001489 24 FC            [12] 4269 	add	a,#0xfc
-      00148B F5 81            [12] 4270 	mov	sp,a
-      00148D D0 04            [24] 4271 	pop	ar4
-      00148F D0 05            [24] 4272 	pop	ar5
-      001491 D0 06            [24] 4273 	pop	ar6
-      001493 D0 07            [24] 4274 	pop	ar7
-      001495 EB               [12] 4275 	mov	a,r3
-      001496 70 03            [24] 4276 	jnz	00287$
-      001498 02 15 4F         [24] 4277 	ljmp	00125$
-      00149B                       4278 00287$:
-                           0013E4  4279 	C$fuzzy.h$1075$1_0$62 ==.
-                                   4280 ;	../../fuzzy.h:1075: (value - parameter_1) /
-      00149B E5 0E            [12] 4281 	mov	a,_bp
-      00149D 24 09            [12] 4282 	add	a,#0x09
-      00149F F8               [12] 4283 	mov	r0,a
-      0014A0 E6               [12] 4284 	mov	a,@r0
-      0014A1 C0 E0            [24] 4285 	push	acc
-      0014A3 08               [12] 4286 	inc	r0
-      0014A4 E6               [12] 4287 	mov	a,@r0
-      0014A5 C0 E0            [24] 4288 	push	acc
-      0014A7 08               [12] 4289 	inc	r0
-      0014A8 E6               [12] 4290 	mov	a,@r0
-      0014A9 C0 E0            [24] 4291 	push	acc
-      0014AB 08               [12] 4292 	inc	r0
-      0014AC E6               [12] 4293 	mov	a,@r0
-      0014AD C0 E0            [24] 4294 	push	acc
-                           0013F8  4295 	C$fuzzy.h$1076$1_0$62 ==.
-                                   4296 ;	../../fuzzy.h:1076: (parameter_2 - parameter_1);
-      0014AF E5 0E            [12] 4297 	mov	a,_bp
-      0014B1 24 FA            [12] 4298 	add	a,#0xfa
-      0014B3 F8               [12] 4299 	mov	r0,a
-      0014B4 86 82            [24] 4300 	mov	dpl, @r0
-      0014B6 08               [12] 4301 	inc	r0
-      0014B7 86 83            [24] 4302 	mov	dph, @r0
-      0014B9 08               [12] 4303 	inc	r0
-      0014BA 86 F0            [24] 4304 	mov	b, @r0
-      0014BC 08               [12] 4305 	inc	r0
-      0014BD E6               [12] 4306 	mov	a, @r0
-      0014BE 12 22 CC         [24] 4307 	lcall	___fssub
-      0014C1 AF 82            [24] 4308 	mov	r7, dpl
-      0014C3 AE 83            [24] 4309 	mov	r6, dph
-      0014C5 AD F0            [24] 4310 	mov	r5, b
-      0014C7 FC               [12] 4311 	mov	r4, a
-      0014C8 E5 81            [12] 4312 	mov	a,sp
-      0014CA 24 FC            [12] 4313 	add	a,#0xfc
-      0014CC F5 81            [12] 4314 	mov	sp,a
-      0014CE C0 07            [24] 4315 	push	ar7
-      0014D0 C0 06            [24] 4316 	push	ar6
-      0014D2 C0 05            [24] 4317 	push	ar5
-      0014D4 C0 04            [24] 4318 	push	ar4
-      0014D6 E5 0E            [12] 4319 	mov	a,_bp
-      0014D8 24 09            [12] 4320 	add	a,#0x09
-      0014DA F8               [12] 4321 	mov	r0,a
-      0014DB E6               [12] 4322 	mov	a,@r0
-      0014DC C0 E0            [24] 4323 	push	acc
-      0014DE 08               [12] 4324 	inc	r0
-      0014DF E6               [12] 4325 	mov	a,@r0
-      0014E0 C0 E0            [24] 4326 	push	acc
-      0014E2 08               [12] 4327 	inc	r0
-      0014E3 E6               [12] 4328 	mov	a,@r0
-      0014E4 C0 E0            [24] 4329 	push	acc
-      0014E6 08               [12] 4330 	inc	r0
-      0014E7 E6               [12] 4331 	mov	a,@r0
-      0014E8 C0 E0            [24] 4332 	push	acc
-      0014EA A8 0E            [24] 4333 	mov	r0,_bp
-      0014EC 08               [12] 4334 	inc	r0
-      0014ED 86 82            [24] 4335 	mov	dpl, @r0
-      0014EF 08               [12] 4336 	inc	r0
-      0014F0 86 83            [24] 4337 	mov	dph, @r0
-      0014F2 08               [12] 4338 	inc	r0
-      0014F3 86 F0            [24] 4339 	mov	b, @r0
-      0014F5 08               [12] 4340 	inc	r0
-      0014F6 E6               [12] 4341 	mov	a, @r0
-      0014F7 12 22 CC         [24] 4342 	lcall	___fssub
-      0014FA C8               [12] 4343 	xch	a,r0
-      0014FB E5 0E            [12] 4344 	mov	a,_bp
-      0014FD 24 09            [12] 4345 	add	a,#0x09
-      0014FF C8               [12] 4346 	xch	a,r0
-      001500 A6 82            [24] 4347 	mov	@r0, dpl
-      001502 08               [12] 4348 	inc	r0
-      001503 A6 83            [24] 4349 	mov	@r0, dph
-      001505 08               [12] 4350 	inc	r0
-      001506 A6 F0            [24] 4351 	mov	@r0, b
-      001508 08               [12] 4352 	inc	r0
-      001509 F6               [12] 4353 	mov	@r0,a
-      00150A E5 81            [12] 4354 	mov	a,sp
-      00150C 24 FC            [12] 4355 	add	a,#0xfc
-      00150E F5 81            [12] 4356 	mov	sp,a
-      001510 D0 04            [24] 4357 	pop	ar4
-      001512 D0 05            [24] 4358 	pop	ar5
-      001514 D0 06            [24] 4359 	pop	ar6
-      001516 D0 07            [24] 4360 	pop	ar7
-      001518 E5 0E            [12] 4361 	mov	a,_bp
-      00151A 24 09            [12] 4362 	add	a,#0x09
-      00151C F8               [12] 4363 	mov	r0,a
-      00151D E6               [12] 4364 	mov	a,@r0
-      00151E C0 E0            [24] 4365 	push	acc
-      001520 08               [12] 4366 	inc	r0
-      001521 E6               [12] 4367 	mov	a,@r0
-      001522 C0 E0            [24] 4368 	push	acc
-      001524 08               [12] 4369 	inc	r0
-      001525 E6               [12] 4370 	mov	a,@r0
-      001526 C0 E0            [24] 4371 	push	acc
-      001528 08               [12] 4372 	inc	r0
-      001529 E6               [12] 4373 	mov	a,@r0
-      00152A C0 E0            [24] 4374 	push	acc
-      00152C 8F 82            [24] 4375 	mov	dpl, r7
-      00152E 8E 83            [24] 4376 	mov	dph, r6
-      001530 8D F0            [24] 4377 	mov	b, r5
-      001532 EC               [12] 4378 	mov	a, r4
-      001533 12 25 70         [24] 4379 	lcall	___fsdiv
-      001536 C8               [12] 4380 	xch	a,r0
-      001537 E5 0E            [12] 4381 	mov	a,_bp
-      001539 24 05            [12] 4382 	add	a,#0x05
-      00153B C8               [12] 4383 	xch	a,r0
-      00153C A6 82            [24] 4384 	mov	@r0, dpl
-      00153E 08               [12] 4385 	inc	r0
-      00153F A6 83            [24] 4386 	mov	@r0, dph
-      001541 08               [12] 4387 	inc	r0
-      001542 A6 F0            [24] 4388 	mov	@r0, b
-      001544 08               [12] 4389 	inc	r0
-      001545 F6               [12] 4390 	mov	@r0,a
-      001546 E5 81            [12] 4391 	mov	a,sp
-      001548 24 FC            [12] 4392 	add	a,#0xfc
-      00154A F5 81            [12] 4393 	mov	sp,a
-      00154C 02 16 00         [24] 4394 	ljmp	00144$
-      00154F                       4395 00125$:
-                           001498  4396 	C$fuzzy.h$1080$1_0$62 ==.
-                                   4397 ;	../../fuzzy.h:1080: (parameter_4 - value) /
-      00154F C0 07            [24] 4398 	push	ar7
-      001551 C0 06            [24] 4399 	push	ar6
-      001553 C0 05            [24] 4400 	push	ar5
-      001555 C0 04            [24] 4401 	push	ar4
-      001557 E5 0E            [12] 4402 	mov	a,_bp
-      001559 24 FA            [12] 4403 	add	a,#0xfa
-      00155B F8               [12] 4404 	mov	r0,a
-      00155C E6               [12] 4405 	mov	a,@r0
-      00155D C0 E0            [24] 4406 	push	acc
-      00155F 08               [12] 4407 	inc	r0
-      001560 E6               [12] 4408 	mov	a,@r0
-      001561 C0 E0            [24] 4409 	push	acc
-      001563 08               [12] 4410 	inc	r0
-      001564 E6               [12] 4411 	mov	a,@r0
-      001565 C0 E0            [24] 4412 	push	acc
-      001567 08               [12] 4413 	inc	r0
-      001568 E6               [12] 4414 	mov	a,@r0
-      001569 C0 E0            [24] 4415 	push	acc
-                           0014B4  4416 	C$fuzzy.h$1081$1_0$62 ==.
-                                   4417 ;	../../fuzzy.h:1081: (parameter_4 - parameter_3);
-      00156B 8D 82            [24] 4418 	mov	dpl, r5
-      00156D 8E 83            [24] 4419 	mov	dph, r6
-      00156F 8F F0            [24] 4420 	mov	b, r7
-      001571 EC               [12] 4421 	mov	a, r4
-      001572 12 22 CC         [24] 4422 	lcall	___fssub
-      001575 C8               [12] 4423 	xch	a,r0
-      001576 E5 0E            [12] 4424 	mov	a,_bp
-      001578 24 0D            [12] 4425 	add	a,#0x0d
-      00157A C8               [12] 4426 	xch	a,r0
-      00157B A6 82            [24] 4427 	mov	@r0, dpl
-      00157D 08               [12] 4428 	inc	r0
-      00157E A6 83            [24] 4429 	mov	@r0, dph
-      001580 08               [12] 4430 	inc	r0
-      001581 A6 F0            [24] 4431 	mov	@r0, b
-      001583 08               [12] 4432 	inc	r0
-      001584 F6               [12] 4433 	mov	@r0,a
-      001585 E5 81            [12] 4434 	mov	a,sp
-      001587 24 FC            [12] 4435 	add	a,#0xfc
-      001589 F5 81            [12] 4436 	mov	sp,a
-      00158B D0 04            [24] 4437 	pop	ar4
-      00158D D0 05            [24] 4438 	pop	ar5
-      00158F D0 06            [24] 4439 	pop	ar6
-      001591 D0 07            [24] 4440 	pop	ar7
-      001593 E5 0E            [12] 4441 	mov	a,_bp
-      001595 24 19            [12] 4442 	add	a,#0x19
-      001597 F8               [12] 4443 	mov	r0,a
-      001598 E6               [12] 4444 	mov	a,@r0
-      001599 C0 E0            [24] 4445 	push	acc
-      00159B 08               [12] 4446 	inc	r0
-      00159C E6               [12] 4447 	mov	a,@r0
-      00159D C0 E0            [24] 4448 	push	acc
-      00159F 08               [12] 4449 	inc	r0
-      0015A0 E6               [12] 4450 	mov	a,@r0
-      0015A1 C0 E0            [24] 4451 	push	acc
-      0015A3 08               [12] 4452 	inc	r0
-      0015A4 E6               [12] 4453 	mov	a,@r0
-      0015A5 C0 E0            [24] 4454 	push	acc
-      0015A7 8D 82            [24] 4455 	mov	dpl, r5
-      0015A9 8E 83            [24] 4456 	mov	dph, r6
-      0015AB 8F F0            [24] 4457 	mov	b, r7
-      0015AD EC               [12] 4458 	mov	a, r4
-      0015AE 12 22 CC         [24] 4459 	lcall	___fssub
-      0015B1 AC 82            [24] 4460 	mov	r4, dpl
-      0015B3 AD 83            [24] 4461 	mov	r5, dph
-      0015B5 AE F0            [24] 4462 	mov	r6, b
-      0015B7 FF               [12] 4463 	mov	r7, a
-      0015B8 E5 81            [12] 4464 	mov	a,sp
-      0015BA 24 FC            [12] 4465 	add	a,#0xfc
-      0015BC F5 81            [12] 4466 	mov	sp,a
-      0015BE C0 04            [24] 4467 	push	ar4
-      0015C0 C0 05            [24] 4468 	push	ar5
-      0015C2 C0 06            [24] 4469 	push	ar6
-      0015C4 C0 07            [24] 4470 	push	ar7
-                           00150F  4471 	C$fuzzy.h$1083$1_0$62 ==.
-                                   4472 ;	../../fuzzy.h:1083: break;
-      0015C6 E5 0E            [12] 4473 	mov	a,_bp
-      0015C8 24 0D            [12] 4474 	add	a,#0x0d
-      0015CA F8               [12] 4475 	mov	r0,a
-      0015CB 86 82            [24] 4476 	mov	dpl, @r0
-      0015CD 08               [12] 4477 	inc	r0
-      0015CE 86 83            [24] 4478 	mov	dph, @r0
-      0015D0 08               [12] 4479 	inc	r0
-      0015D1 86 F0            [24] 4480 	mov	b, @r0
-      0015D3 08               [12] 4481 	inc	r0
-      0015D4 E6               [12] 4482 	mov	a, @r0
-      0015D5 12 25 70         [24] 4483 	lcall	___fsdiv
-      0015D8 C8               [12] 4484 	xch	a,r0
-      0015D9 E5 0E            [12] 4485 	mov	a,_bp
-      0015DB 24 05            [12] 4486 	add	a,#0x05
-      0015DD C8               [12] 4487 	xch	a,r0
-      0015DE A6 82            [24] 4488 	mov	@r0, dpl
-      0015E0 08               [12] 4489 	inc	r0
-      0015E1 A6 83            [24] 4490 	mov	@r0, dph
-      0015E3 08               [12] 4491 	inc	r0
-      0015E4 A6 F0            [24] 4492 	mov	@r0, b
-      0015E6 08               [12] 4493 	inc	r0
-      0015E7 F6               [12] 4494 	mov	@r0,a
-      0015E8 E5 81            [12] 4495 	mov	a,sp
-      0015EA 24 FC            [12] 4496 	add	a,#0xfc
-      0015EC F5 81            [12] 4497 	mov	sp,a
-                           001537  4498 	C$fuzzy.h$1229$2_0$64 ==.
-                                   4499 ;	../../fuzzy.h:1229: case FUZZY_SHAPE_SIGMOID:
-      0015EE 80 10            [24] 4500 	sjmp	00144$
-      0015F0                       4501 00142$:
-                           001539  4502 	C$fuzzy.h$1230$2_0$64 ==.
-                                   4503 ;	../../fuzzy.h:1230: return LEVEL_LO;
-      0015F0 90 00 00         [24] 4504 	mov	dptr,#0x0000
-      0015F3 E4               [12] 4505 	clr	a
-      0015F4 F5 F0            [12] 4506 	mov	b,a
-                           00153F  4507 	C$fuzzy.h$1234$2_0$64 ==.
-                                   4508 ;	../../fuzzy.h:1234: default:
-      0015F6 80 32            [24] 4509 	sjmp	00145$
-      0015F8                       4510 00143$:
-                           001541  4511 	C$fuzzy.h$1235$2_0$64 ==.
-                                   4512 ;	../../fuzzy.h:1235: return LEVEL_LO;
-      0015F8 90 00 00         [24] 4513 	mov	dptr,#0x0000
-      0015FB E4               [12] 4514 	clr	a
-      0015FC F5 F0            [12] 4515 	mov	b,a
-                           001547  4516 	C$fuzzy.h$1236$1_0$62 ==.
-                                   4517 ;	../../fuzzy.h:1236: }
-      0015FE 80 2A            [24] 4518 	sjmp	00145$
-      001600                       4519 00144$:
-                           001549  4520 	C$fuzzy.h$1239$1_0$62 ==.
-                                   4521 ;	../../fuzzy.h:1239: result,
-      001600 E5 0E            [12] 4522 	mov	a,_bp
-      001602 24 F9            [12] 4523 	add	a,#0xf9
-      001604 F8               [12] 4524 	mov	r0,a
-      001605 E6               [12] 4525 	mov	a,@r0
-      001606 C0 E0            [24] 4526 	push	acc
-      001608 E5 0E            [12] 4527 	mov	a,_bp
-      00160A 24 05            [12] 4528 	add	a,#0x05
-      00160C F8               [12] 4529 	mov	r0,a
-      00160D 86 82            [24] 4530 	mov	dpl, @r0
-      00160F 08               [12] 4531 	inc	r0
-      001610 86 83            [24] 4532 	mov	dph, @r0
-      001612 08               [12] 4533 	inc	r0
-      001613 86 F0            [24] 4534 	mov	b, @r0
-      001615 08               [12] 4535 	inc	r0
-      001616 E6               [12] 4536 	mov	a, @r0
-      001617 12 01 66         [24] 4537 	lcall	_fuzzy_apply_hedge
-      00161A AC 82            [24] 4538 	mov	r4, dpl
-      00161C AD 83            [24] 4539 	mov	r5, dph
-      00161E AE F0            [24] 4540 	mov	r6, b
-      001620 FF               [12] 4541 	mov	r7, a
-      001621 15 81            [12] 4542 	dec	sp
-      001623 8C 82            [24] 4543 	mov	dpl, r4
-      001625 8D 83            [24] 4544 	mov	dph, r5
-      001627 8E F0            [24] 4545 	mov	b, r6
-      001629 EF               [12] 4546 	mov	a, r7
-      00162A                       4547 00145$:
-                           001573  4548 	C$fuzzy.h$1242$1_0$62 ==.
-                                   4549 ;	../../fuzzy.h:1242: }
-      00162A 85 0E 81         [24] 4550 	mov	sp,_bp
-      00162D D0 0E            [24] 4551 	pop	_bp
-                           001578  4552 	C$fuzzy.h$1242$1_0$62 ==.
-                           001578  4553 	XG$fuzzy_function_array$0$0 ==.
-      00162F 22               [24] 4554 	ret
-                                   4555 ;------------------------------------------------------------
-                                   4556 ;Allocation info for local variables in function 'fuzzy_rules_create'
-                                   4557 ;------------------------------------------------------------
-                                   4558 ;rules         Allocated to registers r5 r6 r7 
-                                   4559 ;------------------------------------------------------------
-                           001579  4560 	G$fuzzy_rules_create$0$0 ==.
-                           001579  4561 	C$fuzzy.h$1245$1_0$77 ==.
-                                   4562 ;	../../fuzzy.h:1245: void fuzzy_rules_create(
-                                   4563 ;	-----------------------------------------
-                                   4564 ;	 function fuzzy_rules_create
-                                   4565 ;	-----------------------------------------
-      001630                       4566 _fuzzy_rules_create:
-      001630 AD 82            [24] 4567 	mov	r5, dpl
-      001632 AE 83            [24] 4568 	mov	r6, dph
-      001634 AF F0            [24] 4569 	mov	r7, b
-                           00157F  4570 	C$fuzzy.h$1249$1_0$77 ==.
-                                   4571 ;	../../fuzzy.h:1249: if (rules == NULL) {
-      001636 ED               [12] 4572 	mov	a,r5
-      001637 4E               [12] 4573 	orl	a,r6
-      001638 70 02            [24] 4574 	jnz	00102$
-                           001583  4575 	C$fuzzy.h$1250$2_0$78 ==.
-                                   4576 ;	../../fuzzy.h:1250: return;
-      00163A 80 15            [24] 4577 	sjmp	00103$
-      00163C                       4578 00102$:
-                           001585  4579 	C$fuzzy.h$1253$1_0$77 ==.
-                                   4580 ;	../../fuzzy.h:1253: rules->count = 0;
-      00163C 74 48            [12] 4581 	mov	a,#0x48
-      00163E 2D               [12] 4582 	add	a, r5
-      00163F FD               [12] 4583 	mov	r5,a
-      001640 E4               [12] 4584 	clr	a
-      001641 3E               [12] 4585 	addc	a, r6
-      001642 FE               [12] 4586 	mov	r6,a
-      001643 8D 82            [24] 4587 	mov	dpl,r5
-      001645 8E 83            [24] 4588 	mov	dph,r6
-      001647 8F F0            [24] 4589 	mov	b,r7
-      001649 E4               [12] 4590 	clr	a
-      00164A 12 23 EC         [24] 4591 	lcall	__gptrput
-      00164D A3               [24] 4592 	inc	dptr
-      00164E 12 23 EC         [24] 4593 	lcall	__gptrput
-      001651                       4594 00103$:
-                           00159A  4595 	C$fuzzy.h$1254$1_0$77 ==.
-                                   4596 ;	../../fuzzy.h:1254: }
-                           00159A  4597 	C$fuzzy.h$1254$1_0$77 ==.
-                           00159A  4598 	XG$fuzzy_rules_create$0$0 ==.
-      001651 22               [24] 4599 	ret
-                                   4600 ;------------------------------------------------------------
-                                   4601 ;Allocation info for local variables in function 'fuzzy_rules_add'
-                                   4602 ;------------------------------------------------------------
-                                   4603 ;name          Allocated to stack - _bp -5 +3 
-                                   4604 ;value         Allocated to stack - _bp -9 +4 
-                                   4605 ;output_function Allocated to stack - _bp -11 +2 
-                                   4606 ;rules         Allocated to registers r2 r3 r4 
-                                   4607 ;index         Allocated to registers 
-                                   4608 ;sloc0         Allocated to stack - _bp +1 +2 
-                                   4609 ;sloc1         Allocated to stack - _bp +3 +3 
-                                   4610 ;sloc2         Allocated to stack - _bp +6 +3 
-                                   4611 ;sloc3         Allocated to stack - _bp +9 +3 
-                                   4612 ;------------------------------------------------------------
-                           00159B  4613 	G$fuzzy_rules_add$0$0 ==.
-                           00159B  4614 	C$fuzzy.h$1257$1_0$80 ==.
-                                   4615 ;	../../fuzzy.h:1257: bool fuzzy_rules_add(
-                                   4616 ;	-----------------------------------------
-                                   4617 ;	 function fuzzy_rules_add
-                                   4618 ;	-----------------------------------------
-      001652                       4619 _fuzzy_rules_add:
-      001652 C0 0E            [24] 4620 	push	_bp
-      001654 E5 81            [12] 4621 	mov	a,sp
-      001656 F5 0E            [12] 4622 	mov	_bp,a
-      001658 24 0B            [12] 4623 	add	a,#0x0b
-      00165A F5 81            [12] 4624 	mov	sp,a
-      00165C AA 82            [24] 4625 	mov	r2, dpl
-      00165E AB 83            [24] 4626 	mov	r3, dph
-      001660 AC F0            [24] 4627 	mov	r4, b
-                           0015AB  4628 	C$fuzzy.h$1267$1_0$80 ==.
-                                   4629 ;	../../fuzzy.h:1267: rules == NULL ||
-      001662 EA               [12] 4630 	mov	a,r2
-      001663 4B               [12] 4631 	orl	a,r3
-      001664 60 0A            [24] 4632 	jz	00101$
-                           0015AF  4633 	C$fuzzy.h$1268$1_0$80 ==.
-                                   4634 ;	../../fuzzy.h:1268: output_function == NULL
-      001666 E5 0E            [12] 4635 	mov	a,_bp
-      001668 24 F5            [12] 4636 	add	a,#0xf5
-      00166A F8               [12] 4637 	mov	r0,a
-      00166B E6               [12] 4638 	mov	a,@r0
-      00166C 08               [12] 4639 	inc	r0
-      00166D 46               [12] 4640 	orl	a,@r0
-      00166E 70 06            [24] 4641 	jnz	00102$
-      001670                       4642 00101$:
-                           0015B9  4643 	C$fuzzy.h$1270$2_0$81 ==.
-                                   4644 ;	../../fuzzy.h:1270: return false;
-      001670 75 82 00         [24] 4645 	mov	dpl, #0x00
-      001673 02 17 B0         [24] 4646 	ljmp	00106$
-      001676                       4647 00102$:
-                           0015BF  4648 	C$fuzzy.h$1273$1_0$80 ==.
-                                   4649 ;	../../fuzzy.h:1273: if (rules->count >= FUZZY_MAX_RULES) {
-      001676 E5 0E            [12] 4650 	mov	a,_bp
-      001678 24 09            [12] 4651 	add	a,#0x09
-      00167A F8               [12] 4652 	mov	r0,a
-      00167B 74 48            [12] 4653 	mov	a,#0x48
-      00167D 2A               [12] 4654 	add	a, r2
-      00167E F6               [12] 4655 	mov	@r0,a
-      00167F E4               [12] 4656 	clr	a
-      001680 3B               [12] 4657 	addc	a, r3
-      001681 08               [12] 4658 	inc	r0
-      001682 F6               [12] 4659 	mov	@r0,a
-      001683 08               [12] 4660 	inc	r0
-      001684 A6 04            [24] 4661 	mov	@r0,ar4
-      001686 E5 0E            [12] 4662 	mov	a,_bp
-      001688 24 09            [12] 4663 	add	a,#0x09
-      00168A F8               [12] 4664 	mov	r0,a
-      00168B 86 82            [24] 4665 	mov	dpl,@r0
-      00168D 08               [12] 4666 	inc	r0
-      00168E 86 83            [24] 4667 	mov	dph,@r0
-      001690 08               [12] 4668 	inc	r0
-      001691 86 F0            [24] 4669 	mov	b,@r0
-      001693 12 26 33         [24] 4670 	lcall	__gptrget
-      001696 FF               [12] 4671 	mov	r7,a
-      001697 A3               [24] 4672 	inc	dptr
-      001698 12 26 33         [24] 4673 	lcall	__gptrget
-      00169B FE               [12] 4674 	mov	r6,a
-      00169C C3               [12] 4675 	clr	c
-      00169D EF               [12] 4676 	mov	a,r7
-      00169E 94 08            [12] 4677 	subb	a,#0x08
-      0016A0 EE               [12] 4678 	mov	a,r6
-      0016A1 94 00            [12] 4679 	subb	a,#0x00
-      0016A3 40 06            [24] 4680 	jc	00105$
-                           0015EE  4681 	C$fuzzy.h$1274$2_0$82 ==.
-                                   4682 ;	../../fuzzy.h:1274: return false;
-      0016A5 75 82 00         [24] 4683 	mov	dpl, #0x00
-      0016A8 02 17 B0         [24] 4684 	ljmp	00106$
-      0016AB                       4685 00105$:
-                           0015F4  4686 	C$fuzzy.h$1280$1_0$80 ==.
-                                   4687 ;	../../fuzzy.h:1280: rules->rules[index].name =
-      0016AB C0 04            [24] 4688 	push	ar4
-      0016AD C0 03            [24] 4689 	push	ar3
-      0016AF C0 02            [24] 4690 	push	ar2
-      0016B1 C0 07            [24] 4691 	push	ar7
-      0016B3 C0 06            [24] 4692 	push	ar6
-      0016B5 90 00 09         [24] 4693 	mov	dptr,#0x0009
-      0016B8 12 24 37         [24] 4694 	lcall	__mulint
-      0016BB A8 0E            [24] 4695 	mov	r0,_bp
-      0016BD 08               [12] 4696 	inc	r0
-      0016BE A6 82            [24] 4697 	mov	@r0, dpl
-      0016C0 08               [12] 4698 	inc	r0
-      0016C1 A6 83            [24] 4699 	mov	@r0, dph
-      0016C3 15 81            [12] 4700 	dec	sp
-      0016C5 15 81            [12] 4701 	dec	sp
-      0016C7 D0 02            [24] 4702 	pop	ar2
-      0016C9 D0 03            [24] 4703 	pop	ar3
-      0016CB D0 04            [24] 4704 	pop	ar4
-      0016CD A8 0E            [24] 4705 	mov	r0,_bp
-      0016CF 08               [12] 4706 	inc	r0
-      0016D0 E6               [12] 4707 	mov	a,@r0
-      0016D1 2A               [12] 4708 	add	a, r2
-      0016D2 FD               [12] 4709 	mov	r5,a
-      0016D3 08               [12] 4710 	inc	r0
-      0016D4 E6               [12] 4711 	mov	a,@r0
-      0016D5 3B               [12] 4712 	addc	a, r3
-      0016D6 FE               [12] 4713 	mov	r6,a
-      0016D7 8C 07            [24] 4714 	mov	ar7,r4
-      0016D9 8D 82            [24] 4715 	mov	dpl,r5
-      0016DB 8E 83            [24] 4716 	mov	dph,r6
-      0016DD 8F F0            [24] 4717 	mov	b,r7
-      0016DF E5 0E            [12] 4718 	mov	a,_bp
-      0016E1 24 FB            [12] 4719 	add	a,#0xfb
-      0016E3 F8               [12] 4720 	mov	r0,a
-      0016E4 E6               [12] 4721 	mov	a,@r0
-      0016E5 12 23 EC         [24] 4722 	lcall	__gptrput
-      0016E8 A3               [24] 4723 	inc	dptr
-      0016E9 08               [12] 4724 	inc	r0
-      0016EA E6               [12] 4725 	mov	a,@r0
-      0016EB 12 23 EC         [24] 4726 	lcall	__gptrput
-      0016EE A3               [24] 4727 	inc	dptr
-      0016EF 08               [12] 4728 	inc	r0
-      0016F0 E6               [12] 4729 	mov	a,@r0
-      0016F1 12 23 EC         [24] 4730 	lcall	__gptrput
-                           00163D  4731 	C$fuzzy.h$1283$1_0$80 ==.
-                                   4732 ;	../../fuzzy.h:1283: rules->rules[index].value =
-      0016F4 A8 0E            [24] 4733 	mov	r0,_bp
-      0016F6 08               [12] 4734 	inc	r0
-      0016F7 E5 0E            [12] 4735 	mov	a,_bp
-      0016F9 24 03            [12] 4736 	add	a,#0x03
-      0016FB F9               [12] 4737 	mov	r1,a
-      0016FC E6               [12] 4738 	mov	a,@r0
-      0016FD 2A               [12] 4739 	add	a, r2
-      0016FE F7               [12] 4740 	mov	@r1,a
-      0016FF 08               [12] 4741 	inc	r0
-      001700 E6               [12] 4742 	mov	a,@r0
-      001701 3B               [12] 4743 	addc	a, r3
-      001702 09               [12] 4744 	inc	r1
-      001703 F7               [12] 4745 	mov	@r1,a
-      001704 09               [12] 4746 	inc	r1
-      001705 A7 04            [24] 4747 	mov	@r1,ar4
-      001707 E5 0E            [12] 4748 	mov	a,_bp
-      001709 24 03            [12] 4749 	add	a,#0x03
-      00170B F8               [12] 4750 	mov	r0,a
-      00170C E5 0E            [12] 4751 	mov	a,_bp
-      00170E 24 06            [12] 4752 	add	a,#0x06
-      001710 F9               [12] 4753 	mov	r1,a
-      001711 74 03            [12] 4754 	mov	a,#0x03
-      001713 26               [12] 4755 	add	a, @r0
-      001714 F7               [12] 4756 	mov	@r1,a
-      001715 E4               [12] 4757 	clr	a
-      001716 08               [12] 4758 	inc	r0
-      001717 36               [12] 4759 	addc	a, @r0
-      001718 09               [12] 4760 	inc	r1
-      001719 F7               [12] 4761 	mov	@r1,a
-      00171A 08               [12] 4762 	inc	r0
-      00171B E6               [12] 4763 	mov	a,@r0
-      00171C 09               [12] 4764 	inc	r1
-      00171D F7               [12] 4765 	mov	@r1,a
-                           001667  4766 	C$fuzzy.h$1284$1_0$80 ==.
-                                   4767 ;	../../fuzzy.h:1284: fuzzy_clamp(value);
-      00171E E5 0E            [12] 4768 	mov	a,_bp
-      001720 24 F7            [12] 4769 	add	a,#0xf7
-      001722 F8               [12] 4770 	mov	r0,a
-      001723 86 82            [24] 4771 	mov	dpl, @r0
-      001725 08               [12] 4772 	inc	r0
-      001726 86 83            [24] 4773 	mov	dph, @r0
-      001728 08               [12] 4774 	inc	r0
-      001729 86 F0            [24] 4775 	mov	b, @r0
-      00172B 08               [12] 4776 	inc	r0
-      00172C E6               [12] 4777 	mov	a, @r0
-      00172D 12 00 B7         [24] 4778 	lcall	_fuzzy_clamp
-      001730 AD 82            [24] 4779 	mov	r5, dpl
-      001732 AE 83            [24] 4780 	mov	r6, dph
-      001734 AC F0            [24] 4781 	mov	r4, b
-      001736 FF               [12] 4782 	mov	r7, a
-      001737 E5 0E            [12] 4783 	mov	a,_bp
-      001739 24 06            [12] 4784 	add	a,#0x06
-      00173B F8               [12] 4785 	mov	r0,a
-      00173C 86 82            [24] 4786 	mov	dpl,@r0
-      00173E 08               [12] 4787 	inc	r0
-      00173F 86 83            [24] 4788 	mov	dph,@r0
-      001741 08               [12] 4789 	inc	r0
-      001742 86 F0            [24] 4790 	mov	b,@r0
-      001744 ED               [12] 4791 	mov	a,r5
-      001745 12 23 EC         [24] 4792 	lcall	__gptrput
-      001748 A3               [24] 4793 	inc	dptr
-      001749 EE               [12] 4794 	mov	a,r6
-      00174A 12 23 EC         [24] 4795 	lcall	__gptrput
-      00174D A3               [24] 4796 	inc	dptr
-      00174E EC               [12] 4797 	mov	a,r4
-      00174F 12 23 EC         [24] 4798 	lcall	__gptrput
-      001752 A3               [24] 4799 	inc	dptr
-      001753 EF               [12] 4800 	mov	a,r7
-      001754 12 23 EC         [24] 4801 	lcall	__gptrput
-                           0016A0  4802 	C$fuzzy.h$1286$1_0$80 ==.
-                                   4803 ;	../../fuzzy.h:1286: rules->rules[index].output_function =
-      001757 E5 0E            [12] 4804 	mov	a,_bp
-      001759 24 03            [12] 4805 	add	a,#0x03
-      00175B F8               [12] 4806 	mov	r0,a
-      00175C 74 07            [12] 4807 	mov	a,#0x07
-      00175E 26               [12] 4808 	add	a, @r0
-      00175F FD               [12] 4809 	mov	r5,a
-      001760 E4               [12] 4810 	clr	a
-      001761 08               [12] 4811 	inc	r0
-      001762 36               [12] 4812 	addc	a, @r0
-      001763 FE               [12] 4813 	mov	r6,a
-      001764 08               [12] 4814 	inc	r0
-      001765 86 07            [24] 4815 	mov	ar7,@r0
-      001767 8D 82            [24] 4816 	mov	dpl,r5
-      001769 8E 83            [24] 4817 	mov	dph,r6
-      00176B 8F F0            [24] 4818 	mov	b,r7
-      00176D E5 0E            [12] 4819 	mov	a,_bp
-      00176F 24 F5            [12] 4820 	add	a,#0xf5
-      001771 F8               [12] 4821 	mov	r0,a
-      001772 E6               [12] 4822 	mov	a,@r0
-      001773 12 23 EC         [24] 4823 	lcall	__gptrput
-      001776 A3               [24] 4824 	inc	dptr
-      001777 08               [12] 4825 	inc	r0
-      001778 E6               [12] 4826 	mov	a,@r0
-      001779 12 23 EC         [24] 4827 	lcall	__gptrput
-                           0016C5  4828 	C$fuzzy.h$1289$1_0$80 ==.
-                                   4829 ;	../../fuzzy.h:1289: rules->count++;
-      00177C E5 0E            [12] 4830 	mov	a,_bp
-      00177E 24 09            [12] 4831 	add	a,#0x09
-      001780 F8               [12] 4832 	mov	r0,a
-      001781 86 82            [24] 4833 	mov	dpl,@r0
-      001783 08               [12] 4834 	inc	r0
-      001784 86 83            [24] 4835 	mov	dph,@r0
-      001786 08               [12] 4836 	inc	r0
-      001787 86 F0            [24] 4837 	mov	b,@r0
-      001789 12 26 33         [24] 4838 	lcall	__gptrget
-      00178C FE               [12] 4839 	mov	r6,a
-      00178D A3               [24] 4840 	inc	dptr
-      00178E 12 26 33         [24] 4841 	lcall	__gptrget
-      001791 FF               [12] 4842 	mov	r7,a
-      001792 0E               [12] 4843 	inc	r6
-      001793 BE 00 01         [24] 4844 	cjne	r6,#0x00,00123$
-      001796 0F               [12] 4845 	inc	r7
-      001797                       4846 00123$:
-      001797 E5 0E            [12] 4847 	mov	a,_bp
-      001799 24 09            [12] 4848 	add	a,#0x09
-      00179B F8               [12] 4849 	mov	r0,a
-      00179C 86 82            [24] 4850 	mov	dpl,@r0
-      00179E 08               [12] 4851 	inc	r0
-      00179F 86 83            [24] 4852 	mov	dph,@r0
-      0017A1 08               [12] 4853 	inc	r0
-      0017A2 86 F0            [24] 4854 	mov	b,@r0
-      0017A4 EE               [12] 4855 	mov	a,r6
-      0017A5 12 23 EC         [24] 4856 	lcall	__gptrput
-      0017A8 A3               [24] 4857 	inc	dptr
-      0017A9 EF               [12] 4858 	mov	a,r7
-      0017AA 12 23 EC         [24] 4859 	lcall	__gptrput
-                           0016F6  4860 	C$fuzzy.h$1291$1_0$80 ==.
-                                   4861 ;	../../fuzzy.h:1291: return true;
-      0017AD 75 82 01         [24] 4862 	mov	dpl, #0x01
-      0017B0                       4863 00106$:
-                           0016F9  4864 	C$fuzzy.h$1292$1_0$80 ==.
-                                   4865 ;	../../fuzzy.h:1292: }
-      0017B0 85 0E 81         [24] 4866 	mov	sp,_bp
-      0017B3 D0 0E            [24] 4867 	pop	_bp
-                           0016FE  4868 	C$fuzzy.h$1292$1_0$80 ==.
-                           0016FE  4869 	XG$fuzzy_rules_add$0$0 ==.
-      0017B5 22               [24] 4870 	ret
-                                   4871 ;------------------------------------------------------------
-                                   4872 ;Allocation info for local variables in function 'fuzzy_rules_defuzzify'
-                                   4873 ;------------------------------------------------------------
-                                   4874 ;lower         Allocated to stack - _bp -6 +4 
-                                   4875 ;upper         Allocated to stack - _bp -10 +4 
-                                   4876 ;step          Allocated to stack - _bp -14 +4 
-                                   4877 ;method        Allocated to stack - _bp -15 +1 
-                                   4878 ;rules         Allocated to stack - _bp +1 +3 
-                                   4879 ;weighted_sum  Allocated to stack - _bp +20 +4 
-                                   4880 ;height_sum    Allocated to stack - _bp +24 +4 
-                                   4881 ;maximum_height Allocated to stack - _bp +28 +4 
-                                   4882 ;maximum_position_sum Allocated to stack - _bp +32 +4 
-                                   4883 ;smallest_maximum Allocated to stack - _bp +36 +4 
-                                   4884 ;largest_maximum Allocated to stack - _bp +40 +4 
-                                   4885 ;value         Allocated to stack - _bp +44 +4 
-                                   4886 ;aggregated_height Allocated to stack - _bp +48 +4 
-                                   4887 ;output_membership Allocated to stack - _bp +52 +4 
-                                   4888 ;clipped_height Allocated to registers r2 r4 r5 r7 
-                                   4889 ;maximum_count Allocated to stack - _bp +56 +2 
-                                   4890 ;i             Allocated to stack - _bp +58 +2 
-                                   4891 ;maximum_found Allocated to stack - _bp +60 +1 
-                                   4892 ;sloc0         Allocated to stack - _bp +4 +3 
-                                   4893 ;sloc1         Allocated to stack - _bp +7 +4 
-                                   4894 ;sloc2         Allocated to stack - _bp +11 +2 
-                                   4895 ;sloc3         Allocated to stack - _bp +13 +3 
-                                   4896 ;sloc4         Allocated to stack - _bp +16 +4 
-                                   4897 ;------------------------------------------------------------
-                           0016FF  4898 	G$fuzzy_rules_defuzzify$0$0 ==.
-                           0016FF  4899 	C$fuzzy.h$1340$1_0$84 ==.
-                                   4900 ;	../../fuzzy.h:1340: float fuzzy_rules_defuzzify(
-                                   4901 ;	-----------------------------------------
-                                   4902 ;	 function fuzzy_rules_defuzzify
-                                   4903 ;	-----------------------------------------
-      0017B6                       4904 _fuzzy_rules_defuzzify:
-      0017B6 C0 0E            [24] 4905 	push	_bp
-      0017B8 85 81 0E         [24] 4906 	mov	_bp,sp
-      0017BB C0 82            [24] 4907 	push	dpl
-      0017BD C0 83            [24] 4908 	push	dph
-      0017BF C0 F0            [24] 4909 	push	b
-      0017C1 E5 81            [12] 4910 	mov	a,sp
-      0017C3 24 39            [12] 4911 	add	a,#0x39
-      0017C5 F5 81            [12] 4912 	mov	sp,a
-                           001710  4913 	C$fuzzy.h$1368$1_0$84 ==.
-                                   4914 ;	../../fuzzy.h:1368: rules == NULL ||
-      0017C7 A8 0E            [24] 4915 	mov	r0,_bp
-      0017C9 08               [12] 4916 	inc	r0
-      0017CA E6               [12] 4917 	mov	a,@r0
-      0017CB 08               [12] 4918 	inc	r0
-      0017CC 46               [12] 4919 	orl	a,@r0
-      0017CD 70 03            [24] 4920 	jnz	00277$
-      0017CF 02 18 5B         [24] 4921 	ljmp	00101$
-      0017D2                       4922 00277$:
-                           00171B  4923 	C$fuzzy.h$1369$1_0$84 ==.
-                                   4924 ;	../../fuzzy.h:1369: rules->count == 0 ||
-      0017D2 A8 0E            [24] 4925 	mov	r0,_bp
-      0017D4 08               [12] 4926 	inc	r0
-      0017D5 E5 0E            [12] 4927 	mov	a,_bp
-      0017D7 24 04            [12] 4928 	add	a,#0x04
-      0017D9 F9               [12] 4929 	mov	r1,a
-      0017DA 74 48            [12] 4930 	mov	a,#0x48
-      0017DC 26               [12] 4931 	add	a, @r0
-      0017DD F7               [12] 4932 	mov	@r1,a
-      0017DE E4               [12] 4933 	clr	a
-      0017DF 08               [12] 4934 	inc	r0
-      0017E0 36               [12] 4935 	addc	a, @r0
-      0017E1 09               [12] 4936 	inc	r1
-      0017E2 F7               [12] 4937 	mov	@r1,a
-      0017E3 08               [12] 4938 	inc	r0
-      0017E4 E6               [12] 4939 	mov	a,@r0
-      0017E5 09               [12] 4940 	inc	r1
-      0017E6 F7               [12] 4941 	mov	@r1,a
-      0017E7 E5 0E            [12] 4942 	mov	a,_bp
-      0017E9 24 04            [12] 4943 	add	a,#0x04
-      0017EB F8               [12] 4944 	mov	r0,a
-      0017EC 86 82            [24] 4945 	mov	dpl,@r0
-      0017EE 08               [12] 4946 	inc	r0
-      0017EF 86 83            [24] 4947 	mov	dph,@r0
-      0017F1 08               [12] 4948 	inc	r0
-      0017F2 86 F0            [24] 4949 	mov	b,@r0
-      0017F4 12 26 33         [24] 4950 	lcall	__gptrget
-      0017F7 FE               [12] 4951 	mov	r6,a
-      0017F8 A3               [24] 4952 	inc	dptr
-      0017F9 12 26 33         [24] 4953 	lcall	__gptrget
-      0017FC 4E               [12] 4954 	orl	a,r6
-      0017FD 60 5C            [24] 4955 	jz	00101$
-                           001748  4956 	C$fuzzy.h$1370$1_0$84 ==.
-                                   4957 ;	../../fuzzy.h:1370: lower > upper ||
-      0017FF E5 0E            [12] 4958 	mov	a,_bp
-      001801 24 FA            [12] 4959 	add	a,#0xfa
-      001803 F8               [12] 4960 	mov	r0,a
-      001804 E6               [12] 4961 	mov	a,@r0
-      001805 C0 E0            [24] 4962 	push	acc
-      001807 08               [12] 4963 	inc	r0
-      001808 E6               [12] 4964 	mov	a,@r0
-      001809 C0 E0            [24] 4965 	push	acc
-      00180B 08               [12] 4966 	inc	r0
-      00180C E6               [12] 4967 	mov	a,@r0
-      00180D C0 E0            [24] 4968 	push	acc
-      00180F 08               [12] 4969 	inc	r0
-      001810 E6               [12] 4970 	mov	a,@r0
-      001811 C0 E0            [24] 4971 	push	acc
-      001813 E5 0E            [12] 4972 	mov	a,_bp
-      001815 24 F6            [12] 4973 	add	a,#0xf6
-      001817 F8               [12] 4974 	mov	r0,a
-      001818 86 82            [24] 4975 	mov	dpl, @r0
-      00181A 08               [12] 4976 	inc	r0
-      00181B 86 83            [24] 4977 	mov	dph, @r0
-      00181D 08               [12] 4978 	inc	r0
-      00181E 86 F0            [24] 4979 	mov	b, @r0
-      001820 08               [12] 4980 	inc	r0
-      001821 E6               [12] 4981 	mov	a, @r0
-      001822 12 24 07         [24] 4982 	lcall	___fslt
-      001825 AF 82            [24] 4983 	mov	r7, dpl
-      001827 E5 81            [12] 4984 	mov	a,sp
-      001829 24 FC            [12] 4985 	add	a,#0xfc
-      00182B F5 81            [12] 4986 	mov	sp,a
-      00182D EF               [12] 4987 	mov	a,r7
-      00182E 70 2B            [24] 4988 	jnz	00101$
-                           001779  4989 	C$fuzzy.h$1372$1_0$84 ==.
-                                   4990 ;	../../fuzzy.h:1372: ) {
-      001830 E5 0E            [12] 4991 	mov	a,_bp
-      001832 24 F2            [12] 4992 	add	a,#0xf2
-      001834 F8               [12] 4993 	mov	r0,a
-      001835 E6               [12] 4994 	mov	a,@r0
-      001836 C0 E0            [24] 4995 	push	acc
-      001838 08               [12] 4996 	inc	r0
-      001839 E6               [12] 4997 	mov	a,@r0
-      00183A C0 E0            [24] 4998 	push	acc
-      00183C 08               [12] 4999 	inc	r0
-      00183D E6               [12] 5000 	mov	a,@r0
-      00183E C0 E0            [24] 5001 	push	acc
-      001840 08               [12] 5002 	inc	r0
-      001841 E6               [12] 5003 	mov	a,@r0
-      001842 C0 E0            [24] 5004 	push	acc
-      001844 90 00 00         [24] 5005 	mov	dptr,#0x0000
-      001847 E4               [12] 5006 	clr	a
-      001848 F5 F0            [12] 5007 	mov	b,a
-      00184A 12 24 07         [24] 5008 	lcall	___fslt
-      00184D E5 81            [12] 5009 	mov	a,sp
-      00184F 24 FC            [12] 5010 	add	a,#0xfc
-      001851 F5 81            [12] 5011 	mov	sp,a
-      001853 E5 82            [12] 5012 	mov	a, dpl
-      001855 24 FF            [12] 5013 	add	a,#0xff
-      001857 92 00            [24] 5014 	mov	b0,c
-      001859 40 09            [24] 5015 	jc	00102$
-      00185B                       5016 00101$:
-                           0017A4  5017 	C$fuzzy.h$1373$2_0$85 ==.
-                                   5018 ;	../../fuzzy.h:1373: return 0.0f;
-      00185B 90 00 00         [24] 5019 	mov	dptr,#0x0000
-      00185E E4               [12] 5020 	clr	a
-      00185F F5 F0            [12] 5021 	mov	b,a
-      001861 02 1E AC         [24] 5022 	ljmp	00137$
-      001864                       5023 00102$:
-                           0017AD  5024 	C$fuzzy.h$1377$1_0$84 ==.
-                                   5025 ;	../../fuzzy.h:1377: method != FUZZY_DEFUZZ_COG &&
-      001864 E5 0E            [12] 5026 	mov	a,_bp
-      001866 24 F1            [12] 5027 	add	a,#0xf1
-      001868 F8               [12] 5028 	mov	r0,a
-      001869 E6               [12] 5029 	mov	a,@r0
-      00186A 60 27            [24] 5030 	jz	00107$
-                           0017B5  5031 	C$fuzzy.h$1378$1_0$84 ==.
-                                   5032 ;	../../fuzzy.h:1378: method != FUZZY_DEFUZZ_MOM &&
-      00186C E5 0E            [12] 5033 	mov	a,_bp
-      00186E 24 F1            [12] 5034 	add	a,#0xf1
-      001870 F8               [12] 5035 	mov	r0,a
-      001871 B6 01 02         [24] 5036 	cjne	@r0,#0x01,00282$
-      001874 80 1D            [24] 5037 	sjmp	00107$
-      001876                       5038 00282$:
-                           0017BF  5039 	C$fuzzy.h$1379$1_0$84 ==.
-                                   5040 ;	../../fuzzy.h:1379: method != FUZZY_DEFUZZ_SOM &&
-      001876 E5 0E            [12] 5041 	mov	a,_bp
-      001878 24 F1            [12] 5042 	add	a,#0xf1
-      00187A F8               [12] 5043 	mov	r0,a
-      00187B B6 02 02         [24] 5044 	cjne	@r0,#0x02,00283$
-      00187E 80 13            [24] 5045 	sjmp	00107$
-      001880                       5046 00283$:
-                           0017C9  5047 	C$fuzzy.h$1381$1_0$84 ==.
-                                   5048 ;	../../fuzzy.h:1381: ) {
-      001880 E5 0E            [12] 5049 	mov	a,_bp
-      001882 24 F1            [12] 5050 	add	a,#0xf1
-      001884 F8               [12] 5051 	mov	r0,a
-      001885 B6 03 02         [24] 5052 	cjne	@r0,#0x03,00284$
-      001888 80 09            [24] 5053 	sjmp	00107$
-      00188A                       5054 00284$:
-                           0017D3  5055 	C$fuzzy.h$1382$2_0$86 ==.
-                                   5056 ;	../../fuzzy.h:1382: return 0.0f;
-      00188A 90 00 00         [24] 5057 	mov	dptr,#0x0000
-      00188D E4               [12] 5058 	clr	a
-      00188E F5 F0            [12] 5059 	mov	b,a
-      001890 02 1E AC         [24] 5060 	ljmp	00137$
-      001893                       5061 00107$:
-                           0017DC  5062 	C$fuzzy.h$1386$1_0$84 ==.
-                                   5063 ;	../../fuzzy.h:1386: 0.0f;
-      001893 E5 0E            [12] 5064 	mov	a,_bp
-      001895 24 14            [12] 5065 	add	a,#0x14
-      001897 F8               [12] 5066 	mov	r0,a
-      001898 E4               [12] 5067 	clr	a
-      001899 F6               [12] 5068 	mov	@r0,a
-      00189A 08               [12] 5069 	inc	r0
-      00189B F6               [12] 5070 	mov	@r0,a
-      00189C 08               [12] 5071 	inc	r0
-      00189D F6               [12] 5072 	mov	@r0,a
-      00189E 08               [12] 5073 	inc	r0
-      00189F F6               [12] 5074 	mov	@r0,a
-                           0017E9  5075 	C$fuzzy.h$1389$1_0$84 ==.
-                                   5076 ;	../../fuzzy.h:1389: 0.0f;
-      0018A0 E5 0E            [12] 5077 	mov	a,_bp
-      0018A2 24 18            [12] 5078 	add	a,#0x18
-      0018A4 F8               [12] 5079 	mov	r0,a
-      0018A5 E4               [12] 5080 	clr	a
-      0018A6 F6               [12] 5081 	mov	@r0,a
-      0018A7 08               [12] 5082 	inc	r0
-      0018A8 F6               [12] 5083 	mov	@r0,a
-      0018A9 08               [12] 5084 	inc	r0
-      0018AA F6               [12] 5085 	mov	@r0,a
-      0018AB 08               [12] 5086 	inc	r0
-      0018AC F6               [12] 5087 	mov	@r0,a
-                           0017F6  5088 	C$fuzzy.h$1392$1_0$84 ==.
-                                   5089 ;	../../fuzzy.h:1392: LEVEL_LO;
-      0018AD E5 0E            [12] 5090 	mov	a,_bp
-      0018AF 24 1C            [12] 5091 	add	a,#0x1c
-      0018B1 F8               [12] 5092 	mov	r0,a
-      0018B2 E4               [12] 5093 	clr	a
-      0018B3 F6               [12] 5094 	mov	@r0,a
-      0018B4 08               [12] 5095 	inc	r0
-      0018B5 F6               [12] 5096 	mov	@r0,a
-      0018B6 08               [12] 5097 	inc	r0
-      0018B7 F6               [12] 5098 	mov	@r0,a
-      0018B8 08               [12] 5099 	inc	r0
-      0018B9 F6               [12] 5100 	mov	@r0,a
-                           001803  5101 	C$fuzzy.h$1395$1_0$84 ==.
-                                   5102 ;	../../fuzzy.h:1395: 0.0f;
-      0018BA E5 0E            [12] 5103 	mov	a,_bp
-      0018BC 24 20            [12] 5104 	add	a,#0x20
-      0018BE F8               [12] 5105 	mov	r0,a
-      0018BF E4               [12] 5106 	clr	a
-      0018C0 F6               [12] 5107 	mov	@r0,a
-      0018C1 08               [12] 5108 	inc	r0
-      0018C2 F6               [12] 5109 	mov	@r0,a
-      0018C3 08               [12] 5110 	inc	r0
-      0018C4 F6               [12] 5111 	mov	@r0,a
-      0018C5 08               [12] 5112 	inc	r0
-      0018C6 F6               [12] 5113 	mov	@r0,a
-                           001810  5114 	C$fuzzy.h$1398$1_0$84 ==.
-                                   5115 ;	../../fuzzy.h:1398: lower;
-      0018C7 E5 0E            [12] 5116 	mov	a,_bp
-      0018C9 24 FA            [12] 5117 	add	a,#0xfa
-      0018CB F8               [12] 5118 	mov	r0,a
-      0018CC E5 0E            [12] 5119 	mov	a,_bp
-      0018CE 24 24            [12] 5120 	add	a,#0x24
-      0018D0 F9               [12] 5121 	mov	r1,a
-      0018D1 E6               [12] 5122 	mov	a,@r0
-      0018D2 F7               [12] 5123 	mov	@r1,a
-      0018D3 08               [12] 5124 	inc	r0
-      0018D4 E6               [12] 5125 	mov	a,@r0
-      0018D5 09               [12] 5126 	inc	r1
-      0018D6 F7               [12] 5127 	mov	@r1,a
-      0018D7 08               [12] 5128 	inc	r0
-      0018D8 E6               [12] 5129 	mov	a,@r0
-      0018D9 09               [12] 5130 	inc	r1
-      0018DA F7               [12] 5131 	mov	@r1,a
-      0018DB 08               [12] 5132 	inc	r0
-      0018DC E6               [12] 5133 	mov	a,@r0
-      0018DD 09               [12] 5134 	inc	r1
-      0018DE F7               [12] 5135 	mov	@r1,a
-                           001828  5136 	C$fuzzy.h$1401$1_0$84 ==.
-                                   5137 ;	../../fuzzy.h:1401: lower;
-      0018DF E5 0E            [12] 5138 	mov	a,_bp
-      0018E1 24 24            [12] 5139 	add	a,#0x24
-      0018E3 F8               [12] 5140 	mov	r0,a
-      0018E4 E5 0E            [12] 5141 	mov	a,_bp
-      0018E6 24 28            [12] 5142 	add	a,#0x28
-      0018E8 F9               [12] 5143 	mov	r1,a
-      0018E9 E6               [12] 5144 	mov	a,@r0
-      0018EA F7               [12] 5145 	mov	@r1,a
-      0018EB 08               [12] 5146 	inc	r0
-      0018EC E6               [12] 5147 	mov	a,@r0
-      0018ED 09               [12] 5148 	inc	r1
-      0018EE F7               [12] 5149 	mov	@r1,a
-      0018EF 08               [12] 5150 	inc	r0
-      0018F0 E6               [12] 5151 	mov	a,@r0
-      0018F1 09               [12] 5152 	inc	r1
-      0018F2 F7               [12] 5153 	mov	@r1,a
-      0018F3 08               [12] 5154 	inc	r0
-      0018F4 E6               [12] 5155 	mov	a,@r0
-      0018F5 09               [12] 5156 	inc	r1
-      0018F6 F7               [12] 5157 	mov	@r1,a
-                           001840  5158 	C$fuzzy.h$1404$1_0$84 ==.
-                                   5159 ;	../../fuzzy.h:1404: 0u;
-      0018F7 E5 0E            [12] 5160 	mov	a,_bp
-      0018F9 24 38            [12] 5161 	add	a,#0x38
-      0018FB F8               [12] 5162 	mov	r0,a
-      0018FC E4               [12] 5163 	clr	a
-      0018FD F6               [12] 5164 	mov	@r0,a
-      0018FE 08               [12] 5165 	inc	r0
-      0018FF F6               [12] 5166 	mov	@r0,a
-                           001849  5167 	C$fuzzy.h$1407$1_0$84 ==.
-                                   5168 ;	../../fuzzy.h:1407: false;
-      001900 E5 0E            [12] 5169 	mov	a,_bp
-      001902 24 3C            [12] 5170 	add	a,#0x3c
-      001904 F8               [12] 5171 	mov	r0,a
-      001905 76 00            [12] 5172 	mov	@r0,#0x00
-                           001850  5173 	C$fuzzy.h$1410$2_0$87 ==.
-                                   5174 ;	../../fuzzy.h:1410: value = lower;
-      001907 E5 0E            [12] 5175 	mov	a,_bp
-      001909 24 24            [12] 5176 	add	a,#0x24
-      00190B F8               [12] 5177 	mov	r0,a
-      00190C E5 0E            [12] 5178 	mov	a,_bp
-      00190E 24 2C            [12] 5179 	add	a,#0x2c
-      001910 F9               [12] 5180 	mov	r1,a
-      001911 E6               [12] 5181 	mov	a,@r0
-      001912 F7               [12] 5182 	mov	@r1,a
-      001913 08               [12] 5183 	inc	r0
-      001914 E6               [12] 5184 	mov	a,@r0
-      001915 09               [12] 5185 	inc	r1
-      001916 F7               [12] 5186 	mov	@r1,a
-      001917 08               [12] 5187 	inc	r0
-      001918 E6               [12] 5188 	mov	a,@r0
-      001919 09               [12] 5189 	inc	r1
-      00191A F7               [12] 5190 	mov	@r1,a
-      00191B 08               [12] 5191 	inc	r0
-      00191C E6               [12] 5192 	mov	a,@r0
-      00191D 09               [12] 5193 	inc	r1
-      00191E F7               [12] 5194 	mov	@r1,a
-      00191F A8 0E            [24] 5195 	mov	r0,_bp
-      001921 08               [12] 5196 	inc	r0
-      001922 E5 0E            [12] 5197 	mov	a,_bp
-      001924 24 0D            [12] 5198 	add	a,#0x0d
-      001926 F9               [12] 5199 	mov	r1,a
-      001927 E6               [12] 5200 	mov	a,@r0
-      001928 F7               [12] 5201 	mov	@r1,a
-      001929 08               [12] 5202 	inc	r0
-      00192A E6               [12] 5203 	mov	a,@r0
-      00192B 09               [12] 5204 	inc	r1
-      00192C F7               [12] 5205 	mov	@r1,a
-      00192D 08               [12] 5206 	inc	r0
-      00192E E6               [12] 5207 	mov	a,@r0
-      00192F 09               [12] 5208 	inc	r1
-      001930 F7               [12] 5209 	mov	@r1,a
-      001931                       5210 00135$:
-                           00187A  5211 	C$fuzzy.h$1411$1_0$84 ==.
-                                   5212 ;	../../fuzzy.h:1411: value <= upper;
-      001931 E5 0E            [12] 5213 	mov	a,_bp
-      001933 24 2C            [12] 5214 	add	a,#0x2c
-      001935 F8               [12] 5215 	mov	r0,a
-      001936 E6               [12] 5216 	mov	a,@r0
-      001937 C0 E0            [24] 5217 	push	acc
-      001939 08               [12] 5218 	inc	r0
-      00193A E6               [12] 5219 	mov	a,@r0
-      00193B C0 E0            [24] 5220 	push	acc
-      00193D 08               [12] 5221 	inc	r0
-      00193E E6               [12] 5222 	mov	a,@r0
-      00193F C0 E0            [24] 5223 	push	acc
-      001941 08               [12] 5224 	inc	r0
-      001942 E6               [12] 5225 	mov	a,@r0
-      001943 C0 E0            [24] 5226 	push	acc
-      001945 E5 0E            [12] 5227 	mov	a,_bp
-      001947 24 F6            [12] 5228 	add	a,#0xf6
-      001949 F8               [12] 5229 	mov	r0,a
-      00194A 86 82            [24] 5230 	mov	dpl, @r0
-      00194C 08               [12] 5231 	inc	r0
-      00194D 86 83            [24] 5232 	mov	dph, @r0
-      00194F 08               [12] 5233 	inc	r0
-      001950 86 F0            [24] 5234 	mov	b, @r0
-      001952 08               [12] 5235 	inc	r0
-      001953 E6               [12] 5236 	mov	a, @r0
-      001954 12 24 07         [24] 5237 	lcall	___fslt
-      001957 E5 81            [12] 5238 	mov	a,sp
-      001959 24 FC            [12] 5239 	add	a,#0xfc
-      00195B F5 81            [12] 5240 	mov	sp,a
-      00195D E5 82            [12] 5241 	mov	a, dpl
-      00195F 24 FF            [12] 5242 	add	a,#0xff
-      001961 92 00            [24] 5243 	mov	b0,c
-      001963 50 03            [24] 5244 	jnc	00285$
-      001965 02 1D 65         [24] 5245 	ljmp	00118$
-      001968                       5246 00285$:
-                           0018B1  5247 	C$fuzzy.h$1415$3_0$88 ==.
-                                   5248 ;	../../fuzzy.h:1415: LEVEL_LO;
-      001968 E5 0E            [12] 5249 	mov	a,_bp
-      00196A 24 07            [12] 5250 	add	a,#0x07
-      00196C F8               [12] 5251 	mov	r0,a
-      00196D E4               [12] 5252 	clr	a
-      00196E F6               [12] 5253 	mov	@r0,a
-      00196F 08               [12] 5254 	inc	r0
-      001970 F6               [12] 5255 	mov	@r0,a
-      001971 08               [12] 5256 	inc	r0
-      001972 F6               [12] 5257 	mov	@r0,a
-      001973 08               [12] 5258 	inc	r0
-      001974 F6               [12] 5259 	mov	@r0,a
-                           0018BE  5260 	C$fuzzy.h$1424$1_0$84 ==.
-                                   5261 ;	../../fuzzy.h:1424: i = 0;
-      001975 E5 0E            [12] 5262 	mov	a,_bp
-      001977 24 3A            [12] 5263 	add	a,#0x3a
-      001979 F8               [12] 5264 	mov	r0,a
-      00197A E4               [12] 5265 	clr	a
-      00197B F6               [12] 5266 	mov	@r0,a
-      00197C 08               [12] 5267 	inc	r0
-      00197D F6               [12] 5268 	mov	@r0,a
-      00197E E5 0E            [12] 5269 	mov	a,_bp
-      001980 24 0B            [12] 5270 	add	a,#0x0b
-      001982 F8               [12] 5271 	mov	r0,a
-      001983 E4               [12] 5272 	clr	a
-      001984 F6               [12] 5273 	mov	@r0,a
-      001985 08               [12] 5274 	inc	r0
-      001986 F6               [12] 5275 	mov	@r0,a
-      001987                       5276 00132$:
-                           0018D0  5277 	C$fuzzy.h$1425$1_0$84 ==.
-                                   5278 ;	../../fuzzy.h:1425: i < rules->count;
-      001987 E5 0E            [12] 5279 	mov	a,_bp
-      001989 24 04            [12] 5280 	add	a,#0x04
-      00198B F8               [12] 5281 	mov	r0,a
-      00198C 86 82            [24] 5282 	mov	dpl,@r0
-      00198E 08               [12] 5283 	inc	r0
-      00198F 86 83            [24] 5284 	mov	dph,@r0
-      001991 08               [12] 5285 	inc	r0
-      001992 86 F0            [24] 5286 	mov	b,@r0
-      001994 12 26 33         [24] 5287 	lcall	__gptrget
-      001997 FA               [12] 5288 	mov	r2,a
-      001998 A3               [24] 5289 	inc	dptr
-      001999 12 26 33         [24] 5290 	lcall	__gptrget
-      00199C FF               [12] 5291 	mov	r7,a
-      00199D E5 0E            [12] 5292 	mov	a,_bp
-      00199F 24 3A            [12] 5293 	add	a,#0x3a
-      0019A1 F8               [12] 5294 	mov	r0,a
-      0019A2 C3               [12] 5295 	clr	c
-      0019A3 E6               [12] 5296 	mov	a,@r0
-      0019A4 9A               [12] 5297 	subb	a,r2
-      0019A5 08               [12] 5298 	inc	r0
-      0019A6 E6               [12] 5299 	mov	a,@r0
-      0019A7 9F               [12] 5300 	subb	a,r7
-      0019A8 40 03            [24] 5301 	jc	00286$
-      0019AA 02 1B 28         [24] 5302 	ljmp	00111$
-      0019AD                       5303 00286$:
-                           0018F6  5304 	C$fuzzy.h$1429$1_0$84 ==.
-                                   5305 ;	../../fuzzy.h:1429: rules->rules[i]
-      0019AD E5 0E            [12] 5306 	mov	a,_bp
-      0019AF 24 0D            [12] 5307 	add	a,#0x0d
-      0019B1 F8               [12] 5308 	mov	r0,a
-      0019B2 E5 0E            [12] 5309 	mov	a,_bp
-      0019B4 24 0B            [12] 5310 	add	a,#0x0b
-      0019B6 F9               [12] 5311 	mov	r1,a
-      0019B7 E7               [12] 5312 	mov	a,@r1
-      0019B8 26               [12] 5313 	add	a, @r0
-      0019B9 FA               [12] 5314 	mov	r2,a
-      0019BA 09               [12] 5315 	inc	r1
-      0019BB E7               [12] 5316 	mov	a,@r1
-      0019BC 08               [12] 5317 	inc	r0
-      0019BD 36               [12] 5318 	addc	a, @r0
-      0019BE FB               [12] 5319 	mov	r3,a
-      0019BF 08               [12] 5320 	inc	r0
-      0019C0 86 06            [24] 5321 	mov	ar6,@r0
-      0019C2 74 07            [12] 5322 	mov	a,#0x07
-      0019C4 2A               [12] 5323 	add	a, r2
-      0019C5 FA               [12] 5324 	mov	r2,a
-      0019C6 E4               [12] 5325 	clr	a
-      0019C7 3B               [12] 5326 	addc	a, r3
-      0019C8 FB               [12] 5327 	mov	r3,a
-      0019C9 8A 82            [24] 5328 	mov	dpl,r2
-      0019CB 8B 83            [24] 5329 	mov	dph,r3
-      0019CD 8E F0            [24] 5330 	mov	b,r6
-      0019CF 12 26 33         [24] 5331 	lcall	__gptrget
-      0019D2 FA               [12] 5332 	mov	r2,a
-      0019D3 A3               [24] 5333 	inc	dptr
-      0019D4 12 26 33         [24] 5334 	lcall	__gptrget
-      0019D7 FB               [12] 5335 	mov	r3,a
-                           001921  5336 	C$fuzzy.h$1431$5_0$90 ==.
-                                   5337 ;	../../fuzzy.h:1431: value
-      0019D8 12 19 DD         [24] 5338 	lcall	00287$
-      0019DB 80 14            [24] 5339 	sjmp	00288$
-      0019DD                       5340 00287$:
-      0019DD C0 02            [24] 5341 	push	ar2
-      0019DF C0 03            [24] 5342 	push	ar3
-      0019E1 E5 0E            [12] 5343 	mov	a,_bp
-      0019E3 24 2C            [12] 5344 	add	a,#0x2c
-      0019E5 F8               [12] 5345 	mov	r0,a
-      0019E6 86 82            [24] 5346 	mov	dpl, @r0
-      0019E8 08               [12] 5347 	inc	r0
-      0019E9 86 83            [24] 5348 	mov	dph, @r0
-      0019EB 08               [12] 5349 	inc	r0
-      0019EC 86 F0            [24] 5350 	mov	b, @r0
-      0019EE 08               [12] 5351 	inc	r0
-      0019EF E6               [12] 5352 	mov	a, @r0
-      0019F0 22               [24] 5353 	ret
-      0019F1                       5354 00288$:
-                           00193A  5355 	C$fuzzy.h$1436$5_0$90 ==.
-                                   5356 ;	../../fuzzy.h:1436: output_membership
-      0019F1 12 00 B7         [24] 5357 	lcall	_fuzzy_clamp
-      0019F4 C8               [12] 5358 	xch	a,r0
-      0019F5 E5 0E            [12] 5359 	mov	a,_bp
-      0019F7 24 34            [12] 5360 	add	a,#0x34
-      0019F9 C8               [12] 5361 	xch	a,r0
-      0019FA A6 82            [24] 5362 	mov	@r0, dpl
-      0019FC 08               [12] 5363 	inc	r0
-      0019FD A6 83            [24] 5364 	mov	@r0, dph
-      0019FF 08               [12] 5365 	inc	r0
-      001A00 A6 F0            [24] 5366 	mov	@r0, b
-      001A02 08               [12] 5367 	inc	r0
-      001A03 F6               [12] 5368 	mov	@r0,a
-                           00194D  5369 	C$fuzzy.h$1440$5_0$90 ==.
-                                   5370 ;	../../fuzzy.h:1440: rules->rules[i].value <
-      001A04 A8 0E            [24] 5371 	mov	r0,_bp
-      001A06 08               [12] 5372 	inc	r0
-      001A07 E5 0E            [12] 5373 	mov	a,_bp
-      001A09 24 0B            [12] 5374 	add	a,#0x0b
-      001A0B F9               [12] 5375 	mov	r1,a
-      001A0C E7               [12] 5376 	mov	a,@r1
-      001A0D 26               [12] 5377 	add	a, @r0
-      001A0E FD               [12] 5378 	mov	r5,a
-      001A0F 09               [12] 5379 	inc	r1
-      001A10 E7               [12] 5380 	mov	a,@r1
-      001A11 08               [12] 5381 	inc	r0
-      001A12 36               [12] 5382 	addc	a, @r0
-      001A13 FE               [12] 5383 	mov	r6,a
-      001A14 08               [12] 5384 	inc	r0
-      001A15 86 07            [24] 5385 	mov	ar7,@r0
-      001A17 74 03            [12] 5386 	mov	a,#0x03
-      001A19 2D               [12] 5387 	add	a, r5
-      001A1A FD               [12] 5388 	mov	r5,a
-      001A1B E4               [12] 5389 	clr	a
-      001A1C 3E               [12] 5390 	addc	a, r6
-      001A1D FE               [12] 5391 	mov	r6,a
-      001A1E 8D 82            [24] 5392 	mov	dpl,r5
-      001A20 8E 83            [24] 5393 	mov	dph,r6
-      001A22 8F F0            [24] 5394 	mov	b,r7
-      001A24 E5 0E            [12] 5395 	mov	a,_bp
-      001A26 24 10            [12] 5396 	add	a,#0x10
-      001A28 F8               [12] 5397 	mov	r0,a
-      001A29 12 26 33         [24] 5398 	lcall	__gptrget
-      001A2C F6               [12] 5399 	mov	@r0,a
-      001A2D A3               [24] 5400 	inc	dptr
-      001A2E 12 26 33         [24] 5401 	lcall	__gptrget
-      001A31 08               [12] 5402 	inc	r0
-      001A32 F6               [12] 5403 	mov	@r0,a
-      001A33 A3               [24] 5404 	inc	dptr
-      001A34 12 26 33         [24] 5405 	lcall	__gptrget
-      001A37 08               [12] 5406 	inc	r0
-      001A38 F6               [12] 5407 	mov	@r0,a
-      001A39 A3               [24] 5408 	inc	dptr
-      001A3A 12 26 33         [24] 5409 	lcall	__gptrget
-      001A3D 08               [12] 5410 	inc	r0
-      001A3E F6               [12] 5411 	mov	@r0,a
-      001A3F E5 0E            [12] 5412 	mov	a,_bp
-      001A41 24 34            [12] 5413 	add	a,#0x34
-      001A43 F8               [12] 5414 	mov	r0,a
-      001A44 E6               [12] 5415 	mov	a,@r0
-      001A45 C0 E0            [24] 5416 	push	acc
-      001A47 08               [12] 5417 	inc	r0
-      001A48 E6               [12] 5418 	mov	a,@r0
-      001A49 C0 E0            [24] 5419 	push	acc
-      001A4B 08               [12] 5420 	inc	r0
-      001A4C E6               [12] 5421 	mov	a,@r0
-      001A4D C0 E0            [24] 5422 	push	acc
-      001A4F 08               [12] 5423 	inc	r0
-      001A50 E6               [12] 5424 	mov	a,@r0
-      001A51 C0 E0            [24] 5425 	push	acc
-      001A53 E5 0E            [12] 5426 	mov	a,_bp
-      001A55 24 10            [12] 5427 	add	a,#0x10
-      001A57 F8               [12] 5428 	mov	r0,a
-      001A58 86 82            [24] 5429 	mov	dpl, @r0
-      001A5A 08               [12] 5430 	inc	r0
-      001A5B 86 83            [24] 5431 	mov	dph, @r0
-      001A5D 08               [12] 5432 	inc	r0
-      001A5E 86 F0            [24] 5433 	mov	b, @r0
-      001A60 08               [12] 5434 	inc	r0
-      001A61 E6               [12] 5435 	mov	a, @r0
-      001A62 12 24 07         [24] 5436 	lcall	___fslt
-      001A65 AF 82            [24] 5437 	mov	r7, dpl
-      001A67 E5 81            [12] 5438 	mov	a,sp
-      001A69 24 FC            [12] 5439 	add	a,#0xfc
-      001A6B F5 81            [12] 5440 	mov	sp,a
-      001A6D EF               [12] 5441 	mov	a,r7
-      001A6E 60 12            [24] 5442 	jz	00139$
-                           0019B9  5443 	C$fuzzy.h$1442$5_0$90 ==.
-                                   5444 ;	../../fuzzy.h:1442: ? rules->rules[i].value
-      001A70 E5 0E            [12] 5445 	mov	a,_bp
-      001A72 24 10            [12] 5446 	add	a,#0x10
-      001A74 F8               [12] 5447 	mov	r0,a
-      001A75 86 02            [24] 5448 	mov	ar2,@r0
-      001A77 08               [12] 5449 	inc	r0
-      001A78 86 04            [24] 5450 	mov	ar4,@r0
-      001A7A 08               [12] 5451 	inc	r0
-      001A7B 86 05            [24] 5452 	mov	ar5,@r0
-      001A7D 08               [12] 5453 	inc	r0
-      001A7E 86 07            [24] 5454 	mov	ar7,@r0
-      001A80 80 10            [24] 5455 	sjmp	00140$
-      001A82                       5456 00139$:
-                           0019CB  5457 	C$fuzzy.h$1443$5_0$90 ==.
-                                   5458 ;	../../fuzzy.h:1443: : output_membership;
-      001A82 E5 0E            [12] 5459 	mov	a,_bp
-      001A84 24 34            [12] 5460 	add	a,#0x34
-      001A86 F8               [12] 5461 	mov	r0,a
-      001A87 86 02            [24] 5462 	mov	ar2,@r0
-      001A89 08               [12] 5463 	inc	r0
-      001A8A 86 04            [24] 5464 	mov	ar4,@r0
-      001A8C 08               [12] 5465 	inc	r0
-      001A8D 86 05            [24] 5466 	mov	ar5,@r0
-      001A8F 08               [12] 5467 	inc	r0
-      001A90 86 07            [24] 5468 	mov	ar7,@r0
-      001A92                       5469 00140$:
-                           0019DB  5470 	C$fuzzy.h$1448$1_0$84 ==.
-                                   5471 ;	../../fuzzy.h:1448: ? aggregated_height
-      001A92 C0 07            [24] 5472 	push	ar7
-      001A94 C0 05            [24] 5473 	push	ar5
-      001A96 C0 04            [24] 5474 	push	ar4
-      001A98 C0 02            [24] 5475 	push	ar2
-      001A9A E5 0E            [12] 5476 	mov	a,_bp
-      001A9C 24 07            [12] 5477 	add	a,#0x07
-      001A9E F8               [12] 5478 	mov	r0,a
-      001A9F E6               [12] 5479 	mov	a,@r0
-      001AA0 C0 E0            [24] 5480 	push	acc
-      001AA2 08               [12] 5481 	inc	r0
-      001AA3 E6               [12] 5482 	mov	a,@r0
-      001AA4 C0 E0            [24] 5483 	push	acc
-      001AA6 08               [12] 5484 	inc	r0
-      001AA7 E6               [12] 5485 	mov	a,@r0
-      001AA8 C0 E0            [24] 5486 	push	acc
-      001AAA 08               [12] 5487 	inc	r0
-      001AAB E6               [12] 5488 	mov	a,@r0
-      001AAC C0 E0            [24] 5489 	push	acc
-      001AAE 8A 82            [24] 5490 	mov	dpl, r2
-      001AB0 8C 83            [24] 5491 	mov	dph, r4
-      001AB2 8D F0            [24] 5492 	mov	b, r5
-      001AB4 EF               [12] 5493 	mov	a, r7
-      001AB5 12 24 07         [24] 5494 	lcall	___fslt
-      001AB8 AE 82            [24] 5495 	mov	r6, dpl
-      001ABA E5 81            [12] 5496 	mov	a,sp
-      001ABC 24 FC            [12] 5497 	add	a,#0xfc
-      001ABE F5 81            [12] 5498 	mov	sp,a
-      001AC0 D0 02            [24] 5499 	pop	ar2
-      001AC2 D0 04            [24] 5500 	pop	ar4
-      001AC4 D0 05            [24] 5501 	pop	ar5
-      001AC6 D0 07            [24] 5502 	pop	ar7
-      001AC8 EE               [12] 5503 	mov	a,r6
-      001AC9 60 1A            [24] 5504 	jz	00141$
-      001ACB E5 0E            [12] 5505 	mov	a,_bp
-      001ACD 24 07            [12] 5506 	add	a,#0x07
-      001ACF F8               [12] 5507 	mov	r0,a
-      001AD0 E5 0E            [12] 5508 	mov	a,_bp
-      001AD2 24 10            [12] 5509 	add	a,#0x10
-      001AD4 F9               [12] 5510 	mov	r1,a
-      001AD5 E6               [12] 5511 	mov	a,@r0
-      001AD6 F7               [12] 5512 	mov	@r1,a
-      001AD7 08               [12] 5513 	inc	r0
-      001AD8 E6               [12] 5514 	mov	a,@r0
-      001AD9 09               [12] 5515 	inc	r1
-      001ADA F7               [12] 5516 	mov	@r1,a
-      001ADB 08               [12] 5517 	inc	r0
-      001ADC E6               [12] 5518 	mov	a,@r0
-      001ADD 09               [12] 5519 	inc	r1
-      001ADE F7               [12] 5520 	mov	@r1,a
-      001ADF 08               [12] 5521 	inc	r0
-      001AE0 E6               [12] 5522 	mov	a,@r0
-      001AE1 09               [12] 5523 	inc	r1
-      001AE2 F7               [12] 5524 	mov	@r1,a
-      001AE3 80 10            [24] 5525 	sjmp	00142$
-      001AE5                       5526 00141$:
-                           001A2E  5527 	C$fuzzy.h$1449$5_0$90 ==.
-                                   5528 ;	../../fuzzy.h:1449: : clipped_height;
-      001AE5 E5 0E            [12] 5529 	mov	a,_bp
-      001AE7 24 10            [12] 5530 	add	a,#0x10
-      001AE9 F8               [12] 5531 	mov	r0,a
-      001AEA A6 02            [24] 5532 	mov	@r0,ar2
-      001AEC 08               [12] 5533 	inc	r0
-      001AED A6 04            [24] 5534 	mov	@r0,ar4
-      001AEF 08               [12] 5535 	inc	r0
-      001AF0 A6 05            [24] 5536 	mov	@r0,ar5
-      001AF2 08               [12] 5537 	inc	r0
-      001AF3 A6 07            [24] 5538 	mov	@r0,ar7
-      001AF5                       5539 00142$:
-      001AF5 E5 0E            [12] 5540 	mov	a,_bp
-      001AF7 24 10            [12] 5541 	add	a,#0x10
-      001AF9 F8               [12] 5542 	mov	r0,a
-      001AFA E5 0E            [12] 5543 	mov	a,_bp
-      001AFC 24 07            [12] 5544 	add	a,#0x07
-      001AFE F9               [12] 5545 	mov	r1,a
-      001AFF E6               [12] 5546 	mov	a,@r0
-      001B00 F7               [12] 5547 	mov	@r1,a
-      001B01 08               [12] 5548 	inc	r0
-      001B02 E6               [12] 5549 	mov	a,@r0
-      001B03 09               [12] 5550 	inc	r1
-      001B04 F7               [12] 5551 	mov	@r1,a
-      001B05 08               [12] 5552 	inc	r0
-      001B06 E6               [12] 5553 	mov	a,@r0
-      001B07 09               [12] 5554 	inc	r1
-      001B08 F7               [12] 5555 	mov	@r1,a
-      001B09 08               [12] 5556 	inc	r0
-      001B0A E6               [12] 5557 	mov	a,@r0
-      001B0B 09               [12] 5558 	inc	r1
-      001B0C F7               [12] 5559 	mov	@r1,a
-                           001A56  5560 	C$fuzzy.h$1426$1_0$84 ==.
-                                   5561 ;	../../fuzzy.h:1426: i++
-      001B0D E5 0E            [12] 5562 	mov	a,_bp
-      001B0F 24 0B            [12] 5563 	add	a,#0x0b
-      001B11 F8               [12] 5564 	mov	r0,a
-      001B12 74 09            [12] 5565 	mov	a,#0x09
-      001B14 26               [12] 5566 	add	a, @r0
-      001B15 F6               [12] 5567 	mov	@r0,a
-      001B16 E4               [12] 5568 	clr	a
-      001B17 08               [12] 5569 	inc	r0
-      001B18 36               [12] 5570 	addc	a, @r0
-      001B19 F6               [12] 5571 	mov	@r0,a
-      001B1A E5 0E            [12] 5572 	mov	a,_bp
-      001B1C 24 3A            [12] 5573 	add	a,#0x3a
-      001B1E F8               [12] 5574 	mov	r0,a
-      001B1F 06               [12] 5575 	inc	@r0
-      001B20 B6 00 02         [24] 5576 	cjne	@r0,#0x00,00291$
-      001B23 08               [12] 5577 	inc	r0
-      001B24 06               [12] 5578 	inc	@r0
-      001B25                       5579 00291$:
-      001B25 02 19 87         [24] 5580 	ljmp	00132$
-      001B28                       5581 00111$:
-                           001A71  5582 	C$fuzzy.h$1454$3_0$88 ==.
-                                   5583 ;	../../fuzzy.h:1454: aggregated_height
-      001B28 E5 0E            [12] 5584 	mov	a,_bp
-      001B2A 24 07            [12] 5585 	add	a,#0x07
-      001B2C F8               [12] 5586 	mov	r0,a
-      001B2D 86 82            [24] 5587 	mov	dpl, @r0
-      001B2F 08               [12] 5588 	inc	r0
-      001B30 86 83            [24] 5589 	mov	dph, @r0
-      001B32 08               [12] 5590 	inc	r0
-      001B33 86 F0            [24] 5591 	mov	b, @r0
-      001B35 08               [12] 5592 	inc	r0
-      001B36 E6               [12] 5593 	mov	a, @r0
-      001B37 12 00 B7         [24] 5594 	lcall	_fuzzy_clamp
-      001B3A C8               [12] 5595 	xch	a,r0
-      001B3B E5 0E            [12] 5596 	mov	a,_bp
-      001B3D 24 30            [12] 5597 	add	a,#0x30
-      001B3F C8               [12] 5598 	xch	a,r0
-      001B40 A6 82            [24] 5599 	mov	@r0, dpl
-      001B42 08               [12] 5600 	inc	r0
-      001B43 A6 83            [24] 5601 	mov	@r0, dph
-      001B45 08               [12] 5602 	inc	r0
-      001B46 A6 F0            [24] 5603 	mov	@r0, b
-      001B48 08               [12] 5604 	inc	r0
-      001B49 F6               [12] 5605 	mov	@r0,a
-                           001A93  5606 	C$fuzzy.h$1462$1_0$84 ==.
-                                   5607 ;	../../fuzzy.h:1462: aggregated_height;
-      001B4A E5 0E            [12] 5608 	mov	a,_bp
-      001B4C 24 30            [12] 5609 	add	a,#0x30
-      001B4E F8               [12] 5610 	mov	r0,a
-      001B4F E6               [12] 5611 	mov	a,@r0
-      001B50 C0 E0            [24] 5612 	push	acc
-      001B52 08               [12] 5613 	inc	r0
-      001B53 E6               [12] 5614 	mov	a,@r0
-      001B54 C0 E0            [24] 5615 	push	acc
-      001B56 08               [12] 5616 	inc	r0
-      001B57 E6               [12] 5617 	mov	a,@r0
-      001B58 C0 E0            [24] 5618 	push	acc
-      001B5A 08               [12] 5619 	inc	r0
-      001B5B E6               [12] 5620 	mov	a,@r0
-      001B5C C0 E0            [24] 5621 	push	acc
-      001B5E E5 0E            [12] 5622 	mov	a,_bp
-      001B60 24 2C            [12] 5623 	add	a,#0x2c
-      001B62 F8               [12] 5624 	mov	r0,a
-      001B63 86 82            [24] 5625 	mov	dpl, @r0
-      001B65 08               [12] 5626 	inc	r0
-      001B66 86 83            [24] 5627 	mov	dph, @r0
-      001B68 08               [12] 5628 	inc	r0
-      001B69 86 F0            [24] 5629 	mov	b, @r0
-      001B6B 08               [12] 5630 	inc	r0
-      001B6C E6               [12] 5631 	mov	a, @r0
-      001B6D 12 22 D7         [24] 5632 	lcall	___fsmul
-      001B70 AA 82            [24] 5633 	mov	r2, dpl
-      001B72 AB 83            [24] 5634 	mov	r3, dph
-      001B74 AE F0            [24] 5635 	mov	r6, b
-      001B76 FF               [12] 5636 	mov	r7, a
-      001B77 E5 81            [12] 5637 	mov	a,sp
-      001B79 24 FC            [12] 5638 	add	a,#0xfc
-      001B7B F5 81            [12] 5639 	mov	sp,a
-      001B7D C0 02            [24] 5640 	push	ar2
-      001B7F C0 03            [24] 5641 	push	ar3
-      001B81 C0 06            [24] 5642 	push	ar6
-      001B83 C0 07            [24] 5643 	push	ar7
-                           001ACE  5644 	C$fuzzy.h$1465$1_0$84 ==.
-                                   5645 ;	../../fuzzy.h:1465: aggregated_height;
-      001B85 E5 0E            [12] 5646 	mov	a,_bp
-      001B87 24 14            [12] 5647 	add	a,#0x14
-      001B89 F8               [12] 5648 	mov	r0,a
-      001B8A 86 82            [24] 5649 	mov	dpl, @r0
-      001B8C 08               [12] 5650 	inc	r0
-      001B8D 86 83            [24] 5651 	mov	dph, @r0
-      001B8F 08               [12] 5652 	inc	r0
-      001B90 86 F0            [24] 5653 	mov	b, @r0
-      001B92 08               [12] 5654 	inc	r0
-      001B93 E6               [12] 5655 	mov	a, @r0
-      001B94 12 24 59         [24] 5656 	lcall	___fsadd
-      001B97 C8               [12] 5657 	xch	a,r0
-      001B98 E5 0E            [12] 5658 	mov	a,_bp
-      001B9A 24 14            [12] 5659 	add	a,#0x14
-      001B9C C8               [12] 5660 	xch	a,r0
-      001B9D A6 82            [24] 5661 	mov	@r0, dpl
-      001B9F 08               [12] 5662 	inc	r0
-      001BA0 A6 83            [24] 5663 	mov	@r0, dph
-      001BA2 08               [12] 5664 	inc	r0
-      001BA3 A6 F0            [24] 5665 	mov	@r0, b
-      001BA5 08               [12] 5666 	inc	r0
-      001BA6 F6               [12] 5667 	mov	@r0,a
-      001BA7 E5 81            [12] 5668 	mov	a,sp
-      001BA9 24 FC            [12] 5669 	add	a,#0xfc
-      001BAB F5 81            [12] 5670 	mov	sp,a
-      001BAD E5 0E            [12] 5671 	mov	a,_bp
-      001BAF 24 30            [12] 5672 	add	a,#0x30
-      001BB1 F8               [12] 5673 	mov	r0,a
-      001BB2 E6               [12] 5674 	mov	a,@r0
-      001BB3 C0 E0            [24] 5675 	push	acc
-      001BB5 08               [12] 5676 	inc	r0
-      001BB6 E6               [12] 5677 	mov	a,@r0
-      001BB7 C0 E0            [24] 5678 	push	acc
-      001BB9 08               [12] 5679 	inc	r0
-      001BBA E6               [12] 5680 	mov	a,@r0
-      001BBB C0 E0            [24] 5681 	push	acc
-      001BBD 08               [12] 5682 	inc	r0
-      001BBE E6               [12] 5683 	mov	a,@r0
-      001BBF C0 E0            [24] 5684 	push	acc
-                           001B0A  5685 	C$fuzzy.h$1473$1_0$84 ==.
-                                   5686 ;	../../fuzzy.h:1473: !maximum_found ||
-      001BC1 E5 0E            [12] 5687 	mov	a,_bp
-      001BC3 24 18            [12] 5688 	add	a,#0x18
-      001BC5 F8               [12] 5689 	mov	r0,a
-      001BC6 86 82            [24] 5690 	mov	dpl, @r0
-      001BC8 08               [12] 5691 	inc	r0
-      001BC9 86 83            [24] 5692 	mov	dph, @r0
-      001BCB 08               [12] 5693 	inc	r0
-      001BCC 86 F0            [24] 5694 	mov	b, @r0
-      001BCE 08               [12] 5695 	inc	r0
-      001BCF E6               [12] 5696 	mov	a, @r0
-      001BD0 12 24 59         [24] 5697 	lcall	___fsadd
-      001BD3 C8               [12] 5698 	xch	a,r0
-      001BD4 E5 0E            [12] 5699 	mov	a,_bp
-      001BD6 24 18            [12] 5700 	add	a,#0x18
-      001BD8 C8               [12] 5701 	xch	a,r0
-      001BD9 A6 82            [24] 5702 	mov	@r0, dpl
-      001BDB 08               [12] 5703 	inc	r0
-      001BDC A6 83            [24] 5704 	mov	@r0, dph
-      001BDE 08               [12] 5705 	inc	r0
-      001BDF A6 F0            [24] 5706 	mov	@r0, b
-      001BE1 08               [12] 5707 	inc	r0
-      001BE2 F6               [12] 5708 	mov	@r0,a
-      001BE3 E5 81            [12] 5709 	mov	a,sp
-      001BE5 24 FC            [12] 5710 	add	a,#0xfc
-      001BE7 F5 81            [12] 5711 	mov	sp,a
-      001BE9 E5 0E            [12] 5712 	mov	a,_bp
-      001BEB 24 3C            [12] 5713 	add	a,#0x3c
-      001BED F8               [12] 5714 	mov	r0,a
-      001BEE E6               [12] 5715 	mov	a,@r0
-      001BEF 60 31            [24] 5716 	jz	00114$
-                           001B3A  5717 	C$fuzzy.h$1475$1_0$84 ==.
-                                   5718 ;	../../fuzzy.h:1475: ) {
-      001BF1 E5 0E            [12] 5719 	mov	a,_bp
-      001BF3 24 30            [12] 5720 	add	a,#0x30
-      001BF5 F8               [12] 5721 	mov	r0,a
-      001BF6 E6               [12] 5722 	mov	a,@r0
-      001BF7 C0 E0            [24] 5723 	push	acc
-      001BF9 08               [12] 5724 	inc	r0
-      001BFA E6               [12] 5725 	mov	a,@r0
-      001BFB C0 E0            [24] 5726 	push	acc
-      001BFD 08               [12] 5727 	inc	r0
-      001BFE E6               [12] 5728 	mov	a,@r0
-      001BFF C0 E0            [24] 5729 	push	acc
-      001C01 08               [12] 5730 	inc	r0
-      001C02 E6               [12] 5731 	mov	a,@r0
-      001C03 C0 E0            [24] 5732 	push	acc
-      001C05 E5 0E            [12] 5733 	mov	a,_bp
-      001C07 24 1C            [12] 5734 	add	a,#0x1c
-      001C09 F8               [12] 5735 	mov	r0,a
-      001C0A 86 82            [24] 5736 	mov	dpl, @r0
-      001C0C 08               [12] 5737 	inc	r0
-      001C0D 86 83            [24] 5738 	mov	dph, @r0
-      001C0F 08               [12] 5739 	inc	r0
-      001C10 86 F0            [24] 5740 	mov	b, @r0
-      001C12 08               [12] 5741 	inc	r0
-      001C13 E6               [12] 5742 	mov	a, @r0
-      001C14 12 24 07         [24] 5743 	lcall	___fslt
-      001C17 AF 82            [24] 5744 	mov	r7, dpl
-      001C19 E5 81            [12] 5745 	mov	a,sp
-      001C1B 24 FC            [12] 5746 	add	a,#0xfc
-      001C1D F5 81            [12] 5747 	mov	sp,a
-      001C1F EF               [12] 5748 	mov	a,r7
-      001C20 60 74            [24] 5749 	jz	00115$
-      001C22                       5750 00114$:
-                           001B6B  5751 	C$fuzzy.h$1477$4_0$91 ==.
-                                   5752 ;	../../fuzzy.h:1477: aggregated_height;
-      001C22 E5 0E            [12] 5753 	mov	a,_bp
-      001C24 24 30            [12] 5754 	add	a,#0x30
-      001C26 F8               [12] 5755 	mov	r0,a
-      001C27 E5 0E            [12] 5756 	mov	a,_bp
-      001C29 24 1C            [12] 5757 	add	a,#0x1c
-      001C2B F9               [12] 5758 	mov	r1,a
-      001C2C E6               [12] 5759 	mov	a,@r0
-      001C2D F7               [12] 5760 	mov	@r1,a
-      001C2E 08               [12] 5761 	inc	r0
-      001C2F E6               [12] 5762 	mov	a,@r0
-      001C30 09               [12] 5763 	inc	r1
-      001C31 F7               [12] 5764 	mov	@r1,a
-      001C32 08               [12] 5765 	inc	r0
-      001C33 E6               [12] 5766 	mov	a,@r0
-      001C34 09               [12] 5767 	inc	r1
-      001C35 F7               [12] 5768 	mov	@r1,a
-      001C36 08               [12] 5769 	inc	r0
-      001C37 E6               [12] 5770 	mov	a,@r0
-      001C38 09               [12] 5771 	inc	r1
-      001C39 F7               [12] 5772 	mov	@r1,a
-                           001B83  5773 	C$fuzzy.h$1480$4_0$91 ==.
-                                   5774 ;	../../fuzzy.h:1480: value;
-      001C3A E5 0E            [12] 5775 	mov	a,_bp
-      001C3C 24 2C            [12] 5776 	add	a,#0x2c
-      001C3E F8               [12] 5777 	mov	r0,a
-      001C3F E5 0E            [12] 5778 	mov	a,_bp
-      001C41 24 24            [12] 5779 	add	a,#0x24
-      001C43 F9               [12] 5780 	mov	r1,a
-      001C44 E6               [12] 5781 	mov	a,@r0
-      001C45 F7               [12] 5782 	mov	@r1,a
-      001C46 08               [12] 5783 	inc	r0
-      001C47 E6               [12] 5784 	mov	a,@r0
-      001C48 09               [12] 5785 	inc	r1
-      001C49 F7               [12] 5786 	mov	@r1,a
-      001C4A 08               [12] 5787 	inc	r0
-      001C4B E6               [12] 5788 	mov	a,@r0
-      001C4C 09               [12] 5789 	inc	r1
-      001C4D F7               [12] 5790 	mov	@r1,a
-      001C4E 08               [12] 5791 	inc	r0
-      001C4F E6               [12] 5792 	mov	a,@r0
-      001C50 09               [12] 5793 	inc	r1
-      001C51 F7               [12] 5794 	mov	@r1,a
-                           001B9B  5795 	C$fuzzy.h$1483$4_0$91 ==.
-                                   5796 ;	../../fuzzy.h:1483: value;
-      001C52 E5 0E            [12] 5797 	mov	a,_bp
-      001C54 24 2C            [12] 5798 	add	a,#0x2c
-      001C56 F8               [12] 5799 	mov	r0,a
-      001C57 E5 0E            [12] 5800 	mov	a,_bp
-      001C59 24 28            [12] 5801 	add	a,#0x28
-      001C5B F9               [12] 5802 	mov	r1,a
-      001C5C E6               [12] 5803 	mov	a,@r0
-      001C5D F7               [12] 5804 	mov	@r1,a
-      001C5E 08               [12] 5805 	inc	r0
-      001C5F E6               [12] 5806 	mov	a,@r0
-      001C60 09               [12] 5807 	inc	r1
-      001C61 F7               [12] 5808 	mov	@r1,a
-      001C62 08               [12] 5809 	inc	r0
-      001C63 E6               [12] 5810 	mov	a,@r0
-      001C64 09               [12] 5811 	inc	r1
-      001C65 F7               [12] 5812 	mov	@r1,a
-      001C66 08               [12] 5813 	inc	r0
-      001C67 E6               [12] 5814 	mov	a,@r0
-      001C68 09               [12] 5815 	inc	r1
-      001C69 F7               [12] 5816 	mov	@r1,a
-                           001BB3  5817 	C$fuzzy.h$1486$4_0$91 ==.
-                                   5818 ;	../../fuzzy.h:1486: value;
-      001C6A E5 0E            [12] 5819 	mov	a,_bp
-      001C6C 24 2C            [12] 5820 	add	a,#0x2c
-      001C6E F8               [12] 5821 	mov	r0,a
-      001C6F E5 0E            [12] 5822 	mov	a,_bp
-      001C71 24 20            [12] 5823 	add	a,#0x20
-      001C73 F9               [12] 5824 	mov	r1,a
-      001C74 E6               [12] 5825 	mov	a,@r0
-      001C75 F7               [12] 5826 	mov	@r1,a
-      001C76 08               [12] 5827 	inc	r0
-      001C77 E6               [12] 5828 	mov	a,@r0
-      001C78 09               [12] 5829 	inc	r1
-      001C79 F7               [12] 5830 	mov	@r1,a
-      001C7A 08               [12] 5831 	inc	r0
-      001C7B E6               [12] 5832 	mov	a,@r0
-      001C7C 09               [12] 5833 	inc	r1
-      001C7D F7               [12] 5834 	mov	@r1,a
-      001C7E 08               [12] 5835 	inc	r0
-      001C7F E6               [12] 5836 	mov	a,@r0
-      001C80 09               [12] 5837 	inc	r1
-      001C81 F7               [12] 5838 	mov	@r1,a
-                           001BCB  5839 	C$fuzzy.h$1489$4_0$91 ==.
-                                   5840 ;	../../fuzzy.h:1489: 1u;
-      001C82 E5 0E            [12] 5841 	mov	a,_bp
-      001C84 24 38            [12] 5842 	add	a,#0x38
-      001C86 F8               [12] 5843 	mov	r0,a
-      001C87 76 01            [12] 5844 	mov	@r0,#0x01
-      001C89 08               [12] 5845 	inc	r0
-      001C8A 76 00            [12] 5846 	mov	@r0,#0x00
-                           001BD5  5847 	C$fuzzy.h$1492$4_0$91 ==.
-                                   5848 ;	../../fuzzy.h:1492: true;
-      001C8C E5 0E            [12] 5849 	mov	a,_bp
-      001C8E 24 3C            [12] 5850 	add	a,#0x3c
-      001C90 F8               [12] 5851 	mov	r0,a
-      001C91 76 01            [12] 5852 	mov	@r0,#0x01
-      001C93 02 1D 26         [24] 5853 	ljmp	00136$
-      001C96                       5854 00115$:
-                           001BDF  5855 	C$fuzzy.h$1496$1_0$84 ==.
-                                   5856 ;	../../fuzzy.h:1496: ) {
-      001C96 E5 0E            [12] 5857 	mov	a,_bp
-      001C98 24 1C            [12] 5858 	add	a,#0x1c
-      001C9A F8               [12] 5859 	mov	r0,a
-      001C9B E6               [12] 5860 	mov	a,@r0
-      001C9C C0 E0            [24] 5861 	push	acc
-      001C9E 08               [12] 5862 	inc	r0
-      001C9F E6               [12] 5863 	mov	a,@r0
-      001CA0 C0 E0            [24] 5864 	push	acc
-      001CA2 08               [12] 5865 	inc	r0
-      001CA3 E6               [12] 5866 	mov	a,@r0
-      001CA4 C0 E0            [24] 5867 	push	acc
-      001CA6 08               [12] 5868 	inc	r0
-      001CA7 E6               [12] 5869 	mov	a,@r0
-      001CA8 C0 E0            [24] 5870 	push	acc
-      001CAA E5 0E            [12] 5871 	mov	a,_bp
-      001CAC 24 30            [12] 5872 	add	a,#0x30
-      001CAE F8               [12] 5873 	mov	r0,a
-      001CAF 86 82            [24] 5874 	mov	dpl, @r0
-      001CB1 08               [12] 5875 	inc	r0
-      001CB2 86 83            [24] 5876 	mov	dph, @r0
-      001CB4 08               [12] 5877 	inc	r0
-      001CB5 86 F0            [24] 5878 	mov	b, @r0
-      001CB7 08               [12] 5879 	inc	r0
-      001CB8 E6               [12] 5880 	mov	a, @r0
-      001CB9 12 23 DB         [24] 5881 	lcall	___fseq
-      001CBC AF 82            [24] 5882 	mov	r7, dpl
-      001CBE E5 81            [12] 5883 	mov	a,sp
-      001CC0 24 FC            [12] 5884 	add	a,#0xfc
-      001CC2 F5 81            [12] 5885 	mov	sp,a
-      001CC4 EF               [12] 5886 	mov	a,r7
-      001CC5 60 5F            [24] 5887 	jz	00136$
-                           001C10  5888 	C$fuzzy.h$1498$4_0$92 ==.
-                                   5889 ;	../../fuzzy.h:1498: value;
-      001CC7 E5 0E            [12] 5890 	mov	a,_bp
-      001CC9 24 2C            [12] 5891 	add	a,#0x2c
-      001CCB F8               [12] 5892 	mov	r0,a
-      001CCC E5 0E            [12] 5893 	mov	a,_bp
-      001CCE 24 28            [12] 5894 	add	a,#0x28
-      001CD0 F9               [12] 5895 	mov	r1,a
-      001CD1 E6               [12] 5896 	mov	a,@r0
-      001CD2 F7               [12] 5897 	mov	@r1,a
-      001CD3 08               [12] 5898 	inc	r0
-      001CD4 E6               [12] 5899 	mov	a,@r0
-      001CD5 09               [12] 5900 	inc	r1
-      001CD6 F7               [12] 5901 	mov	@r1,a
-      001CD7 08               [12] 5902 	inc	r0
-      001CD8 E6               [12] 5903 	mov	a,@r0
-      001CD9 09               [12] 5904 	inc	r1
-      001CDA F7               [12] 5905 	mov	@r1,a
-      001CDB 08               [12] 5906 	inc	r0
-      001CDC E6               [12] 5907 	mov	a,@r0
-      001CDD 09               [12] 5908 	inc	r1
-      001CDE F7               [12] 5909 	mov	@r1,a
-                           001C28  5910 	C$fuzzy.h$1501$1_0$84 ==.
-                                   5911 ;	../../fuzzy.h:1501: value;
-      001CDF E5 0E            [12] 5912 	mov	a,_bp
-      001CE1 24 2C            [12] 5913 	add	a,#0x2c
-      001CE3 F8               [12] 5914 	mov	r0,a
-      001CE4 E6               [12] 5915 	mov	a,@r0
-      001CE5 C0 E0            [24] 5916 	push	acc
-      001CE7 08               [12] 5917 	inc	r0
-      001CE8 E6               [12] 5918 	mov	a,@r0
-      001CE9 C0 E0            [24] 5919 	push	acc
-      001CEB 08               [12] 5920 	inc	r0
-      001CEC E6               [12] 5921 	mov	a,@r0
-      001CED C0 E0            [24] 5922 	push	acc
-      001CEF 08               [12] 5923 	inc	r0
-      001CF0 E6               [12] 5924 	mov	a,@r0
-      001CF1 C0 E0            [24] 5925 	push	acc
-                           001C3C  5926 	C$fuzzy.h$1503$1_0$84 ==.
-                                   5927 ;	../../fuzzy.h:1503: maximum_count++;
-      001CF3 E5 0E            [12] 5928 	mov	a,_bp
-      001CF5 24 20            [12] 5929 	add	a,#0x20
-      001CF7 F8               [12] 5930 	mov	r0,a
-      001CF8 86 82            [24] 5931 	mov	dpl, @r0
-      001CFA 08               [12] 5932 	inc	r0
-      001CFB 86 83            [24] 5933 	mov	dph, @r0
-      001CFD 08               [12] 5934 	inc	r0
-      001CFE 86 F0            [24] 5935 	mov	b, @r0
-      001D00 08               [12] 5936 	inc	r0
-      001D01 E6               [12] 5937 	mov	a, @r0
-      001D02 12 24 59         [24] 5938 	lcall	___fsadd
-      001D05 C8               [12] 5939 	xch	a,r0
-      001D06 E5 0E            [12] 5940 	mov	a,_bp
-      001D08 24 20            [12] 5941 	add	a,#0x20
-      001D0A C8               [12] 5942 	xch	a,r0
-      001D0B A6 82            [24] 5943 	mov	@r0, dpl
-      001D0D 08               [12] 5944 	inc	r0
-      001D0E A6 83            [24] 5945 	mov	@r0, dph
-      001D10 08               [12] 5946 	inc	r0
-      001D11 A6 F0            [24] 5947 	mov	@r0, b
-      001D13 08               [12] 5948 	inc	r0
-      001D14 F6               [12] 5949 	mov	@r0,a
-      001D15 E5 81            [12] 5950 	mov	a,sp
-      001D17 24 FC            [12] 5951 	add	a,#0xfc
-      001D19 F5 81            [12] 5952 	mov	sp,a
-      001D1B E5 0E            [12] 5953 	mov	a,_bp
-      001D1D 24 38            [12] 5954 	add	a,#0x38
-      001D1F F8               [12] 5955 	mov	r0,a
-      001D20 06               [12] 5956 	inc	@r0
-      001D21 B6 00 02         [24] 5957 	cjne	@r0,#0x00,00295$
-      001D24 08               [12] 5958 	inc	r0
-      001D25 06               [12] 5959 	inc	@r0
-      001D26                       5960 00295$:
-      001D26                       5961 00136$:
-                           001C6F  5962 	C$fuzzy.h$1413$1_0$84 ==.
-                                   5963 ;	../../fuzzy.h:1413: ) {
-      001D26 E5 0E            [12] 5964 	mov	a,_bp
-      001D28 24 F2            [12] 5965 	add	a,#0xf2
-      001D2A F8               [12] 5966 	mov	r0,a
-      001D2B E6               [12] 5967 	mov	a,@r0
-      001D2C C0 E0            [24] 5968 	push	acc
-      001D2E 08               [12] 5969 	inc	r0
-      001D2F E6               [12] 5970 	mov	a,@r0
-      001D30 C0 E0            [24] 5971 	push	acc
-      001D32 08               [12] 5972 	inc	r0
-      001D33 E6               [12] 5973 	mov	a,@r0
-      001D34 C0 E0            [24] 5974 	push	acc
-      001D36 08               [12] 5975 	inc	r0
-      001D37 E6               [12] 5976 	mov	a,@r0
-      001D38 C0 E0            [24] 5977 	push	acc
-      001D3A E5 0E            [12] 5978 	mov	a,_bp
-      001D3C 24 2C            [12] 5979 	add	a,#0x2c
-      001D3E F8               [12] 5980 	mov	r0,a
-      001D3F 86 82            [24] 5981 	mov	dpl, @r0
-      001D41 08               [12] 5982 	inc	r0
-      001D42 86 83            [24] 5983 	mov	dph, @r0
-      001D44 08               [12] 5984 	inc	r0
-      001D45 86 F0            [24] 5985 	mov	b, @r0
-      001D47 08               [12] 5986 	inc	r0
-      001D48 E6               [12] 5987 	mov	a, @r0
-      001D49 12 24 59         [24] 5988 	lcall	___fsadd
-      001D4C C8               [12] 5989 	xch	a,r0
-      001D4D E5 0E            [12] 5990 	mov	a,_bp
-      001D4F 24 2C            [12] 5991 	add	a,#0x2c
-      001D51 C8               [12] 5992 	xch	a,r0
-      001D52 A6 82            [24] 5993 	mov	@r0, dpl
-      001D54 08               [12] 5994 	inc	r0
-      001D55 A6 83            [24] 5995 	mov	@r0, dph
-      001D57 08               [12] 5996 	inc	r0
-      001D58 A6 F0            [24] 5997 	mov	@r0, b
-      001D5A 08               [12] 5998 	inc	r0
-      001D5B F6               [12] 5999 	mov	@r0,a
-      001D5C E5 81            [12] 6000 	mov	a,sp
-      001D5E 24 FC            [12] 6001 	add	a,#0xfc
-      001D60 F5 81            [12] 6002 	mov	sp,a
-      001D62 02 19 31         [24] 6003 	ljmp	00135$
-      001D65                       6004 00118$:
-                           001CAE  6005 	C$fuzzy.h$1511$1_0$84 ==.
-                                   6006 ;	../../fuzzy.h:1511: !maximum_found ||
-      001D65 E5 0E            [12] 6007 	mov	a,_bp
-      001D67 24 3C            [12] 6008 	add	a,#0x3c
-      001D69 F8               [12] 6009 	mov	r0,a
-      001D6A E6               [12] 6010 	mov	a,@r0
-      001D6B 60 56            [24] 6011 	jz	00119$
-                           001CB6  6012 	C$fuzzy.h$1512$1_0$84 ==.
-                                   6013 ;	../../fuzzy.h:1512: maximum_height <= LEVEL_LO ||
-      001D6D E5 0E            [12] 6014 	mov	a,_bp
-      001D6F 24 1C            [12] 6015 	add	a,#0x1c
-      001D71 F8               [12] 6016 	mov	r0,a
-      001D72 E6               [12] 6017 	mov	a,@r0
-      001D73 C0 E0            [24] 6018 	push	acc
-      001D75 08               [12] 6019 	inc	r0
-      001D76 E6               [12] 6020 	mov	a,@r0
-      001D77 C0 E0            [24] 6021 	push	acc
-      001D79 08               [12] 6022 	inc	r0
-      001D7A E6               [12] 6023 	mov	a,@r0
-      001D7B C0 E0            [24] 6024 	push	acc
-      001D7D 08               [12] 6025 	inc	r0
-      001D7E E6               [12] 6026 	mov	a,@r0
-      001D7F C0 E0            [24] 6027 	push	acc
-      001D81 90 00 00         [24] 6028 	mov	dptr,#0x0000
-      001D84 E4               [12] 6029 	clr	a
-      001D85 F5 F0            [12] 6030 	mov	b,a
-      001D87 12 24 07         [24] 6031 	lcall	___fslt
-      001D8A E5 81            [12] 6032 	mov	a,sp
-      001D8C 24 FC            [12] 6033 	add	a,#0xfc
-      001D8E F5 81            [12] 6034 	mov	sp,a
-      001D90 E5 82            [12] 6035 	mov	a, dpl
-      001D92 24 FF            [12] 6036 	add	a,#0xff
-      001D94 92 00            [24] 6037 	mov	b0,c
-      001D96 50 2B            [24] 6038 	jnc	00119$
-                           001CE1  6039 	C$fuzzy.h$1514$1_0$84 ==.
-                                   6040 ;	../../fuzzy.h:1514: ) {
-      001D98 E5 0E            [12] 6041 	mov	a,_bp
-      001D9A 24 18            [12] 6042 	add	a,#0x18
-      001D9C F8               [12] 6043 	mov	r0,a
-      001D9D E6               [12] 6044 	mov	a,@r0
-      001D9E C0 E0            [24] 6045 	push	acc
-      001DA0 08               [12] 6046 	inc	r0
-      001DA1 E6               [12] 6047 	mov	a,@r0
-      001DA2 C0 E0            [24] 6048 	push	acc
-      001DA4 08               [12] 6049 	inc	r0
-      001DA5 E6               [12] 6050 	mov	a,@r0
-      001DA6 C0 E0            [24] 6051 	push	acc
-      001DA8 08               [12] 6052 	inc	r0
-      001DA9 E6               [12] 6053 	mov	a,@r0
-      001DAA C0 E0            [24] 6054 	push	acc
-      001DAC 90 00 00         [24] 6055 	mov	dptr,#0x0000
-      001DAF E4               [12] 6056 	clr	a
-      001DB0 F5 F0            [12] 6057 	mov	b,a
-      001DB2 12 24 07         [24] 6058 	lcall	___fslt
-      001DB5 E5 81            [12] 6059 	mov	a,sp
-      001DB7 24 FC            [12] 6060 	add	a,#0xfc
-      001DB9 F5 81            [12] 6061 	mov	sp,a
-      001DBB E5 82            [12] 6062 	mov	a, dpl
-      001DBD 24 FF            [12] 6063 	add	a,#0xff
-      001DBF 92 00            [24] 6064 	mov	b0,c
-      001DC1 40 09            [24] 6065 	jc	00120$
-      001DC3                       6066 00119$:
-                           001D0C  6067 	C$fuzzy.h$1515$2_0$93 ==.
-                                   6068 ;	../../fuzzy.h:1515: return 0.0f;
-      001DC3 90 00 00         [24] 6069 	mov	dptr,#0x0000
-      001DC6 E4               [12] 6070 	clr	a
-      001DC7 F5 F0            [12] 6071 	mov	b,a
-      001DC9 02 1E AC         [24] 6072 	ljmp	00137$
-      001DCC                       6073 00120$:
-                           001D15  6074 	C$fuzzy.h$1518$1_0$84 ==.
-                                   6075 ;	../../fuzzy.h:1518: switch (method) {
-      001DCC E5 0E            [12] 6076 	mov	a,_bp
-      001DCE 24 F1            [12] 6077 	add	a,#0xf1
-      001DD0 F8               [12] 6078 	mov	r0,a
-      001DD1 E6               [12] 6079 	mov	a,@r0
-      001DD2 24 FC            [12] 6080 	add	a,#0xff - 0x03
-      001DD4 50 03            [24] 6081 	jnc	00299$
-      001DD6 02 1E A6         [24] 6082 	ljmp	00129$
-      001DD9                       6083 00299$:
-      001DD9 E5 0E            [12] 6084 	mov	a,_bp
-      001DDB 24 F1            [12] 6085 	add	a,#0xf1
-      001DDD F8               [12] 6086 	mov	r0,a
-      001DDE E6               [12] 6087 	mov	a,@r0
-      001DDF 26               [12] 6088 	add	a,@r0
-      001DE0 26               [12] 6089 	add	a,@r0
-      001DE1 90 1D E5         [24] 6090 	mov	dptr,#00300$
-      001DE4 73               [24] 6091 	jmp	@a+dptr
-      001DE5                       6092 00300$:
-      001DE5 02 1D F1         [24] 6093 	ljmp	00123$
-      001DE8 02 1E 2E         [24] 6094 	ljmp	00124$
-      001DEB 02 1E 84         [24] 6095 	ljmp	00127$
-      001DEE 02 1E 95         [24] 6096 	ljmp	00128$
-                           001D3A  6097 	C$fuzzy.h$1519$2_0$94 ==.
-                                   6098 ;	../../fuzzy.h:1519: case FUZZY_DEFUZZ_COG:
-      001DF1                       6099 00123$:
-                           001D3A  6100 	C$fuzzy.h$1521$1_0$84 ==.
-                                   6101 ;	../../fuzzy.h:1521: height_sum;
-      001DF1 E5 0E            [12] 6102 	mov	a,_bp
-      001DF3 24 18            [12] 6103 	add	a,#0x18
-      001DF5 F8               [12] 6104 	mov	r0,a
-      001DF6 E6               [12] 6105 	mov	a,@r0
-      001DF7 C0 E0            [24] 6106 	push	acc
-      001DF9 08               [12] 6107 	inc	r0
-      001DFA E6               [12] 6108 	mov	a,@r0
-      001DFB C0 E0            [24] 6109 	push	acc
-      001DFD 08               [12] 6110 	inc	r0
-      001DFE E6               [12] 6111 	mov	a,@r0
-      001DFF C0 E0            [24] 6112 	push	acc
-      001E01 08               [12] 6113 	inc	r0
-      001E02 E6               [12] 6114 	mov	a,@r0
-      001E03 C0 E0            [24] 6115 	push	acc
-      001E05 E5 0E            [12] 6116 	mov	a,_bp
-      001E07 24 14            [12] 6117 	add	a,#0x14
-      001E09 F8               [12] 6118 	mov	r0,a
-      001E0A 86 82            [24] 6119 	mov	dpl, @r0
-      001E0C 08               [12] 6120 	inc	r0
-      001E0D 86 83            [24] 6121 	mov	dph, @r0
-      001E0F 08               [12] 6122 	inc	r0
-      001E10 86 F0            [24] 6123 	mov	b, @r0
-      001E12 08               [12] 6124 	inc	r0
-      001E13 E6               [12] 6125 	mov	a, @r0
-      001E14 12 25 70         [24] 6126 	lcall	___fsdiv
-      001E17 AC 82            [24] 6127 	mov	r4, dpl
-      001E19 AD 83            [24] 6128 	mov	r5, dph
-      001E1B AE F0            [24] 6129 	mov	r6, b
-      001E1D FF               [12] 6130 	mov	r7, a
-      001E1E E5 81            [12] 6131 	mov	a,sp
-      001E20 24 FC            [12] 6132 	add	a,#0xfc
-      001E22 F5 81            [12] 6133 	mov	sp,a
-      001E24 8C 82            [24] 6134 	mov	dpl, r4
-      001E26 8D 83            [24] 6135 	mov	dph, r5
-      001E28 8E F0            [24] 6136 	mov	b, r6
-      001E2A EF               [12] 6137 	mov	a, r7
-      001E2B 02 1E AC         [24] 6138 	ljmp	00137$
-                           001D77  6139 	C$fuzzy.h$1523$2_0$94 ==.
-                                   6140 ;	../../fuzzy.h:1523: case FUZZY_DEFUZZ_MOM:
-      001E2E                       6141 00124$:
-                           001D77  6142 	C$fuzzy.h$1524$2_0$94 ==.
-                                   6143 ;	../../fuzzy.h:1524: if (maximum_count == 0u) {
-      001E2E E5 0E            [12] 6144 	mov	a,_bp
-      001E30 24 38            [12] 6145 	add	a,#0x38
-      001E32 F8               [12] 6146 	mov	r0,a
-      001E33 E6               [12] 6147 	mov	a,@r0
-      001E34 08               [12] 6148 	inc	r0
-      001E35 46               [12] 6149 	orl	a,@r0
-      001E36 70 08            [24] 6150 	jnz	00126$
-                           001D81  6151 	C$fuzzy.h$1525$3_0$95 ==.
-                                   6152 ;	../../fuzzy.h:1525: return 0.0f;
-      001E38 90 00 00         [24] 6153 	mov	dptr,#0x0000
-      001E3B E4               [12] 6154 	clr	a
-      001E3C F5 F0            [12] 6155 	mov	b,a
-      001E3E 80 6C            [24] 6156 	sjmp	00137$
-      001E40                       6157 00126$:
-                           001D89  6158 	C$fuzzy.h$1529$1_0$84 ==.
-                                   6159 ;	../../fuzzy.h:1529: (float)maximum_count;
-      001E40 E5 0E            [12] 6160 	mov	a,_bp
-      001E42 24 38            [12] 6161 	add	a,#0x38
-      001E44 F8               [12] 6162 	mov	r0,a
-      001E45 86 82            [24] 6163 	mov	dpl, @r0
-      001E47 08               [12] 6164 	inc	r0
-      001E48 86 83            [24] 6165 	mov	dph, @r0
-      001E4A 12 24 FB         [24] 6166 	lcall	___uint2fs
-      001E4D AC 82            [24] 6167 	mov	r4, dpl
-      001E4F AD 83            [24] 6168 	mov	r5, dph
-      001E51 AE F0            [24] 6169 	mov	r6, b
-      001E53 FF               [12] 6170 	mov	r7, a
-      001E54 C0 04            [24] 6171 	push	ar4
-      001E56 C0 05            [24] 6172 	push	ar5
-      001E58 C0 06            [24] 6173 	push	ar6
-      001E5A C0 07            [24] 6174 	push	ar7
-      001E5C E5 0E            [12] 6175 	mov	a,_bp
-      001E5E 24 20            [12] 6176 	add	a,#0x20
-      001E60 F8               [12] 6177 	mov	r0,a
-      001E61 86 82            [24] 6178 	mov	dpl, @r0
-      001E63 08               [12] 6179 	inc	r0
-      001E64 86 83            [24] 6180 	mov	dph, @r0
-      001E66 08               [12] 6181 	inc	r0
-      001E67 86 F0            [24] 6182 	mov	b, @r0
-      001E69 08               [12] 6183 	inc	r0
-      001E6A E6               [12] 6184 	mov	a, @r0
-      001E6B 12 25 70         [24] 6185 	lcall	___fsdiv
-      001E6E AC 82            [24] 6186 	mov	r4, dpl
-      001E70 AD 83            [24] 6187 	mov	r5, dph
-      001E72 AE F0            [24] 6188 	mov	r6, b
-      001E74 FF               [12] 6189 	mov	r7, a
-      001E75 E5 81            [12] 6190 	mov	a,sp
-      001E77 24 FC            [12] 6191 	add	a,#0xfc
-      001E79 F5 81            [12] 6192 	mov	sp,a
-      001E7B 8C 82            [24] 6193 	mov	dpl, r4
-      001E7D 8D 83            [24] 6194 	mov	dph, r5
-      001E7F 8E F0            [24] 6195 	mov	b, r6
-      001E81 EF               [12] 6196 	mov	a, r7
-                           001DCB  6197 	C$fuzzy.h$1531$2_0$94 ==.
-                                   6198 ;	../../fuzzy.h:1531: case FUZZY_DEFUZZ_SOM:
-      001E82 80 28            [24] 6199 	sjmp	00137$
-      001E84                       6200 00127$:
-                           001DCD  6201 	C$fuzzy.h$1532$2_0$94 ==.
-                                   6202 ;	../../fuzzy.h:1532: return smallest_maximum;
-      001E84 E5 0E            [12] 6203 	mov	a,_bp
-      001E86 24 24            [12] 6204 	add	a,#0x24
-      001E88 F8               [12] 6205 	mov	r0,a
-      001E89 86 82            [24] 6206 	mov	dpl, @r0
-      001E8B 08               [12] 6207 	inc	r0
-      001E8C 86 83            [24] 6208 	mov	dph, @r0
-      001E8E 08               [12] 6209 	inc	r0
-      001E8F 86 F0            [24] 6210 	mov	b, @r0
-      001E91 08               [12] 6211 	inc	r0
-      001E92 E6               [12] 6212 	mov	a, @r0
-                           001DDC  6213 	C$fuzzy.h$1534$2_0$94 ==.
-                                   6214 ;	../../fuzzy.h:1534: case FUZZY_DEFUZZ_LOM:
-      001E93 80 17            [24] 6215 	sjmp	00137$
-      001E95                       6216 00128$:
-                           001DDE  6217 	C$fuzzy.h$1535$2_0$94 ==.
-                                   6218 ;	../../fuzzy.h:1535: return largest_maximum;
-      001E95 E5 0E            [12] 6219 	mov	a,_bp
-      001E97 24 28            [12] 6220 	add	a,#0x28
-      001E99 F8               [12] 6221 	mov	r0,a
-      001E9A 86 82            [24] 6222 	mov	dpl, @r0
-      001E9C 08               [12] 6223 	inc	r0
-      001E9D 86 83            [24] 6224 	mov	dph, @r0
-      001E9F 08               [12] 6225 	inc	r0
-      001EA0 86 F0            [24] 6226 	mov	b, @r0
-      001EA2 08               [12] 6227 	inc	r0
-      001EA3 E6               [12] 6228 	mov	a, @r0
-                           001DED  6229 	C$fuzzy.h$1537$2_0$94 ==.
-                                   6230 ;	../../fuzzy.h:1537: default:
-      001EA4 80 06            [24] 6231 	sjmp	00137$
-      001EA6                       6232 00129$:
-                           001DEF  6233 	C$fuzzy.h$1538$2_0$94 ==.
-                                   6234 ;	../../fuzzy.h:1538: return 0.0f;
-      001EA6 90 00 00         [24] 6235 	mov	dptr,#0x0000
-      001EA9 E4               [12] 6236 	clr	a
-      001EAA F5 F0            [12] 6237 	mov	b,a
-                           001DF5  6238 	C$fuzzy.h$1539$1_0$84 ==.
-                                   6239 ;	../../fuzzy.h:1539: }
-      001EAC                       6240 00137$:
-                           001DF5  6241 	C$fuzzy.h$1540$1_0$84 ==.
-                                   6242 ;	../../fuzzy.h:1540: }
-      001EAC 85 0E 81         [24] 6243 	mov	sp,_bp
-      001EAF D0 0E            [24] 6244 	pop	_bp
-                           001DFA  6245 	C$fuzzy.h$1540$1_0$84 ==.
-                           001DFA  6246 	XG$fuzzy_rules_defuzzify$0$0 ==.
-      001EB1 22               [24] 6247 	ret
-                                   6248 ;------------------------------------------------------------
-                                   6249 ;Allocation info for local variables in function 'fuzzy_rules_cog'
-                                   6250 ;------------------------------------------------------------
-                                   6251 ;lower         Allocated to stack - _bp -6 +4 
-                                   6252 ;upper         Allocated to stack - _bp -10 +4 
-                                   6253 ;step          Allocated to stack - _bp -14 +4 
-                                   6254 ;rules         Allocated to registers r5 r6 r7 
-                                   6255 ;------------------------------------------------------------
-                           001DFB  6256 	G$fuzzy_rules_cog$0$0 ==.
-                           001DFB  6257 	C$fuzzy.h$1546$1_0$97 ==.
-                                   6258 ;	../../fuzzy.h:1546: float fuzzy_rules_cog(
-                                   6259 ;	-----------------------------------------
-                                   6260 ;	 function fuzzy_rules_cog
-                                   6261 ;	-----------------------------------------
-      001EB2                       6262 _fuzzy_rules_cog:
-      001EB2 C0 0E            [24] 6263 	push	_bp
-      001EB4 85 81 0E         [24] 6264 	mov	_bp,sp
-      001EB7 AD 82            [24] 6265 	mov	r5, dpl
-      001EB9 AE 83            [24] 6266 	mov	r6, dph
-      001EBB AF F0            [24] 6267 	mov	r7, b
-                           001E06  6268 	C$fuzzy.h$1554$1_0$97 ==.
-                                   6269 ;	../../fuzzy.h:1554: rules,
-      001EBD E4               [12] 6270 	clr	a
-      001EBE C0 E0            [24] 6271 	push	acc
-      001EC0 E5 0E            [12] 6272 	mov	a,_bp
-      001EC2 24 F2            [12] 6273 	add	a,#0xf2
-      001EC4 F8               [12] 6274 	mov	r0,a
-      001EC5 E6               [12] 6275 	mov	a,@r0
-      001EC6 C0 E0            [24] 6276 	push	acc
-      001EC8 08               [12] 6277 	inc	r0
-      001EC9 E6               [12] 6278 	mov	a,@r0
-      001ECA C0 E0            [24] 6279 	push	acc
-      001ECC 08               [12] 6280 	inc	r0
-      001ECD E6               [12] 6281 	mov	a,@r0
-      001ECE C0 E0            [24] 6282 	push	acc
-      001ED0 08               [12] 6283 	inc	r0
-      001ED1 E6               [12] 6284 	mov	a,@r0
-      001ED2 C0 E0            [24] 6285 	push	acc
-      001ED4 E5 0E            [12] 6286 	mov	a,_bp
-      001ED6 24 F6            [12] 6287 	add	a,#0xf6
-      001ED8 F8               [12] 6288 	mov	r0,a
-      001ED9 E6               [12] 6289 	mov	a,@r0
-      001EDA C0 E0            [24] 6290 	push	acc
-      001EDC 08               [12] 6291 	inc	r0
-      001EDD E6               [12] 6292 	mov	a,@r0
-      001EDE C0 E0            [24] 6293 	push	acc
-      001EE0 08               [12] 6294 	inc	r0
-      001EE1 E6               [12] 6295 	mov	a,@r0
-      001EE2 C0 E0            [24] 6296 	push	acc
-      001EE4 08               [12] 6297 	inc	r0
-      001EE5 E6               [12] 6298 	mov	a,@r0
-      001EE6 C0 E0            [24] 6299 	push	acc
-      001EE8 E5 0E            [12] 6300 	mov	a,_bp
-      001EEA 24 FA            [12] 6301 	add	a,#0xfa
-      001EEC F8               [12] 6302 	mov	r0,a
-      001EED E6               [12] 6303 	mov	a,@r0
-      001EEE C0 E0            [24] 6304 	push	acc
-      001EF0 08               [12] 6305 	inc	r0
-      001EF1 E6               [12] 6306 	mov	a,@r0
-      001EF2 C0 E0            [24] 6307 	push	acc
-      001EF4 08               [12] 6308 	inc	r0
-      001EF5 E6               [12] 6309 	mov	a,@r0
-      001EF6 C0 E0            [24] 6310 	push	acc
-      001EF8 08               [12] 6311 	inc	r0
-      001EF9 E6               [12] 6312 	mov	a,@r0
-      001EFA C0 E0            [24] 6313 	push	acc
-      001EFC 8D 82            [24] 6314 	mov	dpl, r5
-      001EFE 8E 83            [24] 6315 	mov	dph, r6
-      001F00 8F F0            [24] 6316 	mov	b, r7
-      001F02 12 17 B6         [24] 6317 	lcall	_fuzzy_rules_defuzzify
-      001F05 AC 82            [24] 6318 	mov	r4, dpl
-      001F07 AD 83            [24] 6319 	mov	r5, dph
-      001F09 AE F0            [24] 6320 	mov	r6, b
-      001F0B FF               [12] 6321 	mov	r7, a
-      001F0C E5 81            [12] 6322 	mov	a,sp
-      001F0E 24 F3            [12] 6323 	add	a,#0xf3
-      001F10 F5 81            [12] 6324 	mov	sp,a
-      001F12 8C 82            [24] 6325 	mov	dpl, r4
-      001F14 8D 83            [24] 6326 	mov	dph, r5
-      001F16 8E F0            [24] 6327 	mov	b, r6
-      001F18 EF               [12] 6328 	mov	a, r7
-                           001E62  6329 	C$fuzzy.h$1560$1_0$97 ==.
-                                   6330 ;	../../fuzzy.h:1560: }
-      001F19 D0 0E            [24] 6331 	pop	_bp
-                           001E64  6332 	C$fuzzy.h$1560$1_0$97 ==.
-                           001E64  6333 	XG$fuzzy_rules_cog$0$0 ==.
-      001F1B 22               [24] 6334 	ret
-                                   6335 ;------------------------------------------------------------
-                                   6336 ;Allocation info for local variables in function 'fuzzy_rules_free'
-                                   6337 ;------------------------------------------------------------
-                                   6338 ;rules         Allocated to registers r5 r6 r7 
-                                   6339 ;------------------------------------------------------------
-                           001E65  6340 	G$fuzzy_rules_free$0$0 ==.
-                           001E65  6341 	C$fuzzy.h$1562$1_0$99 ==.
-                                   6342 ;	../../fuzzy.h:1562: void fuzzy_rules_free(
-                                   6343 ;	-----------------------------------------
-                                   6344 ;	 function fuzzy_rules_free
-                                   6345 ;	-----------------------------------------
-      001F1C                       6346 _fuzzy_rules_free:
-      001F1C AD 82            [24] 6347 	mov	r5, dpl
-      001F1E AE 83            [24] 6348 	mov	r6, dph
-      001F20 AF F0            [24] 6349 	mov	r7, b
-                           001E6B  6350 	C$fuzzy.h$1566$1_0$99 ==.
-                                   6351 ;	../../fuzzy.h:1566: if (rules == NULL) {
-      001F22 ED               [12] 6352 	mov	a,r5
-      001F23 4E               [12] 6353 	orl	a,r6
-      001F24 70 02            [24] 6354 	jnz	00102$
-                           001E6F  6355 	C$fuzzy.h$1567$2_0$100 ==.
-                                   6356 ;	../../fuzzy.h:1567: return;
-      001F26 80 15            [24] 6357 	sjmp	00103$
-      001F28                       6358 00102$:
-                           001E71  6359 	C$fuzzy.h$1575$1_0$99 ==.
-                                   6360 ;	../../fuzzy.h:1575: rules->count = 0;
-      001F28 74 48            [12] 6361 	mov	a,#0x48
-      001F2A 2D               [12] 6362 	add	a, r5
-      001F2B FD               [12] 6363 	mov	r5,a
-      001F2C E4               [12] 6364 	clr	a
-      001F2D 3E               [12] 6365 	addc	a, r6
-      001F2E FE               [12] 6366 	mov	r6,a
-      001F2F 8D 82            [24] 6367 	mov	dpl,r5
-      001F31 8E 83            [24] 6368 	mov	dph,r6
-      001F33 8F F0            [24] 6369 	mov	b,r7
-      001F35 E4               [12] 6370 	clr	a
-      001F36 12 23 EC         [24] 6371 	lcall	__gptrput
-      001F39 A3               [24] 6372 	inc	dptr
-      001F3A 12 23 EC         [24] 6373 	lcall	__gptrput
-      001F3D                       6374 00103$:
-                           001E86  6375 	C$fuzzy.h$1576$1_0$99 ==.
-                                   6376 ;	../../fuzzy.h:1576: }
-                           001E86  6377 	C$fuzzy.h$1576$1_0$99 ==.
-                           001E86  6378 	XG$fuzzy_rules_free$0$0 ==.
-      001F3D 22               [24] 6379 	ret
-                                   6380 ;------------------------------------------------------------
-                                   6381 ;Allocation info for local variables in function 'temperature_low'
-                                   6382 ;------------------------------------------------------------
-                                   6383 ;value         Allocated to registers r4 r5 r6 r7 
-                                   6384 ;------------------------------------------------------------
-                           001E87  6385 	Fcontroller_8051$temperature_low$0$0 ==.
-                           001E87  6386 	C$controller_8051.c$59$1_0$102 ==.
-                                   6387 ;	../../controller_8051.c:59: static float temperature_low(
-                                   6388 ;	-----------------------------------------
-                                   6389 ;	 function temperature_low
-                                   6390 ;	-----------------------------------------
-      001F3E                       6391 _temperature_low:
-      001F3E AC 82            [24] 6392 	mov	r4,dpl
-      001F40 AD 83            [24] 6393 	mov	r5,dph
-      001F42 AE F0            [24] 6394 	mov	r6,b
-      001F44 FF               [12] 6395 	mov	r7,a
-                           001E8E  6396 	C$controller_8051.c$68$1_0$102 ==.
-                                   6397 ;	../../controller_8051.c:68: hedges.none
-      001F45 90 26 F5         [24] 6398 	mov	dptr,#_hedges
-      001F48 E4               [12] 6399 	clr	a
-      001F49 93               [24] 6400 	movc	a,@a+dptr
-      001F4A FB               [12] 6401 	mov	r3,a
-                           001E94  6402 	C$controller_8051.c$64$1_0$102 ==.
-                                   6403 ;	../../controller_8051.c:64: 20.0f,
-      001F4B C0 03            [24] 6404 	push	ar3
-      001F4D E4               [12] 6405 	clr	a
-      001F4E C0 E0            [24] 6406 	push	acc
-      001F50 C0 04            [24] 6407 	push	ar4
-      001F52 C0 05            [24] 6408 	push	ar5
-      001F54 C0 06            [24] 6409 	push	ar6
-      001F56 C0 07            [24] 6410 	push	ar7
-      001F58 C0 E0            [24] 6411 	push	acc
-      001F5A C0 E0            [24] 6412 	push	acc
-      001F5C 74 20            [12] 6413 	mov	a,#0x20
-      001F5E C0 E0            [24] 6414 	push	acc
-      001F60 74 42            [12] 6415 	mov	a,#0x42
-      001F62 C0 E0            [24] 6416 	push	acc
-      001F64 90 00 00         [24] 6417 	mov	dptr,#0x0000
-      001F67 75 F0 A0         [24] 6418 	mov	b, #0xa0
-      001F6A 14               [12] 6419 	dec	a
-      001F6B 12 0A B9         [24] 6420 	lcall	_fuzzy_ramp
-      001F6E AC 82            [24] 6421 	mov	r4, dpl
-      001F70 AD 83            [24] 6422 	mov	r5, dph
-      001F72 AE F0            [24] 6423 	mov	r6, b
-      001F74 FF               [12] 6424 	mov	r7, a
-      001F75 E5 81            [12] 6425 	mov	a,sp
-      001F77 24 F6            [12] 6426 	add	a,#0xf6
-      001F79 F5 81            [12] 6427 	mov	sp,a
-      001F7B 8C 82            [24] 6428 	mov	dpl, r4
-      001F7D 8D 83            [24] 6429 	mov	dph, r5
-      001F7F 8E F0            [24] 6430 	mov	b, r6
-      001F81 EF               [12] 6431 	mov	a, r7
-                           001ECB  6432 	C$controller_8051.c$70$1_0$102 ==.
-                                   6433 ;	../../controller_8051.c:70: }
-                           001ECB  6434 	C$controller_8051.c$70$1_0$102 ==.
-                           001ECB  6435 	XFcontroller_8051$temperature_low$0$0 ==.
-      001F82 22               [24] 6436 	ret
-                                   6437 ;------------------------------------------------------------
-                                   6438 ;Allocation info for local variables in function 'temperature_high'
-                                   6439 ;------------------------------------------------------------
-                                   6440 ;value         Allocated to registers r4 r5 r6 r7 
-                                   6441 ;------------------------------------------------------------
-                           001ECC  6442 	Fcontroller_8051$temperature_high$0$0 ==.
-                           001ECC  6443 	C$controller_8051.c$73$1_0$104 ==.
-                                   6444 ;	../../controller_8051.c:73: static float temperature_high(
-                                   6445 ;	-----------------------------------------
-                                   6446 ;	 function temperature_high
-                                   6447 ;	-----------------------------------------
-      001F83                       6448 _temperature_high:
-      001F83 AC 82            [24] 6449 	mov	r4,dpl
-      001F85 AD 83            [24] 6450 	mov	r5,dph
-      001F87 AE F0            [24] 6451 	mov	r6,b
-      001F89 FF               [12] 6452 	mov	r7,a
-                           001ED3  6453 	C$controller_8051.c$82$1_0$104 ==.
-                                   6454 ;	../../controller_8051.c:82: hedges.none
-      001F8A 90 26 F5         [24] 6455 	mov	dptr,#_hedges
-      001F8D E4               [12] 6456 	clr	a
-      001F8E 93               [24] 6457 	movc	a,@a+dptr
-      001F8F FB               [12] 6458 	mov	r3,a
-                           001ED9  6459 	C$controller_8051.c$78$1_0$104 ==.
-                                   6460 ;	../../controller_8051.c:78: 30.0f,
-      001F90 C0 03            [24] 6461 	push	ar3
-      001F92 74 01            [12] 6462 	mov	a,#0x01
-      001F94 C0 E0            [24] 6463 	push	acc
-      001F96 C0 04            [24] 6464 	push	ar4
-      001F98 C0 05            [24] 6465 	push	ar5
-      001F9A C0 06            [24] 6466 	push	ar6
-      001F9C C0 07            [24] 6467 	push	ar7
-      001F9E E4               [12] 6468 	clr	a
-      001F9F C0 E0            [24] 6469 	push	acc
-      001FA1 C0 E0            [24] 6470 	push	acc
-      001FA3 74 70            [12] 6471 	mov	a,#0x70
-      001FA5 C0 E0            [24] 6472 	push	acc
-      001FA7 74 42            [12] 6473 	mov	a,#0x42
-      001FA9 C0 E0            [24] 6474 	push	acc
-      001FAB 90 00 00         [24] 6475 	mov	dptr,#0x0000
-      001FAE 75 F0 F0         [24] 6476 	mov	b, #0xf0
-      001FB1 14               [12] 6477 	dec	a
-      001FB2 12 0A B9         [24] 6478 	lcall	_fuzzy_ramp
-      001FB5 AC 82            [24] 6479 	mov	r4, dpl
-      001FB7 AD 83            [24] 6480 	mov	r5, dph
-      001FB9 AE F0            [24] 6481 	mov	r6, b
-      001FBB FF               [12] 6482 	mov	r7, a
-      001FBC E5 81            [12] 6483 	mov	a,sp
-      001FBE 24 F6            [12] 6484 	add	a,#0xf6
-      001FC0 F5 81            [12] 6485 	mov	sp,a
-      001FC2 8C 82            [24] 6486 	mov	dpl, r4
-      001FC4 8D 83            [24] 6487 	mov	dph, r5
-      001FC6 8E F0            [24] 6488 	mov	b, r6
-      001FC8 EF               [12] 6489 	mov	a, r7
-                           001F12  6490 	C$controller_8051.c$84$1_0$104 ==.
-                                   6491 ;	../../controller_8051.c:84: }
-                           001F12  6492 	C$controller_8051.c$84$1_0$104 ==.
-                           001F12  6493 	XFcontroller_8051$temperature_high$0$0 ==.
-      001FC9 22               [24] 6494 	ret
-                                   6495 ;------------------------------------------------------------
-                                   6496 ;Allocation info for local variables in function 'fan_slow'
-                                   6497 ;------------------------------------------------------------
-                                   6498 ;value         Allocated to registers r4 r5 r6 r7 
-                                   6499 ;------------------------------------------------------------
-                           001F13  6500 	Fcontroller_8051$fan_slow$0$0 ==.
-                           001F13  6501 	C$controller_8051.c$91$1_0$106 ==.
-                                   6502 ;	../../controller_8051.c:91: static float fan_slow(
-                                   6503 ;	-----------------------------------------
-                                   6504 ;	 function fan_slow
-                                   6505 ;	-----------------------------------------
-      001FCA                       6506 _fan_slow:
-      001FCA AC 82            [24] 6507 	mov	r4,dpl
-      001FCC AD 83            [24] 6508 	mov	r5,dph
-      001FCE AE F0            [24] 6509 	mov	r6,b
-      001FD0 FF               [12] 6510 	mov	r7,a
-                           001F1A  6511 	C$controller_8051.c$100$1_0$106 ==.
-                                   6512 ;	../../controller_8051.c:100: hedges.none
-      001FD1 90 26 F5         [24] 6513 	mov	dptr,#_hedges
-      001FD4 E4               [12] 6514 	clr	a
-      001FD5 93               [24] 6515 	movc	a,@a+dptr
-      001FD6 FB               [12] 6516 	mov	r3,a
-                           001F20  6517 	C$controller_8051.c$96$1_0$106 ==.
-                                   6518 ;	../../controller_8051.c:96: 20.0f,
-      001FD7 C0 03            [24] 6519 	push	ar3
-      001FD9 E4               [12] 6520 	clr	a
-      001FDA C0 E0            [24] 6521 	push	acc
-      001FDC C0 04            [24] 6522 	push	ar4
-      001FDE C0 05            [24] 6523 	push	ar5
-      001FE0 C0 06            [24] 6524 	push	ar6
-      001FE2 C0 07            [24] 6525 	push	ar7
-      001FE4 C0 E0            [24] 6526 	push	acc
-      001FE6 C0 E0            [24] 6527 	push	acc
-      001FE8 74 48            [12] 6528 	mov	a,#0x48
-      001FEA C0 E0            [24] 6529 	push	acc
-      001FEC 74 42            [12] 6530 	mov	a,#0x42
-      001FEE C0 E0            [24] 6531 	push	acc
-      001FF0 90 00 00         [24] 6532 	mov	dptr,#0x0000
-      001FF3 75 F0 A0         [24] 6533 	mov	b, #0xa0
-      001FF6 14               [12] 6534 	dec	a
-      001FF7 12 0A B9         [24] 6535 	lcall	_fuzzy_ramp
-      001FFA AC 82            [24] 6536 	mov	r4, dpl
-      001FFC AD 83            [24] 6537 	mov	r5, dph
-      001FFE AE F0            [24] 6538 	mov	r6, b
-      002000 FF               [12] 6539 	mov	r7, a
-      002001 E5 81            [12] 6540 	mov	a,sp
-      002003 24 F6            [12] 6541 	add	a,#0xf6
-      002005 F5 81            [12] 6542 	mov	sp,a
-      002007 8C 82            [24] 6543 	mov	dpl, r4
-      002009 8D 83            [24] 6544 	mov	dph, r5
-      00200B 8E F0            [24] 6545 	mov	b, r6
-      00200D EF               [12] 6546 	mov	a, r7
-                           001F57  6547 	C$controller_8051.c$102$1_0$106 ==.
-                                   6548 ;	../../controller_8051.c:102: }
-                           001F57  6549 	C$controller_8051.c$102$1_0$106 ==.
-                           001F57  6550 	XFcontroller_8051$fan_slow$0$0 ==.
-      00200E 22               [24] 6551 	ret
-                                   6552 ;------------------------------------------------------------
-                                   6553 ;Allocation info for local variables in function 'fan_fast'
-                                   6554 ;------------------------------------------------------------
-                                   6555 ;value         Allocated to registers r4 r5 r6 r7 
-                                   6556 ;------------------------------------------------------------
-                           001F58  6557 	Fcontroller_8051$fan_fast$0$0 ==.
-                           001F58  6558 	C$controller_8051.c$105$1_0$108 ==.
-                                   6559 ;	../../controller_8051.c:105: static float fan_fast(
-                                   6560 ;	-----------------------------------------
-                                   6561 ;	 function fan_fast
-                                   6562 ;	-----------------------------------------
-      00200F                       6563 _fan_fast:
-      00200F AC 82            [24] 6564 	mov	r4,dpl
-      002011 AD 83            [24] 6565 	mov	r5,dph
-      002013 AE F0            [24] 6566 	mov	r6,b
-      002015 FF               [12] 6567 	mov	r7,a
-                           001F5F  6568 	C$controller_8051.c$114$1_0$108 ==.
-                                   6569 ;	../../controller_8051.c:114: hedges.none
-      002016 90 26 F5         [24] 6570 	mov	dptr,#_hedges
-      002019 E4               [12] 6571 	clr	a
-      00201A 93               [24] 6572 	movc	a,@a+dptr
-      00201B FB               [12] 6573 	mov	r3,a
-                           001F65  6574 	C$controller_8051.c$110$1_0$108 ==.
-                                   6575 ;	../../controller_8051.c:110: 40.0f,
-      00201C C0 03            [24] 6576 	push	ar3
-      00201E 74 01            [12] 6577 	mov	a,#0x01
-      002020 C0 E0            [24] 6578 	push	acc
-      002022 C0 04            [24] 6579 	push	ar4
-      002024 C0 05            [24] 6580 	push	ar5
-      002026 C0 06            [24] 6581 	push	ar6
-      002028 C0 07            [24] 6582 	push	ar7
-      00202A E4               [12] 6583 	clr	a
-      00202B C0 E0            [24] 6584 	push	acc
-      00202D C0 E0            [24] 6585 	push	acc
-      00202F 74 A0            [12] 6586 	mov	a,#0xa0
-      002031 C0 E0            [24] 6587 	push	acc
-      002033 74 42            [12] 6588 	mov	a,#0x42
-      002035 C0 E0            [24] 6589 	push	acc
-      002037 90 00 00         [24] 6590 	mov	dptr,#0x0000
-      00203A 75 F0 20         [24] 6591 	mov	b, #0x20
-      00203D 12 0A B9         [24] 6592 	lcall	_fuzzy_ramp
-      002040 AC 82            [24] 6593 	mov	r4, dpl
-      002042 AD 83            [24] 6594 	mov	r5, dph
-      002044 AE F0            [24] 6595 	mov	r6, b
-      002046 FF               [12] 6596 	mov	r7, a
-      002047 E5 81            [12] 6597 	mov	a,sp
-      002049 24 F6            [12] 6598 	add	a,#0xf6
-      00204B F5 81            [12] 6599 	mov	sp,a
-      00204D 8C 82            [24] 6600 	mov	dpl, r4
-      00204F 8D 83            [24] 6601 	mov	dph, r5
-      002051 8E F0            [24] 6602 	mov	b, r6
-      002053 EF               [12] 6603 	mov	a, r7
-                           001F9D  6604 	C$controller_8051.c$116$1_0$108 ==.
-                                   6605 ;	../../controller_8051.c:116: }
-                           001F9D  6606 	C$controller_8051.c$116$1_0$108 ==.
-                           001F9D  6607 	XFcontroller_8051$fan_fast$0$0 ==.
-      002054 22               [24] 6608 	ret
-                                   6609 ;------------------------------------------------------------
-                                   6610 ;Allocation info for local variables in function 'calculate_fan_speed'
-                                   6611 ;------------------------------------------------------------
-                                   6612 ;temperature   Allocated to stack - _bp +1 +4 
-                                   6613 ;rules         Allocated to stack - _bp +9 +74 
-                                   6614 ;result        Allocated to stack - _bp +83 +4 
-                                   6615 ;sloc0         Allocated to stack - _bp +5 +4 
-                                   6616 ;------------------------------------------------------------
-                           001F9E  6617 	Fcontroller_8051$calculate_fan_speed$0$0 ==.
-                           001F9E  6618 	C$controller_8051.c$123$1_0$110 ==.
-                                   6619 ;	../../controller_8051.c:123: static float calculate_fan_speed(
-                                   6620 ;	-----------------------------------------
-                                   6621 ;	 function calculate_fan_speed
-                                   6622 ;	-----------------------------------------
-      002055                       6623 _calculate_fan_speed:
-      002055 C0 0E            [24] 6624 	push	_bp
-      002057 85 81 0E         [24] 6625 	mov	_bp,sp
-      00205A C0 82            [24] 6626 	push	dpl
-      00205C C0 83            [24] 6627 	push	dph
-      00205E C0 F0            [24] 6628 	push	b
-      002060 C0 E0            [24] 6629 	push	acc
-      002062 E5 81            [12] 6630 	mov	a,sp
-      002064 24 52            [12] 6631 	add	a,#0x52
-      002066 F5 81            [12] 6632 	mov	sp,a
-                           001FB1  6633 	C$controller_8051.c$132$1_0$110 ==.
-                                   6634 ;	../../controller_8051.c:132: );
-      002068 E5 0E            [12] 6635 	mov	a,_bp
-      00206A 24 09            [12] 6636 	add	a,#0x09
-      00206C FB               [12] 6637 	mov	r3,a
-      00206D FA               [12] 6638 	mov	r2,a
-      00206E 7E 00            [12] 6639 	mov	r6,#0x00
-      002070 7F 40            [12] 6640 	mov	r7,#0x40
-      002072 8A 82            [24] 6641 	mov	dpl, r2
-      002074 8E 83            [24] 6642 	mov	dph, r6
-      002076 8F F0            [24] 6643 	mov	b, r7
-      002078 C0 03            [24] 6644 	push	ar3
-      00207A 12 16 30         [24] 6645 	lcall	_fuzzy_rules_create
-                           001FC6  6646 	C$controller_8051.c$134$1_0$110 ==.
-                                   6647 ;	../../controller_8051.c:134: if (!FUZZY_RULE_ADD(
-      00207D A8 0E            [24] 6648 	mov	r0,_bp
-      00207F 08               [12] 6649 	inc	r0
-      002080 86 82            [24] 6650 	mov	dpl, @r0
-      002082 08               [12] 6651 	inc	r0
-      002083 86 83            [24] 6652 	mov	dph, @r0
-      002085 08               [12] 6653 	inc	r0
-      002086 86 F0            [24] 6654 	mov	b, @r0
-      002088 08               [12] 6655 	inc	r0
-      002089 E6               [12] 6656 	mov	a, @r0
-      00208A 12 1F 3E         [24] 6657 	lcall	_temperature_low
-      00208D C8               [12] 6658 	xch	a,r0
-      00208E E5 0E            [12] 6659 	mov	a,_bp
-      002090 24 05            [12] 6660 	add	a,#0x05
-      002092 C8               [12] 6661 	xch	a,r0
-      002093 A6 82            [24] 6662 	mov	@r0, dpl
-      002095 08               [12] 6663 	inc	r0
-      002096 A6 83            [24] 6664 	mov	@r0, dph
-      002098 08               [12] 6665 	inc	r0
-      002099 A6 F0            [24] 6666 	mov	@r0, b
-      00209B 08               [12] 6667 	inc	r0
-      00209C F6               [12] 6668 	mov	@r0,a
-      00209D D0 03            [24] 6669 	pop	ar3
-      00209F 8B 02            [24] 6670 	mov	ar2,r3
-      0020A1 7E 00            [12] 6671 	mov	r6,#0x00
-      0020A3 7F 40            [12] 6672 	mov	r7,#0x40
-      0020A5 C0 03            [24] 6673 	push	ar3
-      0020A7 74 CA            [12] 6674 	mov	a,#_fan_slow
-      0020A9 C0 E0            [24] 6675 	push	acc
-      0020AB 74 1F            [12] 6676 	mov	a,#(_fan_slow >> 8)
-      0020AD C0 E0            [24] 6677 	push	acc
-      0020AF E5 0E            [12] 6678 	mov	a,_bp
-      0020B1 24 05            [12] 6679 	add	a,#0x05
-      0020B3 F8               [12] 6680 	mov	r0,a
-      0020B4 E6               [12] 6681 	mov	a,@r0
-      0020B5 C0 E0            [24] 6682 	push	acc
-      0020B7 08               [12] 6683 	inc	r0
-      0020B8 E6               [12] 6684 	mov	a,@r0
-      0020B9 C0 E0            [24] 6685 	push	acc
-      0020BB 08               [12] 6686 	inc	r0
-      0020BC E6               [12] 6687 	mov	a,@r0
-      0020BD C0 E0            [24] 6688 	push	acc
-      0020BF 08               [12] 6689 	inc	r0
-      0020C0 E6               [12] 6690 	mov	a,@r0
-      0020C1 C0 E0            [24] 6691 	push	acc
-      0020C3 74 F8            [12] 6692 	mov	a,#___str_0
-      0020C5 C0 E0            [24] 6693 	push	acc
-      0020C7 74 26            [12] 6694 	mov	a,#(___str_0 >> 8)
-      0020C9 C0 E0            [24] 6695 	push	acc
-      0020CB 74 80            [12] 6696 	mov	a,#0x80
-      0020CD C0 E0            [24] 6697 	push	acc
-      0020CF 8A 82            [24] 6698 	mov	dpl, r2
-      0020D1 8E 83            [24] 6699 	mov	dph, r6
-      0020D3 8F F0            [24] 6700 	mov	b, r7
-      0020D5 12 16 52         [24] 6701 	lcall	_fuzzy_rules_add
-      0020D8 AF 82            [24] 6702 	mov	r7, dpl
-      0020DA E5 81            [12] 6703 	mov	a,sp
-      0020DC 24 F7            [12] 6704 	add	a,#0xf7
-      0020DE F5 81            [12] 6705 	mov	sp,a
-      0020E0 D0 03            [24] 6706 	pop	ar3
-      0020E2 EF               [12] 6707 	mov	a,r7
-                           00202C  6708 	C$controller_8051.c$141$2_0$111 ==.
-                                   6709 ;	../../controller_8051.c:141: );
-      0020E3 70 17            [24] 6710 	jnz	00102$
-      0020E5 8B 05            [24] 6711 	mov	ar5,r3
-      0020E7 FE               [12] 6712 	mov	r6,a
-      0020E8 7F 40            [12] 6713 	mov	r7,#0x40
-      0020EA 8D 82            [24] 6714 	mov	dpl, r5
-      0020EC 8E 83            [24] 6715 	mov	dph, r6
-      0020EE 8F F0            [24] 6716 	mov	b, r7
-      0020F0 12 1F 1C         [24] 6717 	lcall	_fuzzy_rules_free
-                           00203C  6718 	C$controller_8051.c$143$2_0$111 ==.
-                                   6719 ;	../../controller_8051.c:143: return 0.0f;
-      0020F3 90 00 00         [24] 6720 	mov	dptr,#0x0000
-      0020F6 E4               [12] 6721 	clr	a
-      0020F7 F5 F0            [12] 6722 	mov	b,a
-      0020F9 02 21 EA         [24] 6723 	ljmp	00105$
-      0020FC                       6724 00102$:
-                           002045  6725 	C$controller_8051.c$146$1_0$110 ==.
-                                   6726 ;	../../controller_8051.c:146: if (!FUZZY_RULE_ADD(
-      0020FC A8 0E            [24] 6727 	mov	r0,_bp
-      0020FE 08               [12] 6728 	inc	r0
-      0020FF 86 82            [24] 6729 	mov	dpl, @r0
-      002101 08               [12] 6730 	inc	r0
-      002102 86 83            [24] 6731 	mov	dph, @r0
-      002104 08               [12] 6732 	inc	r0
-      002105 86 F0            [24] 6733 	mov	b, @r0
-      002107 08               [12] 6734 	inc	r0
-      002108 E6               [12] 6735 	mov	a, @r0
-      002109 C0 03            [24] 6736 	push	ar3
-      00210B 12 1F 83         [24] 6737 	lcall	_temperature_high
-      00210E C8               [12] 6738 	xch	a,r0
-      00210F E5 0E            [12] 6739 	mov	a,_bp
-      002111 24 05            [12] 6740 	add	a,#0x05
-      002113 C8               [12] 6741 	xch	a,r0
-      002114 A6 82            [24] 6742 	mov	@r0, dpl
-      002116 08               [12] 6743 	inc	r0
-      002117 A6 83            [24] 6744 	mov	@r0, dph
-      002119 08               [12] 6745 	inc	r0
-      00211A A6 F0            [24] 6746 	mov	@r0, b
-      00211C 08               [12] 6747 	inc	r0
-      00211D F6               [12] 6748 	mov	@r0,a
-      00211E D0 03            [24] 6749 	pop	ar3
-      002120 8B 02            [24] 6750 	mov	ar2,r3
-      002122 7E 00            [12] 6751 	mov	r6,#0x00
-      002124 7F 40            [12] 6752 	mov	r7,#0x40
-      002126 C0 03            [24] 6753 	push	ar3
-      002128 74 0F            [12] 6754 	mov	a,#_fan_fast
-      00212A C0 E0            [24] 6755 	push	acc
-      00212C 74 20            [12] 6756 	mov	a,#(_fan_fast >> 8)
-      00212E C0 E0            [24] 6757 	push	acc
-      002130 E5 0E            [12] 6758 	mov	a,_bp
-      002132 24 05            [12] 6759 	add	a,#0x05
-      002134 F8               [12] 6760 	mov	r0,a
-      002135 E6               [12] 6761 	mov	a,@r0
-      002136 C0 E0            [24] 6762 	push	acc
-      002138 08               [12] 6763 	inc	r0
-      002139 E6               [12] 6764 	mov	a,@r0
-      00213A C0 E0            [24] 6765 	push	acc
-      00213C 08               [12] 6766 	inc	r0
-      00213D E6               [12] 6767 	mov	a,@r0
-      00213E C0 E0            [24] 6768 	push	acc
-      002140 08               [12] 6769 	inc	r0
-      002141 E6               [12] 6770 	mov	a,@r0
-      002142 C0 E0            [24] 6771 	push	acc
-      002144 74 01            [12] 6772 	mov	a,#___str_1
-      002146 C0 E0            [24] 6773 	push	acc
-      002148 74 27            [12] 6774 	mov	a,#(___str_1 >> 8)
-      00214A C0 E0            [24] 6775 	push	acc
-      00214C 74 80            [12] 6776 	mov	a,#0x80
-      00214E C0 E0            [24] 6777 	push	acc
-      002150 8A 82            [24] 6778 	mov	dpl, r2
-      002152 8E 83            [24] 6779 	mov	dph, r6
-      002154 8F F0            [24] 6780 	mov	b, r7
-      002156 12 16 52         [24] 6781 	lcall	_fuzzy_rules_add
-      002159 AF 82            [24] 6782 	mov	r7, dpl
-      00215B E5 81            [12] 6783 	mov	a,sp
-      00215D 24 F7            [12] 6784 	add	a,#0xf7
-      00215F F5 81            [12] 6785 	mov	sp,a
-      002161 D0 03            [24] 6786 	pop	ar3
-      002163 EF               [12] 6787 	mov	a,r7
-                           0020AD  6788 	C$controller_8051.c$153$2_0$112 ==.
-                                   6789 ;	../../controller_8051.c:153: );
-      002164 70 16            [24] 6790 	jnz	00104$
-      002166 8B 05            [24] 6791 	mov	ar5,r3
-      002168 FE               [12] 6792 	mov	r6,a
-      002169 7F 40            [12] 6793 	mov	r7,#0x40
-      00216B 8D 82            [24] 6794 	mov	dpl, r5
-      00216D 8E 83            [24] 6795 	mov	dph, r6
-      00216F 8F F0            [24] 6796 	mov	b, r7
-      002171 12 1F 1C         [24] 6797 	lcall	_fuzzy_rules_free
-                           0020BD  6798 	C$controller_8051.c$155$2_0$112 ==.
-                                   6799 ;	../../controller_8051.c:155: return 0.0f;
-      002174 90 00 00         [24] 6800 	mov	dptr,#0x0000
-      002177 E4               [12] 6801 	clr	a
-      002178 F5 F0            [12] 6802 	mov	b,a
-      00217A 80 6E            [24] 6803 	sjmp	00105$
-      00217C                       6804 00104$:
-                           0020C5  6805 	C$controller_8051.c$160$1_0$110 ==.
-                                   6806 ;	../../controller_8051.c:160: &rules,
-      00217C 8B 05            [24] 6807 	mov	ar5,r3
-      00217E 7E 00            [12] 6808 	mov	r6,#0x00
-      002180 7F 40            [12] 6809 	mov	r7,#0x40
-      002182 C0 03            [24] 6810 	push	ar3
-      002184 74 01            [12] 6811 	mov	a,#0x01
-      002186 C0 E0            [24] 6812 	push	acc
-      002188 E4               [12] 6813 	clr	a
-      002189 C0 E0            [24] 6814 	push	acc
-      00218B C0 E0            [24] 6815 	push	acc
-      00218D 74 20            [12] 6816 	mov	a,#0x20
-      00218F C0 E0            [24] 6817 	push	acc
-      002191 74 41            [12] 6818 	mov	a,#0x41
-      002193 C0 E0            [24] 6819 	push	acc
-      002195 E4               [12] 6820 	clr	a
-      002196 C0 E0            [24] 6821 	push	acc
-      002198 C0 E0            [24] 6822 	push	acc
-      00219A 74 C8            [12] 6823 	mov	a,#0xc8
-      00219C C0 E0            [24] 6824 	push	acc
-      00219E 74 42            [12] 6825 	mov	a,#0x42
-      0021A0 C0 E0            [24] 6826 	push	acc
-      0021A2 E4               [12] 6827 	clr	a
-      0021A3 C0 E0            [24] 6828 	push	acc
-      0021A5 C0 E0            [24] 6829 	push	acc
-      0021A7 C0 E0            [24] 6830 	push	acc
-      0021A9 C0 E0            [24] 6831 	push	acc
-      0021AB 8D 82            [24] 6832 	mov	dpl, r5
-      0021AD 8E 83            [24] 6833 	mov	dph, r6
-      0021AF 8F F0            [24] 6834 	mov	b, r7
-      0021B1 12 17 B6         [24] 6835 	lcall	_fuzzy_rules_defuzzify
-      0021B4 C8               [12] 6836 	xch	a,r0
-      0021B5 E5 0E            [12] 6837 	mov	a,_bp
-      0021B7 24 53            [12] 6838 	add	a,#0x53
-      0021B9 C8               [12] 6839 	xch	a,r0
-      0021BA A6 82            [24] 6840 	mov	@r0, dpl
-      0021BC 08               [12] 6841 	inc	r0
-      0021BD A6 83            [24] 6842 	mov	@r0, dph
-      0021BF 08               [12] 6843 	inc	r0
-      0021C0 A6 F0            [24] 6844 	mov	@r0, b
-      0021C2 08               [12] 6845 	inc	r0
-      0021C3 F6               [12] 6846 	mov	@r0,a
-      0021C4 E5 81            [12] 6847 	mov	a,sp
-      0021C6 24 F3            [12] 6848 	add	a,#0xf3
-      0021C8 F5 81            [12] 6849 	mov	sp,a
-      0021CA D0 03            [24] 6850 	pop	ar3
-                           002115  6851 	C$controller_8051.c$169$1_0$110 ==.
-                                   6852 ;	../../controller_8051.c:169: );
-      0021CC 8B 02            [24] 6853 	mov	ar2,r3
-      0021CE 7B 00            [12] 6854 	mov	r3,#0x00
-      0021D0 7F 40            [12] 6855 	mov	r7,#0x40
-      0021D2 8A 82            [24] 6856 	mov	dpl, r2
-      0021D4 8B 83            [24] 6857 	mov	dph, r3
-      0021D6 8F F0            [24] 6858 	mov	b, r7
-      0021D8 12 1F 1C         [24] 6859 	lcall	_fuzzy_rules_free
-                           002124  6860 	C$controller_8051.c$171$1_0$110 ==.
-                                   6861 ;	../../controller_8051.c:171: return result;
-      0021DB E5 0E            [12] 6862 	mov	a,_bp
-      0021DD 24 53            [12] 6863 	add	a,#0x53
-      0021DF F8               [12] 6864 	mov	r0,a
-      0021E0 86 82            [24] 6865 	mov	dpl, @r0
-      0021E2 08               [12] 6866 	inc	r0
-      0021E3 86 83            [24] 6867 	mov	dph, @r0
-      0021E5 08               [12] 6868 	inc	r0
-      0021E6 86 F0            [24] 6869 	mov	b, @r0
-      0021E8 08               [12] 6870 	inc	r0
-      0021E9 E6               [12] 6871 	mov	a, @r0
-      0021EA                       6872 00105$:
-                           002133  6873 	C$controller_8051.c$172$1_0$110 ==.
-                                   6874 ;	../../controller_8051.c:172: }
-      0021EA 85 0E 81         [24] 6875 	mov	sp,_bp
-      0021ED D0 0E            [24] 6876 	pop	_bp
-                           002138  6877 	C$controller_8051.c$172$1_0$110 ==.
-                           002138  6878 	XFcontroller_8051$calculate_fan_speed$0$0 ==.
-      0021EF 22               [24] 6879 	ret
-                                   6880 ;------------------------------------------------------------
-                                   6881 ;Allocation info for local variables in function 'fan_speed_to_pwm'
-                                   6882 ;------------------------------------------------------------
-                                   6883 ;fan_speed     Allocated to registers r4 r5 r6 r7 
-                                   6884 ;------------------------------------------------------------
-                           002139  6885 	Fcontroller_8051$fan_speed_to_pwm$0$0 ==.
-                           002139  6886 	C$controller_8051.c$179$1_0$114 ==.
-                                   6887 ;	../../controller_8051.c:179: static unsigned char fan_speed_to_pwm(
-                                   6888 ;	-----------------------------------------
-                                   6889 ;	 function fan_speed_to_pwm
-                                   6890 ;	-----------------------------------------
-      0021F0                       6891 _fan_speed_to_pwm:
-      0021F0 AC 82            [24] 6892 	mov	r4,dpl
-      0021F2 AD 83            [24] 6893 	mov	r5,dph
-      0021F4 AE F0            [24] 6894 	mov	r6,b
-      0021F6 FF               [12] 6895 	mov	r7,a
-                           002140  6896 	C$controller_8051.c$183$1_0$114 ==.
-                                   6897 ;	../../controller_8051.c:183: if (fan_speed <= 0.0f) {
-      0021F7 C0 07            [24] 6898 	push	ar7
-      0021F9 C0 06            [24] 6899 	push	ar6
-      0021FB C0 05            [24] 6900 	push	ar5
-      0021FD C0 04            [24] 6901 	push	ar4
-      0021FF C0 04            [24] 6902 	push	ar4
-      002201 C0 05            [24] 6903 	push	ar5
-      002203 C0 06            [24] 6904 	push	ar6
-      002205 C0 07            [24] 6905 	push	ar7
-      002207 90 00 00         [24] 6906 	mov	dptr,#0x0000
-      00220A E4               [12] 6907 	clr	a
-      00220B F5 F0            [12] 6908 	mov	b,a
-      00220D 12 24 07         [24] 6909 	lcall	___fslt
-      002210 E5 81            [12] 6910 	mov	a,sp
-      002212 24 FC            [12] 6911 	add	a,#0xfc
-      002214 F5 81            [12] 6912 	mov	sp,a
-      002216 D0 04            [24] 6913 	pop	ar4
-      002218 D0 05            [24] 6914 	pop	ar5
-      00221A D0 06            [24] 6915 	pop	ar6
-      00221C D0 07            [24] 6916 	pop	ar7
-      00221E E5 82            [12] 6917 	mov	a, dpl
-      002220 24 FF            [12] 6918 	add	a,#0xff
-      002222 92 00            [24] 6919 	mov	b0,c
-      002224 40 05            [24] 6920 	jc	00102$
-                           00216F  6921 	C$controller_8051.c$184$2_0$115 ==.
-                                   6922 ;	../../controller_8051.c:184: return 0u;
-      002226 75 82 00         [24] 6923 	mov	dpl, #0x00
-      002229 80 66            [24] 6924 	sjmp	00105$
-      00222B                       6925 00102$:
-                           002174  6926 	C$controller_8051.c$187$1_0$114 ==.
-                                   6927 ;	../../controller_8051.c:187: if (fan_speed >= 100.0f) {
-      00222B C0 07            [24] 6928 	push	ar7
-      00222D C0 06            [24] 6929 	push	ar6
-      00222F C0 05            [24] 6930 	push	ar5
-      002231 C0 04            [24] 6931 	push	ar4
-      002233 E4               [12] 6932 	clr	a
-      002234 C0 E0            [24] 6933 	push	acc
-      002236 C0 E0            [24] 6934 	push	acc
-      002238 74 C8            [12] 6935 	mov	a,#0xc8
-      00223A C0 E0            [24] 6936 	push	acc
-      00223C 74 42            [12] 6937 	mov	a,#0x42
-      00223E C0 E0            [24] 6938 	push	acc
-      002240 8C 82            [24] 6939 	mov	dpl, r4
-      002242 8D 83            [24] 6940 	mov	dph, r5
-      002244 8E F0            [24] 6941 	mov	b, r6
-      002246 EF               [12] 6942 	mov	a, r7
-      002247 12 24 07         [24] 6943 	lcall	___fslt
-      00224A E5 81            [12] 6944 	mov	a,sp
-      00224C 24 FC            [12] 6945 	add	a,#0xfc
-      00224E F5 81            [12] 6946 	mov	sp,a
-      002250 D0 04            [24] 6947 	pop	ar4
-      002252 D0 05            [24] 6948 	pop	ar5
-      002254 D0 06            [24] 6949 	pop	ar6
-      002256 D0 07            [24] 6950 	pop	ar7
-      002258 E5 82            [12] 6951 	mov	a, dpl
-      00225A 24 FF            [12] 6952 	add	a,#0xff
-      00225C 92 00            [24] 6953 	mov	b0,c
-      00225E 40 05            [24] 6954 	jc	00104$
-                           0021A9  6955 	C$controller_8051.c$188$2_0$116 ==.
-                                   6956 ;	../../controller_8051.c:188: return 100u;
-      002260 75 82 64         [24] 6957 	mov	dpl, #0x64
-      002263 80 2C            [24] 6958 	sjmp	00105$
-      002265                       6959 00104$:
-                           0021AE  6960 	C$controller_8051.c$193$1_0$114 ==.
-                                   6961 ;	../../controller_8051.c:193: );
-      002265 E4               [12] 6962 	clr	a
-      002266 C0 E0            [24] 6963 	push	acc
-      002268 C0 E0            [24] 6964 	push	acc
-      00226A C0 E0            [24] 6965 	push	acc
-      00226C 74 3F            [12] 6966 	mov	a,#0x3f
-      00226E C0 E0            [24] 6967 	push	acc
-      002270 8C 82            [24] 6968 	mov	dpl, r4
-      002272 8D 83            [24] 6969 	mov	dph, r5
-      002274 8E F0            [24] 6970 	mov	b, r6
-      002276 EF               [12] 6971 	mov	a, r7
-      002277 12 24 59         [24] 6972 	lcall	___fsadd
-      00227A AC 82            [24] 6973 	mov	r4, dpl
-      00227C AD 83            [24] 6974 	mov	r5, dph
-      00227E AE F0            [24] 6975 	mov	r6, b
-      002280 FF               [12] 6976 	mov	r7, a
-      002281 E5 81            [12] 6977 	mov	a,sp
-      002283 24 FC            [12] 6978 	add	a,#0xfc
-      002285 F5 81            [12] 6979 	mov	sp,a
-      002287 8C 82            [24] 6980 	mov	dpl, r4
-      002289 8D 83            [24] 6981 	mov	dph, r5
-      00228B 8E F0            [24] 6982 	mov	b, r6
-      00228D EF               [12] 6983 	mov	a, r7
-      00228E 12 26 4F         [24] 6984 	lcall	___fs2uchar
-      002291                       6985 00105$:
-                           0021DA  6986 	C$controller_8051.c$194$1_0$114 ==.
-                                   6987 ;	../../controller_8051.c:194: }
-                           0021DA  6988 	C$controller_8051.c$194$1_0$114 ==.
-                           0021DA  6989 	XFcontroller_8051$fan_speed_to_pwm$0$0 ==.
-      002291 22               [24] 6990 	ret
-                                   6991 ;------------------------------------------------------------
-                                   6992 ;Allocation info for local variables in function 'main'
-                                   6993 ;------------------------------------------------------------
-                           0021DB  6994 	G$main$0$0 ==.
-                           0021DB  6995 	C$controller_8051.c$211$1_0$118 ==.
-                                   6996 ;	../../controller_8051.c:211: void main(void)
-                                   6997 ;	-----------------------------------------
-                                   6998 ;	 function main
-                                   6999 ;	-----------------------------------------
-      002292                       7000 _main:
-                           0021DB  7001 	C$controller_8051.c$219$1_0$118 ==.
-                                   7002 ;	../../controller_8051.c:219: 42u;
-      002292 75 08 2A         [24] 7003 	mov	_test_temperature,#0x2a
-                           0021DE  7004 	C$controller_8051.c$225$1_0$118 ==.
-                                   7005 ;	../../controller_8051.c:225: 0x55u;
-      002295 75 80 55         [24] 7006 	mov	_P0,#0x55
-                           0021E1  7007 	C$controller_8051.c$228$1_0$118 ==.
-                                   7008 ;	../../controller_8051.c:228: 0x00u;
-      002298 75 90 00         [24] 7009 	mov	_P1,#0x00
-                           0021E4  7010 	C$controller_8051.c$234$1_0$118 ==.
-                                   7011 ;	../../controller_8051.c:234: test_temperature = P2;
-      00229B 85 A0 08         [24] 7012 	mov	_test_temperature,_P2
-                           0021E7  7013 	C$controller_8051.c$239$2_0$118 ==.
-                                   7014 ;	../../controller_8051.c:239: );
-      00229E 85 08 82         [24] 7015 	mov	dpl, _test_temperature
-      0022A1 12 26 57         [24] 7016 	lcall	___uchar2fs
-      0022A4 12 20 55         [24] 7017 	lcall	_calculate_fan_speed
-      0022A7 85 82 0A         [24] 7018 	mov	_test_fan_speed,dpl
-      0022AA 85 83 0B         [24] 7019 	mov	(_test_fan_speed + 1),dph
-      0022AD 85 F0 0C         [24] 7020 	mov	(_test_fan_speed + 2),b
-      0022B0 F5 0D            [12] 7021 	mov	(_test_fan_speed + 3),a
-                           0021FB  7022 	C$controller_8051.c$243$1_0$118 ==.
-                                   7023 ;	../../controller_8051.c:243: test_fan_speed
-      0022B2 85 0A 82         [24] 7024 	mov	dpl, _test_fan_speed
-      0022B5 85 0B 83         [24] 7025 	mov	dph, (_test_fan_speed + 1)
-      0022B8 85 0C F0         [24] 7026 	mov	b, (_test_fan_speed + 2)
-      0022BB E5 0D            [12] 7027 	mov	a, (_test_fan_speed + 3)
-      0022BD 12 21 F0         [24] 7028 	lcall	_fan_speed_to_pwm
-      0022C0 85 82 09         [24] 7029 	mov	_test_pwm,dpl
-                           00220C  7030 	C$controller_8051.c$250$1_0$118 ==.
-                                   7031 ;	../../controller_8051.c:250: test_pwm;
-      0022C3 85 09 90         [24] 7032 	mov	_P1,_test_pwm
-                           00220F  7033 	C$controller_8051.c$256$1_0$118 ==.
-                                   7034 ;	../../controller_8051.c:256: 0xAAu;
-      0022C6 75 80 AA         [24] 7035 	mov	_P0,#0xaa
-      0022C9                       7036 00103$:
-      0022C9 80 FE            [24] 7037 	sjmp	00103$
-                           002214  7038 	C$controller_8051.c$261$2_0$118 ==.
-                                   7039 ;	../../controller_8051.c:261: }
-                           002214  7040 	C$controller_8051.c$261$2_0$118 ==.
-                           002214  7041 	XG$main$0$0 ==.
-      0022CB 22               [24] 7042 	ret
-                                   7043 	.area CSEG    (CODE)
-                                   7044 	.area CONST   (CODE)
-                                   7045 	.area CONST   (CODE)
-                           000000  7046 Fcontroller_8051$hedges$0_0$0 == .
-      0026F5                       7047 _hedges:
-      0026F5 01                    7048 	.db #0x01	; 1
-      0026F6 02                    7049 	.db #0x02	; 2
-      0026F7 03                    7050 	.db #0x03	; 3
-                                   7051 	.area CSEG    (CODE)
-                           002215  7052 Fcontroller_8051$__str_0$0_0$0 == .
-                                   7053 	.area CONST   (CODE)
-      0026F8                       7054 ___str_0:
-      0026F8 66 61 6E 5F 73 6C 6F  7055 	.ascii "fan_slow"
+                                    446 	.area IABS    (ABS,DATA)
+                                    447 	.area IABS    (ABS,DATA)
+                                    448 ;--------------------------------------------------------
+                                    449 ; bit data
+                                    450 ;--------------------------------------------------------
+                                    451 	.area BSEG    (BIT)
+                                    452 ;--------------------------------------------------------
+                                    453 ; paged external ram data
+                                    454 ;--------------------------------------------------------
+                                    455 	.area PSEG    (PAG,XDATA)
+                                    456 ;--------------------------------------------------------
+                                    457 ; uninitialized external ram data
+                                    458 ;--------------------------------------------------------
+                                    459 	.area XSEG    (XDATA)
+                                    460 ;--------------------------------------------------------
+                                    461 ; absolute external ram data
+                                    462 ;--------------------------------------------------------
+                                    463 	.area XABS    (ABS,XDATA)
+                                    464 ;--------------------------------------------------------
+                                    465 ; initialized external ram data
+                                    466 ;--------------------------------------------------------
+                                    467 	.area XISEG   (XDATA)
+                                    468 	.area HOME    (CODE)
+                                    469 	.area GSINIT0 (CODE)
+                                    470 	.area GSINIT1 (CODE)
+                                    471 	.area GSINIT2 (CODE)
+                                    472 	.area GSINIT3 (CODE)
+                                    473 	.area GSINIT4 (CODE)
+                                    474 	.area GSINIT5 (CODE)
+                                    475 	.area GSINIT  (CODE)
+                                    476 	.area GSFINAL (CODE)
+                                    477 	.area CSEG    (CODE)
+                                    478 ;--------------------------------------------------------
+                                    479 ; interrupt vector
+                                    480 ;--------------------------------------------------------
+                                    481 	.area HOME    (CODE)
+      000000                        482 __interrupt_vect:
+      000000 02 00 4C         [24]  483 	ljmp	__sdcc_gsinit_startup
+                                    484 ; restartable atomic support routines
+      000003                        485 	.ds	5
+      000008                        486 sdcc_atomic_exchange_rollback_start::
+      000008 00               [12]  487 	nop
+      000009 00               [12]  488 	nop
+      00000A                        489 sdcc_atomic_exchange_pdata_impl:
+      00000A E2               [24]  490 	movx	a, @r0
+      00000B FB               [12]  491 	mov	r3, a
+      00000C EA               [12]  492 	mov	a, r2
+      00000D F2               [24]  493 	movx	@r0, a
+      00000E 80 2C            [24]  494 	sjmp	sdcc_atomic_exchange_exit
+      000010 00               [12]  495 	nop
+      000011 00               [12]  496 	nop
+      000012                        497 sdcc_atomic_exchange_xdata_impl:
+      000012 E0               [24]  498 	movx	a, @dptr
+      000013 FB               [12]  499 	mov	r3, a
+      000014 EA               [12]  500 	mov	a, r2
+      000015 F0               [24]  501 	movx	@dptr, a
+      000016 80 24            [24]  502 	sjmp	sdcc_atomic_exchange_exit
+      000018                        503 sdcc_atomic_compare_exchange_idata_impl:
+      000018 E6               [12]  504 	mov	a, @r0
+      000019 B5 02 02         [24]  505 	cjne	a, ar2, .+#5
+      00001C EB               [12]  506 	mov	a, r3
+      00001D F6               [12]  507 	mov	@r0, a
+      00001E 22               [24]  508 	ret
+      00001F 00               [12]  509 	nop
+      000020                        510 sdcc_atomic_compare_exchange_pdata_impl:
+      000020 E2               [24]  511 	movx	a, @r0
+      000021 B5 02 02         [24]  512 	cjne	a, ar2, .+#5
+      000024 EB               [12]  513 	mov	a, r3
+      000025 F2               [24]  514 	movx	@r0, a
+      000026 22               [24]  515 	ret
+      000027 00               [12]  516 	nop
+      000028                        517 sdcc_atomic_compare_exchange_xdata_impl:
+      000028 E0               [24]  518 	movx	a, @dptr
+      000029 B5 02 02         [24]  519 	cjne	a, ar2, .+#5
+      00002C EB               [12]  520 	mov	a, r3
+      00002D F0               [24]  521 	movx	@dptr, a
+      00002E 22               [24]  522 	ret
+      00002F                        523 sdcc_atomic_exchange_rollback_end::
+                                    524 
+      00002F                        525 sdcc_atomic_exchange_gptr_impl::
+      00002F 30 F6 E0         [24]  526 	jnb	b.6, sdcc_atomic_exchange_xdata_impl
+      000032 A8 82            [24]  527 	mov	r0, dpl
+      000034 20 F5 D3         [24]  528 	jb	b.5, sdcc_atomic_exchange_pdata_impl
+      000037                        529 sdcc_atomic_exchange_idata_impl:
+      000037 EA               [12]  530 	mov	a, r2
+      000038 C6               [12]  531 	xch	a, @r0
+      000039 F5 82            [12]  532 	mov	dpl, a
+      00003B 22               [24]  533 	ret
+      00003C                        534 sdcc_atomic_exchange_exit:
+      00003C 8B 82            [24]  535 	mov	dpl, r3
+      00003E 22               [24]  536 	ret
+      00003F                        537 sdcc_atomic_compare_exchange_gptr_impl::
+      00003F 30 F6 E6         [24]  538 	jnb	b.6, sdcc_atomic_compare_exchange_xdata_impl
+      000042 A8 82            [24]  539 	mov	r0, dpl
+      000044 20 F5 D9         [24]  540 	jb	b.5, sdcc_atomic_compare_exchange_pdata_impl
+      000047 80 CF            [24]  541 	sjmp	sdcc_atomic_compare_exchange_idata_impl
+                                    542 ;--------------------------------------------------------
+                                    543 ; global & static initialisations
+                                    544 ;--------------------------------------------------------
+                                    545 	.area HOME    (CODE)
+                                    546 	.area GSINIT  (CODE)
+                                    547 	.area GSFINAL (CODE)
+                                    548 	.area GSINIT  (CODE)
+                                    549 	.globl __sdcc_gsinit_startup
+                                    550 	.globl __sdcc_program_startup
+                                    551 	.globl __start__stack
+                                    552 	.globl __mcs51_genXINIT
+                                    553 	.globl __mcs51_genXRAMCLEAR
+                                    554 	.globl __mcs51_genRAMCLEAR
+                           000000   555 	C$controller_8051.c$25$2_0$122 ==.
+                                    556 ;	../../controller_8051.c:25: volatile unsigned char test_temperature = 0u;
+      0000A5 75 61 00         [24]  557 	mov	_test_temperature,#0x00
+                           000003   558 	C$controller_8051.c$26$2_0$122 ==.
+                                    559 ;	../../controller_8051.c:26: volatile unsigned char test_pwm = 0u;
+      0000A8 75 62 00         [24]  560 	mov	_test_pwm,#0x00
+                           000006   561 	C$controller_8051.c$27$2_0$122 ==.
+                                    562 ;	../../controller_8051.c:27: volatile float test_fan_speed = 0.0f;
+      0000AB E4               [12]  563 	clr	a
+      0000AC F5 63            [12]  564 	mov	_test_fan_speed,a
+      0000AE F5 64            [12]  565 	mov	(_test_fan_speed + 1),a
+      0000B0 F5 65            [12]  566 	mov	(_test_fan_speed + 2),a
+      0000B2 F5 66            [12]  567 	mov	(_test_fan_speed + 3),a
+                                    568 	.area GSFINAL (CODE)
+      0000B4 02 00 49         [24]  569 	ljmp	__sdcc_program_startup
+                                    570 ;--------------------------------------------------------
+                                    571 ; Home
+                                    572 ;--------------------------------------------------------
+                                    573 	.area HOME    (CODE)
+                                    574 	.area HOME    (CODE)
+      000049                        575 __sdcc_program_startup:
+      000049 02 22 C5         [24]  576 	ljmp	_main
+                                    577 ;	return from main will return to caller
+                                    578 ;--------------------------------------------------------
+                                    579 ; code
+                                    580 ;--------------------------------------------------------
+                                    581 	.area CSEG    (CODE)
+                                    582 ;------------------------------------------------------------
+                                    583 ;Allocation info for local variables in function 'fuzzy_values_initialize'
+                                    584 ;------------------------------------------------------------
+                                    585 ;index         Allocated to registers r6 r7 
+                                    586 ;------------------------------------------------------------
+                           000000   587 	Fcontroller_8051$fuzzy_values_initialize$0$0 ==.
+                           000000   588 	C$fuzzy.h$102$0_0$3 ==.
+                                    589 ;	../../fuzzy.h:102: static float *fuzzy_values_initialize(void)
+                                    590 ;	-----------------------------------------
+                                    591 ;	 function fuzzy_values_initialize
+                                    592 ;	-----------------------------------------
+      0000B7                        593 _fuzzy_values_initialize:
+                           000007   594 	ar7 = 0x07
+                           000006   595 	ar6 = 0x06
+                           000005   596 	ar5 = 0x05
+                           000004   597 	ar4 = 0x04
+                           000003   598 	ar3 = 0x03
+                           000002   599 	ar2 = 0x02
+                           000001   600 	ar1 = 0x01
+                           000000   601 	ar0 = 0x00
+                           000000   602 	C$fuzzy.h$107$3_0$5 ==.
+                                    603 ;	../../fuzzy.h:107: index = 0u;
+      0000B7 7E 00            [12]  604 	mov	r6,#0x00
+      0000B9 7F 00            [12]  605 	mov	r7,#0x00
+      0000BB                        606 00102$:
+                           000004   607 	C$fuzzy.h$111$3_0$5 ==.
+                                    608 ;	../../fuzzy.h:111: fuzzy_values_buffer[index] =
+      0000BB EE               [12]  609 	mov	a,r6
+      0000BC 2E               [12]  610 	add	a,r6
+      0000BD FC               [12]  611 	mov	r4,a
+      0000BE EF               [12]  612 	mov	a,r7
+      0000BF 33               [12]  613 	rlc	a
+      0000C0 FD               [12]  614 	mov	r5,a
+      0000C1 EC               [12]  615 	mov	a,r4
+      0000C2 2C               [12]  616 	add	a,r4
+      0000C3 FC               [12]  617 	mov	r4,a
+      0000C4 ED               [12]  618 	mov	a,r5
+      0000C5 33               [12]  619 	rlc	a
+      0000C6 EC               [12]  620 	mov	a,r4
+      0000C7 24 21            [12]  621 	add	a, #_fuzzy_values_buffer
+      0000C9 F8               [12]  622 	mov	r0,a
+      0000CA 76 00            [12]  623 	mov	@r0,#0x00
+      0000CC 08               [12]  624 	inc	r0
+      0000CD 76 00            [12]  625 	mov	@r0,#0x00
+      0000CF 08               [12]  626 	inc	r0
+      0000D0 76 00            [12]  627 	mov	@r0,#0x00
+      0000D2 08               [12]  628 	inc	r0
+      0000D3 76 00            [12]  629 	mov	@r0,#0x00
+                           00001E   630 	C$fuzzy.h$109$2_0$4 ==.
+                                    631 ;	../../fuzzy.h:109: index++
+      0000D5 0E               [12]  632 	inc	r6
+      0000D6 BE 00 01         [24]  633 	cjne	r6,#0x00,00119$
+      0000D9 0F               [12]  634 	inc	r7
+      0000DA                        635 00119$:
+                           000023   636 	C$fuzzy.h$108$2_0$4 ==.
+                                    637 ;	../../fuzzy.h:108: index < FUZZY_MAX_VALUES;
+      0000DA C3               [12]  638 	clr	c
+      0000DB EE               [12]  639 	mov	a,r6
+      0000DC 94 10            [12]  640 	subb	a,#0x10
+      0000DE EF               [12]  641 	mov	a,r7
+      0000DF 94 00            [12]  642 	subb	a,#0x00
+      0000E1 40 D8            [24]  643 	jc	00102$
+                           00002C   644 	C$fuzzy.h$115$1_0$3 ==.
+                                    645 ;	../../fuzzy.h:115: return fuzzy_values_buffer;
+      0000E3 90 00 21         [24]  646 	mov	dptr,#_fuzzy_values_buffer
+      0000E6 75 F0 40         [24]  647 	mov	b, #0x40
+                           000032   648 	C$fuzzy.h$116$1_0$3 ==.
+                                    649 ;	../../fuzzy.h:116: }
+                           000032   650 	C$fuzzy.h$116$1_0$3 ==.
+                           000032   651 	XFcontroller_8051$fuzzy_values_initialize$0$0 ==.
+      0000E9 22               [24]  652 	ret
+                                    653 ;------------------------------------------------------------
+                                    654 ;Allocation info for local variables in function 'fuzzy_clamp'
+                                    655 ;------------------------------------------------------------
+                                    656 ;value         Allocated to registers r4 r5 r6 r7 
+                                    657 ;------------------------------------------------------------
+                           000033   658 	Fcontroller_8051$fuzzy_clamp$0$0 ==.
+                           000033   659 	C$fuzzy.h$674$1_0$20 ==.
+                                    660 ;	../../fuzzy.h:674: static float fuzzy_clamp(float value)
+                                    661 ;	-----------------------------------------
+                                    662 ;	 function fuzzy_clamp
+                                    663 ;	-----------------------------------------
+      0000EA                        664 _fuzzy_clamp:
+      0000EA AC 82            [24]  665 	mov	r4,dpl
+      0000EC AD 83            [24]  666 	mov	r5,dph
+      0000EE AE F0            [24]  667 	mov	r6,b
+      0000F0 FF               [12]  668 	mov	r7,a
+                           00003A   669 	C$fuzzy.h$676$1_0$20 ==.
+                                    670 ;	../../fuzzy.h:676: if (value < LEVEL_LO) {
+      0000F1 C0 07            [24]  671 	push	ar7
+      0000F3 C0 06            [24]  672 	push	ar6
+      0000F5 C0 05            [24]  673 	push	ar5
+      0000F7 C0 04            [24]  674 	push	ar4
+      0000F9 E4               [12]  675 	clr	a
+      0000FA C0 E0            [24]  676 	push	acc
+      0000FC C0 E0            [24]  677 	push	acc
+      0000FE C0 E0            [24]  678 	push	acc
+      000100 C0 E0            [24]  679 	push	acc
+      000102 8C 82            [24]  680 	mov	dpl, r4
+      000104 8D 83            [24]  681 	mov	dph, r5
+      000106 8E F0            [24]  682 	mov	b, r6
+      000108 EF               [12]  683 	mov	a, r7
+      000109 12 24 3A         [24]  684 	lcall	___fslt
+      00010C AB 82            [24]  685 	mov	r3, dpl
+      00010E E5 81            [12]  686 	mov	a,sp
+      000110 24 FC            [12]  687 	add	a,#0xfc
+      000112 F5 81            [12]  688 	mov	sp,a
+      000114 D0 04            [24]  689 	pop	ar4
+      000116 D0 05            [24]  690 	pop	ar5
+      000118 D0 06            [24]  691 	pop	ar6
+      00011A D0 07            [24]  692 	pop	ar7
+      00011C EB               [12]  693 	mov	a,r3
+      00011D 60 08            [24]  694 	jz	00102$
+                           000068   695 	C$fuzzy.h$677$2_0$21 ==.
+                                    696 ;	../../fuzzy.h:677: return LEVEL_LO;
+      00011F 90 00 00         [24]  697 	mov	dptr,#0x0000
+      000122 E4               [12]  698 	clr	a
+      000123 F5 F0            [12]  699 	mov	b,a
+      000125 80 3F            [24]  700 	sjmp	00105$
+      000127                        701 00102$:
+                           000070   702 	C$fuzzy.h$680$1_0$20 ==.
+                                    703 ;	../../fuzzy.h:680: if (value > LEVEL_HI) {
+      000127 C0 07            [24]  704 	push	ar7
+      000129 C0 06            [24]  705 	push	ar6
+      00012B C0 05            [24]  706 	push	ar5
+      00012D C0 04            [24]  707 	push	ar4
+      00012F C0 04            [24]  708 	push	ar4
+      000131 C0 05            [24]  709 	push	ar5
+      000133 C0 06            [24]  710 	push	ar6
+      000135 C0 07            [24]  711 	push	ar7
+      000137 90 00 00         [24]  712 	mov	dptr,#0x0000
+      00013A 75 F0 80         [24]  713 	mov	b, #0x80
+      00013D 74 3F            [12]  714 	mov	a, #0x3f
+      00013F 12 24 3A         [24]  715 	lcall	___fslt
+      000142 AB 82            [24]  716 	mov	r3, dpl
+      000144 E5 81            [12]  717 	mov	a,sp
+      000146 24 FC            [12]  718 	add	a,#0xfc
+      000148 F5 81            [12]  719 	mov	sp,a
+      00014A D0 04            [24]  720 	pop	ar4
+      00014C D0 05            [24]  721 	pop	ar5
+      00014E D0 06            [24]  722 	pop	ar6
+      000150 D0 07            [24]  723 	pop	ar7
+      000152 EB               [12]  724 	mov	a,r3
+      000153 60 0A            [24]  725 	jz	00104$
+                           00009E   726 	C$fuzzy.h$681$2_0$22 ==.
+                                    727 ;	../../fuzzy.h:681: return LEVEL_HI;
+      000155 90 00 00         [24]  728 	mov	dptr,#0x0000
+      000158 75 F0 80         [24]  729 	mov	b, #0x80
+      00015B 74 3F            [12]  730 	mov	a, #0x3f
+      00015D 80 07            [24]  731 	sjmp	00105$
+      00015F                        732 00104$:
+                           0000A8   733 	C$fuzzy.h$684$1_0$20 ==.
+                                    734 ;	../../fuzzy.h:684: return value;
+      00015F 8C 82            [24]  735 	mov	dpl, r4
+      000161 8D 83            [24]  736 	mov	dph, r5
+      000163 8E F0            [24]  737 	mov	b, r6
+      000165 EF               [12]  738 	mov	a, r7
+      000166                        739 00105$:
+                           0000AF   740 	C$fuzzy.h$685$1_0$20 ==.
+                                    741 ;	../../fuzzy.h:685: }
+                           0000AF   742 	C$fuzzy.h$685$1_0$20 ==.
+                           0000AF   743 	XFcontroller_8051$fuzzy_clamp$0$0 ==.
+      000166 22               [24]  744 	ret
+                                    745 ;------------------------------------------------------------
+                                    746 ;Allocation info for local variables in function 'fuzzy_not'
+                                    747 ;------------------------------------------------------------
+                                    748 ;membership    Allocated to registers r4 r5 r6 r7 
+                                    749 ;------------------------------------------------------------
+                           0000B0   750 	G$fuzzy_not$0$0 ==.
+                           0000B0   751 	C$fuzzy.h$690$1_0$24 ==.
+                                    752 ;	../../fuzzy.h:690: float fuzzy_not(
+                                    753 ;	-----------------------------------------
+                                    754 ;	 function fuzzy_not
+                                    755 ;	-----------------------------------------
+      000167                        756 _fuzzy_not:
+                           0000B0   757 	C$fuzzy.h$696$1_0$24 ==.
+                                    758 ;	../../fuzzy.h:696: membership
+      000167 12 00 EA         [24]  759 	lcall	_fuzzy_clamp
+      00016A AC 82            [24]  760 	mov	r4, dpl
+      00016C AD 83            [24]  761 	mov	r5, dph
+      00016E AE F0            [24]  762 	mov	r6, b
+      000170 FF               [12]  763 	mov	r7, a
+      000171 C0 04            [24]  764 	push	ar4
+      000173 C0 05            [24]  765 	push	ar5
+      000175 C0 06            [24]  766 	push	ar6
+      000177 C0 07            [24]  767 	push	ar7
+      000179 90 00 00         [24]  768 	mov	dptr,#0x0000
+      00017C 75 F0 80         [24]  769 	mov	b, #0x80
+      00017F 74 3F            [12]  770 	mov	a, #0x3f
+      000181 12 22 FF         [24]  771 	lcall	___fssub
+      000184 AC 82            [24]  772 	mov	r4, dpl
+      000186 AD 83            [24]  773 	mov	r5, dph
+      000188 AE F0            [24]  774 	mov	r6, b
+      00018A FF               [12]  775 	mov	r7, a
+      00018B E5 81            [12]  776 	mov	a,sp
+      00018D 24 FC            [12]  777 	add	a,#0xfc
+      00018F F5 81            [12]  778 	mov	sp,a
+      000191 8C 82            [24]  779 	mov	dpl, r4
+      000193 8D 83            [24]  780 	mov	dph, r5
+      000195 8E F0            [24]  781 	mov	b, r6
+      000197 EF               [12]  782 	mov	a, r7
+                           0000E1   783 	C$fuzzy.h$698$1_0$24 ==.
+                                    784 ;	../../fuzzy.h:698: }
+                           0000E1   785 	C$fuzzy.h$698$1_0$24 ==.
+                           0000E1   786 	XG$fuzzy_not$0$0 ==.
+      000198 22               [24]  787 	ret
+                                    788 ;------------------------------------------------------------
+                                    789 ;Allocation info for local variables in function 'fuzzy_apply_hedge'
+                                    790 ;------------------------------------------------------------
+                                    791 ;hedge         Allocated to stack - _bp -3 +1 
+                                    792 ;membership    Allocated to stack - _bp +1 +4 
+                                    793 ;result        Allocated to registers r2 r3 r6 r7 
+                                    794 ;------------------------------------------------------------
+                           0000E2   795 	Fcontroller_8051$fuzzy_apply_hedge$0$0 ==.
+                           0000E2   796 	C$fuzzy.h$708$1_0$26 ==.
+                                    797 ;	../../fuzzy.h:708: static float fuzzy_apply_hedge(
+                                    798 ;	-----------------------------------------
+                                    799 ;	 function fuzzy_apply_hedge
+                                    800 ;	-----------------------------------------
+      000199                        801 _fuzzy_apply_hedge:
+      000199 C0 08            [24]  802 	push	_bp
+      00019B 85 81 08         [24]  803 	mov	_bp,sp
+      00019E AC 82            [24]  804 	mov	r4,dpl
+      0001A0 AD 83            [24]  805 	mov	r5,dph
+      0001A2 AE F0            [24]  806 	mov	r6,b
+      0001A4 FF               [12]  807 	mov	r7,a
+      0001A5 E5 81            [12]  808 	mov	a,sp
+      0001A7 24 04            [12]  809 	add	a,#0x04
+      0001A9 F5 81            [12]  810 	mov	sp,a
+                           0000F4   811 	C$fuzzy.h$715$1_0$26 ==.
+                                    812 ;	../../fuzzy.h:715: membership
+      0001AB 8C 82            [24]  813 	mov	dpl, r4
+      0001AD 8D 83            [24]  814 	mov	dph, r5
+      0001AF 8E F0            [24]  815 	mov	b, r6
+      0001B1 EF               [12]  816 	mov	a, r7
+      0001B2 12 00 EA         [24]  817 	lcall	_fuzzy_clamp
+      0001B5 A8 08            [24]  818 	mov	r0,_bp
+      0001B7 08               [12]  819 	inc	r0
+      0001B8 A6 82            [24]  820 	mov	@r0, dpl
+      0001BA 08               [12]  821 	inc	r0
+      0001BB A6 83            [24]  822 	mov	@r0, dph
+      0001BD 08               [12]  823 	inc	r0
+      0001BE A6 F0            [24]  824 	mov	@r0, b
+      0001C0 08               [12]  825 	inc	r0
+      0001C1 F6               [12]  826 	mov	@r0,a
+                           00010B   827 	C$fuzzy.h$720$2_0$27 ==.
+                                    828 ;	../../fuzzy.h:720: float result =
+      0001C2 7A 00            [12]  829 	mov	r2,#0x00
+      0001C4 7B 00            [12]  830 	mov	r3,#0x00
+      0001C6 7E 80            [12]  831 	mov	r6,#0x80
+      0001C8 7F 3F            [12]  832 	mov	r7,#0x3f
+                           000113   833 	C$fuzzy.h$723$1_1$27 ==.
+                                    834 ;	../../fuzzy.h:723: if (hedge == 0u) {
+      0001CA E5 08            [12]  835 	mov	a,_bp
+      0001CC 24 FD            [12]  836 	add	a,#0xfd
+      0001CE F8               [12]  837 	mov	r0,a
+      0001CF E6               [12]  838 	mov	a,@r0
+      0001D0 70 07            [24]  839 	jnz	00110$
+                           00011B   840 	C$fuzzy.h$725$2_1$28 ==.
+                                    841 ;	../../fuzzy.h:725: 1u;
+      0001D2 E5 08            [12]  842 	mov	a,_bp
+      0001D4 24 FD            [12]  843 	add	a,#0xfd
+      0001D6 F8               [12]  844 	mov	r0,a
+      0001D7 76 01            [12]  845 	mov	@r0,#0x01
+                           000122   846 	C$fuzzy.h$728$1_1$26 ==.
+                                    847 ;	../../fuzzy.h:728: while (hedge > 0u) {
+      0001D9                        848 00110$:
+      0001D9 E5 08            [12]  849 	mov	a,_bp
+      0001DB 24 FD            [12]  850 	add	a,#0xfd
+      0001DD F8               [12]  851 	mov	r0,a
+      0001DE 86 05            [24]  852 	mov	ar5,@r0
+      0001E0                        853 00103$:
+      0001E0 ED               [12]  854 	mov	a,r5
+      0001E1 60 30            [24]  855 	jz	00105$
+                           00012C   856 	C$fuzzy.h$730$1_1$26 ==.
+                                    857 ;	../../fuzzy.h:730: membership;
+      0001E3 C0 05            [24]  858 	push	ar5
+      0001E5 A8 08            [24]  859 	mov	r0,_bp
+      0001E7 08               [12]  860 	inc	r0
+      0001E8 E6               [12]  861 	mov	a,@r0
+      0001E9 C0 E0            [24]  862 	push	acc
+      0001EB 08               [12]  863 	inc	r0
+      0001EC E6               [12]  864 	mov	a,@r0
+      0001ED C0 E0            [24]  865 	push	acc
+      0001EF 08               [12]  866 	inc	r0
+      0001F0 E6               [12]  867 	mov	a,@r0
+      0001F1 C0 E0            [24]  868 	push	acc
+      0001F3 08               [12]  869 	inc	r0
+      0001F4 E6               [12]  870 	mov	a,@r0
+      0001F5 C0 E0            [24]  871 	push	acc
+                           000140   872 	C$fuzzy.h$732$1_1$26 ==.
+                                    873 ;	../../fuzzy.h:732: hedge--;
+      0001F7 8A 82            [24]  874 	mov	dpl, r2
+      0001F9 8B 83            [24]  875 	mov	dph, r3
+      0001FB 8E F0            [24]  876 	mov	b, r6
+      0001FD EF               [12]  877 	mov	a, r7
+      0001FE 12 23 0A         [24]  878 	lcall	___fsmul
+      000201 AA 82            [24]  879 	mov	r2, dpl
+      000203 AB 83            [24]  880 	mov	r3, dph
+      000205 AE F0            [24]  881 	mov	r6, b
+      000207 FF               [12]  882 	mov	r7, a
+      000208 E5 81            [12]  883 	mov	a,sp
+      00020A 24 FC            [12]  884 	add	a,#0xfc
+      00020C F5 81            [12]  885 	mov	sp,a
+      00020E D0 05            [24]  886 	pop	ar5
+      000210 1D               [12]  887 	dec	r5
+      000211 80 CD            [24]  888 	sjmp	00103$
+      000213                        889 00105$:
+                           00015C   890 	C$fuzzy.h$736$1_1$27 ==.
+                                    891 ;	../../fuzzy.h:736: result
+      000213 8A 82            [24]  892 	mov	dpl, r2
+      000215 8B 83            [24]  893 	mov	dph, r3
+      000217 8E F0            [24]  894 	mov	b, r6
+      000219 EF               [12]  895 	mov	a, r7
+      00021A 12 00 EA         [24]  896 	lcall	_fuzzy_clamp
+                           000166   897 	C$fuzzy.h$752$1_1$26 ==.
+                                    898 ;	../../fuzzy.h:752: }
+      00021D 85 08 81         [24]  899 	mov	sp,_bp
+      000220 D0 08            [24]  900 	pop	_bp
+                           00016B   901 	C$fuzzy.h$752$1_1$26 ==.
+                           00016B   902 	XFcontroller_8051$fuzzy_apply_hedge$0$0 ==.
+      000222 22               [24]  903 	ret
+                                    904 ;------------------------------------------------------------
+                                    905 ;Allocation info for local variables in function 'fuzzy_and_array'
+                                    906 ;------------------------------------------------------------
+                                    907 ;count         Allocated to stack - _bp -4 +2 
+                                    908 ;args          Allocated to stack - _bp -7 +3 
+                                    909 ;method        Allocated to registers r5 
+                                    910 ;result        Allocated to stack - _bp +5 +4 
+                                    911 ;next          Allocated to stack - _bp +9 +4 
+                                    912 ;index         Allocated to stack - _bp +13 +2 
+                                    913 ;sloc0         Allocated to stack - _bp +1 +3 
+                                    914 ;sloc1         Allocated to stack - _bp +4 +1 
+                                    915 ;------------------------------------------------------------
+                           00016C   916 	G$fuzzy_and_array$0$0 ==.
+                           00016C   917 	C$fuzzy.h$766$1_1$31 ==.
+                                    918 ;	../../fuzzy.h:766: float fuzzy_and_array(
+                                    919 ;	-----------------------------------------
+                                    920 ;	 function fuzzy_and_array
+                                    921 ;	-----------------------------------------
+      000223                        922 _fuzzy_and_array:
+      000223 C0 08            [24]  923 	push	_bp
+      000225 E5 81            [12]  924 	mov	a,sp
+      000227 F5 08            [12]  925 	mov	_bp,a
+      000229 24 0E            [12]  926 	add	a,#0x0e
+      00022B F5 81            [12]  927 	mov	sp,a
+      00022D AD 82            [24]  928 	mov	r5, dpl
+                           000178   929 	C$fuzzy.h$777$1_0$31 ==.
+                                    930 ;	../../fuzzy.h:777: args == NULL ||
+      00022F E5 08            [12]  931 	mov	a,_bp
+      000231 24 F9            [12]  932 	add	a,#0xf9
+      000233 F8               [12]  933 	mov	r0,a
+      000234 E6               [12]  934 	mov	a,@r0
+      000235 08               [12]  935 	inc	r0
+      000236 46               [12]  936 	orl	a,@r0
+      000237 60 0A            [24]  937 	jz	00101$
+                           000182   938 	C$fuzzy.h$778$1_0$31 ==.
+                                    939 ;	../../fuzzy.h:778: count == 0u
+      000239 E5 08            [12]  940 	mov	a,_bp
+      00023B 24 FC            [12]  941 	add	a,#0xfc
+      00023D F8               [12]  942 	mov	r0,a
+      00023E E6               [12]  943 	mov	a,@r0
+      00023F 08               [12]  944 	inc	r0
+      000240 46               [12]  945 	orl	a,@r0
+      000241 70 0B            [24]  946 	jnz	00102$
+      000243                        947 00101$:
+                           00018C   948 	C$fuzzy.h$780$2_0$32 ==.
+                                    949 ;	../../fuzzy.h:780: return LEVEL_HI;
+      000243 90 00 00         [24]  950 	mov	dptr,#0x0000
+      000246 75 F0 80         [24]  951 	mov	b, #0x80
+      000249 74 3F            [12]  952 	mov	a, #0x3f
+      00024B 02 04 BC         [24]  953 	ljmp	00121$
+      00024E                        954 00102$:
+                           000197   955 	C$fuzzy.h$784$1_0$31 ==.
+                                    956 ;	../../fuzzy.h:784: method != FUZZY_LOGIC_STANDARD &&
+      00024E ED               [12]  957 	mov	a,r5
+      00024F 60 13            [24]  958 	jz	00105$
+                           00019A   959 	C$fuzzy.h$785$1_0$31 ==.
+                                    960 ;	../../fuzzy.h:785: method != FUZZY_LOGIC_ALGEBRAIC &&
+      000251 BD 01 02         [24]  961 	cjne	r5,#0x01,00192$
+      000254 80 0E            [24]  962 	sjmp	00105$
+      000256                        963 00192$:
+                           00019F   964 	C$fuzzy.h$787$1_0$31 ==.
+                                    965 ;	../../fuzzy.h:787: ) {
+      000256 BD 02 02         [24]  966 	cjne	r5,#0x02,00193$
+      000259 80 09            [24]  967 	sjmp	00105$
+      00025B                        968 00193$:
+                           0001A4   969 	C$fuzzy.h$788$2_0$33 ==.
+                                    970 ;	../../fuzzy.h:788: return LEVEL_LO;
+      00025B 90 00 00         [24]  971 	mov	dptr,#0x0000
+      00025E E4               [12]  972 	clr	a
+      00025F F5 F0            [12]  973 	mov	b,a
+      000261 02 04 BC         [24]  974 	ljmp	00121$
+      000264                        975 00105$:
+                           0001AD   976 	C$fuzzy.h$793$1_0$31 ==.
+                                    977 ;	../../fuzzy.h:793: args[0]
+      000264 E5 08            [12]  978 	mov	a,_bp
+      000266 24 F9            [12]  979 	add	a,#0xf9
+      000268 F8               [12]  980 	mov	r0,a
+      000269 A9 08            [24]  981 	mov	r1,_bp
+      00026B 09               [12]  982 	inc	r1
+      00026C E6               [12]  983 	mov	a,@r0
+      00026D F7               [12]  984 	mov	@r1,a
+      00026E 08               [12]  985 	inc	r0
+      00026F E6               [12]  986 	mov	a,@r0
+      000270 09               [12]  987 	inc	r1
+      000271 F7               [12]  988 	mov	@r1,a
+      000272 08               [12]  989 	inc	r0
+      000273 E6               [12]  990 	mov	a,@r0
+      000274 09               [12]  991 	inc	r1
+      000275 F7               [12]  992 	mov	@r1,a
+      000276 A8 08            [24]  993 	mov	r0,_bp
+      000278 08               [12]  994 	inc	r0
+      000279 86 82            [24]  995 	mov	dpl,@r0
+      00027B 08               [12]  996 	inc	r0
+      00027C 86 83            [24]  997 	mov	dph,@r0
+      00027E 08               [12]  998 	inc	r0
+      00027F 86 F0            [24]  999 	mov	b,@r0
+      000281 12 26 66         [24] 1000 	lcall	__gptrget
+      000284 FA               [12] 1001 	mov	r2,a
+      000285 A3               [24] 1002 	inc	dptr
+      000286 12 26 66         [24] 1003 	lcall	__gptrget
+      000289 FB               [12] 1004 	mov	r3,a
+      00028A A3               [24] 1005 	inc	dptr
+      00028B 12 26 66         [24] 1006 	lcall	__gptrget
+      00028E FE               [12] 1007 	mov	r6,a
+      00028F A3               [24] 1008 	inc	dptr
+      000290 12 26 66         [24] 1009 	lcall	__gptrget
+      000293 8A 82            [24] 1010 	mov	dpl,r2
+      000295 8B 83            [24] 1011 	mov	dph,r3
+      000297 8E F0            [24] 1012 	mov	b,r6
+      000299 C0 05            [24] 1013 	push	ar5
+      00029B 12 00 EA         [24] 1014 	lcall	_fuzzy_clamp
+      00029E C8               [12] 1015 	xch	a,r0
+      00029F E5 08            [12] 1016 	mov	a,_bp
+      0002A1 24 05            [12] 1017 	add	a,#0x05
+      0002A3 C8               [12] 1018 	xch	a,r0
+      0002A4 A6 82            [24] 1019 	mov	@r0, dpl
+      0002A6 08               [12] 1020 	inc	r0
+      0002A7 A6 83            [24] 1021 	mov	@r0, dph
+      0002A9 08               [12] 1022 	inc	r0
+      0002AA A6 F0            [24] 1023 	mov	@r0, b
+      0002AC 08               [12] 1024 	inc	r0
+      0002AD F6               [12] 1025 	mov	@r0,a
+      0002AE D0 05            [24] 1026 	pop	ar5
+                           0001F9  1027 	C$fuzzy.h$797$3_0$35 ==.
+                                   1028 ;	../../fuzzy.h:797: index = 1u;
+      0002B0 E4               [12] 1029 	clr	a
+      0002B1 BD 00 01         [24] 1030 	cjne	r5,#0x00,00194$
+      0002B4 04               [12] 1031 	inc	a
+      0002B5                       1032 00194$:
+      0002B5 FB               [12] 1033 	mov	r3,a
+      0002B6 BD 01 03         [24] 1034 	cjne	r5,#0x01,00196$
+      0002B9 ED               [12] 1035 	mov	a,r5
+      0002BA 80 01            [24] 1036 	sjmp	00197$
+      0002BC                       1037 00196$:
+      0002BC E4               [12] 1038 	clr	a
+      0002BD                       1039 00197$:
+      0002BD FA               [12] 1040 	mov	r2,a
+      0002BE E5 08            [12] 1041 	mov	a,_bp
+      0002C0 24 04            [12] 1042 	add	a,#0x04
+      0002C2 F8               [12] 1043 	mov	r0,a
+      0002C3 E4               [12] 1044 	clr	a
+      0002C4 BD 02 01         [24] 1045 	cjne	r5,#0x02,00198$
+      0002C7 04               [12] 1046 	inc	a
+      0002C8                       1047 00198$:
+      0002C8 F6               [12] 1048 	mov	@r0,a
+      0002C9 E5 08            [12] 1049 	mov	a,_bp
+      0002CB 24 0D            [12] 1050 	add	a,#0x0d
+      0002CD F8               [12] 1051 	mov	r0,a
+      0002CE 76 01            [12] 1052 	mov	@r0,#0x01
+      0002D0 08               [12] 1053 	inc	r0
+      0002D1 76 00            [12] 1054 	mov	@r0,#0x00
+      0002D3                       1055 00119$:
+                           00021C  1056 	C$fuzzy.h$798$2_0$34 ==.
+                                   1057 ;	../../fuzzy.h:798: index < count;
+      0002D3 E5 08            [12] 1058 	mov	a,_bp
+      0002D5 24 0D            [12] 1059 	add	a,#0x0d
+      0002D7 F8               [12] 1060 	mov	r0,a
+      0002D8 E5 08            [12] 1061 	mov	a,_bp
+      0002DA 24 FC            [12] 1062 	add	a,#0xfc
+      0002DC F9               [12] 1063 	mov	r1,a
+      0002DD C3               [12] 1064 	clr	c
+      0002DE E6               [12] 1065 	mov	a,@r0
+      0002DF 97               [12] 1066 	subb	a,@r1
+      0002E0 08               [12] 1067 	inc	r0
+      0002E1 E6               [12] 1068 	mov	a,@r0
+      0002E2 09               [12] 1069 	inc	r1
+      0002E3 97               [12] 1070 	subb	a,@r1
+      0002E4 40 03            [24] 1071 	jc	00200$
+      0002E6 02 04 AA         [24] 1072 	ljmp	00117$
+      0002E9                       1073 00200$:
+                           000232  1074 	C$fuzzy.h$803$1_0$31 ==.
+                                   1075 ;	../../fuzzy.h:803: args[index]
+      0002E9 C0 02            [24] 1076 	push	ar2
+      0002EB E5 08            [12] 1077 	mov	a,_bp
+      0002ED 24 0D            [12] 1078 	add	a,#0x0d
+      0002EF F8               [12] 1079 	mov	r0,a
+      0002F0 E6               [12] 1080 	mov	a,@r0
+      0002F1 26               [12] 1081 	add	a,@r0
+      0002F2 FD               [12] 1082 	mov	r5,a
+      0002F3 08               [12] 1083 	inc	r0
+      0002F4 E6               [12] 1084 	mov	a,@r0
+      0002F5 33               [12] 1085 	rlc	a
+      0002F6 FC               [12] 1086 	mov	r4,a
+      0002F7 ED               [12] 1087 	mov	a,r5
+      0002F8 2D               [12] 1088 	add	a,r5
+      0002F9 FD               [12] 1089 	mov	r5,a
+      0002FA EC               [12] 1090 	mov	a,r4
+      0002FB 33               [12] 1091 	rlc	a
+      0002FC FC               [12] 1092 	mov	r4,a
+      0002FD A8 08            [24] 1093 	mov	r0,_bp
+      0002FF 08               [12] 1094 	inc	r0
+      000300 ED               [12] 1095 	mov	a,r5
+      000301 26               [12] 1096 	add	a, @r0
+      000302 FA               [12] 1097 	mov	r2,a
+      000303 EC               [12] 1098 	mov	a,r4
+      000304 08               [12] 1099 	inc	r0
+      000305 36               [12] 1100 	addc	a, @r0
+      000306 FC               [12] 1101 	mov	r4,a
+      000307 08               [12] 1102 	inc	r0
+      000308 86 05            [24] 1103 	mov	ar5,@r0
+      00030A 8A 82            [24] 1104 	mov	dpl,r2
+      00030C 8C 83            [24] 1105 	mov	dph,r4
+      00030E 8D F0            [24] 1106 	mov	b,r5
+      000310 12 26 66         [24] 1107 	lcall	__gptrget
+      000313 FA               [12] 1108 	mov	r2,a
+      000314 A3               [24] 1109 	inc	dptr
+      000315 12 26 66         [24] 1110 	lcall	__gptrget
+      000318 FC               [12] 1111 	mov	r4,a
+      000319 A3               [24] 1112 	inc	dptr
+      00031A 12 26 66         [24] 1113 	lcall	__gptrget
+      00031D FD               [12] 1114 	mov	r5,a
+      00031E A3               [24] 1115 	inc	dptr
+      00031F 12 26 66         [24] 1116 	lcall	__gptrget
+      000322 8A 82            [24] 1117 	mov	dpl,r2
+      000324 8C 83            [24] 1118 	mov	dph,r4
+      000326 8D F0            [24] 1119 	mov	b,r5
+      000328 C0 03            [24] 1120 	push	ar3
+      00032A C0 02            [24] 1121 	push	ar2
+      00032C 12 00 EA         [24] 1122 	lcall	_fuzzy_clamp
+      00032F C8               [12] 1123 	xch	a,r0
+      000330 E5 08            [12] 1124 	mov	a,_bp
+      000332 24 09            [12] 1125 	add	a,#0x09
+      000334 C8               [12] 1126 	xch	a,r0
+      000335 A6 82            [24] 1127 	mov	@r0, dpl
+      000337 08               [12] 1128 	inc	r0
+      000338 A6 83            [24] 1129 	mov	@r0, dph
+      00033A 08               [12] 1130 	inc	r0
+      00033B A6 F0            [24] 1131 	mov	@r0, b
+      00033D 08               [12] 1132 	inc	r0
+      00033E F6               [12] 1133 	mov	@r0,a
+      00033F D0 02            [24] 1134 	pop	ar2
+      000341 D0 03            [24] 1135 	pop	ar3
+                           00028C  1136 	C$fuzzy.h$806$1_0$31 ==.
+                                   1137 ;	../../fuzzy.h:806: switch (method) {
+      000343 D0 02            [24] 1138 	pop	ar2
+      000345 EB               [12] 1139 	mov	a,r3
+      000346 70 11            [24] 1140 	jnz	00108$
+      000348 EA               [12] 1141 	mov	a,r2
+      000349 70 65            [24] 1142 	jnz	00111$
+      00034B E5 08            [12] 1143 	mov	a,_bp
+      00034D 24 04            [12] 1144 	add	a,#0x04
+      00034F F8               [12] 1145 	mov	r0,a
+      000350 E6               [12] 1146 	mov	a,@r0
+      000351 60 03            [24] 1147 	jz	00203$
+      000353 02 03 F7         [24] 1148 	ljmp	00112$
+      000356                       1149 00203$:
+      000356 02 04 94         [24] 1150 	ljmp	00115$
+                           0002A2  1151 	C$fuzzy.h$807$4_0$36 ==.
+                                   1152 ;	../../fuzzy.h:807: case FUZZY_LOGIC_STANDARD:
+      000359                       1153 00108$:
+                           0002A2  1154 	C$fuzzy.h$808$1_0$31 ==.
+                                   1155 ;	../../fuzzy.h:808: if (next < result) {
+      000359 C0 03            [24] 1156 	push	ar3
+      00035B C0 02            [24] 1157 	push	ar2
+      00035D E5 08            [12] 1158 	mov	a,_bp
+      00035F 24 05            [12] 1159 	add	a,#0x05
+      000361 F8               [12] 1160 	mov	r0,a
+      000362 E6               [12] 1161 	mov	a,@r0
+      000363 C0 E0            [24] 1162 	push	acc
+      000365 08               [12] 1163 	inc	r0
+      000366 E6               [12] 1164 	mov	a,@r0
+      000367 C0 E0            [24] 1165 	push	acc
+      000369 08               [12] 1166 	inc	r0
+      00036A E6               [12] 1167 	mov	a,@r0
+      00036B C0 E0            [24] 1168 	push	acc
+      00036D 08               [12] 1169 	inc	r0
+      00036E E6               [12] 1170 	mov	a,@r0
+      00036F C0 E0            [24] 1171 	push	acc
+      000371 E5 08            [12] 1172 	mov	a,_bp
+      000373 24 09            [12] 1173 	add	a,#0x09
+      000375 F8               [12] 1174 	mov	r0,a
+      000376 86 82            [24] 1175 	mov	dpl, @r0
+      000378 08               [12] 1176 	inc	r0
+      000379 86 83            [24] 1177 	mov	dph, @r0
+      00037B 08               [12] 1178 	inc	r0
+      00037C 86 F0            [24] 1179 	mov	b, @r0
+      00037E 08               [12] 1180 	inc	r0
+      00037F E6               [12] 1181 	mov	a, @r0
+      000380 12 24 3A         [24] 1182 	lcall	___fslt
+      000383 AF 82            [24] 1183 	mov	r7, dpl
+      000385 E5 81            [12] 1184 	mov	a,sp
+      000387 24 FC            [12] 1185 	add	a,#0xfc
+      000389 F5 81            [12] 1186 	mov	sp,a
+      00038B D0 02            [24] 1187 	pop	ar2
+      00038D D0 03            [24] 1188 	pop	ar3
+      00038F EF               [12] 1189 	mov	a,r7
+      000390 70 03            [24] 1190 	jnz	00204$
+      000392 02 04 9C         [24] 1191 	ljmp	00120$
+      000395                       1192 00204$:
+                           0002DE  1193 	C$fuzzy.h$809$5_0$37 ==.
+                                   1194 ;	../../fuzzy.h:809: result = next;
+      000395 E5 08            [12] 1195 	mov	a,_bp
+      000397 24 09            [12] 1196 	add	a,#0x09
+      000399 F8               [12] 1197 	mov	r0,a
+      00039A E5 08            [12] 1198 	mov	a,_bp
+      00039C 24 05            [12] 1199 	add	a,#0x05
+      00039E F9               [12] 1200 	mov	r1,a
+      00039F E6               [12] 1201 	mov	a,@r0
+      0003A0 F7               [12] 1202 	mov	@r1,a
+      0003A1 08               [12] 1203 	inc	r0
+      0003A2 E6               [12] 1204 	mov	a,@r0
+      0003A3 09               [12] 1205 	inc	r1
+      0003A4 F7               [12] 1206 	mov	@r1,a
+      0003A5 08               [12] 1207 	inc	r0
+      0003A6 E6               [12] 1208 	mov	a,@r0
+      0003A7 09               [12] 1209 	inc	r1
+      0003A8 F7               [12] 1210 	mov	@r1,a
+      0003A9 08               [12] 1211 	inc	r0
+      0003AA E6               [12] 1212 	mov	a,@r0
+      0003AB 09               [12] 1213 	inc	r1
+      0003AC F7               [12] 1214 	mov	@r1,a
+                           0002F6  1215 	C$fuzzy.h$811$4_0$36 ==.
+                                   1216 ;	../../fuzzy.h:811: break;
+      0003AD 02 04 9C         [24] 1217 	ljmp	00120$
+                           0002F9  1218 	C$fuzzy.h$813$4_0$36 ==.
+                                   1219 ;	../../fuzzy.h:813: case FUZZY_LOGIC_ALGEBRAIC:
+      0003B0                       1220 00111$:
+                           0002F9  1221 	C$fuzzy.h$815$1_0$31 ==.
+                                   1222 ;	../../fuzzy.h:815: next;
+      0003B0 C0 03            [24] 1223 	push	ar3
+      0003B2 C0 02            [24] 1224 	push	ar2
+      0003B4 E5 08            [12] 1225 	mov	a,_bp
+      0003B6 24 09            [12] 1226 	add	a,#0x09
+      0003B8 F8               [12] 1227 	mov	r0,a
+      0003B9 E6               [12] 1228 	mov	a,@r0
+      0003BA C0 E0            [24] 1229 	push	acc
+      0003BC 08               [12] 1230 	inc	r0
+      0003BD E6               [12] 1231 	mov	a,@r0
+      0003BE C0 E0            [24] 1232 	push	acc
+      0003C0 08               [12] 1233 	inc	r0
+      0003C1 E6               [12] 1234 	mov	a,@r0
+      0003C2 C0 E0            [24] 1235 	push	acc
+      0003C4 08               [12] 1236 	inc	r0
+      0003C5 E6               [12] 1237 	mov	a,@r0
+      0003C6 C0 E0            [24] 1238 	push	acc
+                           000311  1239 	C$fuzzy.h$816$1_0$31 ==.
+                                   1240 ;	../../fuzzy.h:816: break;
+      0003C8 E5 08            [12] 1241 	mov	a,_bp
+      0003CA 24 05            [12] 1242 	add	a,#0x05
+      0003CC F8               [12] 1243 	mov	r0,a
+      0003CD 86 82            [24] 1244 	mov	dpl, @r0
+      0003CF 08               [12] 1245 	inc	r0
+      0003D0 86 83            [24] 1246 	mov	dph, @r0
+      0003D2 08               [12] 1247 	inc	r0
+      0003D3 86 F0            [24] 1248 	mov	b, @r0
+      0003D5 08               [12] 1249 	inc	r0
+      0003D6 E6               [12] 1250 	mov	a, @r0
+      0003D7 12 23 0A         [24] 1251 	lcall	___fsmul
+      0003DA C8               [12] 1252 	xch	a,r0
+      0003DB E5 08            [12] 1253 	mov	a,_bp
+      0003DD 24 05            [12] 1254 	add	a,#0x05
+      0003DF C8               [12] 1255 	xch	a,r0
+      0003E0 A6 82            [24] 1256 	mov	@r0, dpl
+      0003E2 08               [12] 1257 	inc	r0
+      0003E3 A6 83            [24] 1258 	mov	@r0, dph
+      0003E5 08               [12] 1259 	inc	r0
+      0003E6 A6 F0            [24] 1260 	mov	@r0, b
+      0003E8 08               [12] 1261 	inc	r0
+      0003E9 F6               [12] 1262 	mov	@r0,a
+      0003EA E5 81            [12] 1263 	mov	a,sp
+      0003EC 24 FC            [12] 1264 	add	a,#0xfc
+      0003EE F5 81            [12] 1265 	mov	sp,a
+      0003F0 D0 02            [24] 1266 	pop	ar2
+      0003F2 D0 03            [24] 1267 	pop	ar3
+      0003F4 02 04 9C         [24] 1268 	ljmp	00120$
+                           000340  1269 	C$fuzzy.h$818$4_0$36 ==.
+                                   1270 ;	../../fuzzy.h:818: case FUZZY_LOGIC_BOUNDED:
+      0003F7                       1271 00112$:
+                           000340  1272 	C$fuzzy.h$821$1_0$31 ==.
+                                   1273 ;	../../fuzzy.h:821: next -
+      0003F7 C0 03            [24] 1274 	push	ar3
+      0003F9 C0 02            [24] 1275 	push	ar2
+      0003FB E5 08            [12] 1276 	mov	a,_bp
+      0003FD 24 09            [12] 1277 	add	a,#0x09
+      0003FF F8               [12] 1278 	mov	r0,a
+      000400 E6               [12] 1279 	mov	a,@r0
+      000401 C0 E0            [24] 1280 	push	acc
+      000403 08               [12] 1281 	inc	r0
+      000404 E6               [12] 1282 	mov	a,@r0
+      000405 C0 E0            [24] 1283 	push	acc
+      000407 08               [12] 1284 	inc	r0
+      000408 E6               [12] 1285 	mov	a,@r0
+      000409 C0 E0            [24] 1286 	push	acc
+      00040B 08               [12] 1287 	inc	r0
+      00040C E6               [12] 1288 	mov	a,@r0
+      00040D C0 E0            [24] 1289 	push	acc
+      00040F E5 08            [12] 1290 	mov	a,_bp
+      000411 24 05            [12] 1291 	add	a,#0x05
+      000413 F8               [12] 1292 	mov	r0,a
+      000414 86 82            [24] 1293 	mov	dpl, @r0
+      000416 08               [12] 1294 	inc	r0
+      000417 86 83            [24] 1295 	mov	dph, @r0
+      000419 08               [12] 1296 	inc	r0
+      00041A 86 F0            [24] 1297 	mov	b, @r0
+      00041C 08               [12] 1298 	inc	r0
+      00041D E6               [12] 1299 	mov	a, @r0
+      00041E 12 24 8C         [24] 1300 	lcall	___fsadd
+      000421 AC 82            [24] 1301 	mov	r4, dpl
+      000423 AD 83            [24] 1302 	mov	r5, dph
+      000425 AE F0            [24] 1303 	mov	r6, b
+      000427 FF               [12] 1304 	mov	r7, a
+      000428 E5 81            [12] 1305 	mov	a,sp
+      00042A 24 FC            [12] 1306 	add	a,#0xfc
+      00042C F5 81            [12] 1307 	mov	sp,a
+      00042E E4               [12] 1308 	clr	a
+      00042F C0 E0            [24] 1309 	push	acc
+      000431 C0 E0            [24] 1310 	push	acc
+      000433 74 80            [12] 1311 	mov	a,#0x80
+      000435 C0 E0            [24] 1312 	push	acc
+      000437 74 3F            [12] 1313 	mov	a,#0x3f
+      000439 C0 E0            [24] 1314 	push	acc
+                           000384  1315 	C$fuzzy.h$824$1_0$31 ==.
+                                   1316 ;	../../fuzzy.h:824: if (result < LEVEL_LO) {
+      00043B 8C 82            [24] 1317 	mov	dpl, r4
+      00043D 8D 83            [24] 1318 	mov	dph, r5
+      00043F 8E F0            [24] 1319 	mov	b, r6
+      000441 EF               [12] 1320 	mov	a, r7
+      000442 12 22 FF         [24] 1321 	lcall	___fssub
+      000445 C8               [12] 1322 	xch	a,r0
+      000446 E5 08            [12] 1323 	mov	a,_bp
+      000448 24 05            [12] 1324 	add	a,#0x05
+      00044A C8               [12] 1325 	xch	a,r0
+      00044B A6 82            [24] 1326 	mov	@r0, dpl
+      00044D 08               [12] 1327 	inc	r0
+      00044E A6 83            [24] 1328 	mov	@r0, dph
+      000450 08               [12] 1329 	inc	r0
+      000451 A6 F0            [24] 1330 	mov	@r0, b
+      000453 08               [12] 1331 	inc	r0
+      000454 F6               [12] 1332 	mov	@r0,a
+      000455 E5 81            [12] 1333 	mov	a,sp
+      000457 24 FC            [12] 1334 	add	a,#0xfc
+      000459 F5 81            [12] 1335 	mov	sp,a
+      00045B E4               [12] 1336 	clr	a
+      00045C C0 E0            [24] 1337 	push	acc
+      00045E C0 E0            [24] 1338 	push	acc
+      000460 C0 E0            [24] 1339 	push	acc
+      000462 C0 E0            [24] 1340 	push	acc
+      000464 E5 08            [12] 1341 	mov	a,_bp
+      000466 24 05            [12] 1342 	add	a,#0x05
+      000468 F8               [12] 1343 	mov	r0,a
+      000469 86 82            [24] 1344 	mov	dpl, @r0
+      00046B 08               [12] 1345 	inc	r0
+      00046C 86 83            [24] 1346 	mov	dph, @r0
+      00046E 08               [12] 1347 	inc	r0
+      00046F 86 F0            [24] 1348 	mov	b, @r0
+      000471 08               [12] 1349 	inc	r0
+      000472 E6               [12] 1350 	mov	a, @r0
+      000473 12 24 3A         [24] 1351 	lcall	___fslt
+      000476 AF 82            [24] 1352 	mov	r7, dpl
+      000478 E5 81            [12] 1353 	mov	a,sp
+      00047A 24 FC            [12] 1354 	add	a,#0xfc
+      00047C F5 81            [12] 1355 	mov	sp,a
+      00047E D0 02            [24] 1356 	pop	ar2
+      000480 D0 03            [24] 1357 	pop	ar3
+      000482 EF               [12] 1358 	mov	a,r7
+      000483 60 17            [24] 1359 	jz	00120$
+                           0003CE  1360 	C$fuzzy.h$825$5_0$38 ==.
+                                   1361 ;	../../fuzzy.h:825: result = LEVEL_LO;
+      000485 E5 08            [12] 1362 	mov	a,_bp
+      000487 24 05            [12] 1363 	add	a,#0x05
+      000489 F8               [12] 1364 	mov	r0,a
+      00048A E4               [12] 1365 	clr	a
+      00048B F6               [12] 1366 	mov	@r0,a
+      00048C 08               [12] 1367 	inc	r0
+      00048D F6               [12] 1368 	mov	@r0,a
+      00048E 08               [12] 1369 	inc	r0
+      00048F F6               [12] 1370 	mov	@r0,a
+      000490 08               [12] 1371 	inc	r0
+      000491 F6               [12] 1372 	mov	@r0,a
+                           0003DB  1373 	C$fuzzy.h$827$4_0$36 ==.
+                                   1374 ;	../../fuzzy.h:827: break;
+                           0003DB  1375 	C$fuzzy.h$829$4_0$36 ==.
+                                   1376 ;	../../fuzzy.h:829: default:
+      000492 80 08            [24] 1377 	sjmp	00120$
+      000494                       1378 00115$:
+                           0003DD  1379 	C$fuzzy.h$830$4_0$36 ==.
+                                   1380 ;	../../fuzzy.h:830: return LEVEL_LO;
+      000494 90 00 00         [24] 1381 	mov	dptr,#0x0000
+      000497 E4               [12] 1382 	clr	a
+      000498 F5 F0            [12] 1383 	mov	b,a
+                           0003E3  1384 	C$fuzzy.h$831$3_0$35 ==.
+                                   1385 ;	../../fuzzy.h:831: }
+      00049A 80 20            [24] 1386 	sjmp	00121$
+      00049C                       1387 00120$:
+                           0003E5  1388 	C$fuzzy.h$799$2_0$34 ==.
+                                   1389 ;	../../fuzzy.h:799: index++
+      00049C E5 08            [12] 1390 	mov	a,_bp
+      00049E 24 0D            [12] 1391 	add	a,#0x0d
+      0004A0 F8               [12] 1392 	mov	r0,a
+      0004A1 06               [12] 1393 	inc	@r0
+      0004A2 B6 00 02         [24] 1394 	cjne	@r0,#0x00,00206$
+      0004A5 08               [12] 1395 	inc	r0
+      0004A6 06               [12] 1396 	inc	@r0
+      0004A7                       1397 00206$:
+      0004A7 02 02 D3         [24] 1398 	ljmp	00119$
+      0004AA                       1399 00117$:
+                           0003F3  1400 	C$fuzzy.h$835$1_0$31 ==.
+                                   1401 ;	../../fuzzy.h:835: result
+      0004AA E5 08            [12] 1402 	mov	a,_bp
+      0004AC 24 05            [12] 1403 	add	a,#0x05
+      0004AE F8               [12] 1404 	mov	r0,a
+      0004AF 86 82            [24] 1405 	mov	dpl, @r0
+      0004B1 08               [12] 1406 	inc	r0
+      0004B2 86 83            [24] 1407 	mov	dph, @r0
+      0004B4 08               [12] 1408 	inc	r0
+      0004B5 86 F0            [24] 1409 	mov	b, @r0
+      0004B7 08               [12] 1410 	inc	r0
+      0004B8 E6               [12] 1411 	mov	a, @r0
+      0004B9 12 00 EA         [24] 1412 	lcall	_fuzzy_clamp
+      0004BC                       1413 00121$:
+                           000405  1414 	C$fuzzy.h$837$1_0$31 ==.
+                                   1415 ;	../../fuzzy.h:837: }
+      0004BC 85 08 81         [24] 1416 	mov	sp,_bp
+      0004BF D0 08            [24] 1417 	pop	_bp
+                           00040A  1418 	C$fuzzy.h$837$1_0$31 ==.
+                           00040A  1419 	XG$fuzzy_and_array$0$0 ==.
+      0004C1 22               [24] 1420 	ret
+                                   1421 ;------------------------------------------------------------
+                                   1422 ;Allocation info for local variables in function 'fuzzy_or_array'
+                                   1423 ;------------------------------------------------------------
+                                   1424 ;count         Allocated to stack - _bp -4 +2 
+                                   1425 ;args          Allocated to stack - _bp -7 +3 
+                                   1426 ;method        Allocated to registers r5 
+                                   1427 ;result        Allocated to stack - _bp +10 +4 
+                                   1428 ;next          Allocated to registers r4 r5 r6 r3 
+                                   1429 ;index         Allocated to stack - _bp +14 +2 
+                                   1430 ;sloc0         Allocated to stack - _bp +1 +3 
+                                   1431 ;sloc1         Allocated to stack - _bp +4 +1 
+                                   1432 ;sloc2         Allocated to stack - _bp +5 +1 
+                                   1433 ;sloc3         Allocated to stack - _bp +6 +4 
+                                   1434 ;------------------------------------------------------------
+                           00040B  1435 	G$fuzzy_or_array$0$0 ==.
+                           00040B  1436 	C$fuzzy.h$852$1_0$40 ==.
+                                   1437 ;	../../fuzzy.h:852: float fuzzy_or_array(
+                                   1438 ;	-----------------------------------------
+                                   1439 ;	 function fuzzy_or_array
+                                   1440 ;	-----------------------------------------
+      0004C2                       1441 _fuzzy_or_array:
+      0004C2 C0 08            [24] 1442 	push	_bp
+      0004C4 E5 81            [12] 1443 	mov	a,sp
+      0004C6 F5 08            [12] 1444 	mov	_bp,a
+      0004C8 24 0F            [12] 1445 	add	a,#0x0f
+      0004CA F5 81            [12] 1446 	mov	sp,a
+      0004CC AD 82            [24] 1447 	mov	r5, dpl
+                           000417  1448 	C$fuzzy.h$863$1_0$40 ==.
+                                   1449 ;	../../fuzzy.h:863: args == NULL ||
+      0004CE E5 08            [12] 1450 	mov	a,_bp
+      0004D0 24 F9            [12] 1451 	add	a,#0xf9
+      0004D2 F8               [12] 1452 	mov	r0,a
+      0004D3 E6               [12] 1453 	mov	a,@r0
+      0004D4 08               [12] 1454 	inc	r0
+      0004D5 46               [12] 1455 	orl	a,@r0
+      0004D6 60 0A            [24] 1456 	jz	00101$
+                           000421  1457 	C$fuzzy.h$864$1_0$40 ==.
+                                   1458 ;	../../fuzzy.h:864: count == 0u
+      0004D8 E5 08            [12] 1459 	mov	a,_bp
+      0004DA 24 FC            [12] 1460 	add	a,#0xfc
+      0004DC F8               [12] 1461 	mov	r0,a
+      0004DD E6               [12] 1462 	mov	a,@r0
+      0004DE 08               [12] 1463 	inc	r0
+      0004DF 46               [12] 1464 	orl	a,@r0
+      0004E0 70 09            [24] 1465 	jnz	00102$
+      0004E2                       1466 00101$:
+                           00042B  1467 	C$fuzzy.h$866$2_0$41 ==.
+                                   1468 ;	../../fuzzy.h:866: return LEVEL_LO;
+      0004E2 90 00 00         [24] 1469 	mov	dptr,#0x0000
+      0004E5 E4               [12] 1470 	clr	a
+      0004E6 F5 F0            [12] 1471 	mov	b,a
+      0004E8 02 07 7E         [24] 1472 	ljmp	00121$
+      0004EB                       1473 00102$:
+                           000434  1474 	C$fuzzy.h$870$1_0$40 ==.
+                                   1475 ;	../../fuzzy.h:870: method != FUZZY_LOGIC_STANDARD &&
+      0004EB ED               [12] 1476 	mov	a,r5
+      0004EC 60 13            [24] 1477 	jz	00105$
+                           000437  1478 	C$fuzzy.h$871$1_0$40 ==.
+                                   1479 ;	../../fuzzy.h:871: method != FUZZY_LOGIC_ALGEBRAIC &&
+      0004EE BD 01 02         [24] 1480 	cjne	r5,#0x01,00192$
+      0004F1 80 0E            [24] 1481 	sjmp	00105$
+      0004F3                       1482 00192$:
+                           00043C  1483 	C$fuzzy.h$873$1_0$40 ==.
+                                   1484 ;	../../fuzzy.h:873: ) {
+      0004F3 BD 02 02         [24] 1485 	cjne	r5,#0x02,00193$
+      0004F6 80 09            [24] 1486 	sjmp	00105$
+      0004F8                       1487 00193$:
+                           000441  1488 	C$fuzzy.h$874$2_0$42 ==.
+                                   1489 ;	../../fuzzy.h:874: return LEVEL_LO;
+      0004F8 90 00 00         [24] 1490 	mov	dptr,#0x0000
+      0004FB E4               [12] 1491 	clr	a
+      0004FC F5 F0            [12] 1492 	mov	b,a
+      0004FE 02 07 7E         [24] 1493 	ljmp	00121$
+      000501                       1494 00105$:
+                           00044A  1495 	C$fuzzy.h$879$1_0$40 ==.
+                                   1496 ;	../../fuzzy.h:879: args[0]
+      000501 E5 08            [12] 1497 	mov	a,_bp
+      000503 24 F9            [12] 1498 	add	a,#0xf9
+      000505 F8               [12] 1499 	mov	r0,a
+      000506 A9 08            [24] 1500 	mov	r1,_bp
+      000508 09               [12] 1501 	inc	r1
+      000509 E6               [12] 1502 	mov	a,@r0
+      00050A F7               [12] 1503 	mov	@r1,a
+      00050B 08               [12] 1504 	inc	r0
+      00050C E6               [12] 1505 	mov	a,@r0
+      00050D 09               [12] 1506 	inc	r1
+      00050E F7               [12] 1507 	mov	@r1,a
+      00050F 08               [12] 1508 	inc	r0
+      000510 E6               [12] 1509 	mov	a,@r0
+      000511 09               [12] 1510 	inc	r1
+      000512 F7               [12] 1511 	mov	@r1,a
+      000513 A8 08            [24] 1512 	mov	r0,_bp
+      000515 08               [12] 1513 	inc	r0
+      000516 86 82            [24] 1514 	mov	dpl,@r0
+      000518 08               [12] 1515 	inc	r0
+      000519 86 83            [24] 1516 	mov	dph,@r0
+      00051B 08               [12] 1517 	inc	r0
+      00051C 86 F0            [24] 1518 	mov	b,@r0
+      00051E 12 26 66         [24] 1519 	lcall	__gptrget
+      000521 FA               [12] 1520 	mov	r2,a
+      000522 A3               [24] 1521 	inc	dptr
+      000523 12 26 66         [24] 1522 	lcall	__gptrget
+      000526 FB               [12] 1523 	mov	r3,a
+      000527 A3               [24] 1524 	inc	dptr
+      000528 12 26 66         [24] 1525 	lcall	__gptrget
+      00052B FE               [12] 1526 	mov	r6,a
+      00052C A3               [24] 1527 	inc	dptr
+      00052D 12 26 66         [24] 1528 	lcall	__gptrget
+      000530 8A 82            [24] 1529 	mov	dpl,r2
+      000532 8B 83            [24] 1530 	mov	dph,r3
+      000534 8E F0            [24] 1531 	mov	b,r6
+      000536 C0 05            [24] 1532 	push	ar5
+      000538 12 00 EA         [24] 1533 	lcall	_fuzzy_clamp
+      00053B C8               [12] 1534 	xch	a,r0
+      00053C E5 08            [12] 1535 	mov	a,_bp
+      00053E 24 0A            [12] 1536 	add	a,#0x0a
+      000540 C8               [12] 1537 	xch	a,r0
+      000541 A6 82            [24] 1538 	mov	@r0, dpl
+      000543 08               [12] 1539 	inc	r0
+      000544 A6 83            [24] 1540 	mov	@r0, dph
+      000546 08               [12] 1541 	inc	r0
+      000547 A6 F0            [24] 1542 	mov	@r0, b
+      000549 08               [12] 1543 	inc	r0
+      00054A F6               [12] 1544 	mov	@r0,a
+      00054B D0 05            [24] 1545 	pop	ar5
+                           000496  1546 	C$fuzzy.h$883$3_0$44 ==.
+                                   1547 ;	../../fuzzy.h:883: index = 1u;
+      00054D E5 08            [12] 1548 	mov	a,_bp
+      00054F 24 05            [12] 1549 	add	a,#0x05
+      000551 F8               [12] 1550 	mov	r0,a
+      000552 E4               [12] 1551 	clr	a
+      000553 BD 00 01         [24] 1552 	cjne	r5,#0x00,00194$
+      000556 04               [12] 1553 	inc	a
+      000557                       1554 00194$:
+      000557 F6               [12] 1555 	mov	@r0,a
+      000558 BD 01 03         [24] 1556 	cjne	r5,#0x01,00196$
+      00055B ED               [12] 1557 	mov	a,r5
+      00055C 80 01            [24] 1558 	sjmp	00197$
+      00055E                       1559 00196$:
+      00055E E4               [12] 1560 	clr	a
+      00055F                       1561 00197$:
+      00055F FA               [12] 1562 	mov	r2,a
+      000560 E5 08            [12] 1563 	mov	a,_bp
+      000562 24 04            [12] 1564 	add	a,#0x04
+      000564 F8               [12] 1565 	mov	r0,a
+      000565 E4               [12] 1566 	clr	a
+      000566 BD 02 01         [24] 1567 	cjne	r5,#0x02,00198$
+      000569 04               [12] 1568 	inc	a
+      00056A                       1569 00198$:
+      00056A F6               [12] 1570 	mov	@r0,a
+      00056B E5 08            [12] 1571 	mov	a,_bp
+      00056D 24 0E            [12] 1572 	add	a,#0x0e
+      00056F F8               [12] 1573 	mov	r0,a
+      000570 76 01            [12] 1574 	mov	@r0,#0x01
+      000572 08               [12] 1575 	inc	r0
+      000573 76 00            [12] 1576 	mov	@r0,#0x00
+      000575                       1577 00119$:
+                           0004BE  1578 	C$fuzzy.h$884$2_0$43 ==.
+                                   1579 ;	../../fuzzy.h:884: index < count;
+      000575 E5 08            [12] 1580 	mov	a,_bp
+      000577 24 0E            [12] 1581 	add	a,#0x0e
+      000579 F8               [12] 1582 	mov	r0,a
+      00057A E5 08            [12] 1583 	mov	a,_bp
+      00057C 24 FC            [12] 1584 	add	a,#0xfc
+      00057E F9               [12] 1585 	mov	r1,a
+      00057F C3               [12] 1586 	clr	c
+      000580 E6               [12] 1587 	mov	a,@r0
+      000581 97               [12] 1588 	subb	a,@r1
+      000582 08               [12] 1589 	inc	r0
+      000583 E6               [12] 1590 	mov	a,@r0
+      000584 09               [12] 1591 	inc	r1
+      000585 97               [12] 1592 	subb	a,@r1
+      000586 40 03            [24] 1593 	jc	00200$
+      000588 02 07 6C         [24] 1594 	ljmp	00117$
+      00058B                       1595 00200$:
+                           0004D4  1596 	C$fuzzy.h$889$1_0$40 ==.
+                                   1597 ;	../../fuzzy.h:889: args[index]
+      00058B C0 02            [24] 1598 	push	ar2
+      00058D E5 08            [12] 1599 	mov	a,_bp
+      00058F 24 0E            [12] 1600 	add	a,#0x0e
+      000591 F8               [12] 1601 	mov	r0,a
+      000592 E6               [12] 1602 	mov	a,@r0
+      000593 26               [12] 1603 	add	a,@r0
+      000594 FD               [12] 1604 	mov	r5,a
+      000595 08               [12] 1605 	inc	r0
+      000596 E6               [12] 1606 	mov	a,@r0
+      000597 33               [12] 1607 	rlc	a
+      000598 FC               [12] 1608 	mov	r4,a
+      000599 ED               [12] 1609 	mov	a,r5
+      00059A 2D               [12] 1610 	add	a,r5
+      00059B FD               [12] 1611 	mov	r5,a
+      00059C EC               [12] 1612 	mov	a,r4
+      00059D 33               [12] 1613 	rlc	a
+      00059E FC               [12] 1614 	mov	r4,a
+      00059F A8 08            [24] 1615 	mov	r0,_bp
+      0005A1 08               [12] 1616 	inc	r0
+      0005A2 ED               [12] 1617 	mov	a,r5
+      0005A3 26               [12] 1618 	add	a, @r0
+      0005A4 FA               [12] 1619 	mov	r2,a
+      0005A5 EC               [12] 1620 	mov	a,r4
+      0005A6 08               [12] 1621 	inc	r0
+      0005A7 36               [12] 1622 	addc	a, @r0
+      0005A8 FC               [12] 1623 	mov	r4,a
+      0005A9 08               [12] 1624 	inc	r0
+      0005AA 86 05            [24] 1625 	mov	ar5,@r0
+      0005AC 8A 82            [24] 1626 	mov	dpl,r2
+      0005AE 8C 83            [24] 1627 	mov	dph,r4
+      0005B0 8D F0            [24] 1628 	mov	b,r5
+      0005B2 12 26 66         [24] 1629 	lcall	__gptrget
+      0005B5 FA               [12] 1630 	mov	r2,a
+      0005B6 A3               [24] 1631 	inc	dptr
+      0005B7 12 26 66         [24] 1632 	lcall	__gptrget
+      0005BA FC               [12] 1633 	mov	r4,a
+      0005BB A3               [24] 1634 	inc	dptr
+      0005BC 12 26 66         [24] 1635 	lcall	__gptrget
+      0005BF FD               [12] 1636 	mov	r5,a
+      0005C0 A3               [24] 1637 	inc	dptr
+      0005C1 12 26 66         [24] 1638 	lcall	__gptrget
+      0005C4 8A 82            [24] 1639 	mov	dpl,r2
+      0005C6 8C 83            [24] 1640 	mov	dph,r4
+      0005C8 8D F0            [24] 1641 	mov	b,r5
+      0005CA C0 02            [24] 1642 	push	ar2
+      0005CC 12 00 EA         [24] 1643 	lcall	_fuzzy_clamp
+      0005CF AC 82            [24] 1644 	mov	r4, dpl
+      0005D1 AD 83            [24] 1645 	mov	r5, dph
+      0005D3 AE F0            [24] 1646 	mov	r6, b
+      0005D5 FB               [12] 1647 	mov	r3, a
+      0005D6 D0 02            [24] 1648 	pop	ar2
+                           000521  1649 	C$fuzzy.h$892$1_0$40 ==.
+                                   1650 ;	../../fuzzy.h:892: switch (method) {
+      0005D8 D0 02            [24] 1651 	pop	ar2
+      0005DA E5 08            [12] 1652 	mov	a,_bp
+      0005DC 24 05            [12] 1653 	add	a,#0x05
+      0005DE F8               [12] 1654 	mov	r0,a
+      0005DF E6               [12] 1655 	mov	a,@r0
+      0005E0 70 11            [24] 1656 	jnz	00108$
+      0005E2 EA               [12] 1657 	mov	a,r2
+      0005E3 70 5D            [24] 1658 	jnz	00111$
+      0005E5 E5 08            [12] 1659 	mov	a,_bp
+      0005E7 24 04            [12] 1660 	add	a,#0x04
+      0005E9 F8               [12] 1661 	mov	r0,a
+      0005EA E6               [12] 1662 	mov	a,@r0
+      0005EB 60 03            [24] 1663 	jz	00203$
+      0005ED 02 06 E7         [24] 1664 	ljmp	00112$
+      0005F0                       1665 00203$:
+      0005F0 02 07 56         [24] 1666 	ljmp	00115$
+                           00053C  1667 	C$fuzzy.h$893$4_0$45 ==.
+                                   1668 ;	../../fuzzy.h:893: case FUZZY_LOGIC_STANDARD:
+      0005F3                       1669 00108$:
+                           00053C  1670 	C$fuzzy.h$894$1_0$40 ==.
+                                   1671 ;	../../fuzzy.h:894: if (next > result) {
+      0005F3 C0 06            [24] 1672 	push	ar6
+      0005F5 C0 05            [24] 1673 	push	ar5
+      0005F7 C0 04            [24] 1674 	push	ar4
+      0005F9 C0 03            [24] 1675 	push	ar3
+      0005FB C0 02            [24] 1676 	push	ar2
+      0005FD C0 04            [24] 1677 	push	ar4
+      0005FF C0 05            [24] 1678 	push	ar5
+      000601 C0 06            [24] 1679 	push	ar6
+      000603 C0 03            [24] 1680 	push	ar3
+      000605 E5 08            [12] 1681 	mov	a,_bp
+      000607 24 0A            [12] 1682 	add	a,#0x0a
+      000609 F8               [12] 1683 	mov	r0,a
+      00060A 86 82            [24] 1684 	mov	dpl, @r0
+      00060C 08               [12] 1685 	inc	r0
+      00060D 86 83            [24] 1686 	mov	dph, @r0
+      00060F 08               [12] 1687 	inc	r0
+      000610 86 F0            [24] 1688 	mov	b, @r0
+      000612 08               [12] 1689 	inc	r0
+      000613 E6               [12] 1690 	mov	a, @r0
+      000614 12 24 3A         [24] 1691 	lcall	___fslt
+      000617 AF 82            [24] 1692 	mov	r7, dpl
+      000619 E5 81            [12] 1693 	mov	a,sp
+      00061B 24 FC            [12] 1694 	add	a,#0xfc
+      00061D F5 81            [12] 1695 	mov	sp,a
+      00061F D0 02            [24] 1696 	pop	ar2
+      000621 D0 03            [24] 1697 	pop	ar3
+      000623 D0 04            [24] 1698 	pop	ar4
+      000625 D0 05            [24] 1699 	pop	ar5
+      000627 D0 06            [24] 1700 	pop	ar6
+      000629 EF               [12] 1701 	mov	a,r7
+      00062A 70 03            [24] 1702 	jnz	00204$
+      00062C 02 07 5E         [24] 1703 	ljmp	00120$
+      00062F                       1704 00204$:
+                           000578  1705 	C$fuzzy.h$895$5_0$46 ==.
+                                   1706 ;	../../fuzzy.h:895: result = next;
+      00062F E5 08            [12] 1707 	mov	a,_bp
+      000631 24 0A            [12] 1708 	add	a,#0x0a
+      000633 F8               [12] 1709 	mov	r0,a
+      000634 A6 04            [24] 1710 	mov	@r0,ar4
+      000636 08               [12] 1711 	inc	r0
+      000637 A6 05            [24] 1712 	mov	@r0,ar5
+      000639 08               [12] 1713 	inc	r0
+      00063A A6 06            [24] 1714 	mov	@r0,ar6
+      00063C 08               [12] 1715 	inc	r0
+      00063D A6 03            [24] 1716 	mov	@r0,ar3
+                           000588  1717 	C$fuzzy.h$897$4_0$45 ==.
+                                   1718 ;	../../fuzzy.h:897: break;
+      00063F 02 07 5E         [24] 1719 	ljmp	00120$
+                           00058B  1720 	C$fuzzy.h$899$4_0$45 ==.
+                                   1721 ;	../../fuzzy.h:899: case FUZZY_LOGIC_ALGEBRAIC:
+      000642                       1722 00111$:
+                           00058B  1723 	C$fuzzy.h$902$1_0$40 ==.
+                                   1724 ;	../../fuzzy.h:902: next -
+      000642 C0 02            [24] 1725 	push	ar2
+      000644 C0 06            [24] 1726 	push	ar6
+      000646 C0 05            [24] 1727 	push	ar5
+      000648 C0 04            [24] 1728 	push	ar4
+      00064A C0 03            [24] 1729 	push	ar3
+      00064C C0 02            [24] 1730 	push	ar2
+      00064E C0 04            [24] 1731 	push	ar4
+      000650 C0 05            [24] 1732 	push	ar5
+      000652 C0 06            [24] 1733 	push	ar6
+      000654 C0 03            [24] 1734 	push	ar3
+                           00059F  1735 	C$fuzzy.h$903$1_0$40 ==.
+                                   1736 ;	../../fuzzy.h:903: result * next;
+      000656 E5 08            [12] 1737 	mov	a,_bp
+      000658 24 0A            [12] 1738 	add	a,#0x0a
+      00065A F8               [12] 1739 	mov	r0,a
+      00065B 86 82            [24] 1740 	mov	dpl, @r0
+      00065D 08               [12] 1741 	inc	r0
+      00065E 86 83            [24] 1742 	mov	dph, @r0
+      000660 08               [12] 1743 	inc	r0
+      000661 86 F0            [24] 1744 	mov	b, @r0
+      000663 08               [12] 1745 	inc	r0
+      000664 E6               [12] 1746 	mov	a, @r0
+      000665 12 24 8C         [24] 1747 	lcall	___fsadd
+      000668 C8               [12] 1748 	xch	a,r0
+      000669 E5 08            [12] 1749 	mov	a,_bp
+      00066B 24 06            [12] 1750 	add	a,#0x06
+      00066D C8               [12] 1751 	xch	a,r0
+      00066E A6 82            [24] 1752 	mov	@r0, dpl
+      000670 08               [12] 1753 	inc	r0
+      000671 A6 83            [24] 1754 	mov	@r0, dph
+      000673 08               [12] 1755 	inc	r0
+      000674 A6 F0            [24] 1756 	mov	@r0, b
+      000676 08               [12] 1757 	inc	r0
+      000677 F6               [12] 1758 	mov	@r0,a
+      000678 E5 81            [12] 1759 	mov	a,sp
+      00067A 24 FC            [12] 1760 	add	a,#0xfc
+      00067C F5 81            [12] 1761 	mov	sp,a
+      00067E D0 02            [24] 1762 	pop	ar2
+      000680 D0 03            [24] 1763 	pop	ar3
+      000682 D0 04            [24] 1764 	pop	ar4
+      000684 D0 05            [24] 1765 	pop	ar5
+      000686 D0 06            [24] 1766 	pop	ar6
+      000688 C0 04            [24] 1767 	push	ar4
+      00068A C0 05            [24] 1768 	push	ar5
+      00068C C0 06            [24] 1769 	push	ar6
+      00068E C0 03            [24] 1770 	push	ar3
+      000690 E5 08            [12] 1771 	mov	a,_bp
+      000692 24 0A            [12] 1772 	add	a,#0x0a
+      000694 F8               [12] 1773 	mov	r0,a
+      000695 86 82            [24] 1774 	mov	dpl, @r0
+      000697 08               [12] 1775 	inc	r0
+      000698 86 83            [24] 1776 	mov	dph, @r0
+      00069A 08               [12] 1777 	inc	r0
+      00069B 86 F0            [24] 1778 	mov	b, @r0
+      00069D 08               [12] 1779 	inc	r0
+      00069E E6               [12] 1780 	mov	a, @r0
+      00069F 12 23 0A         [24] 1781 	lcall	___fsmul
+      0006A2 AA 82            [24] 1782 	mov	r2, dpl
+      0006A4 AB 83            [24] 1783 	mov	r3, dph
+      0006A6 AE F0            [24] 1784 	mov	r6, b
+      0006A8 FF               [12] 1785 	mov	r7, a
+      0006A9 E5 81            [12] 1786 	mov	a,sp
+      0006AB 24 FC            [12] 1787 	add	a,#0xfc
+      0006AD F5 81            [12] 1788 	mov	sp,a
+      0006AF C0 02            [24] 1789 	push	ar2
+      0006B1 C0 02            [24] 1790 	push	ar2
+      0006B3 C0 03            [24] 1791 	push	ar3
+      0006B5 C0 06            [24] 1792 	push	ar6
+      0006B7 C0 07            [24] 1793 	push	ar7
+                           000602  1794 	C$fuzzy.h$904$1_0$40 ==.
+                                   1795 ;	../../fuzzy.h:904: break;
+      0006B9 E5 08            [12] 1796 	mov	a,_bp
+      0006BB 24 06            [12] 1797 	add	a,#0x06
+      0006BD F8               [12] 1798 	mov	r0,a
+      0006BE 86 82            [24] 1799 	mov	dpl, @r0
+      0006C0 08               [12] 1800 	inc	r0
+      0006C1 86 83            [24] 1801 	mov	dph, @r0
+      0006C3 08               [12] 1802 	inc	r0
+      0006C4 86 F0            [24] 1803 	mov	b, @r0
+      0006C6 08               [12] 1804 	inc	r0
+      0006C7 E6               [12] 1805 	mov	a, @r0
+      0006C8 12 22 FF         [24] 1806 	lcall	___fssub
+      0006CB C8               [12] 1807 	xch	a,r0
+      0006CC E5 08            [12] 1808 	mov	a,_bp
+      0006CE 24 0A            [12] 1809 	add	a,#0x0a
+      0006D0 C8               [12] 1810 	xch	a,r0
+      0006D1 A6 82            [24] 1811 	mov	@r0, dpl
+      0006D3 08               [12] 1812 	inc	r0
+      0006D4 A6 83            [24] 1813 	mov	@r0, dph
+      0006D6 08               [12] 1814 	inc	r0
+      0006D7 A6 F0            [24] 1815 	mov	@r0, b
+      0006D9 08               [12] 1816 	inc	r0
+      0006DA F6               [12] 1817 	mov	@r0,a
+      0006DB E5 81            [12] 1818 	mov	a,sp
+      0006DD 24 FC            [12] 1819 	add	a,#0xfc
+      0006DF F5 81            [12] 1820 	mov	sp,a
+      0006E1 D0 02            [24] 1821 	pop	ar2
+      0006E3 D0 02            [24] 1822 	pop	ar2
+                           00062E  1823 	C$fuzzy.h$906$4_0$45 ==.
+                                   1824 ;	../../fuzzy.h:906: case FUZZY_LOGIC_BOUNDED:
+      0006E5 80 77            [24] 1825 	sjmp	00120$
+      0006E7                       1826 00112$:
+                           000630  1827 	C$fuzzy.h$908$1_0$40 ==.
+                                   1828 ;	../../fuzzy.h:908: next;
+      0006E7 C0 02            [24] 1829 	push	ar2
+      0006E9 C0 04            [24] 1830 	push	ar4
+      0006EB C0 05            [24] 1831 	push	ar5
+      0006ED C0 06            [24] 1832 	push	ar6
+      0006EF C0 03            [24] 1833 	push	ar3
+                           00063A  1834 	C$fuzzy.h$910$1_0$40 ==.
+                                   1835 ;	../../fuzzy.h:910: if (result > LEVEL_HI) {
+      0006F1 E5 08            [12] 1836 	mov	a,_bp
+      0006F3 24 0A            [12] 1837 	add	a,#0x0a
+      0006F5 F8               [12] 1838 	mov	r0,a
+      0006F6 86 82            [24] 1839 	mov	dpl, @r0
+      0006F8 08               [12] 1840 	inc	r0
+      0006F9 86 83            [24] 1841 	mov	dph, @r0
+      0006FB 08               [12] 1842 	inc	r0
+      0006FC 86 F0            [24] 1843 	mov	b, @r0
+      0006FE 08               [12] 1844 	inc	r0
+      0006FF E6               [12] 1845 	mov	a, @r0
+      000700 12 24 8C         [24] 1846 	lcall	___fsadd
+      000703 C8               [12] 1847 	xch	a,r0
+      000704 E5 08            [12] 1848 	mov	a,_bp
+      000706 24 0A            [12] 1849 	add	a,#0x0a
+      000708 C8               [12] 1850 	xch	a,r0
+      000709 A6 82            [24] 1851 	mov	@r0, dpl
+      00070B 08               [12] 1852 	inc	r0
+      00070C A6 83            [24] 1853 	mov	@r0, dph
+      00070E 08               [12] 1854 	inc	r0
+      00070F A6 F0            [24] 1855 	mov	@r0, b
+      000711 08               [12] 1856 	inc	r0
+      000712 F6               [12] 1857 	mov	@r0,a
+      000713 E5 81            [12] 1858 	mov	a,sp
+      000715 24 FC            [12] 1859 	add	a,#0xfc
+      000717 F5 81            [12] 1860 	mov	sp,a
+      000719 E5 08            [12] 1861 	mov	a,_bp
+      00071B 24 0A            [12] 1862 	add	a,#0x0a
+      00071D F8               [12] 1863 	mov	r0,a
+      00071E E6               [12] 1864 	mov	a,@r0
+      00071F C0 E0            [24] 1865 	push	acc
+      000721 08               [12] 1866 	inc	r0
+      000722 E6               [12] 1867 	mov	a,@r0
+      000723 C0 E0            [24] 1868 	push	acc
+      000725 08               [12] 1869 	inc	r0
+      000726 E6               [12] 1870 	mov	a,@r0
+      000727 C0 E0            [24] 1871 	push	acc
+      000729 08               [12] 1872 	inc	r0
+      00072A E6               [12] 1873 	mov	a,@r0
+      00072B C0 E0            [24] 1874 	push	acc
+      00072D 90 00 00         [24] 1875 	mov	dptr,#0x0000
+      000730 75 F0 80         [24] 1876 	mov	b, #0x80
+      000733 74 3F            [12] 1877 	mov	a, #0x3f
+      000735 12 24 3A         [24] 1878 	lcall	___fslt
+      000738 AF 82            [24] 1879 	mov	r7, dpl
+      00073A E5 81            [12] 1880 	mov	a,sp
+      00073C 24 FC            [12] 1881 	add	a,#0xfc
+      00073E F5 81            [12] 1882 	mov	sp,a
+      000740 D0 02            [24] 1883 	pop	ar2
+      000742 EF               [12] 1884 	mov	a,r7
+      000743 60 19            [24] 1885 	jz	00120$
+                           00068E  1886 	C$fuzzy.h$911$5_0$47 ==.
+                                   1887 ;	../../fuzzy.h:911: result = LEVEL_HI;
+      000745 E5 08            [12] 1888 	mov	a,_bp
+      000747 24 0A            [12] 1889 	add	a,#0x0a
+      000749 F8               [12] 1890 	mov	r0,a
+      00074A E4               [12] 1891 	clr	a
+      00074B F6               [12] 1892 	mov	@r0,a
+      00074C 08               [12] 1893 	inc	r0
+      00074D F6               [12] 1894 	mov	@r0,a
+      00074E 08               [12] 1895 	inc	r0
+      00074F 76 80            [12] 1896 	mov	@r0,#0x80
+      000751 08               [12] 1897 	inc	r0
+      000752 76 3F            [12] 1898 	mov	@r0,#0x3f
+                           00069D  1899 	C$fuzzy.h$913$4_0$45 ==.
+                                   1900 ;	../../fuzzy.h:913: break;
+                           00069D  1901 	C$fuzzy.h$915$4_0$45 ==.
+                                   1902 ;	../../fuzzy.h:915: default:
+      000754 80 08            [24] 1903 	sjmp	00120$
+      000756                       1904 00115$:
+                           00069F  1905 	C$fuzzy.h$916$4_0$45 ==.
+                                   1906 ;	../../fuzzy.h:916: return LEVEL_LO;
+      000756 90 00 00         [24] 1907 	mov	dptr,#0x0000
+      000759 E4               [12] 1908 	clr	a
+      00075A F5 F0            [12] 1909 	mov	b,a
+                           0006A5  1910 	C$fuzzy.h$917$3_0$44 ==.
+                                   1911 ;	../../fuzzy.h:917: }
+      00075C 80 20            [24] 1912 	sjmp	00121$
+      00075E                       1913 00120$:
+                           0006A7  1914 	C$fuzzy.h$885$2_0$43 ==.
+                                   1915 ;	../../fuzzy.h:885: index++
+      00075E E5 08            [12] 1916 	mov	a,_bp
+      000760 24 0E            [12] 1917 	add	a,#0x0e
+      000762 F8               [12] 1918 	mov	r0,a
+      000763 06               [12] 1919 	inc	@r0
+      000764 B6 00 02         [24] 1920 	cjne	@r0,#0x00,00206$
+      000767 08               [12] 1921 	inc	r0
+      000768 06               [12] 1922 	inc	@r0
+      000769                       1923 00206$:
+      000769 02 05 75         [24] 1924 	ljmp	00119$
+      00076C                       1925 00117$:
+                           0006B5  1926 	C$fuzzy.h$921$1_0$40 ==.
+                                   1927 ;	../../fuzzy.h:921: result
+      00076C E5 08            [12] 1928 	mov	a,_bp
+      00076E 24 0A            [12] 1929 	add	a,#0x0a
+      000770 F8               [12] 1930 	mov	r0,a
+      000771 86 82            [24] 1931 	mov	dpl, @r0
+      000773 08               [12] 1932 	inc	r0
+      000774 86 83            [24] 1933 	mov	dph, @r0
+      000776 08               [12] 1934 	inc	r0
+      000777 86 F0            [24] 1935 	mov	b, @r0
+      000779 08               [12] 1936 	inc	r0
+      00077A E6               [12] 1937 	mov	a, @r0
+      00077B 12 00 EA         [24] 1938 	lcall	_fuzzy_clamp
+      00077E                       1939 00121$:
+                           0006C7  1940 	C$fuzzy.h$923$1_0$40 ==.
+                                   1941 ;	../../fuzzy.h:923: }
+      00077E 85 08 81         [24] 1942 	mov	sp,_bp
+      000781 D0 08            [24] 1943 	pop	_bp
+                           0006CC  1944 	C$fuzzy.h$923$1_0$40 ==.
+                           0006CC  1945 	XG$fuzzy_or_array$0$0 ==.
+      000783 22               [24] 1946 	ret
+                                   1947 ;------------------------------------------------------------
+                                   1948 ;Allocation info for local variables in function 'fuzzy_sugeno_weighted_average_array'
+                                   1949 ;------------------------------------------------------------
+                                   1950 ;values        Allocated to stack - _bp -5 +3 
+                                   1951 ;value_count   Allocated to stack - _bp +1 +2 
+                                   1952 ;weighted_sum  Allocated to stack - _bp +3 +4 
+                                   1953 ;firing_sum    Allocated to stack - _bp +7 +4 
+                                   1954 ;firing_strength Allocated to stack - _bp +11 +4 
+                                   1955 ;consequent    Allocated to registers r4 r5 r3 r2 
+                                   1956 ;index         Allocated to registers r6 r7 
+                                   1957 ;------------------------------------------------------------
+                           0006CD  1958 	G$fuzzy_sugeno_weighted_average_array$0$0 ==.
+                           0006CD  1959 	C$fuzzy.h$934$1_0$49 ==.
+                                   1960 ;	../../fuzzy.h:934: float fuzzy_sugeno_weighted_average_array(
+                                   1961 ;	-----------------------------------------
+                                   1962 ;	 function fuzzy_sugeno_weighted_average_array
+                                   1963 ;	-----------------------------------------
+      000784                       1964 _fuzzy_sugeno_weighted_average_array:
+      000784 C0 08            [24] 1965 	push	_bp
+      000786 85 81 08         [24] 1966 	mov	_bp,sp
+      000789 C0 82            [24] 1967 	push	dpl
+      00078B C0 83            [24] 1968 	push	dph
+      00078D E5 81            [12] 1969 	mov	a,sp
+      00078F 24 0C            [12] 1970 	add	a,#0x0c
+      000791 F5 81            [12] 1971 	mov	sp,a
+                           0006DC  1972 	C$fuzzy.h$947$1_0$49 ==.
+                                   1973 ;	../../fuzzy.h:947: values == NULL ||
+      000793 E5 08            [12] 1974 	mov	a,_bp
+      000795 24 FB            [12] 1975 	add	a,#0xfb
+      000797 F8               [12] 1976 	mov	r0,a
+      000798 E6               [12] 1977 	mov	a,@r0
+      000799 08               [12] 1978 	inc	r0
+      00079A 46               [12] 1979 	orl	a,@r0
+      00079B 60 0F            [24] 1980 	jz	00101$
+                           0006E6  1981 	C$fuzzy.h$948$1_0$49 ==.
+                                   1982 ;	../../fuzzy.h:948: value_count == 0u ||
+      00079D A8 08            [24] 1983 	mov	r0,_bp
+      00079F 08               [12] 1984 	inc	r0
+      0007A0 E6               [12] 1985 	mov	a,@r0
+      0007A1 08               [12] 1986 	inc	r0
+      0007A2 46               [12] 1987 	orl	a,@r0
+      0007A3 60 07            [24] 1988 	jz	00101$
+                           0006EE  1989 	C$fuzzy.h$949$1_0$49 ==.
+                                   1990 ;	../../fuzzy.h:949: value_count % 2u != 0u
+      0007A5 A8 08            [24] 1991 	mov	r0,_bp
+      0007A7 08               [12] 1992 	inc	r0
+      0007A8 E6               [12] 1993 	mov	a,@r0
+      0007A9 30 E0 09         [24] 1994 	jnb	acc.0,00102$
+      0007AC                       1995 00101$:
+                           0006F5  1996 	C$fuzzy.h$951$2_0$50 ==.
+                                   1997 ;	../../fuzzy.h:951: return 0.0f;
+      0007AC 90 00 00         [24] 1998 	mov	dptr,#0x0000
+      0007AF E4               [12] 1999 	clr	a
+      0007B0 F5 F0            [12] 2000 	mov	b,a
+      0007B2 02 09 7F         [24] 2001 	ljmp	00111$
+      0007B5                       2002 00102$:
+                           0006FE  2003 	C$fuzzy.h$955$1_0$49 ==.
+                                   2004 ;	../../fuzzy.h:955: 0.0f;
+      0007B5 E5 08            [12] 2005 	mov	a,_bp
+      0007B7 24 03            [12] 2006 	add	a,#0x03
+      0007B9 F8               [12] 2007 	mov	r0,a
+      0007BA E4               [12] 2008 	clr	a
+      0007BB F6               [12] 2009 	mov	@r0,a
+      0007BC 08               [12] 2010 	inc	r0
+      0007BD F6               [12] 2011 	mov	@r0,a
+      0007BE 08               [12] 2012 	inc	r0
+      0007BF F6               [12] 2013 	mov	@r0,a
+      0007C0 08               [12] 2014 	inc	r0
+      0007C1 F6               [12] 2015 	mov	@r0,a
+                           00070B  2016 	C$fuzzy.h$958$1_0$49 ==.
+                                   2017 ;	../../fuzzy.h:958: 0.0f;
+      0007C2 E5 08            [12] 2018 	mov	a,_bp
+      0007C4 24 07            [12] 2019 	add	a,#0x07
+      0007C6 F8               [12] 2020 	mov	r0,a
+      0007C7 E4               [12] 2021 	clr	a
+      0007C8 F6               [12] 2022 	mov	@r0,a
+      0007C9 08               [12] 2023 	inc	r0
+      0007CA F6               [12] 2024 	mov	@r0,a
+      0007CB 08               [12] 2025 	inc	r0
+      0007CC F6               [12] 2026 	mov	@r0,a
+      0007CD 08               [12] 2027 	inc	r0
+      0007CE F6               [12] 2028 	mov	@r0,a
+                           000718  2029 	C$fuzzy.h$961$1_0$49 ==.
+                                   2030 ;	../../fuzzy.h:961: index = 0u;
+      0007CF FE               [12] 2031 	mov	r6,a
+      0007D0 FF               [12] 2032 	mov	r7,a
+      0007D1                       2033 00109$:
+                           00071A  2034 	C$fuzzy.h$962$2_0$51 ==.
+                                   2035 ;	../../fuzzy.h:962: index < value_count;
+      0007D1 A8 08            [24] 2036 	mov	r0,_bp
+      0007D3 08               [12] 2037 	inc	r0
+      0007D4 C3               [12] 2038 	clr	c
+      0007D5 EE               [12] 2039 	mov	a,r6
+      0007D6 96               [12] 2040 	subb	a,@r0
+      0007D7 EF               [12] 2041 	mov	a,r7
+      0007D8 08               [12] 2042 	inc	r0
+      0007D9 96               [12] 2043 	subb	a,@r0
+      0007DA 40 03            [24] 2044 	jc	00147$
+      0007DC 02 09 12         [24] 2045 	ljmp	00105$
+      0007DF                       2046 00147$:
+                           000728  2047 	C$fuzzy.h$967$3_0$52 ==.
+                                   2048 ;	../../fuzzy.h:967: values[index]
+      0007DF EE               [12] 2049 	mov	a,r6
+      0007E0 2E               [12] 2050 	add	a,r6
+      0007E1 FC               [12] 2051 	mov	r4,a
+      0007E2 EF               [12] 2052 	mov	a,r7
+      0007E3 33               [12] 2053 	rlc	a
+      0007E4 FD               [12] 2054 	mov	r5,a
+      0007E5 EC               [12] 2055 	mov	a,r4
+      0007E6 2C               [12] 2056 	add	a,r4
+      0007E7 FC               [12] 2057 	mov	r4,a
+      0007E8 ED               [12] 2058 	mov	a,r5
+      0007E9 33               [12] 2059 	rlc	a
+      0007EA FD               [12] 2060 	mov	r5,a
+      0007EB E5 08            [12] 2061 	mov	a,_bp
+      0007ED 24 FB            [12] 2062 	add	a,#0xfb
+      0007EF F8               [12] 2063 	mov	r0,a
+      0007F0 EC               [12] 2064 	mov	a,r4
+      0007F1 26               [12] 2065 	add	a, @r0
+      0007F2 FC               [12] 2066 	mov	r4,a
+      0007F3 ED               [12] 2067 	mov	a,r5
+      0007F4 08               [12] 2068 	inc	r0
+      0007F5 36               [12] 2069 	addc	a, @r0
+      0007F6 FD               [12] 2070 	mov	r5,a
+      0007F7 08               [12] 2071 	inc	r0
+      0007F8 86 03            [24] 2072 	mov	ar3,@r0
+      0007FA 8C 82            [24] 2073 	mov	dpl,r4
+      0007FC 8D 83            [24] 2074 	mov	dph,r5
+      0007FE 8B F0            [24] 2075 	mov	b,r3
+      000800 12 26 66         [24] 2076 	lcall	__gptrget
+      000803 FC               [12] 2077 	mov	r4,a
+      000804 A3               [24] 2078 	inc	dptr
+      000805 12 26 66         [24] 2079 	lcall	__gptrget
+      000808 FD               [12] 2080 	mov	r5,a
+      000809 A3               [24] 2081 	inc	dptr
+      00080A 12 26 66         [24] 2082 	lcall	__gptrget
+      00080D FB               [12] 2083 	mov	r3,a
+      00080E A3               [24] 2084 	inc	dptr
+      00080F 12 26 66         [24] 2085 	lcall	__gptrget
+      000812 8C 82            [24] 2086 	mov	dpl,r4
+      000814 8D 83            [24] 2087 	mov	dph,r5
+      000816 8B F0            [24] 2088 	mov	b,r3
+      000818 C0 07            [24] 2089 	push	ar7
+      00081A C0 06            [24] 2090 	push	ar6
+      00081C 12 00 EA         [24] 2091 	lcall	_fuzzy_clamp
+      00081F C8               [12] 2092 	xch	a,r0
+      000820 E5 08            [12] 2093 	mov	a,_bp
+      000822 24 0B            [12] 2094 	add	a,#0x0b
+      000824 C8               [12] 2095 	xch	a,r0
+      000825 A6 82            [24] 2096 	mov	@r0, dpl
+      000827 08               [12] 2097 	inc	r0
+      000828 A6 83            [24] 2098 	mov	@r0, dph
+      00082A 08               [12] 2099 	inc	r0
+      00082B A6 F0            [24] 2100 	mov	@r0, b
+      00082D 08               [12] 2101 	inc	r0
+      00082E F6               [12] 2102 	mov	@r0,a
+      00082F D0 06            [24] 2103 	pop	ar6
+      000831 D0 07            [24] 2104 	pop	ar7
+                           00077C  2105 	C$fuzzy.h$971$3_0$52 ==.
+                                   2106 ;	../../fuzzy.h:971: values[index + 1u];
+      000833 74 01            [12] 2107 	mov	a,#0x01
+      000835 2E               [12] 2108 	add	a, r6
+      000836 FC               [12] 2109 	mov	r4,a
+      000837 E4               [12] 2110 	clr	a
+      000838 3F               [12] 2111 	addc	a, r7
+      000839 FD               [12] 2112 	mov	r5,a
+      00083A EC               [12] 2113 	mov	a,r4
+      00083B 2C               [12] 2114 	add	a,r4
+      00083C FC               [12] 2115 	mov	r4,a
+      00083D ED               [12] 2116 	mov	a,r5
+      00083E 33               [12] 2117 	rlc	a
+      00083F FD               [12] 2118 	mov	r5,a
+      000840 EC               [12] 2119 	mov	a,r4
+      000841 2C               [12] 2120 	add	a,r4
+      000842 FC               [12] 2121 	mov	r4,a
+      000843 ED               [12] 2122 	mov	a,r5
+      000844 33               [12] 2123 	rlc	a
+      000845 FD               [12] 2124 	mov	r5,a
+      000846 E5 08            [12] 2125 	mov	a,_bp
+      000848 24 FB            [12] 2126 	add	a,#0xfb
+      00084A F8               [12] 2127 	mov	r0,a
+      00084B EC               [12] 2128 	mov	a,r4
+      00084C 26               [12] 2129 	add	a, @r0
+      00084D FC               [12] 2130 	mov	r4,a
+      00084E ED               [12] 2131 	mov	a,r5
+      00084F 08               [12] 2132 	inc	r0
+      000850 36               [12] 2133 	addc	a, @r0
+      000851 FD               [12] 2134 	mov	r5,a
+      000852 08               [12] 2135 	inc	r0
+      000853 86 03            [24] 2136 	mov	ar3,@r0
+      000855 8C 82            [24] 2137 	mov	dpl,r4
+      000857 8D 83            [24] 2138 	mov	dph,r5
+      000859 8B F0            [24] 2139 	mov	b,r3
+      00085B 12 26 66         [24] 2140 	lcall	__gptrget
+      00085E FC               [12] 2141 	mov	r4,a
+      00085F A3               [24] 2142 	inc	dptr
+      000860 12 26 66         [24] 2143 	lcall	__gptrget
+      000863 FD               [12] 2144 	mov	r5,a
+      000864 A3               [24] 2145 	inc	dptr
+      000865 12 26 66         [24] 2146 	lcall	__gptrget
+      000868 FB               [12] 2147 	mov	r3,a
+      000869 A3               [24] 2148 	inc	dptr
+      00086A 12 26 66         [24] 2149 	lcall	__gptrget
+      00086D FA               [12] 2150 	mov	r2,a
+                           0007B7  2151 	C$fuzzy.h$976$1_0$49 ==.
+                                   2152 ;	../../fuzzy.h:976: consequent;
+      00086E C0 07            [24] 2153 	push	ar7
+      000870 C0 06            [24] 2154 	push	ar6
+      000872 C0 04            [24] 2155 	push	ar4
+      000874 C0 05            [24] 2156 	push	ar5
+      000876 C0 03            [24] 2157 	push	ar3
+      000878 C0 02            [24] 2158 	push	ar2
+      00087A E5 08            [12] 2159 	mov	a,_bp
+      00087C 24 0B            [12] 2160 	add	a,#0x0b
+      00087E F8               [12] 2161 	mov	r0,a
+      00087F 86 82            [24] 2162 	mov	dpl, @r0
+      000881 08               [12] 2163 	inc	r0
+      000882 86 83            [24] 2164 	mov	dph, @r0
+      000884 08               [12] 2165 	inc	r0
+      000885 86 F0            [24] 2166 	mov	b, @r0
+      000887 08               [12] 2167 	inc	r0
+      000888 E6               [12] 2168 	mov	a, @r0
+      000889 12 23 0A         [24] 2169 	lcall	___fsmul
+      00088C AA 82            [24] 2170 	mov	r2, dpl
+      00088E AB 83            [24] 2171 	mov	r3, dph
+      000890 AC F0            [24] 2172 	mov	r4, b
+      000892 FD               [12] 2173 	mov	r5, a
+      000893 E5 81            [12] 2174 	mov	a,sp
+      000895 24 FC            [12] 2175 	add	a,#0xfc
+      000897 F5 81            [12] 2176 	mov	sp,a
+      000899 C0 02            [24] 2177 	push	ar2
+      00089B C0 03            [24] 2178 	push	ar3
+      00089D C0 04            [24] 2179 	push	ar4
+      00089F C0 05            [24] 2180 	push	ar5
+                           0007EA  2181 	C$fuzzy.h$979$1_0$49 ==.
+                                   2182 ;	../../fuzzy.h:979: firing_strength;
+      0008A1 E5 08            [12] 2183 	mov	a,_bp
+      0008A3 24 03            [12] 2184 	add	a,#0x03
+      0008A5 F8               [12] 2185 	mov	r0,a
+      0008A6 86 82            [24] 2186 	mov	dpl, @r0
+      0008A8 08               [12] 2187 	inc	r0
+      0008A9 86 83            [24] 2188 	mov	dph, @r0
+      0008AB 08               [12] 2189 	inc	r0
+      0008AC 86 F0            [24] 2190 	mov	b, @r0
+      0008AE 08               [12] 2191 	inc	r0
+      0008AF E6               [12] 2192 	mov	a, @r0
+      0008B0 12 24 8C         [24] 2193 	lcall	___fsadd
+      0008B3 A8 08            [24] 2194 	mov	r0,_bp
+      0008B5 08               [12] 2195 	inc	r0
+      0008B6 08               [12] 2196 	inc	r0
+      0008B7 08               [12] 2197 	inc	r0
+      0008B8 A6 82            [24] 2198 	mov	@r0, dpl
+      0008BA 08               [12] 2199 	inc	r0
+      0008BB A6 83            [24] 2200 	mov	@r0, dph
+      0008BD 08               [12] 2201 	inc	r0
+      0008BE A6 F0            [24] 2202 	mov	@r0, b
+      0008C0 08               [12] 2203 	inc	r0
+      0008C1 F6               [12] 2204 	mov	@r0,a
+      0008C2 E5 81            [12] 2205 	mov	a,sp
+      0008C4 24 FC            [12] 2206 	add	a,#0xfc
+      0008C6 F5 81            [12] 2207 	mov	sp,a
+      0008C8 E5 08            [12] 2208 	mov	a,_bp
+      0008CA 24 0B            [12] 2209 	add	a,#0x0b
+      0008CC F8               [12] 2210 	mov	r0,a
+      0008CD E6               [12] 2211 	mov	a,@r0
+      0008CE C0 E0            [24] 2212 	push	acc
+      0008D0 08               [12] 2213 	inc	r0
+      0008D1 E6               [12] 2214 	mov	a,@r0
+      0008D2 C0 E0            [24] 2215 	push	acc
+      0008D4 08               [12] 2216 	inc	r0
+      0008D5 E6               [12] 2217 	mov	a,@r0
+      0008D6 C0 E0            [24] 2218 	push	acc
+      0008D8 08               [12] 2219 	inc	r0
+      0008D9 E6               [12] 2220 	mov	a,@r0
+      0008DA C0 E0            [24] 2221 	push	acc
+                           000825  2222 	C$fuzzy.h$964$1_0$49 ==.
+                                   2223 ;	../../fuzzy.h:964: ) {
+      0008DC E5 08            [12] 2224 	mov	a,_bp
+      0008DE 24 07            [12] 2225 	add	a,#0x07
+      0008E0 F8               [12] 2226 	mov	r0,a
+      0008E1 86 82            [24] 2227 	mov	dpl, @r0
+      0008E3 08               [12] 2228 	inc	r0
+      0008E4 86 83            [24] 2229 	mov	dph, @r0
+      0008E6 08               [12] 2230 	inc	r0
+      0008E7 86 F0            [24] 2231 	mov	b, @r0
+      0008E9 08               [12] 2232 	inc	r0
+      0008EA E6               [12] 2233 	mov	a, @r0
+      0008EB 12 24 8C         [24] 2234 	lcall	___fsadd
+      0008EE C8               [12] 2235 	xch	a,r0
+      0008EF E5 08            [12] 2236 	mov	a,_bp
+      0008F1 24 07            [12] 2237 	add	a,#0x07
+      0008F3 C8               [12] 2238 	xch	a,r0
+      0008F4 A6 82            [24] 2239 	mov	@r0, dpl
+      0008F6 08               [12] 2240 	inc	r0
+      0008F7 A6 83            [24] 2241 	mov	@r0, dph
+      0008F9 08               [12] 2242 	inc	r0
+      0008FA A6 F0            [24] 2243 	mov	@r0, b
+      0008FC 08               [12] 2244 	inc	r0
+      0008FD F6               [12] 2245 	mov	@r0,a
+      0008FE E5 81            [12] 2246 	mov	a,sp
+      000900 24 FC            [12] 2247 	add	a,#0xfc
+      000902 F5 81            [12] 2248 	mov	sp,a
+      000904 D0 06            [24] 2249 	pop	ar6
+      000906 D0 07            [24] 2250 	pop	ar7
+      000908 74 02            [12] 2251 	mov	a,#0x02
+      00090A 2E               [12] 2252 	add	a, r6
+      00090B FE               [12] 2253 	mov	r6,a
+      00090C E4               [12] 2254 	clr	a
+      00090D 3F               [12] 2255 	addc	a, r7
+      00090E FF               [12] 2256 	mov	r7,a
+      00090F 02 07 D1         [24] 2257 	ljmp	00109$
+      000912                       2258 00105$:
+                           00085B  2259 	C$fuzzy.h$982$1_0$49 ==.
+                                   2260 ;	../../fuzzy.h:982: if (firing_sum <= LEVEL_LO) {
+      000912 E5 08            [12] 2261 	mov	a,_bp
+      000914 24 07            [12] 2262 	add	a,#0x07
+      000916 F8               [12] 2263 	mov	r0,a
+      000917 E6               [12] 2264 	mov	a,@r0
+      000918 C0 E0            [24] 2265 	push	acc
+      00091A 08               [12] 2266 	inc	r0
+      00091B E6               [12] 2267 	mov	a,@r0
+      00091C C0 E0            [24] 2268 	push	acc
+      00091E 08               [12] 2269 	inc	r0
+      00091F E6               [12] 2270 	mov	a,@r0
+      000920 C0 E0            [24] 2271 	push	acc
+      000922 08               [12] 2272 	inc	r0
+      000923 E6               [12] 2273 	mov	a,@r0
+      000924 C0 E0            [24] 2274 	push	acc
+      000926 90 00 00         [24] 2275 	mov	dptr,#0x0000
+      000929 E4               [12] 2276 	clr	a
+      00092A F5 F0            [12] 2277 	mov	b,a
+      00092C 12 24 3A         [24] 2278 	lcall	___fslt
+      00092F E5 81            [12] 2279 	mov	a,sp
+      000931 24 FC            [12] 2280 	add	a,#0xfc
+      000933 F5 81            [12] 2281 	mov	sp,a
+      000935 E5 82            [12] 2282 	mov	a, dpl
+      000937 24 FF            [12] 2283 	add	a,#0xff
+      000939 92 00            [24] 2284 	mov	b0,c
+      00093B 40 08            [24] 2285 	jc	00107$
+                           000886  2286 	C$fuzzy.h$983$2_0$53 ==.
+                                   2287 ;	../../fuzzy.h:983: return 0.0f;
+      00093D 90 00 00         [24] 2288 	mov	dptr,#0x0000
+      000940 E4               [12] 2289 	clr	a
+      000941 F5 F0            [12] 2290 	mov	b,a
+      000943 80 3A            [24] 2291 	sjmp	00111$
+      000945                       2292 00107$:
+                           00088E  2293 	C$fuzzy.h$987$1_0$49 ==.
+                                   2294 ;	../../fuzzy.h:987: firing_sum;
+      000945 E5 08            [12] 2295 	mov	a,_bp
+      000947 24 07            [12] 2296 	add	a,#0x07
+      000949 F8               [12] 2297 	mov	r0,a
+      00094A E6               [12] 2298 	mov	a,@r0
+      00094B C0 E0            [24] 2299 	push	acc
+      00094D 08               [12] 2300 	inc	r0
+      00094E E6               [12] 2301 	mov	a,@r0
+      00094F C0 E0            [24] 2302 	push	acc
+      000951 08               [12] 2303 	inc	r0
+      000952 E6               [12] 2304 	mov	a,@r0
+      000953 C0 E0            [24] 2305 	push	acc
+      000955 08               [12] 2306 	inc	r0
+      000956 E6               [12] 2307 	mov	a,@r0
+      000957 C0 E0            [24] 2308 	push	acc
+      000959 E5 08            [12] 2309 	mov	a,_bp
+      00095B 24 03            [12] 2310 	add	a,#0x03
+      00095D F8               [12] 2311 	mov	r0,a
+      00095E 86 82            [24] 2312 	mov	dpl, @r0
+      000960 08               [12] 2313 	inc	r0
+      000961 86 83            [24] 2314 	mov	dph, @r0
+      000963 08               [12] 2315 	inc	r0
+      000964 86 F0            [24] 2316 	mov	b, @r0
+      000966 08               [12] 2317 	inc	r0
+      000967 E6               [12] 2318 	mov	a, @r0
+      000968 12 25 A3         [24] 2319 	lcall	___fsdiv
+      00096B AC 82            [24] 2320 	mov	r4, dpl
+      00096D AD 83            [24] 2321 	mov	r5, dph
+      00096F AE F0            [24] 2322 	mov	r6, b
+      000971 FF               [12] 2323 	mov	r7, a
+      000972 E5 81            [12] 2324 	mov	a,sp
+      000974 24 FC            [12] 2325 	add	a,#0xfc
+      000976 F5 81            [12] 2326 	mov	sp,a
+      000978 8C 82            [24] 2327 	mov	dpl, r4
+      00097A 8D 83            [24] 2328 	mov	dph, r5
+      00097C 8E F0            [24] 2329 	mov	b, r6
+      00097E EF               [12] 2330 	mov	a, r7
+      00097F                       2331 00111$:
+                           0008C8  2332 	C$fuzzy.h$988$1_0$49 ==.
+                                   2333 ;	../../fuzzy.h:988: }
+      00097F 85 08 81         [24] 2334 	mov	sp,_bp
+      000982 D0 08            [24] 2335 	pop	_bp
+                           0008CD  2336 	C$fuzzy.h$988$1_0$49 ==.
+                           0008CD  2337 	XG$fuzzy_sugeno_weighted_average_array$0$0 ==.
+      000984 22               [24] 2338 	ret
+                                   2339 ;------------------------------------------------------------
+                                   2340 ;Allocation info for local variables in function 'fuzzy_sugeno_weighted_sum_array'
+                                   2341 ;------------------------------------------------------------
+                                   2342 ;values        Allocated to stack - _bp -5 +3 
+                                   2343 ;value_count   Allocated to registers r6 r7 
+                                   2344 ;weighted_sum  Allocated to stack - _bp +1 +4 
+                                   2345 ;firing_strength Allocated to stack - _bp +5 +4 
+                                   2346 ;consequent    Allocated to registers r6 r7 r3 r2 
+                                   2347 ;index         Allocated to registers r4 r5 
+                                   2348 ;------------------------------------------------------------
+                           0008CE  2349 	G$fuzzy_sugeno_weighted_sum_array$0$0 ==.
+                           0008CE  2350 	C$fuzzy.h$998$1_0$55 ==.
+                                   2351 ;	../../fuzzy.h:998: float fuzzy_sugeno_weighted_sum_array(
+                                   2352 ;	-----------------------------------------
+                                   2353 ;	 function fuzzy_sugeno_weighted_sum_array
+                                   2354 ;	-----------------------------------------
+      000985                       2355 _fuzzy_sugeno_weighted_sum_array:
+      000985 C0 08            [24] 2356 	push	_bp
+      000987 E5 81            [12] 2357 	mov	a,sp
+      000989 F5 08            [12] 2358 	mov	_bp,a
+      00098B 24 08            [12] 2359 	add	a,#0x08
+      00098D F5 81            [12] 2360 	mov	sp,a
+      00098F AE 82            [24] 2361 	mov	r6, dpl
+      000991 AF 83            [24] 2362 	mov	r7, dph
+                           0008DC  2363 	C$fuzzy.h$1010$1_0$55 ==.
+                                   2364 ;	../../fuzzy.h:1010: values == NULL ||
+      000993 E5 08            [12] 2365 	mov	a,_bp
+      000995 24 FB            [12] 2366 	add	a,#0xfb
+      000997 F8               [12] 2367 	mov	r0,a
+      000998 E6               [12] 2368 	mov	a,@r0
+      000999 08               [12] 2369 	inc	r0
+      00099A 46               [12] 2370 	orl	a,@r0
+      00099B 60 08            [24] 2371 	jz	00101$
+                           0008E6  2372 	C$fuzzy.h$1011$1_0$55 ==.
+                                   2373 ;	../../fuzzy.h:1011: value_count == 0u ||
+      00099D EE               [12] 2374 	mov	a,r6
+      00099E 4F               [12] 2375 	orl	a,r7
+      00099F 60 04            [24] 2376 	jz	00101$
+                           0008EA  2377 	C$fuzzy.h$1012$1_0$55 ==.
+                                   2378 ;	../../fuzzy.h:1012: value_count % 2u != 0u
+      0009A1 EE               [12] 2379 	mov	a,r6
+      0009A2 30 E0 09         [24] 2380 	jnb	acc.0,00102$
+      0009A5                       2381 00101$:
+                           0008EE  2382 	C$fuzzy.h$1014$2_0$56 ==.
+                                   2383 ;	../../fuzzy.h:1014: return 0.0f;
+      0009A5 90 00 00         [24] 2384 	mov	dptr,#0x0000
+      0009A8 E4               [12] 2385 	clr	a
+      0009A9 F5 F0            [12] 2386 	mov	b,a
+      0009AB 02 0A E6         [24] 2387 	ljmp	00109$
+      0009AE                       2388 00102$:
+                           0008F7  2389 	C$fuzzy.h$1018$1_0$55 ==.
+                                   2390 ;	../../fuzzy.h:1018: 0.0f;
+      0009AE A8 08            [24] 2391 	mov	r0,_bp
+      0009B0 08               [12] 2392 	inc	r0
+      0009B1 E4               [12] 2393 	clr	a
+      0009B2 F6               [12] 2394 	mov	@r0,a
+      0009B3 08               [12] 2395 	inc	r0
+      0009B4 F6               [12] 2396 	mov	@r0,a
+      0009B5 08               [12] 2397 	inc	r0
+      0009B6 F6               [12] 2398 	mov	@r0,a
+      0009B7 08               [12] 2399 	inc	r0
+      0009B8 F6               [12] 2400 	mov	@r0,a
+                           000902  2401 	C$fuzzy.h$1021$1_0$55 ==.
+                                   2402 ;	../../fuzzy.h:1021: index = 0u;
+      0009B9 FC               [12] 2403 	mov	r4,a
+      0009BA FD               [12] 2404 	mov	r5,a
+      0009BB                       2405 00107$:
+                           000904  2406 	C$fuzzy.h$1022$2_0$57 ==.
+                                   2407 ;	../../fuzzy.h:1022: index < value_count;
+      0009BB C3               [12] 2408 	clr	c
+      0009BC EC               [12] 2409 	mov	a,r4
+      0009BD 9E               [12] 2410 	subb	a,r6
+      0009BE ED               [12] 2411 	mov	a,r5
+      0009BF 9F               [12] 2412 	subb	a,r7
+      0009C0 40 03            [24] 2413 	jc	00139$
+      0009C2 02 0A D9         [24] 2414 	ljmp	00105$
+      0009C5                       2415 00139$:
+                           00090E  2416 	C$fuzzy.h$1027$1_0$55 ==.
+                                   2417 ;	../../fuzzy.h:1027: values[index]
+      0009C5 C0 06            [24] 2418 	push	ar6
+      0009C7 C0 07            [24] 2419 	push	ar7
+      0009C9 EC               [12] 2420 	mov	a,r4
+      0009CA 2C               [12] 2421 	add	a,r4
+      0009CB FA               [12] 2422 	mov	r2,a
+      0009CC ED               [12] 2423 	mov	a,r5
+      0009CD 33               [12] 2424 	rlc	a
+      0009CE FB               [12] 2425 	mov	r3,a
+      0009CF EA               [12] 2426 	mov	a,r2
+      0009D0 2A               [12] 2427 	add	a,r2
+      0009D1 FA               [12] 2428 	mov	r2,a
+      0009D2 EB               [12] 2429 	mov	a,r3
+      0009D3 33               [12] 2430 	rlc	a
+      0009D4 FB               [12] 2431 	mov	r3,a
+      0009D5 E5 08            [12] 2432 	mov	a,_bp
+      0009D7 24 FB            [12] 2433 	add	a,#0xfb
+      0009D9 F8               [12] 2434 	mov	r0,a
+      0009DA EA               [12] 2435 	mov	a,r2
+      0009DB 26               [12] 2436 	add	a, @r0
+      0009DC FA               [12] 2437 	mov	r2,a
+      0009DD EB               [12] 2438 	mov	a,r3
+      0009DE 08               [12] 2439 	inc	r0
+      0009DF 36               [12] 2440 	addc	a, @r0
+      0009E0 FB               [12] 2441 	mov	r3,a
+      0009E1 08               [12] 2442 	inc	r0
+      0009E2 86 07            [24] 2443 	mov	ar7,@r0
+      0009E4 8A 82            [24] 2444 	mov	dpl,r2
+      0009E6 8B 83            [24] 2445 	mov	dph,r3
+      0009E8 8F F0            [24] 2446 	mov	b,r7
+      0009EA 12 26 66         [24] 2447 	lcall	__gptrget
+      0009ED FA               [12] 2448 	mov	r2,a
+      0009EE A3               [24] 2449 	inc	dptr
+      0009EF 12 26 66         [24] 2450 	lcall	__gptrget
+      0009F2 FB               [12] 2451 	mov	r3,a
+      0009F3 A3               [24] 2452 	inc	dptr
+      0009F4 12 26 66         [24] 2453 	lcall	__gptrget
+      0009F7 FF               [12] 2454 	mov	r7,a
+      0009F8 A3               [24] 2455 	inc	dptr
+      0009F9 12 26 66         [24] 2456 	lcall	__gptrget
+      0009FC FE               [12] 2457 	mov	r6,a
+      0009FD 8A 82            [24] 2458 	mov	dpl,r2
+      0009FF 8B 83            [24] 2459 	mov	dph,r3
+      000A01 8F F0            [24] 2460 	mov	b,r7
+      000A03 C0 07            [24] 2461 	push	ar7
+      000A05 C0 06            [24] 2462 	push	ar6
+      000A07 C0 05            [24] 2463 	push	ar5
+      000A09 C0 04            [24] 2464 	push	ar4
+      000A0B 12 00 EA         [24] 2465 	lcall	_fuzzy_clamp
+      000A0E C8               [12] 2466 	xch	a,r0
+      000A0F E5 08            [12] 2467 	mov	a,_bp
+      000A11 24 05            [12] 2468 	add	a,#0x05
+      000A13 C8               [12] 2469 	xch	a,r0
+      000A14 A6 82            [24] 2470 	mov	@r0, dpl
+      000A16 08               [12] 2471 	inc	r0
+      000A17 A6 83            [24] 2472 	mov	@r0, dph
+      000A19 08               [12] 2473 	inc	r0
+      000A1A A6 F0            [24] 2474 	mov	@r0, b
+      000A1C 08               [12] 2475 	inc	r0
+      000A1D F6               [12] 2476 	mov	@r0,a
+      000A1E D0 04            [24] 2477 	pop	ar4
+      000A20 D0 05            [24] 2478 	pop	ar5
+      000A22 D0 06            [24] 2479 	pop	ar6
+      000A24 D0 07            [24] 2480 	pop	ar7
+                           00096F  2481 	C$fuzzy.h$1031$3_0$58 ==.
+                                   2482 ;	../../fuzzy.h:1031: values[index + 1u];
+      000A26 74 01            [12] 2483 	mov	a,#0x01
+      000A28 2C               [12] 2484 	add	a, r4
+      000A29 FE               [12] 2485 	mov	r6,a
+      000A2A E4               [12] 2486 	clr	a
+      000A2B 3D               [12] 2487 	addc	a, r5
+      000A2C FF               [12] 2488 	mov	r7,a
+      000A2D EE               [12] 2489 	mov	a,r6
+      000A2E 2E               [12] 2490 	add	a,r6
+      000A2F FE               [12] 2491 	mov	r6,a
+      000A30 EF               [12] 2492 	mov	a,r7
+      000A31 33               [12] 2493 	rlc	a
+      000A32 FF               [12] 2494 	mov	r7,a
+      000A33 EE               [12] 2495 	mov	a,r6
+      000A34 2E               [12] 2496 	add	a,r6
+      000A35 FE               [12] 2497 	mov	r6,a
+      000A36 EF               [12] 2498 	mov	a,r7
+      000A37 33               [12] 2499 	rlc	a
+      000A38 FF               [12] 2500 	mov	r7,a
+      000A39 E5 08            [12] 2501 	mov	a,_bp
+      000A3B 24 FB            [12] 2502 	add	a,#0xfb
+      000A3D F8               [12] 2503 	mov	r0,a
+      000A3E EE               [12] 2504 	mov	a,r6
+      000A3F 26               [12] 2505 	add	a, @r0
+      000A40 FE               [12] 2506 	mov	r6,a
+      000A41 EF               [12] 2507 	mov	a,r7
+      000A42 08               [12] 2508 	inc	r0
+      000A43 36               [12] 2509 	addc	a, @r0
+      000A44 FF               [12] 2510 	mov	r7,a
+      000A45 08               [12] 2511 	inc	r0
+      000A46 86 03            [24] 2512 	mov	ar3,@r0
+      000A48 8E 82            [24] 2513 	mov	dpl,r6
+      000A4A 8F 83            [24] 2514 	mov	dph,r7
+      000A4C 8B F0            [24] 2515 	mov	b,r3
+      000A4E 12 26 66         [24] 2516 	lcall	__gptrget
+      000A51 FE               [12] 2517 	mov	r6,a
+      000A52 A3               [24] 2518 	inc	dptr
+      000A53 12 26 66         [24] 2519 	lcall	__gptrget
+      000A56 FF               [12] 2520 	mov	r7,a
+      000A57 A3               [24] 2521 	inc	dptr
+      000A58 12 26 66         [24] 2522 	lcall	__gptrget
+      000A5B FB               [12] 2523 	mov	r3,a
+      000A5C A3               [24] 2524 	inc	dptr
+      000A5D 12 26 66         [24] 2525 	lcall	__gptrget
+      000A60 FA               [12] 2526 	mov	r2,a
+                           0009AA  2527 	C$fuzzy.h$1036$1_0$55 ==.
+                                   2528 ;	../../fuzzy.h:1036: consequent;
+      000A61 C0 05            [24] 2529 	push	ar5
+      000A63 C0 04            [24] 2530 	push	ar4
+      000A65 C0 06            [24] 2531 	push	ar6
+      000A67 C0 07            [24] 2532 	push	ar7
+      000A69 C0 03            [24] 2533 	push	ar3
+      000A6B C0 02            [24] 2534 	push	ar2
+      000A6D E5 08            [12] 2535 	mov	a,_bp
+      000A6F 24 05            [12] 2536 	add	a,#0x05
+      000A71 F8               [12] 2537 	mov	r0,a
+      000A72 86 82            [24] 2538 	mov	dpl, @r0
+      000A74 08               [12] 2539 	inc	r0
+      000A75 86 83            [24] 2540 	mov	dph, @r0
+      000A77 08               [12] 2541 	inc	r0
+      000A78 86 F0            [24] 2542 	mov	b, @r0
+      000A7A 08               [12] 2543 	inc	r0
+      000A7B E6               [12] 2544 	mov	a, @r0
+      000A7C 12 23 0A         [24] 2545 	lcall	___fsmul
+      000A7F AA 82            [24] 2546 	mov	r2, dpl
+      000A81 AB 83            [24] 2547 	mov	r3, dph
+      000A83 AE F0            [24] 2548 	mov	r6, b
+      000A85 FF               [12] 2549 	mov	r7, a
+      000A86 E5 81            [12] 2550 	mov	a,sp
+      000A88 24 FC            [12] 2551 	add	a,#0xfc
+      000A8A F5 81            [12] 2552 	mov	sp,a
+      000A8C D0 04            [24] 2553 	pop	ar4
+      000A8E D0 05            [24] 2554 	pop	ar5
+      000A90 C0 07            [24] 2555 	push	ar7
+      000A92 C0 06            [24] 2556 	push	ar6
+      000A94 C0 05            [24] 2557 	push	ar5
+      000A96 C0 04            [24] 2558 	push	ar4
+      000A98 C0 02            [24] 2559 	push	ar2
+      000A9A C0 03            [24] 2560 	push	ar3
+      000A9C C0 06            [24] 2561 	push	ar6
+      000A9E C0 07            [24] 2562 	push	ar7
+                           0009E9  2563 	C$fuzzy.h$1024$1_0$55 ==.
+                                   2564 ;	../../fuzzy.h:1024: ) {
+      000AA0 A8 08            [24] 2565 	mov	r0,_bp
+      000AA2 08               [12] 2566 	inc	r0
+      000AA3 86 82            [24] 2567 	mov	dpl, @r0
+      000AA5 08               [12] 2568 	inc	r0
+      000AA6 86 83            [24] 2569 	mov	dph, @r0
+      000AA8 08               [12] 2570 	inc	r0
+      000AA9 86 F0            [24] 2571 	mov	b, @r0
+      000AAB 08               [12] 2572 	inc	r0
+      000AAC E6               [12] 2573 	mov	a, @r0
+      000AAD 12 24 8C         [24] 2574 	lcall	___fsadd
+      000AB0 A8 08            [24] 2575 	mov	r0,_bp
+      000AB2 08               [12] 2576 	inc	r0
+      000AB3 A6 82            [24] 2577 	mov	@r0, dpl
+      000AB5 08               [12] 2578 	inc	r0
+      000AB6 A6 83            [24] 2579 	mov	@r0, dph
+      000AB8 08               [12] 2580 	inc	r0
+      000AB9 A6 F0            [24] 2581 	mov	@r0, b
+      000ABB 08               [12] 2582 	inc	r0
+      000ABC F6               [12] 2583 	mov	@r0,a
+      000ABD E5 81            [12] 2584 	mov	a,sp
+      000ABF 24 FC            [12] 2585 	add	a,#0xfc
+      000AC1 F5 81            [12] 2586 	mov	sp,a
+      000AC3 D0 04            [24] 2587 	pop	ar4
+      000AC5 D0 05            [24] 2588 	pop	ar5
+      000AC7 D0 06            [24] 2589 	pop	ar6
+      000AC9 D0 07            [24] 2590 	pop	ar7
+      000ACB 74 02            [12] 2591 	mov	a,#0x02
+      000ACD 2C               [12] 2592 	add	a, r4
+      000ACE FC               [12] 2593 	mov	r4,a
+      000ACF E4               [12] 2594 	clr	a
+      000AD0 3D               [12] 2595 	addc	a, r5
+      000AD1 FD               [12] 2596 	mov	r5,a
+      000AD2 D0 07            [24] 2597 	pop	ar7
+      000AD4 D0 06            [24] 2598 	pop	ar6
+      000AD6 02 09 BB         [24] 2599 	ljmp	00107$
+      000AD9                       2600 00105$:
+                           000A22  2601 	C$fuzzy.h$1039$1_0$55 ==.
+                                   2602 ;	../../fuzzy.h:1039: return weighted_sum;
+      000AD9 A8 08            [24] 2603 	mov	r0,_bp
+      000ADB 08               [12] 2604 	inc	r0
+      000ADC 86 82            [24] 2605 	mov	dpl, @r0
+      000ADE 08               [12] 2606 	inc	r0
+      000ADF 86 83            [24] 2607 	mov	dph, @r0
+      000AE1 08               [12] 2608 	inc	r0
+      000AE2 86 F0            [24] 2609 	mov	b, @r0
+      000AE4 08               [12] 2610 	inc	r0
+      000AE5 E6               [12] 2611 	mov	a, @r0
+      000AE6                       2612 00109$:
+                           000A2F  2613 	C$fuzzy.h$1040$1_0$55 ==.
+                                   2614 ;	../../fuzzy.h:1040: }
+      000AE6 85 08 81         [24] 2615 	mov	sp,_bp
+      000AE9 D0 08            [24] 2616 	pop	_bp
+                           000A34  2617 	C$fuzzy.h$1040$1_0$55 ==.
+                           000A34  2618 	XG$fuzzy_sugeno_weighted_sum_array$0$0 ==.
+      000AEB 22               [24] 2619 	ret
+                                   2620 ;------------------------------------------------------------
+                                   2621 ;Allocation info for local variables in function 'fuzzy_ramp'
+                                   2622 ;------------------------------------------------------------
+                                   2623 ;upper_boundary Allocated to stack - _bp -6 +4 
+                                   2624 ;value         Allocated to stack - _bp -10 +4 
+                                   2625 ;ramp_up       Allocated to stack - _bp -11 +1 
+                                   2626 ;hedge         Allocated to stack - _bp -12 +1 
+                                   2627 ;lower_boundary Allocated to registers r7 r6 r5 r4 
+                                   2628 ;result        Allocated to stack - _bp +5 +4 
+                                   2629 ;normalized    Allocated to registers r4 r5 r6 r7 
+                                   2630 ;sloc0         Allocated to stack - _bp +13 +4 
+                                   2631 ;sloc1         Allocated to stack - _bp +1 +4 
+                                   2632 ;------------------------------------------------------------
+                           000A35  2633 	G$fuzzy_ramp$0$0 ==.
+                           000A35  2634 	C$fuzzy.h$1046$1_0$60 ==.
+                                   2635 ;	../../fuzzy.h:1046: float fuzzy_ramp(
+                                   2636 ;	-----------------------------------------
+                                   2637 ;	 function fuzzy_ramp
+                                   2638 ;	-----------------------------------------
+      000AEC                       2639 _fuzzy_ramp:
+      000AEC C0 08            [24] 2640 	push	_bp
+      000AEE 85 81 08         [24] 2641 	mov	_bp,sp
+      000AF1 AF 82            [24] 2642 	mov	r7,dpl
+      000AF3 AE 83            [24] 2643 	mov	r6,dph
+      000AF5 AD F0            [24] 2644 	mov	r5,b
+      000AF7 FC               [12] 2645 	mov	r4,a
+      000AF8 E5 81            [12] 2646 	mov	a,sp
+      000AFA 24 08            [12] 2647 	add	a,#0x08
+      000AFC F5 81            [12] 2648 	mov	sp,a
+                           000A47  2649 	C$fuzzy.h$1057$1_0$60 ==.
+                                   2650 ;	../../fuzzy.h:1057: if (lower_boundary >= upper_boundary) {
+      000AFE C0 07            [24] 2651 	push	ar7
+      000B00 C0 06            [24] 2652 	push	ar6
+      000B02 C0 05            [24] 2653 	push	ar5
+      000B04 C0 04            [24] 2654 	push	ar4
+      000B06 E5 08            [12] 2655 	mov	a,_bp
+      000B08 24 FA            [12] 2656 	add	a,#0xfa
+      000B0A F8               [12] 2657 	mov	r0,a
+      000B0B E6               [12] 2658 	mov	a,@r0
+      000B0C C0 E0            [24] 2659 	push	acc
+      000B0E 08               [12] 2660 	inc	r0
+      000B0F E6               [12] 2661 	mov	a,@r0
+      000B10 C0 E0            [24] 2662 	push	acc
+      000B12 08               [12] 2663 	inc	r0
+      000B13 E6               [12] 2664 	mov	a,@r0
+      000B14 C0 E0            [24] 2665 	push	acc
+      000B16 08               [12] 2666 	inc	r0
+      000B17 E6               [12] 2667 	mov	a,@r0
+      000B18 C0 E0            [24] 2668 	push	acc
+      000B1A 8F 82            [24] 2669 	mov	dpl, r7
+      000B1C 8E 83            [24] 2670 	mov	dph, r6
+      000B1E 8D F0            [24] 2671 	mov	b, r5
+      000B20 EC               [12] 2672 	mov	a, r4
+      000B21 12 24 3A         [24] 2673 	lcall	___fslt
+      000B24 E5 81            [12] 2674 	mov	a,sp
+      000B26 24 FC            [12] 2675 	add	a,#0xfc
+      000B28 F5 81            [12] 2676 	mov	sp,a
+      000B2A D0 04            [24] 2677 	pop	ar4
+      000B2C D0 05            [24] 2678 	pop	ar5
+      000B2E D0 06            [24] 2679 	pop	ar6
+      000B30 D0 07            [24] 2680 	pop	ar7
+      000B32 E5 82            [12] 2681 	mov	a, dpl
+      000B34 24 FF            [12] 2682 	add	a,#0xff
+      000B36 92 00            [24] 2683 	mov	b0,c
+      000B38 40 09            [24] 2684 	jc	00102$
+                           000A83  2685 	C$fuzzy.h$1058$2_0$61 ==.
+                                   2686 ;	../../fuzzy.h:1058: return LEVEL_LO;
+      000B3A 90 00 00         [24] 2687 	mov	dptr,#0x0000
+      000B3D E4               [12] 2688 	clr	a
+      000B3E F5 F0            [12] 2689 	mov	b,a
+      000B40 02 0D 23         [24] 2690 	ljmp	00109$
+      000B43                       2691 00102$:
+                           000A8C  2692 	C$fuzzy.h$1061$1_0$60 ==.
+                                   2693 ;	../../fuzzy.h:1061: if (value <= lower_boundary) {
+      000B43 C0 07            [24] 2694 	push	ar7
+      000B45 C0 06            [24] 2695 	push	ar6
+      000B47 C0 05            [24] 2696 	push	ar5
+      000B49 C0 04            [24] 2697 	push	ar4
+      000B4B E5 08            [12] 2698 	mov	a,_bp
+      000B4D 24 F6            [12] 2699 	add	a,#0xf6
+      000B4F F8               [12] 2700 	mov	r0,a
+      000B50 E6               [12] 2701 	mov	a,@r0
+      000B51 C0 E0            [24] 2702 	push	acc
+      000B53 08               [12] 2703 	inc	r0
+      000B54 E6               [12] 2704 	mov	a,@r0
+      000B55 C0 E0            [24] 2705 	push	acc
+      000B57 08               [12] 2706 	inc	r0
+      000B58 E6               [12] 2707 	mov	a,@r0
+      000B59 C0 E0            [24] 2708 	push	acc
+      000B5B 08               [12] 2709 	inc	r0
+      000B5C E6               [12] 2710 	mov	a,@r0
+      000B5D C0 E0            [24] 2711 	push	acc
+      000B5F 8F 82            [24] 2712 	mov	dpl, r7
+      000B61 8E 83            [24] 2713 	mov	dph, r6
+      000B63 8D F0            [24] 2714 	mov	b, r5
+      000B65 EC               [12] 2715 	mov	a, r4
+      000B66 12 24 3A         [24] 2716 	lcall	___fslt
+      000B69 E5 81            [12] 2717 	mov	a,sp
+      000B6B 24 FC            [12] 2718 	add	a,#0xfc
+      000B6D F5 81            [12] 2719 	mov	sp,a
+      000B6F D0 04            [24] 2720 	pop	ar4
+      000B71 D0 05            [24] 2721 	pop	ar5
+      000B73 D0 06            [24] 2722 	pop	ar6
+      000B75 D0 07            [24] 2723 	pop	ar7
+      000B77 E5 82            [12] 2724 	mov	a, dpl
+      000B79 24 FF            [12] 2725 	add	a,#0xff
+      000B7B 92 00            [24] 2726 	mov	b0,c
+      000B7D 40 39            [24] 2727 	jc	00107$
+                           000AC8  2728 	C$fuzzy.h$1063$2_0$62 ==.
+                                   2729 ;	../../fuzzy.h:1063: ramp_up
+      000B7F E5 08            [12] 2730 	mov	a,_bp
+      000B81 24 F5            [12] 2731 	add	a,#0xf5
+      000B83 F8               [12] 2732 	mov	r0,a
+      000B84 E6               [12] 2733 	mov	a,@r0
+      000B85 60 0F            [24] 2734 	jz	00111$
+                           000AD0  2735 	C$fuzzy.h$1064$2_0$62 ==.
+                                   2736 ;	../../fuzzy.h:1064: ? LEVEL_LO
+      000B87 E5 08            [12] 2737 	mov	a,_bp
+      000B89 24 05            [12] 2738 	add	a,#0x05
+      000B8B F8               [12] 2739 	mov	r0,a
+      000B8C E4               [12] 2740 	clr	a
+      000B8D F6               [12] 2741 	mov	@r0,a
+      000B8E 08               [12] 2742 	inc	r0
+      000B8F F6               [12] 2743 	mov	@r0,a
+      000B90 08               [12] 2744 	inc	r0
+      000B91 F6               [12] 2745 	mov	@r0,a
+      000B92 08               [12] 2746 	inc	r0
+      000B93 F6               [12] 2747 	mov	@r0,a
+      000B94 80 0F            [24] 2748 	sjmp	00112$
+      000B96                       2749 00111$:
+                           000ADF  2750 	C$fuzzy.h$1065$2_0$62 ==.
+                                   2751 ;	../../fuzzy.h:1065: : LEVEL_HI;
+      000B96 E5 08            [12] 2752 	mov	a,_bp
+      000B98 24 05            [12] 2753 	add	a,#0x05
+      000B9A F8               [12] 2754 	mov	r0,a
+      000B9B E4               [12] 2755 	clr	a
+      000B9C F6               [12] 2756 	mov	@r0,a
+      000B9D 08               [12] 2757 	inc	r0
+      000B9E F6               [12] 2758 	mov	@r0,a
+      000B9F 08               [12] 2759 	inc	r0
+      000BA0 76 80            [12] 2760 	mov	@r0,#0x80
+      000BA2 08               [12] 2761 	inc	r0
+      000BA3 76 3F            [12] 2762 	mov	@r0,#0x3f
+      000BA5                       2763 00112$:
+      000BA5 E5 08            [12] 2764 	mov	a,_bp
+      000BA7 24 05            [12] 2765 	add	a,#0x05
+      000BA9 F8               [12] 2766 	mov	r0,a
+      000BAA 86 07            [24] 2767 	mov	ar7,@r0
+      000BAC 08               [12] 2768 	inc	r0
+      000BAD 86 06            [24] 2769 	mov	ar6,@r0
+      000BAF 08               [12] 2770 	inc	r0
+      000BB0 86 05            [24] 2771 	mov	ar5,@r0
+      000BB2 08               [12] 2772 	inc	r0
+      000BB3 86 04            [24] 2773 	mov	ar4,@r0
+      000BB5 02 0D 01         [24] 2774 	ljmp	00108$
+      000BB8                       2775 00107$:
+                           000B01  2776 	C$fuzzy.h$1067$1_0$60 ==.
+                                   2777 ;	../../fuzzy.h:1067: else if (value >= upper_boundary) {
+      000BB8 C0 07            [24] 2778 	push	ar7
+      000BBA C0 06            [24] 2779 	push	ar6
+      000BBC C0 05            [24] 2780 	push	ar5
+      000BBE C0 04            [24] 2781 	push	ar4
+      000BC0 E5 08            [12] 2782 	mov	a,_bp
+      000BC2 24 FA            [12] 2783 	add	a,#0xfa
+      000BC4 F8               [12] 2784 	mov	r0,a
+      000BC5 E6               [12] 2785 	mov	a,@r0
+      000BC6 C0 E0            [24] 2786 	push	acc
+      000BC8 08               [12] 2787 	inc	r0
+      000BC9 E6               [12] 2788 	mov	a,@r0
+      000BCA C0 E0            [24] 2789 	push	acc
+      000BCC 08               [12] 2790 	inc	r0
+      000BCD E6               [12] 2791 	mov	a,@r0
+      000BCE C0 E0            [24] 2792 	push	acc
+      000BD0 08               [12] 2793 	inc	r0
+      000BD1 E6               [12] 2794 	mov	a,@r0
+      000BD2 C0 E0            [24] 2795 	push	acc
+      000BD4 E5 08            [12] 2796 	mov	a,_bp
+      000BD6 24 F6            [12] 2797 	add	a,#0xf6
+      000BD8 F8               [12] 2798 	mov	r0,a
+      000BD9 86 82            [24] 2799 	mov	dpl, @r0
+      000BDB 08               [12] 2800 	inc	r0
+      000BDC 86 83            [24] 2801 	mov	dph, @r0
+      000BDE 08               [12] 2802 	inc	r0
+      000BDF 86 F0            [24] 2803 	mov	b, @r0
+      000BE1 08               [12] 2804 	inc	r0
+      000BE2 E6               [12] 2805 	mov	a, @r0
+      000BE3 12 24 3A         [24] 2806 	lcall	___fslt
+      000BE6 E5 81            [12] 2807 	mov	a,sp
+      000BE8 24 FC            [12] 2808 	add	a,#0xfc
+      000BEA F5 81            [12] 2809 	mov	sp,a
+      000BEC D0 04            [24] 2810 	pop	ar4
+      000BEE D0 05            [24] 2811 	pop	ar5
+      000BF0 D0 06            [24] 2812 	pop	ar6
+      000BF2 D0 07            [24] 2813 	pop	ar7
+      000BF4 E5 82            [12] 2814 	mov	a, dpl
+      000BF6 24 FF            [12] 2815 	add	a,#0xff
+      000BF8 92 00            [24] 2816 	mov	b0,c
+      000BFA 40 39            [24] 2817 	jc	00104$
+                           000B45  2818 	C$fuzzy.h$1069$2_0$63 ==.
+                                   2819 ;	../../fuzzy.h:1069: ramp_up
+      000BFC E5 08            [12] 2820 	mov	a,_bp
+      000BFE 24 F5            [12] 2821 	add	a,#0xf5
+      000C00 F8               [12] 2822 	mov	r0,a
+      000C01 E6               [12] 2823 	mov	a,@r0
+      000C02 60 11            [24] 2824 	jz	00113$
+                           000B4D  2825 	C$fuzzy.h$1070$2_0$63 ==.
+                                   2826 ;	../../fuzzy.h:1070: ? LEVEL_HI
+      000C04 E5 08            [12] 2827 	mov	a,_bp
+      000C06 24 05            [12] 2828 	add	a,#0x05
+      000C08 F8               [12] 2829 	mov	r0,a
+      000C09 E4               [12] 2830 	clr	a
+      000C0A F6               [12] 2831 	mov	@r0,a
+      000C0B 08               [12] 2832 	inc	r0
+      000C0C F6               [12] 2833 	mov	@r0,a
+      000C0D 08               [12] 2834 	inc	r0
+      000C0E 76 80            [12] 2835 	mov	@r0,#0x80
+      000C10 08               [12] 2836 	inc	r0
+      000C11 76 3F            [12] 2837 	mov	@r0,#0x3f
+      000C13 80 0D            [24] 2838 	sjmp	00114$
+      000C15                       2839 00113$:
+                           000B5E  2840 	C$fuzzy.h$1071$2_0$63 ==.
+                                   2841 ;	../../fuzzy.h:1071: : LEVEL_LO;
+      000C15 E5 08            [12] 2842 	mov	a,_bp
+      000C17 24 05            [12] 2843 	add	a,#0x05
+      000C19 F8               [12] 2844 	mov	r0,a
+      000C1A E4               [12] 2845 	clr	a
+      000C1B F6               [12] 2846 	mov	@r0,a
+      000C1C 08               [12] 2847 	inc	r0
+      000C1D F6               [12] 2848 	mov	@r0,a
+      000C1E 08               [12] 2849 	inc	r0
+      000C1F F6               [12] 2850 	mov	@r0,a
+      000C20 08               [12] 2851 	inc	r0
+      000C21 F6               [12] 2852 	mov	@r0,a
+      000C22                       2853 00114$:
+      000C22 E5 08            [12] 2854 	mov	a,_bp
+      000C24 24 05            [12] 2855 	add	a,#0x05
+      000C26 F8               [12] 2856 	mov	r0,a
+      000C27 86 07            [24] 2857 	mov	ar7,@r0
+      000C29 08               [12] 2858 	inc	r0
+      000C2A 86 06            [24] 2859 	mov	ar6,@r0
+      000C2C 08               [12] 2860 	inc	r0
+      000C2D 86 05            [24] 2861 	mov	ar5,@r0
+      000C2F 08               [12] 2862 	inc	r0
+      000C30 86 04            [24] 2863 	mov	ar4,@r0
+      000C32 02 0D 01         [24] 2864 	ljmp	00108$
+      000C35                       2865 00104$:
+                           000B7E  2866 	C$fuzzy.h$1075$1_0$60 ==.
+                                   2867 ;	../../fuzzy.h:1075: (value - lower_boundary) /
+      000C35 C0 07            [24] 2868 	push	ar7
+      000C37 C0 06            [24] 2869 	push	ar6
+      000C39 C0 05            [24] 2870 	push	ar5
+      000C3B C0 04            [24] 2871 	push	ar4
+      000C3D C0 07            [24] 2872 	push	ar7
+      000C3F C0 06            [24] 2873 	push	ar6
+      000C41 C0 05            [24] 2874 	push	ar5
+      000C43 C0 04            [24] 2875 	push	ar4
+                           000B8E  2876 	C$fuzzy.h$1076$1_0$60 ==.
+                                   2877 ;	../../fuzzy.h:1076: (upper_boundary - lower_boundary);
+      000C45 E5 08            [12] 2878 	mov	a,_bp
+      000C47 24 F6            [12] 2879 	add	a,#0xf6
+      000C49 F8               [12] 2880 	mov	r0,a
+      000C4A 86 82            [24] 2881 	mov	dpl, @r0
+      000C4C 08               [12] 2882 	inc	r0
+      000C4D 86 83            [24] 2883 	mov	dph, @r0
+      000C4F 08               [12] 2884 	inc	r0
+      000C50 86 F0            [24] 2885 	mov	b, @r0
+      000C52 08               [12] 2886 	inc	r0
+      000C53 E6               [12] 2887 	mov	a, @r0
+      000C54 12 22 FF         [24] 2888 	lcall	___fssub
+      000C57 A8 08            [24] 2889 	mov	r0,_bp
+      000C59 08               [12] 2890 	inc	r0
+      000C5A A6 82            [24] 2891 	mov	@r0, dpl
+      000C5C 08               [12] 2892 	inc	r0
+      000C5D A6 83            [24] 2893 	mov	@r0, dph
+      000C5F 08               [12] 2894 	inc	r0
+      000C60 A6 F0            [24] 2895 	mov	@r0, b
+      000C62 08               [12] 2896 	inc	r0
+      000C63 F6               [12] 2897 	mov	@r0,a
+      000C64 E5 81            [12] 2898 	mov	a,sp
+      000C66 24 FC            [12] 2899 	add	a,#0xfc
+      000C68 F5 81            [12] 2900 	mov	sp,a
+      000C6A E5 08            [12] 2901 	mov	a,_bp
+      000C6C 24 FA            [12] 2902 	add	a,#0xfa
+      000C6E F8               [12] 2903 	mov	r0,a
+      000C6F 86 82            [24] 2904 	mov	dpl, @r0
+      000C71 08               [12] 2905 	inc	r0
+      000C72 86 83            [24] 2906 	mov	dph, @r0
+      000C74 08               [12] 2907 	inc	r0
+      000C75 86 F0            [24] 2908 	mov	b, @r0
+      000C77 08               [12] 2909 	inc	r0
+      000C78 E6               [12] 2910 	mov	a, @r0
+      000C79 12 22 FF         [24] 2911 	lcall	___fssub
+      000C7C AC 82            [24] 2912 	mov	r4, dpl
+      000C7E AD 83            [24] 2913 	mov	r5, dph
+      000C80 AE F0            [24] 2914 	mov	r6, b
+      000C82 FF               [12] 2915 	mov	r7, a
+      000C83 E5 81            [12] 2916 	mov	a,sp
+      000C85 24 FC            [12] 2917 	add	a,#0xfc
+      000C87 F5 81            [12] 2918 	mov	sp,a
+      000C89 C0 04            [24] 2919 	push	ar4
+      000C8B C0 05            [24] 2920 	push	ar5
+      000C8D C0 06            [24] 2921 	push	ar6
+      000C8F C0 07            [24] 2922 	push	ar7
+                           000BDA  2923 	C$fuzzy.h$1079$1_0$60 ==.
+                                   2924 ;	../../fuzzy.h:1079: ramp_up
+      000C91 A8 08            [24] 2925 	mov	r0,_bp
+      000C93 08               [12] 2926 	inc	r0
+      000C94 86 82            [24] 2927 	mov	dpl, @r0
+      000C96 08               [12] 2928 	inc	r0
+      000C97 86 83            [24] 2929 	mov	dph, @r0
+      000C99 08               [12] 2930 	inc	r0
+      000C9A 86 F0            [24] 2931 	mov	b, @r0
+      000C9C 08               [12] 2932 	inc	r0
+      000C9D E6               [12] 2933 	mov	a, @r0
+      000C9E 12 25 A3         [24] 2934 	lcall	___fsdiv
+      000CA1 AC 82            [24] 2935 	mov	r4, dpl
+      000CA3 AD 83            [24] 2936 	mov	r5, dph
+      000CA5 AE F0            [24] 2937 	mov	r6, b
+      000CA7 FF               [12] 2938 	mov	r7, a
+      000CA8 E5 81            [12] 2939 	mov	a,sp
+      000CAA 24 FC            [12] 2940 	add	a,#0xfc
+      000CAC F5 81            [12] 2941 	mov	sp,a
+      000CAE E5 08            [12] 2942 	mov	a,_bp
+      000CB0 24 F5            [12] 2943 	add	a,#0xf5
+      000CB2 F8               [12] 2944 	mov	r0,a
+      000CB3 E6               [12] 2945 	mov	a,@r0
+      000CB4 60 12            [24] 2946 	jz	00115$
+                           000BFF  2947 	C$fuzzy.h$1080$2_0$64 ==.
+                                   2948 ;	../../fuzzy.h:1080: ? normalized
+      000CB6 E5 08            [12] 2949 	mov	a,_bp
+      000CB8 24 05            [12] 2950 	add	a,#0x05
+      000CBA F8               [12] 2951 	mov	r0,a
+      000CBB A6 04            [24] 2952 	mov	@r0,ar4
+      000CBD 08               [12] 2953 	inc	r0
+      000CBE A6 05            [24] 2954 	mov	@r0,ar5
+      000CC0 08               [12] 2955 	inc	r0
+      000CC1 A6 06            [24] 2956 	mov	@r0,ar6
+      000CC3 08               [12] 2957 	inc	r0
+      000CC4 A6 07            [24] 2958 	mov	@r0,ar7
+      000CC6 80 29            [24] 2959 	sjmp	00116$
+      000CC8                       2960 00115$:
+                           000C11  2961 	C$fuzzy.h$1081$1_0$60 ==.
+                                   2962 ;	../../fuzzy.h:1081: : LEVEL_HI - normalized;
+      000CC8 C0 04            [24] 2963 	push	ar4
+      000CCA C0 05            [24] 2964 	push	ar5
+      000CCC C0 06            [24] 2965 	push	ar6
+      000CCE C0 07            [24] 2966 	push	ar7
+      000CD0 90 00 00         [24] 2967 	mov	dptr,#0x0000
+      000CD3 75 F0 80         [24] 2968 	mov	b, #0x80
+      000CD6 74 3F            [12] 2969 	mov	a, #0x3f
+      000CD8 12 22 FF         [24] 2970 	lcall	___fssub
+      000CDB C8               [12] 2971 	xch	a,r0
+      000CDC E5 08            [12] 2972 	mov	a,_bp
+      000CDE 24 05            [12] 2973 	add	a,#0x05
+      000CE0 C8               [12] 2974 	xch	a,r0
+      000CE1 A6 82            [24] 2975 	mov	@r0, dpl
+      000CE3 08               [12] 2976 	inc	r0
+      000CE4 A6 83            [24] 2977 	mov	@r0, dph
+      000CE6 08               [12] 2978 	inc	r0
+      000CE7 A6 F0            [24] 2979 	mov	@r0, b
+      000CE9 08               [12] 2980 	inc	r0
+      000CEA F6               [12] 2981 	mov	@r0,a
+      000CEB E5 81            [12] 2982 	mov	a,sp
+      000CED 24 FC            [12] 2983 	add	a,#0xfc
+      000CEF F5 81            [12] 2984 	mov	sp,a
+      000CF1                       2985 00116$:
+      000CF1 E5 08            [12] 2986 	mov	a,_bp
+      000CF3 24 05            [12] 2987 	add	a,#0x05
+      000CF5 F8               [12] 2988 	mov	r0,a
+      000CF6 86 07            [24] 2989 	mov	ar7,@r0
+      000CF8 08               [12] 2990 	inc	r0
+      000CF9 86 06            [24] 2991 	mov	ar6,@r0
+      000CFB 08               [12] 2992 	inc	r0
+      000CFC 86 05            [24] 2993 	mov	ar5,@r0
+      000CFE 08               [12] 2994 	inc	r0
+      000CFF 86 04            [24] 2995 	mov	ar4,@r0
+      000D01                       2996 00108$:
+                           000C4A  2997 	C$fuzzy.h$1085$1_0$60 ==.
+                                   2998 ;	../../fuzzy.h:1085: result,
+      000D01 E5 08            [12] 2999 	mov	a,_bp
+      000D03 24 F4            [12] 3000 	add	a,#0xf4
+      000D05 F8               [12] 3001 	mov	r0,a
+      000D06 E6               [12] 3002 	mov	a,@r0
+      000D07 C0 E0            [24] 3003 	push	acc
+      000D09 8F 82            [24] 3004 	mov	dpl, r7
+      000D0B 8E 83            [24] 3005 	mov	dph, r6
+      000D0D 8D F0            [24] 3006 	mov	b, r5
+      000D0F EC               [12] 3007 	mov	a, r4
+      000D10 12 01 99         [24] 3008 	lcall	_fuzzy_apply_hedge
+      000D13 AC 82            [24] 3009 	mov	r4, dpl
+      000D15 AD 83            [24] 3010 	mov	r5, dph
+      000D17 AE F0            [24] 3011 	mov	r6, b
+      000D19 FF               [12] 3012 	mov	r7, a
+      000D1A 15 81            [12] 3013 	dec	sp
+      000D1C 8C 82            [24] 3014 	mov	dpl, r4
+      000D1E 8D 83            [24] 3015 	mov	dph, r5
+      000D20 8E F0            [24] 3016 	mov	b, r6
+      000D22 EF               [12] 3017 	mov	a, r7
+      000D23                       3018 00109$:
+                           000C6C  3019 	C$fuzzy.h$1088$1_0$60 ==.
+                                   3020 ;	../../fuzzy.h:1088: }
+      000D23 85 08 81         [24] 3021 	mov	sp,_bp
+      000D26 D0 08            [24] 3022 	pop	_bp
+                           000C71  3023 	C$fuzzy.h$1088$1_0$60 ==.
+                           000C71  3024 	XG$fuzzy_ramp$0$0 ==.
+      000D28 22               [24] 3025 	ret
+                                   3026 ;------------------------------------------------------------
+                                   3027 ;Allocation info for local variables in function 'fuzzy_function_array'
+                                   3028 ;------------------------------------------------------------
+                                   3029 ;value         Allocated to stack - _bp -6 +4 
+                                   3030 ;hedge         Allocated to stack - _bp -7 +1 
+                                   3031 ;parameter_count Allocated to stack - _bp -9 +2 
+                                   3032 ;parameters    Allocated to stack - _bp -12 +3 
+                                   3033 ;shape         Allocated to registers r7 
+                                   3034 ;result        Allocated to stack - _bp +5 +4 
+                                   3035 ;parameter_1   Allocated to stack - _bp +17 +4 
+                                   3036 ;parameter_2   Allocated to stack - _bp +21 +4 
+                                   3037 ;parameter_3   Allocated to stack - _bp +25 +4 
+                                   3038 ;parameter_4   Allocated to registers r5 r6 r7 r4 
+                                   3039 ;ramp_up       Allocated to registers r7 
+                                   3040 ;sloc0         Allocated to stack - _bp +23 +3 
+                                   3041 ;sloc1         Allocated to stack - _bp +1 +4 
+                                   3042 ;sloc2         Allocated to stack - _bp +5 +4 
+                                   3043 ;sloc3         Allocated to stack - _bp +9 +4 
+                                   3044 ;sloc4         Allocated to stack - _bp +13 +4 
+                                   3045 ;------------------------------------------------------------
+                           000C72  3046 	G$fuzzy_function_array$0$0 ==.
+                           000C72  3047 	C$fuzzy.h$1128$1_0$66 ==.
+                                   3048 ;	../../fuzzy.h:1128: float fuzzy_function_array(
+                                   3049 ;	-----------------------------------------
+                                   3050 ;	 function fuzzy_function_array
+                                   3051 ;	-----------------------------------------
+      000D29                       3052 _fuzzy_function_array:
+      000D29 C0 08            [24] 3053 	push	_bp
+      000D2B E5 81            [12] 3054 	mov	a,sp
+      000D2D F5 08            [12] 3055 	mov	_bp,a
+      000D2F 24 1C            [12] 3056 	add	a,#0x1c
+      000D31 F5 81            [12] 3057 	mov	sp,a
+      000D33 AF 82            [24] 3058 	mov	r7, dpl
+                           000C7E  3059 	C$fuzzy.h$1150$1_0$66 ==.
+                                   3060 ;	../../fuzzy.h:1150: if (parameters == NULL) {
+      000D35 E5 08            [12] 3061 	mov	a,_bp
+      000D37 24 F4            [12] 3062 	add	a,#0xf4
+      000D39 F8               [12] 3063 	mov	r0,a
+      000D3A E6               [12] 3064 	mov	a,@r0
+      000D3B 08               [12] 3065 	inc	r0
+      000D3C 46               [12] 3066 	orl	a,@r0
+      000D3D 70 09            [24] 3067 	jnz	00102$
+                           000C88  3068 	C$fuzzy.h$1151$2_0$67 ==.
+                                   3069 ;	../../fuzzy.h:1151: return LEVEL_LO;
+      000D3F 90 00 00         [24] 3070 	mov	dptr,#0x0000
+      000D42 E4               [12] 3071 	clr	a
+      000D43 F5 F0            [12] 3072 	mov	b,a
+      000D45 02 16 5D         [24] 3073 	ljmp	00145$
+      000D48                       3074 00102$:
+                           000C91  3075 	C$fuzzy.h$1154$1_0$66 ==.
+                                   3076 ;	../../fuzzy.h:1154: switch (shape) {
+      000D48 EF               [12] 3077 	mov	a,r7
+      000D49 24 F8            [12] 3078 	add	a,#0xff - 0x07
+      000D4B 50 03            [24] 3079 	jnc	00267$
+      000D4D 02 16 2B         [24] 3080 	ljmp	00143$
+      000D50                       3081 00267$:
+      000D50 EF               [12] 3082 	mov	a,r7
+      000D51 24 0A            [12] 3083 	add	a,#(00268$-3-.)
+      000D53 83               [24] 3084 	movc	a,@a+pc
+      000D54 F5 82            [12] 3085 	mov	dpl,a
+      000D56 EF               [12] 3086 	mov	a,r7
+      000D57 24 0C            [12] 3087 	add	a,#(00269$-3-.)
+      000D59 83               [24] 3088 	movc	a,@a+pc
+      000D5A F5 83            [12] 3089 	mov	dph,a
+      000D5C E4               [12] 3090 	clr	a
+      000D5D 73               [24] 3091 	jmp	@a+dptr
+      000D5E                       3092 00268$:
+      000D5E 6E                    3093 	.db	00103$
+      000D5F 6C                    3094 	.db	00106$
+      000D60 F2                    3095 	.db	00121$
+      000D61 23                    3096 	.db	00142$
+      000D62 23                    3097 	.db	00142$
+      000D63 23                    3098 	.db	00142$
+      000D64 23                    3099 	.db	00142$
+      000D65 23                    3100 	.db	00142$
+      000D66                       3101 00269$:
+      000D66 0D                    3102 	.db	00103$>>8
+      000D67 0E                    3103 	.db	00106$>>8
+      000D68 11                    3104 	.db	00121$>>8
+      000D69 16                    3105 	.db	00142$>>8
+      000D6A 16                    3106 	.db	00142$>>8
+      000D6B 16                    3107 	.db	00142$>>8
+      000D6C 16                    3108 	.db	00142$>>8
+      000D6D 16                    3109 	.db	00142$>>8
+                           000CB7  3110 	C$fuzzy.h$1155$2_0$68 ==.
+                                   3111 ;	../../fuzzy.h:1155: case FUZZY_SHAPE_RAMP:
+      000D6E                       3112 00103$:
+                           000CB7  3113 	C$fuzzy.h$1156$2_0$68 ==.
+                                   3114 ;	../../fuzzy.h:1156: if (parameter_count != 3u) {
+      000D6E E5 08            [12] 3115 	mov	a,_bp
+      000D70 24 F7            [12] 3116 	add	a,#0xf7
+      000D72 F8               [12] 3117 	mov	r0,a
+      000D73 B6 03 06         [24] 3118 	cjne	@r0,#0x03,00270$
+      000D76 08               [12] 3119 	inc	r0
+      000D77 B6 00 02         [24] 3120 	cjne	@r0,#0x00,00270$
+      000D7A 80 09            [24] 3121 	sjmp	00105$
+      000D7C                       3122 00270$:
+                           000CC5  3123 	C$fuzzy.h$1157$3_0$69 ==.
+                                   3124 ;	../../fuzzy.h:1157: return LEVEL_LO;
+      000D7C 90 00 00         [24] 3125 	mov	dptr,#0x0000
+      000D7F E4               [12] 3126 	clr	a
+      000D80 F5 F0            [12] 3127 	mov	b,a
+      000D82 02 16 5D         [24] 3128 	ljmp	00145$
+      000D85                       3129 00105$:
+                           000CCE  3130 	C$fuzzy.h$1160$2_0$68 ==.
+                                   3131 ;	../../fuzzy.h:1160: parameter_1 = parameters[0];
+      000D85 E5 08            [12] 3132 	mov	a,_bp
+      000D87 24 F4            [12] 3133 	add	a,#0xf4
+      000D89 F8               [12] 3134 	mov	r0,a
+      000D8A 86 02            [24] 3135 	mov	ar2,@r0
+      000D8C 08               [12] 3136 	inc	r0
+      000D8D 86 03            [24] 3137 	mov	ar3,@r0
+      000D8F 08               [12] 3138 	inc	r0
+      000D90 86 04            [24] 3139 	mov	ar4,@r0
+      000D92 8A 82            [24] 3140 	mov	dpl,r2
+      000D94 8B 83            [24] 3141 	mov	dph,r3
+      000D96 8C F0            [24] 3142 	mov	b,r4
+      000D98 A8 08            [24] 3143 	mov	r0,_bp
+      000D9A 08               [12] 3144 	inc	r0
+      000D9B 12 26 66         [24] 3145 	lcall	__gptrget
+      000D9E F6               [12] 3146 	mov	@r0,a
+      000D9F A3               [24] 3147 	inc	dptr
+      000DA0 12 26 66         [24] 3148 	lcall	__gptrget
+      000DA3 08               [12] 3149 	inc	r0
+      000DA4 F6               [12] 3150 	mov	@r0,a
+      000DA5 A3               [24] 3151 	inc	dptr
+      000DA6 12 26 66         [24] 3152 	lcall	__gptrget
+      000DA9 08               [12] 3153 	inc	r0
+      000DAA F6               [12] 3154 	mov	@r0,a
+      000DAB A3               [24] 3155 	inc	dptr
+      000DAC 12 26 66         [24] 3156 	lcall	__gptrget
+      000DAF 08               [12] 3157 	inc	r0
+      000DB0 F6               [12] 3158 	mov	@r0,a
+                           000CFA  3159 	C$fuzzy.h$1161$2_0$68 ==.
+                                   3160 ;	../../fuzzy.h:1161: parameter_2 = parameters[1];
+      000DB1 74 04            [12] 3161 	mov	a,#0x04
+      000DB3 2A               [12] 3162 	add	a, r2
+      000DB4 FD               [12] 3163 	mov	r5,a
+      000DB5 E4               [12] 3164 	clr	a
+      000DB6 3B               [12] 3165 	addc	a, r3
+      000DB7 FE               [12] 3166 	mov	r6,a
+      000DB8 8C 07            [24] 3167 	mov	ar7,r4
+      000DBA 8D 82            [24] 3168 	mov	dpl,r5
+      000DBC 8E 83            [24] 3169 	mov	dph,r6
+      000DBE 8F F0            [24] 3170 	mov	b,r7
+      000DC0 E5 08            [12] 3171 	mov	a,_bp
+      000DC2 24 05            [12] 3172 	add	a,#0x05
+      000DC4 F8               [12] 3173 	mov	r0,a
+      000DC5 12 26 66         [24] 3174 	lcall	__gptrget
+      000DC8 F6               [12] 3175 	mov	@r0,a
+      000DC9 A3               [24] 3176 	inc	dptr
+      000DCA 12 26 66         [24] 3177 	lcall	__gptrget
+      000DCD 08               [12] 3178 	inc	r0
+      000DCE F6               [12] 3179 	mov	@r0,a
+      000DCF A3               [24] 3180 	inc	dptr
+      000DD0 12 26 66         [24] 3181 	lcall	__gptrget
+      000DD3 08               [12] 3182 	inc	r0
+      000DD4 F6               [12] 3183 	mov	@r0,a
+      000DD5 A3               [24] 3184 	inc	dptr
+      000DD6 12 26 66         [24] 3185 	lcall	__gptrget
+      000DD9 08               [12] 3186 	inc	r0
+      000DDA F6               [12] 3187 	mov	@r0,a
+                           000D24  3188 	C$fuzzy.h$1162$2_0$68 ==.
+                                   3189 ;	../../fuzzy.h:1162: ramp_up = parameters[2] != 0.0f;
+      000DDB 74 08            [12] 3190 	mov	a,#0x08
+      000DDD 2A               [12] 3191 	add	a, r2
+      000DDE FA               [12] 3192 	mov	r2,a
+      000DDF E4               [12] 3193 	clr	a
+      000DE0 3B               [12] 3194 	addc	a, r3
+      000DE1 FB               [12] 3195 	mov	r3,a
+      000DE2 8C 07            [24] 3196 	mov	ar7,r4
+      000DE4 8A 82            [24] 3197 	mov	dpl,r2
+      000DE6 8B 83            [24] 3198 	mov	dph,r3
+      000DE8 8F F0            [24] 3199 	mov	b,r7
+      000DEA 12 26 66         [24] 3200 	lcall	__gptrget
+      000DED FA               [12] 3201 	mov	r2,a
+      000DEE A3               [24] 3202 	inc	dptr
+      000DEF 12 26 66         [24] 3203 	lcall	__gptrget
+      000DF2 FB               [12] 3204 	mov	r3,a
+      000DF3 A3               [24] 3205 	inc	dptr
+      000DF4 12 26 66         [24] 3206 	lcall	__gptrget
+      000DF7 FF               [12] 3207 	mov	r7,a
+      000DF8 A3               [24] 3208 	inc	dptr
+      000DF9 12 26 66         [24] 3209 	lcall	__gptrget
+      000DFC FE               [12] 3210 	mov	r6,a
+      000DFD 8A F0            [24] 3211 	mov	b,r2
+      000DFF EB               [12] 3212 	mov	a,r3
+      000E00 42 F0            [12] 3213 	orl	b,a
+      000E02 EF               [12] 3214 	mov	a,r7
+      000E03 42 F0            [12] 3215 	orl	b,a
+      000E05 EE               [12] 3216 	mov	a,r6
+      000E06 54 7F            [12] 3217 	anl	a,#0x7F
+      000E08 45 F0            [12] 3218 	orl	a,b
+      000E0A B4 01 00         [24] 3219 	cjne	a,#0x01,00271$
+      000E0D                       3220 00271$:
+      000E0D B3               [12] 3221 	cpl	c
+      000E0E 92 00            [24] 3222 	mov	b0,c
+      000E10 E4               [12] 3223 	clr	a
+      000E11 33               [12] 3224 	rlc	a
+      000E12 FF               [12] 3225 	mov	r7,a
+                           000D5C  3226 	C$fuzzy.h$1165$2_0$68 ==.
+                                   3227 ;	../../fuzzy.h:1165: parameter_1,
+      000E13 E5 08            [12] 3228 	mov	a,_bp
+      000E15 24 F9            [12] 3229 	add	a,#0xf9
+      000E17 F8               [12] 3230 	mov	r0,a
+      000E18 E6               [12] 3231 	mov	a,@r0
+      000E19 C0 E0            [24] 3232 	push	acc
+      000E1B C0 07            [24] 3233 	push	ar7
+      000E1D E5 08            [12] 3234 	mov	a,_bp
+      000E1F 24 FA            [12] 3235 	add	a,#0xfa
+      000E21 F8               [12] 3236 	mov	r0,a
+      000E22 E6               [12] 3237 	mov	a,@r0
+      000E23 C0 E0            [24] 3238 	push	acc
+      000E25 08               [12] 3239 	inc	r0
+      000E26 E6               [12] 3240 	mov	a,@r0
+      000E27 C0 E0            [24] 3241 	push	acc
+      000E29 08               [12] 3242 	inc	r0
+      000E2A E6               [12] 3243 	mov	a,@r0
+      000E2B C0 E0            [24] 3244 	push	acc
+      000E2D 08               [12] 3245 	inc	r0
+      000E2E E6               [12] 3246 	mov	a,@r0
+      000E2F C0 E0            [24] 3247 	push	acc
+      000E31 E5 08            [12] 3248 	mov	a,_bp
+      000E33 24 05            [12] 3249 	add	a,#0x05
+      000E35 F8               [12] 3250 	mov	r0,a
+      000E36 E6               [12] 3251 	mov	a,@r0
+      000E37 C0 E0            [24] 3252 	push	acc
+      000E39 08               [12] 3253 	inc	r0
+      000E3A E6               [12] 3254 	mov	a,@r0
+      000E3B C0 E0            [24] 3255 	push	acc
+      000E3D 08               [12] 3256 	inc	r0
+      000E3E E6               [12] 3257 	mov	a,@r0
+      000E3F C0 E0            [24] 3258 	push	acc
+      000E41 08               [12] 3259 	inc	r0
+      000E42 E6               [12] 3260 	mov	a,@r0
+      000E43 C0 E0            [24] 3261 	push	acc
+      000E45 A8 08            [24] 3262 	mov	r0,_bp
+      000E47 08               [12] 3263 	inc	r0
+      000E48 86 82            [24] 3264 	mov	dpl, @r0
+      000E4A 08               [12] 3265 	inc	r0
+      000E4B 86 83            [24] 3266 	mov	dph, @r0
+      000E4D 08               [12] 3267 	inc	r0
+      000E4E 86 F0            [24] 3268 	mov	b, @r0
+      000E50 08               [12] 3269 	inc	r0
+      000E51 E6               [12] 3270 	mov	a, @r0
+      000E52 12 0A EC         [24] 3271 	lcall	_fuzzy_ramp
+      000E55 AC 82            [24] 3272 	mov	r4, dpl
+      000E57 AD 83            [24] 3273 	mov	r5, dph
+      000E59 AE F0            [24] 3274 	mov	r6, b
+      000E5B FF               [12] 3275 	mov	r7, a
+      000E5C E5 81            [12] 3276 	mov	a,sp
+      000E5E 24 F6            [12] 3277 	add	a,#0xf6
+      000E60 F5 81            [12] 3278 	mov	sp,a
+      000E62 8C 82            [24] 3279 	mov	dpl, r4
+      000E64 8D 83            [24] 3280 	mov	dph, r5
+      000E66 8E F0            [24] 3281 	mov	b, r6
+      000E68 EF               [12] 3282 	mov	a, r7
+      000E69 02 16 5D         [24] 3283 	ljmp	00145$
+                           000DB5  3284 	C$fuzzy.h$1172$2_0$68 ==.
+                                   3285 ;	../../fuzzy.h:1172: case FUZZY_SHAPE_TRIANGLE:
+      000E6C                       3286 00106$:
+                           000DB5  3287 	C$fuzzy.h$1173$2_0$68 ==.
+                                   3288 ;	../../fuzzy.h:1173: if (parameter_count != 3u) {
+      000E6C E5 08            [12] 3289 	mov	a,_bp
+      000E6E 24 F7            [12] 3290 	add	a,#0xf7
+      000E70 F8               [12] 3291 	mov	r0,a
+      000E71 B6 03 06         [24] 3292 	cjne	@r0,#0x03,00272$
+      000E74 08               [12] 3293 	inc	r0
+      000E75 B6 00 02         [24] 3294 	cjne	@r0,#0x00,00272$
+      000E78 80 09            [24] 3295 	sjmp	00108$
+      000E7A                       3296 00272$:
+                           000DC3  3297 	C$fuzzy.h$1174$3_0$70 ==.
+                                   3298 ;	../../fuzzy.h:1174: return LEVEL_LO;
+      000E7A 90 00 00         [24] 3299 	mov	dptr,#0x0000
+      000E7D E4               [12] 3300 	clr	a
+      000E7E F5 F0            [12] 3301 	mov	b,a
+      000E80 02 16 5D         [24] 3302 	ljmp	00145$
+      000E83                       3303 00108$:
+                           000DCC  3304 	C$fuzzy.h$1177$2_0$68 ==.
+                                   3305 ;	../../fuzzy.h:1177: parameter_1 = parameters[0];
+      000E83 E5 08            [12] 3306 	mov	a,_bp
+      000E85 24 F4            [12] 3307 	add	a,#0xf4
+      000E87 F8               [12] 3308 	mov	r0,a
+      000E88 86 02            [24] 3309 	mov	ar2,@r0
+      000E8A 08               [12] 3310 	inc	r0
+      000E8B 86 03            [24] 3311 	mov	ar3,@r0
+      000E8D 08               [12] 3312 	inc	r0
+      000E8E 86 04            [24] 3313 	mov	ar4,@r0
+      000E90 8A 82            [24] 3314 	mov	dpl,r2
+      000E92 8B 83            [24] 3315 	mov	dph,r3
+      000E94 8C F0            [24] 3316 	mov	b,r4
+      000E96 E5 08            [12] 3317 	mov	a,_bp
+      000E98 24 11            [12] 3318 	add	a,#0x11
+      000E9A F8               [12] 3319 	mov	r0,a
+      000E9B 12 26 66         [24] 3320 	lcall	__gptrget
+      000E9E F6               [12] 3321 	mov	@r0,a
+      000E9F A3               [24] 3322 	inc	dptr
+      000EA0 12 26 66         [24] 3323 	lcall	__gptrget
+      000EA3 08               [12] 3324 	inc	r0
+      000EA4 F6               [12] 3325 	mov	@r0,a
+      000EA5 A3               [24] 3326 	inc	dptr
+      000EA6 12 26 66         [24] 3327 	lcall	__gptrget
+      000EA9 08               [12] 3328 	inc	r0
+      000EAA F6               [12] 3329 	mov	@r0,a
+      000EAB A3               [24] 3330 	inc	dptr
+      000EAC 12 26 66         [24] 3331 	lcall	__gptrget
+      000EAF 08               [12] 3332 	inc	r0
+      000EB0 F6               [12] 3333 	mov	@r0,a
+                           000DFA  3334 	C$fuzzy.h$1178$2_0$68 ==.
+                                   3335 ;	../../fuzzy.h:1178: parameter_2 = parameters[1];
+      000EB1 74 04            [12] 3336 	mov	a,#0x04
+      000EB3 2A               [12] 3337 	add	a, r2
+      000EB4 FF               [12] 3338 	mov	r7,a
+      000EB5 E4               [12] 3339 	clr	a
+      000EB6 3B               [12] 3340 	addc	a, r3
+      000EB7 FD               [12] 3341 	mov	r5,a
+      000EB8 8C 06            [24] 3342 	mov	ar6,r4
+      000EBA 8F 82            [24] 3343 	mov	dpl,r7
+      000EBC 8D 83            [24] 3344 	mov	dph,r5
+      000EBE 8E F0            [24] 3345 	mov	b,r6
+      000EC0 E5 08            [12] 3346 	mov	a,_bp
+      000EC2 24 15            [12] 3347 	add	a,#0x15
+      000EC4 F8               [12] 3348 	mov	r0,a
+      000EC5 12 26 66         [24] 3349 	lcall	__gptrget
+      000EC8 F6               [12] 3350 	mov	@r0,a
+      000EC9 A3               [24] 3351 	inc	dptr
+      000ECA 12 26 66         [24] 3352 	lcall	__gptrget
+      000ECD 08               [12] 3353 	inc	r0
+      000ECE F6               [12] 3354 	mov	@r0,a
+      000ECF A3               [24] 3355 	inc	dptr
+      000ED0 12 26 66         [24] 3356 	lcall	__gptrget
+      000ED3 08               [12] 3357 	inc	r0
+      000ED4 F6               [12] 3358 	mov	@r0,a
+      000ED5 A3               [24] 3359 	inc	dptr
+      000ED6 12 26 66         [24] 3360 	lcall	__gptrget
+      000ED9 08               [12] 3361 	inc	r0
+      000EDA F6               [12] 3362 	mov	@r0,a
+                           000E24  3363 	C$fuzzy.h$1179$2_0$68 ==.
+                                   3364 ;	../../fuzzy.h:1179: parameter_3 = parameters[2];
+      000EDB 74 08            [12] 3365 	mov	a,#0x08
+      000EDD 2A               [12] 3366 	add	a, r2
+      000EDE FA               [12] 3367 	mov	r2,a
+      000EDF E4               [12] 3368 	clr	a
+      000EE0 3B               [12] 3369 	addc	a, r3
+      000EE1 FB               [12] 3370 	mov	r3,a
+      000EE2 8C 07            [24] 3371 	mov	ar7,r4
+      000EE4 8A 82            [24] 3372 	mov	dpl,r2
+      000EE6 8B 83            [24] 3373 	mov	dph,r3
+      000EE8 8F F0            [24] 3374 	mov	b,r7
+      000EEA 12 26 66         [24] 3375 	lcall	__gptrget
+      000EED FD               [12] 3376 	mov	r5,a
+      000EEE A3               [24] 3377 	inc	dptr
+      000EEF 12 26 66         [24] 3378 	lcall	__gptrget
+      000EF2 FE               [12] 3379 	mov	r6,a
+      000EF3 A3               [24] 3380 	inc	dptr
+      000EF4 12 26 66         [24] 3381 	lcall	__gptrget
+      000EF7 FF               [12] 3382 	mov	r7,a
+      000EF8 A3               [24] 3383 	inc	dptr
+      000EF9 12 26 66         [24] 3384 	lcall	__gptrget
+      000EFC FC               [12] 3385 	mov	r4,a
+                           000E46  3386 	C$fuzzy.h$1182$1_0$66 ==.
+                                   3387 ;	../../fuzzy.h:1182: parameter_1 >= parameter_2 ||
+      000EFD C0 07            [24] 3388 	push	ar7
+      000EFF C0 06            [24] 3389 	push	ar6
+      000F01 C0 05            [24] 3390 	push	ar5
+      000F03 C0 04            [24] 3391 	push	ar4
+      000F05 E5 08            [12] 3392 	mov	a,_bp
+      000F07 24 15            [12] 3393 	add	a,#0x15
+      000F09 F8               [12] 3394 	mov	r0,a
+      000F0A E6               [12] 3395 	mov	a,@r0
+      000F0B C0 E0            [24] 3396 	push	acc
+      000F0D 08               [12] 3397 	inc	r0
+      000F0E E6               [12] 3398 	mov	a,@r0
+      000F0F C0 E0            [24] 3399 	push	acc
+      000F11 08               [12] 3400 	inc	r0
+      000F12 E6               [12] 3401 	mov	a,@r0
+      000F13 C0 E0            [24] 3402 	push	acc
+      000F15 08               [12] 3403 	inc	r0
+      000F16 E6               [12] 3404 	mov	a,@r0
+      000F17 C0 E0            [24] 3405 	push	acc
+      000F19 E5 08            [12] 3406 	mov	a,_bp
+      000F1B 24 11            [12] 3407 	add	a,#0x11
+      000F1D F8               [12] 3408 	mov	r0,a
+      000F1E 86 82            [24] 3409 	mov	dpl, @r0
+      000F20 08               [12] 3410 	inc	r0
+      000F21 86 83            [24] 3411 	mov	dph, @r0
+      000F23 08               [12] 3412 	inc	r0
+      000F24 86 F0            [24] 3413 	mov	b, @r0
+      000F26 08               [12] 3414 	inc	r0
+      000F27 E6               [12] 3415 	mov	a, @r0
+      000F28 12 24 3A         [24] 3416 	lcall	___fslt
+      000F2B E5 81            [12] 3417 	mov	a,sp
+      000F2D 24 FC            [12] 3418 	add	a,#0xfc
+      000F2F F5 81            [12] 3419 	mov	sp,a
+      000F31 D0 04            [24] 3420 	pop	ar4
+      000F33 D0 05            [24] 3421 	pop	ar5
+      000F35 D0 06            [24] 3422 	pop	ar6
+      000F37 D0 07            [24] 3423 	pop	ar7
+      000F39 E5 82            [12] 3424 	mov	a, dpl
+      000F3B 24 FF            [12] 3425 	add	a,#0xff
+      000F3D 92 00            [24] 3426 	mov	b0,c
+      000F3F 40 03            [24] 3427 	jc	00273$
+      000F41 02 0F F8         [24] 3428 	ljmp	00115$
+      000F44                       3429 00273$:
+                           000E8D  3430 	C$fuzzy.h$1183$1_0$66 ==.
+                                   3431 ;	../../fuzzy.h:1183: parameter_2 >= parameter_3 ||
+      000F44 C0 07            [24] 3432 	push	ar7
+      000F46 C0 06            [24] 3433 	push	ar6
+      000F48 C0 05            [24] 3434 	push	ar5
+      000F4A C0 04            [24] 3435 	push	ar4
+      000F4C C0 05            [24] 3436 	push	ar5
+      000F4E C0 06            [24] 3437 	push	ar6
+      000F50 C0 07            [24] 3438 	push	ar7
+      000F52 C0 04            [24] 3439 	push	ar4
+      000F54 E5 08            [12] 3440 	mov	a,_bp
+      000F56 24 15            [12] 3441 	add	a,#0x15
+      000F58 F8               [12] 3442 	mov	r0,a
+      000F59 86 82            [24] 3443 	mov	dpl, @r0
+      000F5B 08               [12] 3444 	inc	r0
+      000F5C 86 83            [24] 3445 	mov	dph, @r0
+      000F5E 08               [12] 3446 	inc	r0
+      000F5F 86 F0            [24] 3447 	mov	b, @r0
+      000F61 08               [12] 3448 	inc	r0
+      000F62 E6               [12] 3449 	mov	a, @r0
+      000F63 12 24 3A         [24] 3450 	lcall	___fslt
+      000F66 E5 81            [12] 3451 	mov	a,sp
+      000F68 24 FC            [12] 3452 	add	a,#0xfc
+      000F6A F5 81            [12] 3453 	mov	sp,a
+      000F6C D0 04            [24] 3454 	pop	ar4
+      000F6E D0 05            [24] 3455 	pop	ar5
+      000F70 D0 06            [24] 3456 	pop	ar6
+      000F72 D0 07            [24] 3457 	pop	ar7
+      000F74 E5 82            [12] 3458 	mov	a, dpl
+      000F76 24 FF            [12] 3459 	add	a,#0xff
+      000F78 92 00            [24] 3460 	mov	b0,c
+      000F7A 50 7C            [24] 3461 	jnc	00115$
+                           000EC5  3462 	C$fuzzy.h$1184$1_0$66 ==.
+                                   3463 ;	../../fuzzy.h:1184: value <= parameter_1 ||
+      000F7C C0 07            [24] 3464 	push	ar7
+      000F7E C0 06            [24] 3465 	push	ar6
+      000F80 C0 05            [24] 3466 	push	ar5
+      000F82 C0 04            [24] 3467 	push	ar4
+      000F84 E5 08            [12] 3468 	mov	a,_bp
+      000F86 24 FA            [12] 3469 	add	a,#0xfa
+      000F88 F8               [12] 3470 	mov	r0,a
+      000F89 E6               [12] 3471 	mov	a,@r0
+      000F8A C0 E0            [24] 3472 	push	acc
+      000F8C 08               [12] 3473 	inc	r0
+      000F8D E6               [12] 3474 	mov	a,@r0
+      000F8E C0 E0            [24] 3475 	push	acc
+      000F90 08               [12] 3476 	inc	r0
+      000F91 E6               [12] 3477 	mov	a,@r0
+      000F92 C0 E0            [24] 3478 	push	acc
+      000F94 08               [12] 3479 	inc	r0
+      000F95 E6               [12] 3480 	mov	a,@r0
+      000F96 C0 E0            [24] 3481 	push	acc
+      000F98 E5 08            [12] 3482 	mov	a,_bp
+      000F9A 24 11            [12] 3483 	add	a,#0x11
+      000F9C F8               [12] 3484 	mov	r0,a
+      000F9D 86 82            [24] 3485 	mov	dpl, @r0
+      000F9F 08               [12] 3486 	inc	r0
+      000FA0 86 83            [24] 3487 	mov	dph, @r0
+      000FA2 08               [12] 3488 	inc	r0
+      000FA3 86 F0            [24] 3489 	mov	b, @r0
+      000FA5 08               [12] 3490 	inc	r0
+      000FA6 E6               [12] 3491 	mov	a, @r0
+      000FA7 12 24 3A         [24] 3492 	lcall	___fslt
+      000FAA E5 81            [12] 3493 	mov	a,sp
+      000FAC 24 FC            [12] 3494 	add	a,#0xfc
+      000FAE F5 81            [12] 3495 	mov	sp,a
+      000FB0 D0 04            [24] 3496 	pop	ar4
+      000FB2 D0 05            [24] 3497 	pop	ar5
+      000FB4 D0 06            [24] 3498 	pop	ar6
+      000FB6 D0 07            [24] 3499 	pop	ar7
+      000FB8 E5 82            [12] 3500 	mov	a, dpl
+      000FBA 24 FF            [12] 3501 	add	a,#0xff
+      000FBC 92 00            [24] 3502 	mov	b0,c
+      000FBE 50 38            [24] 3503 	jnc	00115$
+                           000F09  3504 	C$fuzzy.h$1186$1_0$66 ==.
+                                   3505 ;	../../fuzzy.h:1186: ) {
+      000FC0 C0 07            [24] 3506 	push	ar7
+      000FC2 C0 06            [24] 3507 	push	ar6
+      000FC4 C0 05            [24] 3508 	push	ar5
+      000FC6 C0 04            [24] 3509 	push	ar4
+      000FC8 C0 05            [24] 3510 	push	ar5
+      000FCA C0 06            [24] 3511 	push	ar6
+      000FCC C0 07            [24] 3512 	push	ar7
+      000FCE C0 04            [24] 3513 	push	ar4
+      000FD0 E5 08            [12] 3514 	mov	a,_bp
+      000FD2 24 FA            [12] 3515 	add	a,#0xfa
+      000FD4 F8               [12] 3516 	mov	r0,a
+      000FD5 86 82            [24] 3517 	mov	dpl, @r0
+      000FD7 08               [12] 3518 	inc	r0
+      000FD8 86 83            [24] 3519 	mov	dph, @r0
+      000FDA 08               [12] 3520 	inc	r0
+      000FDB 86 F0            [24] 3521 	mov	b, @r0
+      000FDD 08               [12] 3522 	inc	r0
+      000FDE E6               [12] 3523 	mov	a, @r0
+      000FDF 12 24 3A         [24] 3524 	lcall	___fslt
+      000FE2 E5 81            [12] 3525 	mov	a,sp
+      000FE4 24 FC            [12] 3526 	add	a,#0xfc
+      000FE6 F5 81            [12] 3527 	mov	sp,a
+      000FE8 D0 04            [24] 3528 	pop	ar4
+      000FEA D0 05            [24] 3529 	pop	ar5
+      000FEC D0 06            [24] 3530 	pop	ar6
+      000FEE D0 07            [24] 3531 	pop	ar7
+      000FF0 E5 82            [12] 3532 	mov	a, dpl
+      000FF2 24 FF            [12] 3533 	add	a,#0xff
+      000FF4 92 00            [24] 3534 	mov	b0,c
+      000FF6 40 10            [24] 3535 	jc	00116$
+      000FF8                       3536 00115$:
+                           000F41  3537 	C$fuzzy.h$1187$3_0$71 ==.
+                                   3538 ;	../../fuzzy.h:1187: result = LEVEL_LO;
+      000FF8 E5 08            [12] 3539 	mov	a,_bp
+      000FFA 24 05            [12] 3540 	add	a,#0x05
+      000FFC F8               [12] 3541 	mov	r0,a
+      000FFD E4               [12] 3542 	clr	a
+      000FFE F6               [12] 3543 	mov	@r0,a
+      000FFF 08               [12] 3544 	inc	r0
+      001000 F6               [12] 3545 	mov	@r0,a
+      001001 08               [12] 3546 	inc	r0
+      001002 F6               [12] 3547 	mov	@r0,a
+      001003 08               [12] 3548 	inc	r0
+      001004 F6               [12] 3549 	mov	@r0,a
+      001005 02 16 33         [24] 3550 	ljmp	00144$
+      001008                       3551 00116$:
+                           000F51  3552 	C$fuzzy.h$1189$1_0$66 ==.
+                                   3553 ;	../../fuzzy.h:1189: else if (value == parameter_2) {
+      001008 C0 07            [24] 3554 	push	ar7
+      00100A C0 06            [24] 3555 	push	ar6
+      00100C C0 05            [24] 3556 	push	ar5
+      00100E C0 04            [24] 3557 	push	ar4
+      001010 E5 08            [12] 3558 	mov	a,_bp
+      001012 24 15            [12] 3559 	add	a,#0x15
+      001014 F8               [12] 3560 	mov	r0,a
+      001015 E6               [12] 3561 	mov	a,@r0
+      001016 C0 E0            [24] 3562 	push	acc
+      001018 08               [12] 3563 	inc	r0
+      001019 E6               [12] 3564 	mov	a,@r0
+      00101A C0 E0            [24] 3565 	push	acc
+      00101C 08               [12] 3566 	inc	r0
+      00101D E6               [12] 3567 	mov	a,@r0
+      00101E C0 E0            [24] 3568 	push	acc
+      001020 08               [12] 3569 	inc	r0
+      001021 E6               [12] 3570 	mov	a,@r0
+      001022 C0 E0            [24] 3571 	push	acc
+      001024 E5 08            [12] 3572 	mov	a,_bp
+      001026 24 FA            [12] 3573 	add	a,#0xfa
+      001028 F8               [12] 3574 	mov	r0,a
+      001029 86 82            [24] 3575 	mov	dpl, @r0
+      00102B 08               [12] 3576 	inc	r0
+      00102C 86 83            [24] 3577 	mov	dph, @r0
+      00102E 08               [12] 3578 	inc	r0
+      00102F 86 F0            [24] 3579 	mov	b, @r0
+      001031 08               [12] 3580 	inc	r0
+      001032 E6               [12] 3581 	mov	a, @r0
+      001033 12 24 0E         [24] 3582 	lcall	___fseq
+      001036 AB 82            [24] 3583 	mov	r3, dpl
+      001038 E5 81            [12] 3584 	mov	a,sp
+      00103A 24 FC            [12] 3585 	add	a,#0xfc
+      00103C F5 81            [12] 3586 	mov	sp,a
+      00103E D0 04            [24] 3587 	pop	ar4
+      001040 D0 05            [24] 3588 	pop	ar5
+      001042 D0 06            [24] 3589 	pop	ar6
+      001044 D0 07            [24] 3590 	pop	ar7
+      001046 EB               [12] 3591 	mov	a,r3
+      001047 60 12            [24] 3592 	jz	00113$
+                           000F92  3593 	C$fuzzy.h$1190$3_0$72 ==.
+                                   3594 ;	../../fuzzy.h:1190: result = LEVEL_HI;
+      001049 E5 08            [12] 3595 	mov	a,_bp
+      00104B 24 05            [12] 3596 	add	a,#0x05
+      00104D F8               [12] 3597 	mov	r0,a
+      00104E E4               [12] 3598 	clr	a
+      00104F F6               [12] 3599 	mov	@r0,a
+      001050 08               [12] 3600 	inc	r0
+      001051 F6               [12] 3601 	mov	@r0,a
+      001052 08               [12] 3602 	inc	r0
+      001053 76 80            [12] 3603 	mov	@r0,#0x80
+      001055 08               [12] 3604 	inc	r0
+      001056 76 3F            [12] 3605 	mov	@r0,#0x3f
+      001058 02 16 33         [24] 3606 	ljmp	00144$
+      00105B                       3607 00113$:
+                           000FA4  3608 	C$fuzzy.h$1192$1_0$66 ==.
+                                   3609 ;	../../fuzzy.h:1192: else if (value < parameter_2) {
+      00105B C0 07            [24] 3610 	push	ar7
+      00105D C0 06            [24] 3611 	push	ar6
+      00105F C0 05            [24] 3612 	push	ar5
+      001061 C0 04            [24] 3613 	push	ar4
+      001063 E5 08            [12] 3614 	mov	a,_bp
+      001065 24 15            [12] 3615 	add	a,#0x15
+      001067 F8               [12] 3616 	mov	r0,a
+      001068 E6               [12] 3617 	mov	a,@r0
+      001069 C0 E0            [24] 3618 	push	acc
+      00106B 08               [12] 3619 	inc	r0
+      00106C E6               [12] 3620 	mov	a,@r0
+      00106D C0 E0            [24] 3621 	push	acc
+      00106F 08               [12] 3622 	inc	r0
+      001070 E6               [12] 3623 	mov	a,@r0
+      001071 C0 E0            [24] 3624 	push	acc
+      001073 08               [12] 3625 	inc	r0
+      001074 E6               [12] 3626 	mov	a,@r0
+      001075 C0 E0            [24] 3627 	push	acc
+      001077 E5 08            [12] 3628 	mov	a,_bp
+      001079 24 FA            [12] 3629 	add	a,#0xfa
+      00107B F8               [12] 3630 	mov	r0,a
+      00107C 86 82            [24] 3631 	mov	dpl, @r0
+      00107E 08               [12] 3632 	inc	r0
+      00107F 86 83            [24] 3633 	mov	dph, @r0
+      001081 08               [12] 3634 	inc	r0
+      001082 86 F0            [24] 3635 	mov	b, @r0
+      001084 08               [12] 3636 	inc	r0
+      001085 E6               [12] 3637 	mov	a, @r0
+      001086 12 24 3A         [24] 3638 	lcall	___fslt
+      001089 AB 82            [24] 3639 	mov	r3, dpl
+      00108B E5 81            [12] 3640 	mov	a,sp
+      00108D 24 FC            [12] 3641 	add	a,#0xfc
+      00108F F5 81            [12] 3642 	mov	sp,a
+      001091 D0 04            [24] 3643 	pop	ar4
+      001093 D0 05            [24] 3644 	pop	ar5
+      001095 D0 06            [24] 3645 	pop	ar6
+      001097 D0 07            [24] 3646 	pop	ar7
+      001099 EB               [12] 3647 	mov	a,r3
+      00109A 70 03            [24] 3648 	jnz	00278$
+      00109C 02 11 55         [24] 3649 	ljmp	00110$
+      00109F                       3650 00278$:
+                           000FE8  3651 	C$fuzzy.h$1194$1_0$66 ==.
+                                   3652 ;	../../fuzzy.h:1194: (value - parameter_1) /
+      00109F E5 08            [12] 3653 	mov	a,_bp
+      0010A1 24 11            [12] 3654 	add	a,#0x11
+      0010A3 F8               [12] 3655 	mov	r0,a
+      0010A4 E6               [12] 3656 	mov	a,@r0
+      0010A5 C0 E0            [24] 3657 	push	acc
+      0010A7 08               [12] 3658 	inc	r0
+      0010A8 E6               [12] 3659 	mov	a,@r0
+      0010A9 C0 E0            [24] 3660 	push	acc
+      0010AB 08               [12] 3661 	inc	r0
+      0010AC E6               [12] 3662 	mov	a,@r0
+      0010AD C0 E0            [24] 3663 	push	acc
+      0010AF 08               [12] 3664 	inc	r0
+      0010B0 E6               [12] 3665 	mov	a,@r0
+      0010B1 C0 E0            [24] 3666 	push	acc
+                           000FFC  3667 	C$fuzzy.h$1195$1_0$66 ==.
+                                   3668 ;	../../fuzzy.h:1195: (parameter_2 - parameter_1);
+      0010B3 E5 08            [12] 3669 	mov	a,_bp
+      0010B5 24 FA            [12] 3670 	add	a,#0xfa
+      0010B7 F8               [12] 3671 	mov	r0,a
+      0010B8 86 82            [24] 3672 	mov	dpl, @r0
+      0010BA 08               [12] 3673 	inc	r0
+      0010BB 86 83            [24] 3674 	mov	dph, @r0
+      0010BD 08               [12] 3675 	inc	r0
+      0010BE 86 F0            [24] 3676 	mov	b, @r0
+      0010C0 08               [12] 3677 	inc	r0
+      0010C1 E6               [12] 3678 	mov	a, @r0
+      0010C2 12 22 FF         [24] 3679 	lcall	___fssub
+      0010C5 AF 82            [24] 3680 	mov	r7, dpl
+      0010C7 AE 83            [24] 3681 	mov	r6, dph
+      0010C9 AD F0            [24] 3682 	mov	r5, b
+      0010CB FC               [12] 3683 	mov	r4, a
+      0010CC E5 81            [12] 3684 	mov	a,sp
+      0010CE 24 FC            [12] 3685 	add	a,#0xfc
+      0010D0 F5 81            [12] 3686 	mov	sp,a
+      0010D2 C0 07            [24] 3687 	push	ar7
+      0010D4 C0 06            [24] 3688 	push	ar6
+      0010D6 C0 05            [24] 3689 	push	ar5
+      0010D8 C0 04            [24] 3690 	push	ar4
+      0010DA E5 08            [12] 3691 	mov	a,_bp
+      0010DC 24 11            [12] 3692 	add	a,#0x11
+      0010DE F8               [12] 3693 	mov	r0,a
+      0010DF E6               [12] 3694 	mov	a,@r0
+      0010E0 C0 E0            [24] 3695 	push	acc
+      0010E2 08               [12] 3696 	inc	r0
+      0010E3 E6               [12] 3697 	mov	a,@r0
+      0010E4 C0 E0            [24] 3698 	push	acc
+      0010E6 08               [12] 3699 	inc	r0
+      0010E7 E6               [12] 3700 	mov	a,@r0
+      0010E8 C0 E0            [24] 3701 	push	acc
+      0010EA 08               [12] 3702 	inc	r0
+      0010EB E6               [12] 3703 	mov	a,@r0
+      0010EC C0 E0            [24] 3704 	push	acc
+      0010EE E5 08            [12] 3705 	mov	a,_bp
+      0010F0 24 15            [12] 3706 	add	a,#0x15
+      0010F2 F8               [12] 3707 	mov	r0,a
+      0010F3 86 82            [24] 3708 	mov	dpl, @r0
+      0010F5 08               [12] 3709 	inc	r0
+      0010F6 86 83            [24] 3710 	mov	dph, @r0
+      0010F8 08               [12] 3711 	inc	r0
+      0010F9 86 F0            [24] 3712 	mov	b, @r0
+      0010FB 08               [12] 3713 	inc	r0
+      0010FC E6               [12] 3714 	mov	a, @r0
+      0010FD 12 22 FF         [24] 3715 	lcall	___fssub
+      001100 C8               [12] 3716 	xch	a,r0
+      001101 E5 08            [12] 3717 	mov	a,_bp
+      001103 24 09            [12] 3718 	add	a,#0x09
+      001105 C8               [12] 3719 	xch	a,r0
+      001106 A6 82            [24] 3720 	mov	@r0, dpl
+      001108 08               [12] 3721 	inc	r0
+      001109 A6 83            [24] 3722 	mov	@r0, dph
+      00110B 08               [12] 3723 	inc	r0
+      00110C A6 F0            [24] 3724 	mov	@r0, b
+      00110E 08               [12] 3725 	inc	r0
+      00110F F6               [12] 3726 	mov	@r0,a
+      001110 E5 81            [12] 3727 	mov	a,sp
+      001112 24 FC            [12] 3728 	add	a,#0xfc
+      001114 F5 81            [12] 3729 	mov	sp,a
+      001116 D0 04            [24] 3730 	pop	ar4
+      001118 D0 05            [24] 3731 	pop	ar5
+      00111A D0 06            [24] 3732 	pop	ar6
+      00111C D0 07            [24] 3733 	pop	ar7
+      00111E E5 08            [12] 3734 	mov	a,_bp
+      001120 24 09            [12] 3735 	add	a,#0x09
+      001122 F8               [12] 3736 	mov	r0,a
+      001123 E6               [12] 3737 	mov	a,@r0
+      001124 C0 E0            [24] 3738 	push	acc
+      001126 08               [12] 3739 	inc	r0
+      001127 E6               [12] 3740 	mov	a,@r0
+      001128 C0 E0            [24] 3741 	push	acc
+      00112A 08               [12] 3742 	inc	r0
+      00112B E6               [12] 3743 	mov	a,@r0
+      00112C C0 E0            [24] 3744 	push	acc
+      00112E 08               [12] 3745 	inc	r0
+      00112F E6               [12] 3746 	mov	a,@r0
+      001130 C0 E0            [24] 3747 	push	acc
+      001132 8F 82            [24] 3748 	mov	dpl, r7
+      001134 8E 83            [24] 3749 	mov	dph, r6
+      001136 8D F0            [24] 3750 	mov	b, r5
+      001138 EC               [12] 3751 	mov	a, r4
+      001139 12 25 A3         [24] 3752 	lcall	___fsdiv
+      00113C C8               [12] 3753 	xch	a,r0
+      00113D E5 08            [12] 3754 	mov	a,_bp
+      00113F 24 05            [12] 3755 	add	a,#0x05
+      001141 C8               [12] 3756 	xch	a,r0
+      001142 A6 82            [24] 3757 	mov	@r0, dpl
+      001144 08               [12] 3758 	inc	r0
+      001145 A6 83            [24] 3759 	mov	@r0, dph
+      001147 08               [12] 3760 	inc	r0
+      001148 A6 F0            [24] 3761 	mov	@r0, b
+      00114A 08               [12] 3762 	inc	r0
+      00114B F6               [12] 3763 	mov	@r0,a
+      00114C E5 81            [12] 3764 	mov	a,sp
+      00114E 24 FC            [12] 3765 	add	a,#0xfc
+      001150 F5 81            [12] 3766 	mov	sp,a
+      001152 02 16 33         [24] 3767 	ljmp	00144$
+      001155                       3768 00110$:
+                           00109E  3769 	C$fuzzy.h$1199$1_0$66 ==.
+                                   3770 ;	../../fuzzy.h:1199: (parameter_3 - value) /
+      001155 C0 07            [24] 3771 	push	ar7
+      001157 C0 06            [24] 3772 	push	ar6
+      001159 C0 05            [24] 3773 	push	ar5
+      00115B C0 04            [24] 3774 	push	ar4
+      00115D E5 08            [12] 3775 	mov	a,_bp
+      00115F 24 FA            [12] 3776 	add	a,#0xfa
+      001161 F8               [12] 3777 	mov	r0,a
+      001162 E6               [12] 3778 	mov	a,@r0
+      001163 C0 E0            [24] 3779 	push	acc
+      001165 08               [12] 3780 	inc	r0
+      001166 E6               [12] 3781 	mov	a,@r0
+      001167 C0 E0            [24] 3782 	push	acc
+      001169 08               [12] 3783 	inc	r0
+      00116A E6               [12] 3784 	mov	a,@r0
+      00116B C0 E0            [24] 3785 	push	acc
+      00116D 08               [12] 3786 	inc	r0
+      00116E E6               [12] 3787 	mov	a,@r0
+      00116F C0 E0            [24] 3788 	push	acc
+                           0010BA  3789 	C$fuzzy.h$1200$1_0$66 ==.
+                                   3790 ;	../../fuzzy.h:1200: (parameter_3 - parameter_2);
+      001171 8D 82            [24] 3791 	mov	dpl, r5
+      001173 8E 83            [24] 3792 	mov	dph, r6
+      001175 8F F0            [24] 3793 	mov	b, r7
+      001177 EC               [12] 3794 	mov	a, r4
+      001178 12 22 FF         [24] 3795 	lcall	___fssub
+      00117B A8 08            [24] 3796 	mov	r0,_bp
+      00117D 08               [12] 3797 	inc	r0
+      00117E A6 82            [24] 3798 	mov	@r0, dpl
+      001180 08               [12] 3799 	inc	r0
+      001181 A6 83            [24] 3800 	mov	@r0, dph
+      001183 08               [12] 3801 	inc	r0
+      001184 A6 F0            [24] 3802 	mov	@r0, b
+      001186 08               [12] 3803 	inc	r0
+      001187 F6               [12] 3804 	mov	@r0,a
+      001188 E5 81            [12] 3805 	mov	a,sp
+      00118A 24 FC            [12] 3806 	add	a,#0xfc
+      00118C F5 81            [12] 3807 	mov	sp,a
+      00118E D0 04            [24] 3808 	pop	ar4
+      001190 D0 05            [24] 3809 	pop	ar5
+      001192 D0 06            [24] 3810 	pop	ar6
+      001194 D0 07            [24] 3811 	pop	ar7
+      001196 E5 08            [12] 3812 	mov	a,_bp
+      001198 24 15            [12] 3813 	add	a,#0x15
+      00119A F8               [12] 3814 	mov	r0,a
+      00119B E6               [12] 3815 	mov	a,@r0
+      00119C C0 E0            [24] 3816 	push	acc
+      00119E 08               [12] 3817 	inc	r0
+      00119F E6               [12] 3818 	mov	a,@r0
+      0011A0 C0 E0            [24] 3819 	push	acc
+      0011A2 08               [12] 3820 	inc	r0
+      0011A3 E6               [12] 3821 	mov	a,@r0
+      0011A4 C0 E0            [24] 3822 	push	acc
+      0011A6 08               [12] 3823 	inc	r0
+      0011A7 E6               [12] 3824 	mov	a,@r0
+      0011A8 C0 E0            [24] 3825 	push	acc
+      0011AA 8D 82            [24] 3826 	mov	dpl, r5
+      0011AC 8E 83            [24] 3827 	mov	dph, r6
+      0011AE 8F F0            [24] 3828 	mov	b, r7
+      0011B0 EC               [12] 3829 	mov	a, r4
+      0011B1 12 22 FF         [24] 3830 	lcall	___fssub
+      0011B4 AC 82            [24] 3831 	mov	r4, dpl
+      0011B6 AD 83            [24] 3832 	mov	r5, dph
+      0011B8 AE F0            [24] 3833 	mov	r6, b
+      0011BA FF               [12] 3834 	mov	r7, a
+      0011BB E5 81            [12] 3835 	mov	a,sp
+      0011BD 24 FC            [12] 3836 	add	a,#0xfc
+      0011BF F5 81            [12] 3837 	mov	sp,a
+      0011C1 C0 04            [24] 3838 	push	ar4
+      0011C3 C0 05            [24] 3839 	push	ar5
+      0011C5 C0 06            [24] 3840 	push	ar6
+      0011C7 C0 07            [24] 3841 	push	ar7
+                           001112  3842 	C$fuzzy.h$1202$1_0$66 ==.
+                                   3843 ;	../../fuzzy.h:1202: break;
+      0011C9 A8 08            [24] 3844 	mov	r0,_bp
+      0011CB 08               [12] 3845 	inc	r0
+      0011CC 86 82            [24] 3846 	mov	dpl, @r0
+      0011CE 08               [12] 3847 	inc	r0
+      0011CF 86 83            [24] 3848 	mov	dph, @r0
+      0011D1 08               [12] 3849 	inc	r0
+      0011D2 86 F0            [24] 3850 	mov	b, @r0
+      0011D4 08               [12] 3851 	inc	r0
+      0011D5 E6               [12] 3852 	mov	a, @r0
+      0011D6 12 25 A3         [24] 3853 	lcall	___fsdiv
+      0011D9 C8               [12] 3854 	xch	a,r0
+      0011DA E5 08            [12] 3855 	mov	a,_bp
+      0011DC 24 05            [12] 3856 	add	a,#0x05
+      0011DE C8               [12] 3857 	xch	a,r0
+      0011DF A6 82            [24] 3858 	mov	@r0, dpl
+      0011E1 08               [12] 3859 	inc	r0
+      0011E2 A6 83            [24] 3860 	mov	@r0, dph
+      0011E4 08               [12] 3861 	inc	r0
+      0011E5 A6 F0            [24] 3862 	mov	@r0, b
+      0011E7 08               [12] 3863 	inc	r0
+      0011E8 F6               [12] 3864 	mov	@r0,a
+      0011E9 E5 81            [12] 3865 	mov	a,sp
+      0011EB 24 FC            [12] 3866 	add	a,#0xfc
+      0011ED F5 81            [12] 3867 	mov	sp,a
+      0011EF 02 16 33         [24] 3868 	ljmp	00144$
+                           00113B  3869 	C$fuzzy.h$1204$2_0$68 ==.
+                                   3870 ;	../../fuzzy.h:1204: case FUZZY_SHAPE_TRAPEZOID:
+      0011F2                       3871 00121$:
+                           00113B  3872 	C$fuzzy.h$1205$2_0$68 ==.
+                                   3873 ;	../../fuzzy.h:1205: if (parameter_count != 4u) {
+      0011F2 E5 08            [12] 3874 	mov	a,_bp
+      0011F4 24 F7            [12] 3875 	add	a,#0xf7
+      0011F6 F8               [12] 3876 	mov	r0,a
+      0011F7 B6 04 06         [24] 3877 	cjne	@r0,#0x04,00279$
+      0011FA 08               [12] 3878 	inc	r0
+      0011FB B6 00 02         [24] 3879 	cjne	@r0,#0x00,00279$
+      0011FE 80 09            [24] 3880 	sjmp	00123$
+      001200                       3881 00279$:
+                           001149  3882 	C$fuzzy.h$1206$3_0$75 ==.
+                                   3883 ;	../../fuzzy.h:1206: return LEVEL_LO;
+      001200 90 00 00         [24] 3884 	mov	dptr,#0x0000
+      001203 E4               [12] 3885 	clr	a
+      001204 F5 F0            [12] 3886 	mov	b,a
+      001206 02 16 5D         [24] 3887 	ljmp	00145$
+      001209                       3888 00123$:
+                           001152  3889 	C$fuzzy.h$1209$2_0$68 ==.
+                                   3890 ;	../../fuzzy.h:1209: parameter_1 = parameters[0];
+      001209 E5 08            [12] 3891 	mov	a,_bp
+      00120B 24 F4            [12] 3892 	add	a,#0xf4
+      00120D F8               [12] 3893 	mov	r0,a
+      00120E 86 05            [24] 3894 	mov	ar5,@r0
+      001210 08               [12] 3895 	inc	r0
+      001211 86 06            [24] 3896 	mov	ar6,@r0
+      001213 08               [12] 3897 	inc	r0
+      001214 86 07            [24] 3898 	mov	ar7,@r0
+      001216 8D 82            [24] 3899 	mov	dpl,r5
+      001218 8E 83            [24] 3900 	mov	dph,r6
+      00121A 8F F0            [24] 3901 	mov	b,r7
+      00121C E5 08            [12] 3902 	mov	a,_bp
+      00121E 24 09            [12] 3903 	add	a,#0x09
+      001220 F8               [12] 3904 	mov	r0,a
+      001221 12 26 66         [24] 3905 	lcall	__gptrget
+      001224 F6               [12] 3906 	mov	@r0,a
+      001225 A3               [24] 3907 	inc	dptr
+      001226 12 26 66         [24] 3908 	lcall	__gptrget
+      001229 08               [12] 3909 	inc	r0
+      00122A F6               [12] 3910 	mov	@r0,a
+      00122B A3               [24] 3911 	inc	dptr
+      00122C 12 26 66         [24] 3912 	lcall	__gptrget
+      00122F 08               [12] 3913 	inc	r0
+      001230 F6               [12] 3914 	mov	@r0,a
+      001231 A3               [24] 3915 	inc	dptr
+      001232 12 26 66         [24] 3916 	lcall	__gptrget
+      001235 08               [12] 3917 	inc	r0
+      001236 F6               [12] 3918 	mov	@r0,a
+                           001180  3919 	C$fuzzy.h$1210$2_0$68 ==.
+                                   3920 ;	../../fuzzy.h:1210: parameter_2 = parameters[1];
+      001237 74 04            [12] 3921 	mov	a,#0x04
+      001239 2D               [12] 3922 	add	a, r5
+      00123A FA               [12] 3923 	mov	r2,a
+      00123B E4               [12] 3924 	clr	a
+      00123C 3E               [12] 3925 	addc	a, r6
+      00123D FB               [12] 3926 	mov	r3,a
+      00123E 8F 04            [24] 3927 	mov	ar4,r7
+      001240 8A 82            [24] 3928 	mov	dpl,r2
+      001242 8B 83            [24] 3929 	mov	dph,r3
+      001244 8C F0            [24] 3930 	mov	b,r4
+      001246 A8 08            [24] 3931 	mov	r0,_bp
+      001248 08               [12] 3932 	inc	r0
+      001249 12 26 66         [24] 3933 	lcall	__gptrget
+      00124C F6               [12] 3934 	mov	@r0,a
+      00124D A3               [24] 3935 	inc	dptr
+      00124E 12 26 66         [24] 3936 	lcall	__gptrget
+      001251 08               [12] 3937 	inc	r0
+      001252 F6               [12] 3938 	mov	@r0,a
+      001253 A3               [24] 3939 	inc	dptr
+      001254 12 26 66         [24] 3940 	lcall	__gptrget
+      001257 08               [12] 3941 	inc	r0
+      001258 F6               [12] 3942 	mov	@r0,a
+      001259 A3               [24] 3943 	inc	dptr
+      00125A 12 26 66         [24] 3944 	lcall	__gptrget
+      00125D 08               [12] 3945 	inc	r0
+      00125E F6               [12] 3946 	mov	@r0,a
+                           0011A8  3947 	C$fuzzy.h$1211$2_0$68 ==.
+                                   3948 ;	../../fuzzy.h:1211: parameter_3 = parameters[2];
+      00125F 74 08            [12] 3949 	mov	a,#0x08
+      001261 2D               [12] 3950 	add	a, r5
+      001262 FA               [12] 3951 	mov	r2,a
+      001263 E4               [12] 3952 	clr	a
+      001264 3E               [12] 3953 	addc	a, r6
+      001265 FB               [12] 3954 	mov	r3,a
+      001266 8F 04            [24] 3955 	mov	ar4,r7
+      001268 8A 82            [24] 3956 	mov	dpl,r2
+      00126A 8B 83            [24] 3957 	mov	dph,r3
+      00126C 8C F0            [24] 3958 	mov	b,r4
+      00126E E5 08            [12] 3959 	mov	a,_bp
+      001270 24 19            [12] 3960 	add	a,#0x19
+      001272 F8               [12] 3961 	mov	r0,a
+      001273 12 26 66         [24] 3962 	lcall	__gptrget
+      001276 F6               [12] 3963 	mov	@r0,a
+      001277 A3               [24] 3964 	inc	dptr
+      001278 12 26 66         [24] 3965 	lcall	__gptrget
+      00127B 08               [12] 3966 	inc	r0
+      00127C F6               [12] 3967 	mov	@r0,a
+      00127D A3               [24] 3968 	inc	dptr
+      00127E 12 26 66         [24] 3969 	lcall	__gptrget
+      001281 08               [12] 3970 	inc	r0
+      001282 F6               [12] 3971 	mov	@r0,a
+      001283 A3               [24] 3972 	inc	dptr
+      001284 12 26 66         [24] 3973 	lcall	__gptrget
+      001287 08               [12] 3974 	inc	r0
+      001288 F6               [12] 3975 	mov	@r0,a
+                           0011D2  3976 	C$fuzzy.h$1212$2_0$68 ==.
+                                   3977 ;	../../fuzzy.h:1212: parameter_4 = parameters[3];
+      001289 74 0C            [12] 3978 	mov	a,#0x0c
+      00128B 2D               [12] 3979 	add	a, r5
+      00128C FD               [12] 3980 	mov	r5,a
+      00128D E4               [12] 3981 	clr	a
+      00128E 3E               [12] 3982 	addc	a, r6
+      00128F FE               [12] 3983 	mov	r6,a
+      001290 8D 82            [24] 3984 	mov	dpl,r5
+      001292 8E 83            [24] 3985 	mov	dph,r6
+      001294 8F F0            [24] 3986 	mov	b,r7
+      001296 12 26 66         [24] 3987 	lcall	__gptrget
+      001299 FD               [12] 3988 	mov	r5,a
+      00129A A3               [24] 3989 	inc	dptr
+      00129B 12 26 66         [24] 3990 	lcall	__gptrget
+      00129E FE               [12] 3991 	mov	r6,a
+      00129F A3               [24] 3992 	inc	dptr
+      0012A0 12 26 66         [24] 3993 	lcall	__gptrget
+      0012A3 FF               [12] 3994 	mov	r7,a
+      0012A4 A3               [24] 3995 	inc	dptr
+      0012A5 12 26 66         [24] 3996 	lcall	__gptrget
+      0012A8 FC               [12] 3997 	mov	r4,a
+                           0011F2  3998 	C$fuzzy.h$1215$1_0$66 ==.
+                                   3999 ;	../../fuzzy.h:1215: parameter_1 >= parameter_2 ||
+      0012A9 C0 07            [24] 4000 	push	ar7
+      0012AB C0 06            [24] 4001 	push	ar6
+      0012AD C0 05            [24] 4002 	push	ar5
+      0012AF C0 04            [24] 4003 	push	ar4
+      0012B1 A8 08            [24] 4004 	mov	r0,_bp
+      0012B3 08               [12] 4005 	inc	r0
+      0012B4 E6               [12] 4006 	mov	a,@r0
+      0012B5 C0 E0            [24] 4007 	push	acc
+      0012B7 08               [12] 4008 	inc	r0
+      0012B8 E6               [12] 4009 	mov	a,@r0
+      0012B9 C0 E0            [24] 4010 	push	acc
+      0012BB 08               [12] 4011 	inc	r0
+      0012BC E6               [12] 4012 	mov	a,@r0
+      0012BD C0 E0            [24] 4013 	push	acc
+      0012BF 08               [12] 4014 	inc	r0
+      0012C0 E6               [12] 4015 	mov	a,@r0
+      0012C1 C0 E0            [24] 4016 	push	acc
+      0012C3 E5 08            [12] 4017 	mov	a,_bp
+      0012C5 24 09            [12] 4018 	add	a,#0x09
+      0012C7 F8               [12] 4019 	mov	r0,a
+      0012C8 86 82            [24] 4020 	mov	dpl, @r0
+      0012CA 08               [12] 4021 	inc	r0
+      0012CB 86 83            [24] 4022 	mov	dph, @r0
+      0012CD 08               [12] 4023 	inc	r0
+      0012CE 86 F0            [24] 4024 	mov	b, @r0
+      0012D0 08               [12] 4025 	inc	r0
+      0012D1 E6               [12] 4026 	mov	a, @r0
+      0012D2 12 24 3A         [24] 4027 	lcall	___fslt
+      0012D5 E5 81            [12] 4028 	mov	a,sp
+      0012D7 24 FC            [12] 4029 	add	a,#0xfc
+      0012D9 F5 81            [12] 4030 	mov	sp,a
+      0012DB D0 04            [24] 4031 	pop	ar4
+      0012DD D0 05            [24] 4032 	pop	ar5
+      0012DF D0 06            [24] 4033 	pop	ar6
+      0012E1 D0 07            [24] 4034 	pop	ar7
+      0012E3 E5 82            [12] 4035 	mov	a, dpl
+      0012E5 24 FF            [12] 4036 	add	a,#0xff
+      0012E7 92 00            [24] 4037 	mov	b0,c
+      0012E9 40 03            [24] 4038 	jc	00280$
+      0012EB 02 13 E4         [24] 4039 	ljmp	00131$
+      0012EE                       4040 00280$:
+                           001237  4041 	C$fuzzy.h$1216$1_0$66 ==.
+                                   4042 ;	../../fuzzy.h:1216: parameter_2 > parameter_3 ||
+      0012EE C0 07            [24] 4043 	push	ar7
+      0012F0 C0 06            [24] 4044 	push	ar6
+      0012F2 C0 05            [24] 4045 	push	ar5
+      0012F4 C0 04            [24] 4046 	push	ar4
+      0012F6 A8 08            [24] 4047 	mov	r0,_bp
+      0012F8 08               [12] 4048 	inc	r0
+      0012F9 E6               [12] 4049 	mov	a,@r0
+      0012FA C0 E0            [24] 4050 	push	acc
+      0012FC 08               [12] 4051 	inc	r0
+      0012FD E6               [12] 4052 	mov	a,@r0
+      0012FE C0 E0            [24] 4053 	push	acc
+      001300 08               [12] 4054 	inc	r0
+      001301 E6               [12] 4055 	mov	a,@r0
+      001302 C0 E0            [24] 4056 	push	acc
+      001304 08               [12] 4057 	inc	r0
+      001305 E6               [12] 4058 	mov	a,@r0
+      001306 C0 E0            [24] 4059 	push	acc
+      001308 E5 08            [12] 4060 	mov	a,_bp
+      00130A 24 19            [12] 4061 	add	a,#0x19
+      00130C F8               [12] 4062 	mov	r0,a
+      00130D 86 82            [24] 4063 	mov	dpl, @r0
+      00130F 08               [12] 4064 	inc	r0
+      001310 86 83            [24] 4065 	mov	dph, @r0
+      001312 08               [12] 4066 	inc	r0
+      001313 86 F0            [24] 4067 	mov	b, @r0
+      001315 08               [12] 4068 	inc	r0
+      001316 E6               [12] 4069 	mov	a, @r0
+      001317 12 24 3A         [24] 4070 	lcall	___fslt
+      00131A AB 82            [24] 4071 	mov	r3, dpl
+      00131C E5 81            [12] 4072 	mov	a,sp
+      00131E 24 FC            [12] 4073 	add	a,#0xfc
+      001320 F5 81            [12] 4074 	mov	sp,a
+      001322 D0 04            [24] 4075 	pop	ar4
+      001324 D0 05            [24] 4076 	pop	ar5
+      001326 D0 06            [24] 4077 	pop	ar6
+      001328 D0 07            [24] 4078 	pop	ar7
+      00132A EB               [12] 4079 	mov	a,r3
+      00132B 60 03            [24] 4080 	jz	00281$
+      00132D 02 13 E4         [24] 4081 	ljmp	00131$
+      001330                       4082 00281$:
+                           001279  4083 	C$fuzzy.h$1217$1_0$66 ==.
+                                   4084 ;	../../fuzzy.h:1217: parameter_3 >= parameter_4 ||
+      001330 C0 07            [24] 4085 	push	ar7
+      001332 C0 06            [24] 4086 	push	ar6
+      001334 C0 05            [24] 4087 	push	ar5
+      001336 C0 04            [24] 4088 	push	ar4
+      001338 C0 05            [24] 4089 	push	ar5
+      00133A C0 06            [24] 4090 	push	ar6
+      00133C C0 07            [24] 4091 	push	ar7
+      00133E C0 04            [24] 4092 	push	ar4
+      001340 E5 08            [12] 4093 	mov	a,_bp
+      001342 24 19            [12] 4094 	add	a,#0x19
+      001344 F8               [12] 4095 	mov	r0,a
+      001345 86 82            [24] 4096 	mov	dpl, @r0
+      001347 08               [12] 4097 	inc	r0
+      001348 86 83            [24] 4098 	mov	dph, @r0
+      00134A 08               [12] 4099 	inc	r0
+      00134B 86 F0            [24] 4100 	mov	b, @r0
+      00134D 08               [12] 4101 	inc	r0
+      00134E E6               [12] 4102 	mov	a, @r0
+      00134F 12 24 3A         [24] 4103 	lcall	___fslt
+      001352 E5 81            [12] 4104 	mov	a,sp
+      001354 24 FC            [12] 4105 	add	a,#0xfc
+      001356 F5 81            [12] 4106 	mov	sp,a
+      001358 D0 04            [24] 4107 	pop	ar4
+      00135A D0 05            [24] 4108 	pop	ar5
+      00135C D0 06            [24] 4109 	pop	ar6
+      00135E D0 07            [24] 4110 	pop	ar7
+      001360 E5 82            [12] 4111 	mov	a, dpl
+      001362 24 FF            [12] 4112 	add	a,#0xff
+      001364 92 00            [24] 4113 	mov	b0,c
+      001366 50 7C            [24] 4114 	jnc	00131$
+                           0012B1  4115 	C$fuzzy.h$1218$1_0$66 ==.
+                                   4116 ;	../../fuzzy.h:1218: value <= parameter_1 ||
+      001368 C0 07            [24] 4117 	push	ar7
+      00136A C0 06            [24] 4118 	push	ar6
+      00136C C0 05            [24] 4119 	push	ar5
+      00136E C0 04            [24] 4120 	push	ar4
+      001370 E5 08            [12] 4121 	mov	a,_bp
+      001372 24 FA            [12] 4122 	add	a,#0xfa
+      001374 F8               [12] 4123 	mov	r0,a
+      001375 E6               [12] 4124 	mov	a,@r0
+      001376 C0 E0            [24] 4125 	push	acc
+      001378 08               [12] 4126 	inc	r0
+      001379 E6               [12] 4127 	mov	a,@r0
+      00137A C0 E0            [24] 4128 	push	acc
+      00137C 08               [12] 4129 	inc	r0
+      00137D E6               [12] 4130 	mov	a,@r0
+      00137E C0 E0            [24] 4131 	push	acc
+      001380 08               [12] 4132 	inc	r0
+      001381 E6               [12] 4133 	mov	a,@r0
+      001382 C0 E0            [24] 4134 	push	acc
+      001384 E5 08            [12] 4135 	mov	a,_bp
+      001386 24 09            [12] 4136 	add	a,#0x09
+      001388 F8               [12] 4137 	mov	r0,a
+      001389 86 82            [24] 4138 	mov	dpl, @r0
+      00138B 08               [12] 4139 	inc	r0
+      00138C 86 83            [24] 4140 	mov	dph, @r0
+      00138E 08               [12] 4141 	inc	r0
+      00138F 86 F0            [24] 4142 	mov	b, @r0
+      001391 08               [12] 4143 	inc	r0
+      001392 E6               [12] 4144 	mov	a, @r0
+      001393 12 24 3A         [24] 4145 	lcall	___fslt
+      001396 E5 81            [12] 4146 	mov	a,sp
+      001398 24 FC            [12] 4147 	add	a,#0xfc
+      00139A F5 81            [12] 4148 	mov	sp,a
+      00139C D0 04            [24] 4149 	pop	ar4
+      00139E D0 05            [24] 4150 	pop	ar5
+      0013A0 D0 06            [24] 4151 	pop	ar6
+      0013A2 D0 07            [24] 4152 	pop	ar7
+      0013A4 E5 82            [12] 4153 	mov	a, dpl
+      0013A6 24 FF            [12] 4154 	add	a,#0xff
+      0013A8 92 00            [24] 4155 	mov	b0,c
+      0013AA 50 38            [24] 4156 	jnc	00131$
+                           0012F5  4157 	C$fuzzy.h$1220$1_0$66 ==.
+                                   4158 ;	../../fuzzy.h:1220: ) {
+      0013AC C0 07            [24] 4159 	push	ar7
+      0013AE C0 06            [24] 4160 	push	ar6
+      0013B0 C0 05            [24] 4161 	push	ar5
+      0013B2 C0 04            [24] 4162 	push	ar4
+      0013B4 C0 05            [24] 4163 	push	ar5
+      0013B6 C0 06            [24] 4164 	push	ar6
+      0013B8 C0 07            [24] 4165 	push	ar7
+      0013BA C0 04            [24] 4166 	push	ar4
+      0013BC E5 08            [12] 4167 	mov	a,_bp
+      0013BE 24 FA            [12] 4168 	add	a,#0xfa
+      0013C0 F8               [12] 4169 	mov	r0,a
+      0013C1 86 82            [24] 4170 	mov	dpl, @r0
+      0013C3 08               [12] 4171 	inc	r0
+      0013C4 86 83            [24] 4172 	mov	dph, @r0
+      0013C6 08               [12] 4173 	inc	r0
+      0013C7 86 F0            [24] 4174 	mov	b, @r0
+      0013C9 08               [12] 4175 	inc	r0
+      0013CA E6               [12] 4176 	mov	a, @r0
+      0013CB 12 24 3A         [24] 4177 	lcall	___fslt
+      0013CE E5 81            [12] 4178 	mov	a,sp
+      0013D0 24 FC            [12] 4179 	add	a,#0xfc
+      0013D2 F5 81            [12] 4180 	mov	sp,a
+      0013D4 D0 04            [24] 4181 	pop	ar4
+      0013D6 D0 05            [24] 4182 	pop	ar5
+      0013D8 D0 06            [24] 4183 	pop	ar6
+      0013DA D0 07            [24] 4184 	pop	ar7
+      0013DC E5 82            [12] 4185 	mov	a, dpl
+      0013DE 24 FF            [12] 4186 	add	a,#0xff
+      0013E0 92 00            [24] 4187 	mov	b0,c
+      0013E2 40 10            [24] 4188 	jc	00132$
+      0013E4                       4189 00131$:
+                           00132D  4190 	C$fuzzy.h$1221$3_0$76 ==.
+                                   4191 ;	../../fuzzy.h:1221: result = LEVEL_LO;
+      0013E4 E5 08            [12] 4192 	mov	a,_bp
+      0013E6 24 05            [12] 4193 	add	a,#0x05
+      0013E8 F8               [12] 4194 	mov	r0,a
+      0013E9 E4               [12] 4195 	clr	a
+      0013EA F6               [12] 4196 	mov	@r0,a
+      0013EB 08               [12] 4197 	inc	r0
+      0013EC F6               [12] 4198 	mov	@r0,a
+      0013ED 08               [12] 4199 	inc	r0
+      0013EE F6               [12] 4200 	mov	@r0,a
+      0013EF 08               [12] 4201 	inc	r0
+      0013F0 F6               [12] 4202 	mov	@r0,a
+      0013F1 02 16 33         [24] 4203 	ljmp	00144$
+      0013F4                       4204 00132$:
+                           00133D  4205 	C$fuzzy.h$1224$1_0$66 ==.
+                                   4206 ;	../../fuzzy.h:1224: value >= parameter_2 &&
+      0013F4 C0 07            [24] 4207 	push	ar7
+      0013F6 C0 06            [24] 4208 	push	ar6
+      0013F8 C0 05            [24] 4209 	push	ar5
+      0013FA C0 04            [24] 4210 	push	ar4
+      0013FC A8 08            [24] 4211 	mov	r0,_bp
+      0013FE 08               [12] 4212 	inc	r0
+      0013FF E6               [12] 4213 	mov	a,@r0
+      001400 C0 E0            [24] 4214 	push	acc
+      001402 08               [12] 4215 	inc	r0
+      001403 E6               [12] 4216 	mov	a,@r0
+      001404 C0 E0            [24] 4217 	push	acc
+      001406 08               [12] 4218 	inc	r0
+      001407 E6               [12] 4219 	mov	a,@r0
+      001408 C0 E0            [24] 4220 	push	acc
+      00140A 08               [12] 4221 	inc	r0
+      00140B E6               [12] 4222 	mov	a,@r0
+      00140C C0 E0            [24] 4223 	push	acc
+      00140E E5 08            [12] 4224 	mov	a,_bp
+      001410 24 FA            [12] 4225 	add	a,#0xfa
+      001412 F8               [12] 4226 	mov	r0,a
+      001413 86 82            [24] 4227 	mov	dpl, @r0
+      001415 08               [12] 4228 	inc	r0
+      001416 86 83            [24] 4229 	mov	dph, @r0
+      001418 08               [12] 4230 	inc	r0
+      001419 86 F0            [24] 4231 	mov	b, @r0
+      00141B 08               [12] 4232 	inc	r0
+      00141C E6               [12] 4233 	mov	a, @r0
+      00141D 12 24 3A         [24] 4234 	lcall	___fslt
+      001420 E5 81            [12] 4235 	mov	a,sp
+      001422 24 FC            [12] 4236 	add	a,#0xfc
+      001424 F5 81            [12] 4237 	mov	sp,a
+      001426 D0 04            [24] 4238 	pop	ar4
+      001428 D0 05            [24] 4239 	pop	ar5
+      00142A D0 06            [24] 4240 	pop	ar6
+      00142C D0 07            [24] 4241 	pop	ar7
+      00142E E5 82            [12] 4242 	mov	a, dpl
+      001430 24 FF            [12] 4243 	add	a,#0xff
+      001432 92 00            [24] 4244 	mov	b0,c
+      001434 40 56            [24] 4245 	jc	00128$
+                           00137F  4246 	C$fuzzy.h$1226$1_0$66 ==.
+                                   4247 ;	../../fuzzy.h:1226: ) {
+      001436 C0 07            [24] 4248 	push	ar7
+      001438 C0 06            [24] 4249 	push	ar6
+      00143A C0 05            [24] 4250 	push	ar5
+      00143C C0 04            [24] 4251 	push	ar4
+      00143E E5 08            [12] 4252 	mov	a,_bp
+      001440 24 FA            [12] 4253 	add	a,#0xfa
+      001442 F8               [12] 4254 	mov	r0,a
+      001443 E6               [12] 4255 	mov	a,@r0
+      001444 C0 E0            [24] 4256 	push	acc
+      001446 08               [12] 4257 	inc	r0
+      001447 E6               [12] 4258 	mov	a,@r0
+      001448 C0 E0            [24] 4259 	push	acc
+      00144A 08               [12] 4260 	inc	r0
+      00144B E6               [12] 4261 	mov	a,@r0
+      00144C C0 E0            [24] 4262 	push	acc
+      00144E 08               [12] 4263 	inc	r0
+      00144F E6               [12] 4264 	mov	a,@r0
+      001450 C0 E0            [24] 4265 	push	acc
+      001452 E5 08            [12] 4266 	mov	a,_bp
+      001454 24 19            [12] 4267 	add	a,#0x19
+      001456 F8               [12] 4268 	mov	r0,a
+      001457 86 82            [24] 4269 	mov	dpl, @r0
+      001459 08               [12] 4270 	inc	r0
+      00145A 86 83            [24] 4271 	mov	dph, @r0
+      00145C 08               [12] 4272 	inc	r0
+      00145D 86 F0            [24] 4273 	mov	b, @r0
+      00145F 08               [12] 4274 	inc	r0
+      001460 E6               [12] 4275 	mov	a, @r0
+      001461 12 24 3A         [24] 4276 	lcall	___fslt
+      001464 E5 81            [12] 4277 	mov	a,sp
+      001466 24 FC            [12] 4278 	add	a,#0xfc
+      001468 F5 81            [12] 4279 	mov	sp,a
+      00146A D0 04            [24] 4280 	pop	ar4
+      00146C D0 05            [24] 4281 	pop	ar5
+      00146E D0 06            [24] 4282 	pop	ar6
+      001470 D0 07            [24] 4283 	pop	ar7
+      001472 E5 82            [12] 4284 	mov	a, dpl
+      001474 24 FF            [12] 4285 	add	a,#0xff
+      001476 92 00            [24] 4286 	mov	b0,c
+      001478 40 12            [24] 4287 	jc	00128$
+                           0013C3  4288 	C$fuzzy.h$1227$3_0$77 ==.
+                                   4289 ;	../../fuzzy.h:1227: result = LEVEL_HI;
+      00147A E5 08            [12] 4290 	mov	a,_bp
+      00147C 24 05            [12] 4291 	add	a,#0x05
+      00147E F8               [12] 4292 	mov	r0,a
+      00147F E4               [12] 4293 	clr	a
+      001480 F6               [12] 4294 	mov	@r0,a
+      001481 08               [12] 4295 	inc	r0
+      001482 F6               [12] 4296 	mov	@r0,a
+      001483 08               [12] 4297 	inc	r0
+      001484 76 80            [12] 4298 	mov	@r0,#0x80
+      001486 08               [12] 4299 	inc	r0
+      001487 76 3F            [12] 4300 	mov	@r0,#0x3f
+      001489 02 16 33         [24] 4301 	ljmp	00144$
+      00148C                       4302 00128$:
+                           0013D5  4303 	C$fuzzy.h$1229$1_0$66 ==.
+                                   4304 ;	../../fuzzy.h:1229: else if (value < parameter_2) {
+      00148C C0 07            [24] 4305 	push	ar7
+      00148E C0 06            [24] 4306 	push	ar6
+      001490 C0 05            [24] 4307 	push	ar5
+      001492 C0 04            [24] 4308 	push	ar4
+      001494 A8 08            [24] 4309 	mov	r0,_bp
+      001496 08               [12] 4310 	inc	r0
+      001497 E6               [12] 4311 	mov	a,@r0
+      001498 C0 E0            [24] 4312 	push	acc
+      00149A 08               [12] 4313 	inc	r0
+      00149B E6               [12] 4314 	mov	a,@r0
+      00149C C0 E0            [24] 4315 	push	acc
+      00149E 08               [12] 4316 	inc	r0
+      00149F E6               [12] 4317 	mov	a,@r0
+      0014A0 C0 E0            [24] 4318 	push	acc
+      0014A2 08               [12] 4319 	inc	r0
+      0014A3 E6               [12] 4320 	mov	a,@r0
+      0014A4 C0 E0            [24] 4321 	push	acc
+      0014A6 E5 08            [12] 4322 	mov	a,_bp
+      0014A8 24 FA            [12] 4323 	add	a,#0xfa
+      0014AA F8               [12] 4324 	mov	r0,a
+      0014AB 86 82            [24] 4325 	mov	dpl, @r0
+      0014AD 08               [12] 4326 	inc	r0
+      0014AE 86 83            [24] 4327 	mov	dph, @r0
+      0014B0 08               [12] 4328 	inc	r0
+      0014B1 86 F0            [24] 4329 	mov	b, @r0
+      0014B3 08               [12] 4330 	inc	r0
+      0014B4 E6               [12] 4331 	mov	a, @r0
+      0014B5 12 24 3A         [24] 4332 	lcall	___fslt
+      0014B8 AB 82            [24] 4333 	mov	r3, dpl
+      0014BA E5 81            [12] 4334 	mov	a,sp
+      0014BC 24 FC            [12] 4335 	add	a,#0xfc
+      0014BE F5 81            [12] 4336 	mov	sp,a
+      0014C0 D0 04            [24] 4337 	pop	ar4
+      0014C2 D0 05            [24] 4338 	pop	ar5
+      0014C4 D0 06            [24] 4339 	pop	ar6
+      0014C6 D0 07            [24] 4340 	pop	ar7
+      0014C8 EB               [12] 4341 	mov	a,r3
+      0014C9 70 03            [24] 4342 	jnz	00287$
+      0014CB 02 15 82         [24] 4343 	ljmp	00125$
+      0014CE                       4344 00287$:
+                           001417  4345 	C$fuzzy.h$1231$1_0$66 ==.
+                                   4346 ;	../../fuzzy.h:1231: (value - parameter_1) /
+      0014CE E5 08            [12] 4347 	mov	a,_bp
+      0014D0 24 09            [12] 4348 	add	a,#0x09
+      0014D2 F8               [12] 4349 	mov	r0,a
+      0014D3 E6               [12] 4350 	mov	a,@r0
+      0014D4 C0 E0            [24] 4351 	push	acc
+      0014D6 08               [12] 4352 	inc	r0
+      0014D7 E6               [12] 4353 	mov	a,@r0
+      0014D8 C0 E0            [24] 4354 	push	acc
+      0014DA 08               [12] 4355 	inc	r0
+      0014DB E6               [12] 4356 	mov	a,@r0
+      0014DC C0 E0            [24] 4357 	push	acc
+      0014DE 08               [12] 4358 	inc	r0
+      0014DF E6               [12] 4359 	mov	a,@r0
+      0014E0 C0 E0            [24] 4360 	push	acc
+                           00142B  4361 	C$fuzzy.h$1232$1_0$66 ==.
+                                   4362 ;	../../fuzzy.h:1232: (parameter_2 - parameter_1);
+      0014E2 E5 08            [12] 4363 	mov	a,_bp
+      0014E4 24 FA            [12] 4364 	add	a,#0xfa
+      0014E6 F8               [12] 4365 	mov	r0,a
+      0014E7 86 82            [24] 4366 	mov	dpl, @r0
+      0014E9 08               [12] 4367 	inc	r0
+      0014EA 86 83            [24] 4368 	mov	dph, @r0
+      0014EC 08               [12] 4369 	inc	r0
+      0014ED 86 F0            [24] 4370 	mov	b, @r0
+      0014EF 08               [12] 4371 	inc	r0
+      0014F0 E6               [12] 4372 	mov	a, @r0
+      0014F1 12 22 FF         [24] 4373 	lcall	___fssub
+      0014F4 AF 82            [24] 4374 	mov	r7, dpl
+      0014F6 AE 83            [24] 4375 	mov	r6, dph
+      0014F8 AD F0            [24] 4376 	mov	r5, b
+      0014FA FC               [12] 4377 	mov	r4, a
+      0014FB E5 81            [12] 4378 	mov	a,sp
+      0014FD 24 FC            [12] 4379 	add	a,#0xfc
+      0014FF F5 81            [12] 4380 	mov	sp,a
+      001501 C0 07            [24] 4381 	push	ar7
+      001503 C0 06            [24] 4382 	push	ar6
+      001505 C0 05            [24] 4383 	push	ar5
+      001507 C0 04            [24] 4384 	push	ar4
+      001509 E5 08            [12] 4385 	mov	a,_bp
+      00150B 24 09            [12] 4386 	add	a,#0x09
+      00150D F8               [12] 4387 	mov	r0,a
+      00150E E6               [12] 4388 	mov	a,@r0
+      00150F C0 E0            [24] 4389 	push	acc
+      001511 08               [12] 4390 	inc	r0
+      001512 E6               [12] 4391 	mov	a,@r0
+      001513 C0 E0            [24] 4392 	push	acc
+      001515 08               [12] 4393 	inc	r0
+      001516 E6               [12] 4394 	mov	a,@r0
+      001517 C0 E0            [24] 4395 	push	acc
+      001519 08               [12] 4396 	inc	r0
+      00151A E6               [12] 4397 	mov	a,@r0
+      00151B C0 E0            [24] 4398 	push	acc
+      00151D A8 08            [24] 4399 	mov	r0,_bp
+      00151F 08               [12] 4400 	inc	r0
+      001520 86 82            [24] 4401 	mov	dpl, @r0
+      001522 08               [12] 4402 	inc	r0
+      001523 86 83            [24] 4403 	mov	dph, @r0
+      001525 08               [12] 4404 	inc	r0
+      001526 86 F0            [24] 4405 	mov	b, @r0
+      001528 08               [12] 4406 	inc	r0
+      001529 E6               [12] 4407 	mov	a, @r0
+      00152A 12 22 FF         [24] 4408 	lcall	___fssub
+      00152D C8               [12] 4409 	xch	a,r0
+      00152E E5 08            [12] 4410 	mov	a,_bp
+      001530 24 09            [12] 4411 	add	a,#0x09
+      001532 C8               [12] 4412 	xch	a,r0
+      001533 A6 82            [24] 4413 	mov	@r0, dpl
+      001535 08               [12] 4414 	inc	r0
+      001536 A6 83            [24] 4415 	mov	@r0, dph
+      001538 08               [12] 4416 	inc	r0
+      001539 A6 F0            [24] 4417 	mov	@r0, b
+      00153B 08               [12] 4418 	inc	r0
+      00153C F6               [12] 4419 	mov	@r0,a
+      00153D E5 81            [12] 4420 	mov	a,sp
+      00153F 24 FC            [12] 4421 	add	a,#0xfc
+      001541 F5 81            [12] 4422 	mov	sp,a
+      001543 D0 04            [24] 4423 	pop	ar4
+      001545 D0 05            [24] 4424 	pop	ar5
+      001547 D0 06            [24] 4425 	pop	ar6
+      001549 D0 07            [24] 4426 	pop	ar7
+      00154B E5 08            [12] 4427 	mov	a,_bp
+      00154D 24 09            [12] 4428 	add	a,#0x09
+      00154F F8               [12] 4429 	mov	r0,a
+      001550 E6               [12] 4430 	mov	a,@r0
+      001551 C0 E0            [24] 4431 	push	acc
+      001553 08               [12] 4432 	inc	r0
+      001554 E6               [12] 4433 	mov	a,@r0
+      001555 C0 E0            [24] 4434 	push	acc
+      001557 08               [12] 4435 	inc	r0
+      001558 E6               [12] 4436 	mov	a,@r0
+      001559 C0 E0            [24] 4437 	push	acc
+      00155B 08               [12] 4438 	inc	r0
+      00155C E6               [12] 4439 	mov	a,@r0
+      00155D C0 E0            [24] 4440 	push	acc
+      00155F 8F 82            [24] 4441 	mov	dpl, r7
+      001561 8E 83            [24] 4442 	mov	dph, r6
+      001563 8D F0            [24] 4443 	mov	b, r5
+      001565 EC               [12] 4444 	mov	a, r4
+      001566 12 25 A3         [24] 4445 	lcall	___fsdiv
+      001569 C8               [12] 4446 	xch	a,r0
+      00156A E5 08            [12] 4447 	mov	a,_bp
+      00156C 24 05            [12] 4448 	add	a,#0x05
+      00156E C8               [12] 4449 	xch	a,r0
+      00156F A6 82            [24] 4450 	mov	@r0, dpl
+      001571 08               [12] 4451 	inc	r0
+      001572 A6 83            [24] 4452 	mov	@r0, dph
+      001574 08               [12] 4453 	inc	r0
+      001575 A6 F0            [24] 4454 	mov	@r0, b
+      001577 08               [12] 4455 	inc	r0
+      001578 F6               [12] 4456 	mov	@r0,a
+      001579 E5 81            [12] 4457 	mov	a,sp
+      00157B 24 FC            [12] 4458 	add	a,#0xfc
+      00157D F5 81            [12] 4459 	mov	sp,a
+      00157F 02 16 33         [24] 4460 	ljmp	00144$
+      001582                       4461 00125$:
+                           0014CB  4462 	C$fuzzy.h$1236$1_0$66 ==.
+                                   4463 ;	../../fuzzy.h:1236: (parameter_4 - value) /
+      001582 C0 07            [24] 4464 	push	ar7
+      001584 C0 06            [24] 4465 	push	ar6
+      001586 C0 05            [24] 4466 	push	ar5
+      001588 C0 04            [24] 4467 	push	ar4
+      00158A E5 08            [12] 4468 	mov	a,_bp
+      00158C 24 FA            [12] 4469 	add	a,#0xfa
+      00158E F8               [12] 4470 	mov	r0,a
+      00158F E6               [12] 4471 	mov	a,@r0
+      001590 C0 E0            [24] 4472 	push	acc
+      001592 08               [12] 4473 	inc	r0
+      001593 E6               [12] 4474 	mov	a,@r0
+      001594 C0 E0            [24] 4475 	push	acc
+      001596 08               [12] 4476 	inc	r0
+      001597 E6               [12] 4477 	mov	a,@r0
+      001598 C0 E0            [24] 4478 	push	acc
+      00159A 08               [12] 4479 	inc	r0
+      00159B E6               [12] 4480 	mov	a,@r0
+      00159C C0 E0            [24] 4481 	push	acc
+                           0014E7  4482 	C$fuzzy.h$1237$1_0$66 ==.
+                                   4483 ;	../../fuzzy.h:1237: (parameter_4 - parameter_3);
+      00159E 8D 82            [24] 4484 	mov	dpl, r5
+      0015A0 8E 83            [24] 4485 	mov	dph, r6
+      0015A2 8F F0            [24] 4486 	mov	b, r7
+      0015A4 EC               [12] 4487 	mov	a, r4
+      0015A5 12 22 FF         [24] 4488 	lcall	___fssub
+      0015A8 C8               [12] 4489 	xch	a,r0
+      0015A9 E5 08            [12] 4490 	mov	a,_bp
+      0015AB 24 0D            [12] 4491 	add	a,#0x0d
+      0015AD C8               [12] 4492 	xch	a,r0
+      0015AE A6 82            [24] 4493 	mov	@r0, dpl
+      0015B0 08               [12] 4494 	inc	r0
+      0015B1 A6 83            [24] 4495 	mov	@r0, dph
+      0015B3 08               [12] 4496 	inc	r0
+      0015B4 A6 F0            [24] 4497 	mov	@r0, b
+      0015B6 08               [12] 4498 	inc	r0
+      0015B7 F6               [12] 4499 	mov	@r0,a
+      0015B8 E5 81            [12] 4500 	mov	a,sp
+      0015BA 24 FC            [12] 4501 	add	a,#0xfc
+      0015BC F5 81            [12] 4502 	mov	sp,a
+      0015BE D0 04            [24] 4503 	pop	ar4
+      0015C0 D0 05            [24] 4504 	pop	ar5
+      0015C2 D0 06            [24] 4505 	pop	ar6
+      0015C4 D0 07            [24] 4506 	pop	ar7
+      0015C6 E5 08            [12] 4507 	mov	a,_bp
+      0015C8 24 19            [12] 4508 	add	a,#0x19
+      0015CA F8               [12] 4509 	mov	r0,a
+      0015CB E6               [12] 4510 	mov	a,@r0
+      0015CC C0 E0            [24] 4511 	push	acc
+      0015CE 08               [12] 4512 	inc	r0
+      0015CF E6               [12] 4513 	mov	a,@r0
+      0015D0 C0 E0            [24] 4514 	push	acc
+      0015D2 08               [12] 4515 	inc	r0
+      0015D3 E6               [12] 4516 	mov	a,@r0
+      0015D4 C0 E0            [24] 4517 	push	acc
+      0015D6 08               [12] 4518 	inc	r0
+      0015D7 E6               [12] 4519 	mov	a,@r0
+      0015D8 C0 E0            [24] 4520 	push	acc
+      0015DA 8D 82            [24] 4521 	mov	dpl, r5
+      0015DC 8E 83            [24] 4522 	mov	dph, r6
+      0015DE 8F F0            [24] 4523 	mov	b, r7
+      0015E0 EC               [12] 4524 	mov	a, r4
+      0015E1 12 22 FF         [24] 4525 	lcall	___fssub
+      0015E4 AC 82            [24] 4526 	mov	r4, dpl
+      0015E6 AD 83            [24] 4527 	mov	r5, dph
+      0015E8 AE F0            [24] 4528 	mov	r6, b
+      0015EA FF               [12] 4529 	mov	r7, a
+      0015EB E5 81            [12] 4530 	mov	a,sp
+      0015ED 24 FC            [12] 4531 	add	a,#0xfc
+      0015EF F5 81            [12] 4532 	mov	sp,a
+      0015F1 C0 04            [24] 4533 	push	ar4
+      0015F3 C0 05            [24] 4534 	push	ar5
+      0015F5 C0 06            [24] 4535 	push	ar6
+      0015F7 C0 07            [24] 4536 	push	ar7
+                           001542  4537 	C$fuzzy.h$1239$1_0$66 ==.
+                                   4538 ;	../../fuzzy.h:1239: break;
+      0015F9 E5 08            [12] 4539 	mov	a,_bp
+      0015FB 24 0D            [12] 4540 	add	a,#0x0d
+      0015FD F8               [12] 4541 	mov	r0,a
+      0015FE 86 82            [24] 4542 	mov	dpl, @r0
+      001600 08               [12] 4543 	inc	r0
+      001601 86 83            [24] 4544 	mov	dph, @r0
+      001603 08               [12] 4545 	inc	r0
+      001604 86 F0            [24] 4546 	mov	b, @r0
+      001606 08               [12] 4547 	inc	r0
+      001607 E6               [12] 4548 	mov	a, @r0
+      001608 12 25 A3         [24] 4549 	lcall	___fsdiv
+      00160B C8               [12] 4550 	xch	a,r0
+      00160C E5 08            [12] 4551 	mov	a,_bp
+      00160E 24 05            [12] 4552 	add	a,#0x05
+      001610 C8               [12] 4553 	xch	a,r0
+      001611 A6 82            [24] 4554 	mov	@r0, dpl
+      001613 08               [12] 4555 	inc	r0
+      001614 A6 83            [24] 4556 	mov	@r0, dph
+      001616 08               [12] 4557 	inc	r0
+      001617 A6 F0            [24] 4558 	mov	@r0, b
+      001619 08               [12] 4559 	inc	r0
+      00161A F6               [12] 4560 	mov	@r0,a
+      00161B E5 81            [12] 4561 	mov	a,sp
+      00161D 24 FC            [12] 4562 	add	a,#0xfc
+      00161F F5 81            [12] 4563 	mov	sp,a
+                           00156A  4564 	C$fuzzy.h$1385$2_0$68 ==.
+                                   4565 ;	../../fuzzy.h:1385: case FUZZY_SHAPE_SIGMOID:
+      001621 80 10            [24] 4566 	sjmp	00144$
+      001623                       4567 00142$:
+                           00156C  4568 	C$fuzzy.h$1386$2_0$68 ==.
+                                   4569 ;	../../fuzzy.h:1386: return LEVEL_LO;
+      001623 90 00 00         [24] 4570 	mov	dptr,#0x0000
+      001626 E4               [12] 4571 	clr	a
+      001627 F5 F0            [12] 4572 	mov	b,a
+                           001572  4573 	C$fuzzy.h$1390$2_0$68 ==.
+                                   4574 ;	../../fuzzy.h:1390: default:
+      001629 80 32            [24] 4575 	sjmp	00145$
+      00162B                       4576 00143$:
+                           001574  4577 	C$fuzzy.h$1391$2_0$68 ==.
+                                   4578 ;	../../fuzzy.h:1391: return LEVEL_LO;
+      00162B 90 00 00         [24] 4579 	mov	dptr,#0x0000
+      00162E E4               [12] 4580 	clr	a
+      00162F F5 F0            [12] 4581 	mov	b,a
+                           00157A  4582 	C$fuzzy.h$1392$1_0$66 ==.
+                                   4583 ;	../../fuzzy.h:1392: }
+      001631 80 2A            [24] 4584 	sjmp	00145$
+      001633                       4585 00144$:
+                           00157C  4586 	C$fuzzy.h$1395$1_0$66 ==.
+                                   4587 ;	../../fuzzy.h:1395: result,
+      001633 E5 08            [12] 4588 	mov	a,_bp
+      001635 24 F9            [12] 4589 	add	a,#0xf9
+      001637 F8               [12] 4590 	mov	r0,a
+      001638 E6               [12] 4591 	mov	a,@r0
+      001639 C0 E0            [24] 4592 	push	acc
+      00163B E5 08            [12] 4593 	mov	a,_bp
+      00163D 24 05            [12] 4594 	add	a,#0x05
+      00163F F8               [12] 4595 	mov	r0,a
+      001640 86 82            [24] 4596 	mov	dpl, @r0
+      001642 08               [12] 4597 	inc	r0
+      001643 86 83            [24] 4598 	mov	dph, @r0
+      001645 08               [12] 4599 	inc	r0
+      001646 86 F0            [24] 4600 	mov	b, @r0
+      001648 08               [12] 4601 	inc	r0
+      001649 E6               [12] 4602 	mov	a, @r0
+      00164A 12 01 99         [24] 4603 	lcall	_fuzzy_apply_hedge
+      00164D AC 82            [24] 4604 	mov	r4, dpl
+      00164F AD 83            [24] 4605 	mov	r5, dph
+      001651 AE F0            [24] 4606 	mov	r6, b
+      001653 FF               [12] 4607 	mov	r7, a
+      001654 15 81            [12] 4608 	dec	sp
+      001656 8C 82            [24] 4609 	mov	dpl, r4
+      001658 8D 83            [24] 4610 	mov	dph, r5
+      00165A 8E F0            [24] 4611 	mov	b, r6
+      00165C EF               [12] 4612 	mov	a, r7
+      00165D                       4613 00145$:
+                           0015A6  4614 	C$fuzzy.h$1398$1_0$66 ==.
+                                   4615 ;	../../fuzzy.h:1398: }
+      00165D 85 08 81         [24] 4616 	mov	sp,_bp
+      001660 D0 08            [24] 4617 	pop	_bp
+                           0015AB  4618 	C$fuzzy.h$1398$1_0$66 ==.
+                           0015AB  4619 	XG$fuzzy_function_array$0$0 ==.
+      001662 22               [24] 4620 	ret
+                                   4621 ;------------------------------------------------------------
+                                   4622 ;Allocation info for local variables in function 'fuzzy_rules_create'
+                                   4623 ;------------------------------------------------------------
+                                   4624 ;rules         Allocated to registers r5 r6 r7 
+                                   4625 ;------------------------------------------------------------
+                           0015AC  4626 	G$fuzzy_rules_create$0$0 ==.
+                           0015AC  4627 	C$fuzzy.h$1401$1_0$81 ==.
+                                   4628 ;	../../fuzzy.h:1401: void fuzzy_rules_create(
+                                   4629 ;	-----------------------------------------
+                                   4630 ;	 function fuzzy_rules_create
+                                   4631 ;	-----------------------------------------
+      001663                       4632 _fuzzy_rules_create:
+      001663 AD 82            [24] 4633 	mov	r5, dpl
+      001665 AE 83            [24] 4634 	mov	r6, dph
+      001667 AF F0            [24] 4635 	mov	r7, b
+                           0015B2  4636 	C$fuzzy.h$1405$1_0$81 ==.
+                                   4637 ;	../../fuzzy.h:1405: if (rules == NULL) {
+      001669 ED               [12] 4638 	mov	a,r5
+      00166A 4E               [12] 4639 	orl	a,r6
+      00166B 70 02            [24] 4640 	jnz	00102$
+                           0015B6  4641 	C$fuzzy.h$1406$2_0$82 ==.
+                                   4642 ;	../../fuzzy.h:1406: return;
+      00166D 80 15            [24] 4643 	sjmp	00103$
+      00166F                       4644 00102$:
+                           0015B8  4645 	C$fuzzy.h$1409$1_0$81 ==.
+                                   4646 ;	../../fuzzy.h:1409: rules->count = 0;
+      00166F 74 90            [12] 4647 	mov	a,#0x90
+      001671 2D               [12] 4648 	add	a, r5
+      001672 FD               [12] 4649 	mov	r5,a
+      001673 E4               [12] 4650 	clr	a
+      001674 3E               [12] 4651 	addc	a, r6
+      001675 FE               [12] 4652 	mov	r6,a
+      001676 8D 82            [24] 4653 	mov	dpl,r5
+      001678 8E 83            [24] 4654 	mov	dph,r6
+      00167A 8F F0            [24] 4655 	mov	b,r7
+      00167C E4               [12] 4656 	clr	a
+      00167D 12 24 1F         [24] 4657 	lcall	__gptrput
+      001680 A3               [24] 4658 	inc	dptr
+      001681 12 24 1F         [24] 4659 	lcall	__gptrput
+      001684                       4660 00103$:
+                           0015CD  4661 	C$fuzzy.h$1410$1_0$81 ==.
+                                   4662 ;	../../fuzzy.h:1410: }
+                           0015CD  4663 	C$fuzzy.h$1410$1_0$81 ==.
+                           0015CD  4664 	XG$fuzzy_rules_create$0$0 ==.
+      001684 22               [24] 4665 	ret
+                                   4666 ;------------------------------------------------------------
+                                   4667 ;Allocation info for local variables in function 'fuzzy_rules_add'
+                                   4668 ;------------------------------------------------------------
+                                   4669 ;name          Allocated to stack - _bp -5 +3 
+                                   4670 ;value         Allocated to stack - _bp -9 +4 
+                                   4671 ;output_function Allocated to stack - _bp -11 +2 
+                                   4672 ;rules         Allocated to registers r2 r3 r4 
+                                   4673 ;index         Allocated to registers 
+                                   4674 ;sloc0         Allocated to stack - _bp +1 +2 
+                                   4675 ;sloc1         Allocated to stack - _bp +3 +3 
+                                   4676 ;sloc2         Allocated to stack - _bp +6 +3 
+                                   4677 ;sloc3         Allocated to stack - _bp +9 +3 
+                                   4678 ;------------------------------------------------------------
+                           0015CE  4679 	G$fuzzy_rules_add$0$0 ==.
+                           0015CE  4680 	C$fuzzy.h$1413$1_0$84 ==.
+                                   4681 ;	../../fuzzy.h:1413: bool fuzzy_rules_add(
+                                   4682 ;	-----------------------------------------
+                                   4683 ;	 function fuzzy_rules_add
+                                   4684 ;	-----------------------------------------
+      001685                       4685 _fuzzy_rules_add:
+      001685 C0 08            [24] 4686 	push	_bp
+      001687 E5 81            [12] 4687 	mov	a,sp
+      001689 F5 08            [12] 4688 	mov	_bp,a
+      00168B 24 0B            [12] 4689 	add	a,#0x0b
+      00168D F5 81            [12] 4690 	mov	sp,a
+      00168F AA 82            [24] 4691 	mov	r2, dpl
+      001691 AB 83            [24] 4692 	mov	r3, dph
+      001693 AC F0            [24] 4693 	mov	r4, b
+                           0015DE  4694 	C$fuzzy.h$1423$1_0$84 ==.
+                                   4695 ;	../../fuzzy.h:1423: rules == NULL ||
+      001695 EA               [12] 4696 	mov	a,r2
+      001696 4B               [12] 4697 	orl	a,r3
+      001697 60 0A            [24] 4698 	jz	00101$
+                           0015E2  4699 	C$fuzzy.h$1424$1_0$84 ==.
+                                   4700 ;	../../fuzzy.h:1424: output_function == NULL
+      001699 E5 08            [12] 4701 	mov	a,_bp
+      00169B 24 F5            [12] 4702 	add	a,#0xf5
+      00169D F8               [12] 4703 	mov	r0,a
+      00169E E6               [12] 4704 	mov	a,@r0
+      00169F 08               [12] 4705 	inc	r0
+      0016A0 46               [12] 4706 	orl	a,@r0
+      0016A1 70 06            [24] 4707 	jnz	00102$
+      0016A3                       4708 00101$:
+                           0015EC  4709 	C$fuzzy.h$1426$2_0$85 ==.
+                                   4710 ;	../../fuzzy.h:1426: return false;
+      0016A3 75 82 00         [24] 4711 	mov	dpl, #0x00
+      0016A6 02 17 E3         [24] 4712 	ljmp	00106$
+      0016A9                       4713 00102$:
+                           0015F2  4714 	C$fuzzy.h$1429$1_0$84 ==.
+                                   4715 ;	../../fuzzy.h:1429: if (rules->count >= FUZZY_MAX_RULES) {
+      0016A9 E5 08            [12] 4716 	mov	a,_bp
+      0016AB 24 09            [12] 4717 	add	a,#0x09
+      0016AD F8               [12] 4718 	mov	r0,a
+      0016AE 74 90            [12] 4719 	mov	a,#0x90
+      0016B0 2A               [12] 4720 	add	a, r2
+      0016B1 F6               [12] 4721 	mov	@r0,a
+      0016B2 E4               [12] 4722 	clr	a
+      0016B3 3B               [12] 4723 	addc	a, r3
+      0016B4 08               [12] 4724 	inc	r0
+      0016B5 F6               [12] 4725 	mov	@r0,a
+      0016B6 08               [12] 4726 	inc	r0
+      0016B7 A6 04            [24] 4727 	mov	@r0,ar4
+      0016B9 E5 08            [12] 4728 	mov	a,_bp
+      0016BB 24 09            [12] 4729 	add	a,#0x09
+      0016BD F8               [12] 4730 	mov	r0,a
+      0016BE 86 82            [24] 4731 	mov	dpl,@r0
+      0016C0 08               [12] 4732 	inc	r0
+      0016C1 86 83            [24] 4733 	mov	dph,@r0
+      0016C3 08               [12] 4734 	inc	r0
+      0016C4 86 F0            [24] 4735 	mov	b,@r0
+      0016C6 12 26 66         [24] 4736 	lcall	__gptrget
+      0016C9 FF               [12] 4737 	mov	r7,a
+      0016CA A3               [24] 4738 	inc	dptr
+      0016CB 12 26 66         [24] 4739 	lcall	__gptrget
+      0016CE FE               [12] 4740 	mov	r6,a
+      0016CF C3               [12] 4741 	clr	c
+      0016D0 EF               [12] 4742 	mov	a,r7
+      0016D1 94 10            [12] 4743 	subb	a,#0x10
+      0016D3 EE               [12] 4744 	mov	a,r6
+      0016D4 94 00            [12] 4745 	subb	a,#0x00
+      0016D6 40 06            [24] 4746 	jc	00105$
+                           001621  4747 	C$fuzzy.h$1430$2_0$86 ==.
+                                   4748 ;	../../fuzzy.h:1430: return false;
+      0016D8 75 82 00         [24] 4749 	mov	dpl, #0x00
+      0016DB 02 17 E3         [24] 4750 	ljmp	00106$
+      0016DE                       4751 00105$:
+                           001627  4752 	C$fuzzy.h$1436$1_0$84 ==.
+                                   4753 ;	../../fuzzy.h:1436: rules->rules[index].name =
+      0016DE C0 04            [24] 4754 	push	ar4
+      0016E0 C0 03            [24] 4755 	push	ar3
+      0016E2 C0 02            [24] 4756 	push	ar2
+      0016E4 C0 07            [24] 4757 	push	ar7
+      0016E6 C0 06            [24] 4758 	push	ar6
+      0016E8 90 00 09         [24] 4759 	mov	dptr,#0x0009
+      0016EB 12 24 6A         [24] 4760 	lcall	__mulint
+      0016EE A8 08            [24] 4761 	mov	r0,_bp
+      0016F0 08               [12] 4762 	inc	r0
+      0016F1 A6 82            [24] 4763 	mov	@r0, dpl
+      0016F3 08               [12] 4764 	inc	r0
+      0016F4 A6 83            [24] 4765 	mov	@r0, dph
+      0016F6 15 81            [12] 4766 	dec	sp
+      0016F8 15 81            [12] 4767 	dec	sp
+      0016FA D0 02            [24] 4768 	pop	ar2
+      0016FC D0 03            [24] 4769 	pop	ar3
+      0016FE D0 04            [24] 4770 	pop	ar4
+      001700 A8 08            [24] 4771 	mov	r0,_bp
+      001702 08               [12] 4772 	inc	r0
+      001703 E6               [12] 4773 	mov	a,@r0
+      001704 2A               [12] 4774 	add	a, r2
+      001705 FD               [12] 4775 	mov	r5,a
+      001706 08               [12] 4776 	inc	r0
+      001707 E6               [12] 4777 	mov	a,@r0
+      001708 3B               [12] 4778 	addc	a, r3
+      001709 FE               [12] 4779 	mov	r6,a
+      00170A 8C 07            [24] 4780 	mov	ar7,r4
+      00170C 8D 82            [24] 4781 	mov	dpl,r5
+      00170E 8E 83            [24] 4782 	mov	dph,r6
+      001710 8F F0            [24] 4783 	mov	b,r7
+      001712 E5 08            [12] 4784 	mov	a,_bp
+      001714 24 FB            [12] 4785 	add	a,#0xfb
+      001716 F8               [12] 4786 	mov	r0,a
+      001717 E6               [12] 4787 	mov	a,@r0
+      001718 12 24 1F         [24] 4788 	lcall	__gptrput
+      00171B A3               [24] 4789 	inc	dptr
+      00171C 08               [12] 4790 	inc	r0
+      00171D E6               [12] 4791 	mov	a,@r0
+      00171E 12 24 1F         [24] 4792 	lcall	__gptrput
+      001721 A3               [24] 4793 	inc	dptr
+      001722 08               [12] 4794 	inc	r0
+      001723 E6               [12] 4795 	mov	a,@r0
+      001724 12 24 1F         [24] 4796 	lcall	__gptrput
+                           001670  4797 	C$fuzzy.h$1439$1_0$84 ==.
+                                   4798 ;	../../fuzzy.h:1439: rules->rules[index].value =
+      001727 A8 08            [24] 4799 	mov	r0,_bp
+      001729 08               [12] 4800 	inc	r0
+      00172A E5 08            [12] 4801 	mov	a,_bp
+      00172C 24 03            [12] 4802 	add	a,#0x03
+      00172E F9               [12] 4803 	mov	r1,a
+      00172F E6               [12] 4804 	mov	a,@r0
+      001730 2A               [12] 4805 	add	a, r2
+      001731 F7               [12] 4806 	mov	@r1,a
+      001732 08               [12] 4807 	inc	r0
+      001733 E6               [12] 4808 	mov	a,@r0
+      001734 3B               [12] 4809 	addc	a, r3
+      001735 09               [12] 4810 	inc	r1
+      001736 F7               [12] 4811 	mov	@r1,a
+      001737 09               [12] 4812 	inc	r1
+      001738 A7 04            [24] 4813 	mov	@r1,ar4
+      00173A E5 08            [12] 4814 	mov	a,_bp
+      00173C 24 03            [12] 4815 	add	a,#0x03
+      00173E F8               [12] 4816 	mov	r0,a
+      00173F E5 08            [12] 4817 	mov	a,_bp
+      001741 24 06            [12] 4818 	add	a,#0x06
+      001743 F9               [12] 4819 	mov	r1,a
+      001744 74 03            [12] 4820 	mov	a,#0x03
+      001746 26               [12] 4821 	add	a, @r0
+      001747 F7               [12] 4822 	mov	@r1,a
+      001748 E4               [12] 4823 	clr	a
+      001749 08               [12] 4824 	inc	r0
+      00174A 36               [12] 4825 	addc	a, @r0
+      00174B 09               [12] 4826 	inc	r1
+      00174C F7               [12] 4827 	mov	@r1,a
+      00174D 08               [12] 4828 	inc	r0
+      00174E E6               [12] 4829 	mov	a,@r0
+      00174F 09               [12] 4830 	inc	r1
+      001750 F7               [12] 4831 	mov	@r1,a
+                           00169A  4832 	C$fuzzy.h$1440$1_0$84 ==.
+                                   4833 ;	../../fuzzy.h:1440: fuzzy_clamp(value);
+      001751 E5 08            [12] 4834 	mov	a,_bp
+      001753 24 F7            [12] 4835 	add	a,#0xf7
+      001755 F8               [12] 4836 	mov	r0,a
+      001756 86 82            [24] 4837 	mov	dpl, @r0
+      001758 08               [12] 4838 	inc	r0
+      001759 86 83            [24] 4839 	mov	dph, @r0
+      00175B 08               [12] 4840 	inc	r0
+      00175C 86 F0            [24] 4841 	mov	b, @r0
+      00175E 08               [12] 4842 	inc	r0
+      00175F E6               [12] 4843 	mov	a, @r0
+      001760 12 00 EA         [24] 4844 	lcall	_fuzzy_clamp
+      001763 AD 82            [24] 4845 	mov	r5, dpl
+      001765 AE 83            [24] 4846 	mov	r6, dph
+      001767 AC F0            [24] 4847 	mov	r4, b
+      001769 FF               [12] 4848 	mov	r7, a
+      00176A E5 08            [12] 4849 	mov	a,_bp
+      00176C 24 06            [12] 4850 	add	a,#0x06
+      00176E F8               [12] 4851 	mov	r0,a
+      00176F 86 82            [24] 4852 	mov	dpl,@r0
+      001771 08               [12] 4853 	inc	r0
+      001772 86 83            [24] 4854 	mov	dph,@r0
+      001774 08               [12] 4855 	inc	r0
+      001775 86 F0            [24] 4856 	mov	b,@r0
+      001777 ED               [12] 4857 	mov	a,r5
+      001778 12 24 1F         [24] 4858 	lcall	__gptrput
+      00177B A3               [24] 4859 	inc	dptr
+      00177C EE               [12] 4860 	mov	a,r6
+      00177D 12 24 1F         [24] 4861 	lcall	__gptrput
+      001780 A3               [24] 4862 	inc	dptr
+      001781 EC               [12] 4863 	mov	a,r4
+      001782 12 24 1F         [24] 4864 	lcall	__gptrput
+      001785 A3               [24] 4865 	inc	dptr
+      001786 EF               [12] 4866 	mov	a,r7
+      001787 12 24 1F         [24] 4867 	lcall	__gptrput
+                           0016D3  4868 	C$fuzzy.h$1442$1_0$84 ==.
+                                   4869 ;	../../fuzzy.h:1442: rules->rules[index].output_function =
+      00178A E5 08            [12] 4870 	mov	a,_bp
+      00178C 24 03            [12] 4871 	add	a,#0x03
+      00178E F8               [12] 4872 	mov	r0,a
+      00178F 74 07            [12] 4873 	mov	a,#0x07
+      001791 26               [12] 4874 	add	a, @r0
+      001792 FD               [12] 4875 	mov	r5,a
+      001793 E4               [12] 4876 	clr	a
+      001794 08               [12] 4877 	inc	r0
+      001795 36               [12] 4878 	addc	a, @r0
+      001796 FE               [12] 4879 	mov	r6,a
+      001797 08               [12] 4880 	inc	r0
+      001798 86 07            [24] 4881 	mov	ar7,@r0
+      00179A 8D 82            [24] 4882 	mov	dpl,r5
+      00179C 8E 83            [24] 4883 	mov	dph,r6
+      00179E 8F F0            [24] 4884 	mov	b,r7
+      0017A0 E5 08            [12] 4885 	mov	a,_bp
+      0017A2 24 F5            [12] 4886 	add	a,#0xf5
+      0017A4 F8               [12] 4887 	mov	r0,a
+      0017A5 E6               [12] 4888 	mov	a,@r0
+      0017A6 12 24 1F         [24] 4889 	lcall	__gptrput
+      0017A9 A3               [24] 4890 	inc	dptr
+      0017AA 08               [12] 4891 	inc	r0
+      0017AB E6               [12] 4892 	mov	a,@r0
+      0017AC 12 24 1F         [24] 4893 	lcall	__gptrput
+                           0016F8  4894 	C$fuzzy.h$1445$1_0$84 ==.
+                                   4895 ;	../../fuzzy.h:1445: rules->count++;
+      0017AF E5 08            [12] 4896 	mov	a,_bp
+      0017B1 24 09            [12] 4897 	add	a,#0x09
+      0017B3 F8               [12] 4898 	mov	r0,a
+      0017B4 86 82            [24] 4899 	mov	dpl,@r0
+      0017B6 08               [12] 4900 	inc	r0
+      0017B7 86 83            [24] 4901 	mov	dph,@r0
+      0017B9 08               [12] 4902 	inc	r0
+      0017BA 86 F0            [24] 4903 	mov	b,@r0
+      0017BC 12 26 66         [24] 4904 	lcall	__gptrget
+      0017BF FE               [12] 4905 	mov	r6,a
+      0017C0 A3               [24] 4906 	inc	dptr
+      0017C1 12 26 66         [24] 4907 	lcall	__gptrget
+      0017C4 FF               [12] 4908 	mov	r7,a
+      0017C5 0E               [12] 4909 	inc	r6
+      0017C6 BE 00 01         [24] 4910 	cjne	r6,#0x00,00123$
+      0017C9 0F               [12] 4911 	inc	r7
+      0017CA                       4912 00123$:
+      0017CA E5 08            [12] 4913 	mov	a,_bp
+      0017CC 24 09            [12] 4914 	add	a,#0x09
+      0017CE F8               [12] 4915 	mov	r0,a
+      0017CF 86 82            [24] 4916 	mov	dpl,@r0
+      0017D1 08               [12] 4917 	inc	r0
+      0017D2 86 83            [24] 4918 	mov	dph,@r0
+      0017D4 08               [12] 4919 	inc	r0
+      0017D5 86 F0            [24] 4920 	mov	b,@r0
+      0017D7 EE               [12] 4921 	mov	a,r6
+      0017D8 12 24 1F         [24] 4922 	lcall	__gptrput
+      0017DB A3               [24] 4923 	inc	dptr
+      0017DC EF               [12] 4924 	mov	a,r7
+      0017DD 12 24 1F         [24] 4925 	lcall	__gptrput
+                           001729  4926 	C$fuzzy.h$1447$1_0$84 ==.
+                                   4927 ;	../../fuzzy.h:1447: return true;
+      0017E0 75 82 01         [24] 4928 	mov	dpl, #0x01
+      0017E3                       4929 00106$:
+                           00172C  4930 	C$fuzzy.h$1448$1_0$84 ==.
+                                   4931 ;	../../fuzzy.h:1448: }
+      0017E3 85 08 81         [24] 4932 	mov	sp,_bp
+      0017E6 D0 08            [24] 4933 	pop	_bp
+                           001731  4934 	C$fuzzy.h$1448$1_0$84 ==.
+                           001731  4935 	XG$fuzzy_rules_add$0$0 ==.
+      0017E8 22               [24] 4936 	ret
+                                   4937 ;------------------------------------------------------------
+                                   4938 ;Allocation info for local variables in function 'fuzzy_rules_defuzzify'
+                                   4939 ;------------------------------------------------------------
+                                   4940 ;lower         Allocated to stack - _bp -6 +4 
+                                   4941 ;upper         Allocated to stack - _bp -10 +4 
+                                   4942 ;step          Allocated to stack - _bp -14 +4 
+                                   4943 ;method        Allocated to stack - _bp -15 +1 
+                                   4944 ;rules         Allocated to stack - _bp +1 +3 
+                                   4945 ;weighted_sum  Allocated to stack - _bp +20 +4 
+                                   4946 ;height_sum    Allocated to stack - _bp +24 +4 
+                                   4947 ;maximum_height Allocated to stack - _bp +28 +4 
+                                   4948 ;maximum_position_sum Allocated to stack - _bp +32 +4 
+                                   4949 ;smallest_maximum Allocated to stack - _bp +36 +4 
+                                   4950 ;largest_maximum Allocated to stack - _bp +40 +4 
+                                   4951 ;value         Allocated to stack - _bp +44 +4 
+                                   4952 ;aggregated_height Allocated to stack - _bp +48 +4 
+                                   4953 ;output_membership Allocated to stack - _bp +52 +4 
+                                   4954 ;clipped_height Allocated to registers r2 r4 r5 r7 
+                                   4955 ;maximum_count Allocated to stack - _bp +56 +2 
+                                   4956 ;i             Allocated to stack - _bp +58 +2 
+                                   4957 ;maximum_found Allocated to stack - _bp +60 +1 
+                                   4958 ;sloc0         Allocated to stack - _bp +4 +3 
+                                   4959 ;sloc1         Allocated to stack - _bp +7 +4 
+                                   4960 ;sloc2         Allocated to stack - _bp +11 +2 
+                                   4961 ;sloc3         Allocated to stack - _bp +13 +3 
+                                   4962 ;sloc4         Allocated to stack - _bp +16 +4 
+                                   4963 ;------------------------------------------------------------
+                           001732  4964 	G$fuzzy_rules_defuzzify$0$0 ==.
+                           001732  4965 	C$fuzzy.h$1496$1_0$88 ==.
+                                   4966 ;	../../fuzzy.h:1496: float fuzzy_rules_defuzzify(
+                                   4967 ;	-----------------------------------------
+                                   4968 ;	 function fuzzy_rules_defuzzify
+                                   4969 ;	-----------------------------------------
+      0017E9                       4970 _fuzzy_rules_defuzzify:
+      0017E9 C0 08            [24] 4971 	push	_bp
+      0017EB 85 81 08         [24] 4972 	mov	_bp,sp
+      0017EE C0 82            [24] 4973 	push	dpl
+      0017F0 C0 83            [24] 4974 	push	dph
+      0017F2 C0 F0            [24] 4975 	push	b
+      0017F4 E5 81            [12] 4976 	mov	a,sp
+      0017F6 24 39            [12] 4977 	add	a,#0x39
+      0017F8 F5 81            [12] 4978 	mov	sp,a
+                           001743  4979 	C$fuzzy.h$1524$1_0$88 ==.
+                                   4980 ;	../../fuzzy.h:1524: rules == NULL ||
+      0017FA A8 08            [24] 4981 	mov	r0,_bp
+      0017FC 08               [12] 4982 	inc	r0
+      0017FD E6               [12] 4983 	mov	a,@r0
+      0017FE 08               [12] 4984 	inc	r0
+      0017FF 46               [12] 4985 	orl	a,@r0
+      001800 70 03            [24] 4986 	jnz	00277$
+      001802 02 18 8E         [24] 4987 	ljmp	00101$
+      001805                       4988 00277$:
+                           00174E  4989 	C$fuzzy.h$1525$1_0$88 ==.
+                                   4990 ;	../../fuzzy.h:1525: rules->count == 0 ||
+      001805 A8 08            [24] 4991 	mov	r0,_bp
+      001807 08               [12] 4992 	inc	r0
+      001808 E5 08            [12] 4993 	mov	a,_bp
+      00180A 24 04            [12] 4994 	add	a,#0x04
+      00180C F9               [12] 4995 	mov	r1,a
+      00180D 74 90            [12] 4996 	mov	a,#0x90
+      00180F 26               [12] 4997 	add	a, @r0
+      001810 F7               [12] 4998 	mov	@r1,a
+      001811 E4               [12] 4999 	clr	a
+      001812 08               [12] 5000 	inc	r0
+      001813 36               [12] 5001 	addc	a, @r0
+      001814 09               [12] 5002 	inc	r1
+      001815 F7               [12] 5003 	mov	@r1,a
+      001816 08               [12] 5004 	inc	r0
+      001817 E6               [12] 5005 	mov	a,@r0
+      001818 09               [12] 5006 	inc	r1
+      001819 F7               [12] 5007 	mov	@r1,a
+      00181A E5 08            [12] 5008 	mov	a,_bp
+      00181C 24 04            [12] 5009 	add	a,#0x04
+      00181E F8               [12] 5010 	mov	r0,a
+      00181F 86 82            [24] 5011 	mov	dpl,@r0
+      001821 08               [12] 5012 	inc	r0
+      001822 86 83            [24] 5013 	mov	dph,@r0
+      001824 08               [12] 5014 	inc	r0
+      001825 86 F0            [24] 5015 	mov	b,@r0
+      001827 12 26 66         [24] 5016 	lcall	__gptrget
+      00182A FE               [12] 5017 	mov	r6,a
+      00182B A3               [24] 5018 	inc	dptr
+      00182C 12 26 66         [24] 5019 	lcall	__gptrget
+      00182F 4E               [12] 5020 	orl	a,r6
+      001830 60 5C            [24] 5021 	jz	00101$
+                           00177B  5022 	C$fuzzy.h$1526$1_0$88 ==.
+                                   5023 ;	../../fuzzy.h:1526: lower > upper ||
+      001832 E5 08            [12] 5024 	mov	a,_bp
+      001834 24 FA            [12] 5025 	add	a,#0xfa
+      001836 F8               [12] 5026 	mov	r0,a
+      001837 E6               [12] 5027 	mov	a,@r0
+      001838 C0 E0            [24] 5028 	push	acc
+      00183A 08               [12] 5029 	inc	r0
+      00183B E6               [12] 5030 	mov	a,@r0
+      00183C C0 E0            [24] 5031 	push	acc
+      00183E 08               [12] 5032 	inc	r0
+      00183F E6               [12] 5033 	mov	a,@r0
+      001840 C0 E0            [24] 5034 	push	acc
+      001842 08               [12] 5035 	inc	r0
+      001843 E6               [12] 5036 	mov	a,@r0
+      001844 C0 E0            [24] 5037 	push	acc
+      001846 E5 08            [12] 5038 	mov	a,_bp
+      001848 24 F6            [12] 5039 	add	a,#0xf6
+      00184A F8               [12] 5040 	mov	r0,a
+      00184B 86 82            [24] 5041 	mov	dpl, @r0
+      00184D 08               [12] 5042 	inc	r0
+      00184E 86 83            [24] 5043 	mov	dph, @r0
+      001850 08               [12] 5044 	inc	r0
+      001851 86 F0            [24] 5045 	mov	b, @r0
+      001853 08               [12] 5046 	inc	r0
+      001854 E6               [12] 5047 	mov	a, @r0
+      001855 12 24 3A         [24] 5048 	lcall	___fslt
+      001858 AF 82            [24] 5049 	mov	r7, dpl
+      00185A E5 81            [12] 5050 	mov	a,sp
+      00185C 24 FC            [12] 5051 	add	a,#0xfc
+      00185E F5 81            [12] 5052 	mov	sp,a
+      001860 EF               [12] 5053 	mov	a,r7
+      001861 70 2B            [24] 5054 	jnz	00101$
+                           0017AC  5055 	C$fuzzy.h$1528$1_0$88 ==.
+                                   5056 ;	../../fuzzy.h:1528: ) {
+      001863 E5 08            [12] 5057 	mov	a,_bp
+      001865 24 F2            [12] 5058 	add	a,#0xf2
+      001867 F8               [12] 5059 	mov	r0,a
+      001868 E6               [12] 5060 	mov	a,@r0
+      001869 C0 E0            [24] 5061 	push	acc
+      00186B 08               [12] 5062 	inc	r0
+      00186C E6               [12] 5063 	mov	a,@r0
+      00186D C0 E0            [24] 5064 	push	acc
+      00186F 08               [12] 5065 	inc	r0
+      001870 E6               [12] 5066 	mov	a,@r0
+      001871 C0 E0            [24] 5067 	push	acc
+      001873 08               [12] 5068 	inc	r0
+      001874 E6               [12] 5069 	mov	a,@r0
+      001875 C0 E0            [24] 5070 	push	acc
+      001877 90 00 00         [24] 5071 	mov	dptr,#0x0000
+      00187A E4               [12] 5072 	clr	a
+      00187B F5 F0            [12] 5073 	mov	b,a
+      00187D 12 24 3A         [24] 5074 	lcall	___fslt
+      001880 E5 81            [12] 5075 	mov	a,sp
+      001882 24 FC            [12] 5076 	add	a,#0xfc
+      001884 F5 81            [12] 5077 	mov	sp,a
+      001886 E5 82            [12] 5078 	mov	a, dpl
+      001888 24 FF            [12] 5079 	add	a,#0xff
+      00188A 92 00            [24] 5080 	mov	b0,c
+      00188C 40 09            [24] 5081 	jc	00102$
+      00188E                       5082 00101$:
+                           0017D7  5083 	C$fuzzy.h$1529$2_0$89 ==.
+                                   5084 ;	../../fuzzy.h:1529: return 0.0f;
+      00188E 90 00 00         [24] 5085 	mov	dptr,#0x0000
+      001891 E4               [12] 5086 	clr	a
+      001892 F5 F0            [12] 5087 	mov	b,a
+      001894 02 1E DF         [24] 5088 	ljmp	00137$
+      001897                       5089 00102$:
+                           0017E0  5090 	C$fuzzy.h$1533$1_0$88 ==.
+                                   5091 ;	../../fuzzy.h:1533: method != FUZZY_DEFUZZ_COG &&
+      001897 E5 08            [12] 5092 	mov	a,_bp
+      001899 24 F1            [12] 5093 	add	a,#0xf1
+      00189B F8               [12] 5094 	mov	r0,a
+      00189C E6               [12] 5095 	mov	a,@r0
+      00189D 60 27            [24] 5096 	jz	00107$
+                           0017E8  5097 	C$fuzzy.h$1534$1_0$88 ==.
+                                   5098 ;	../../fuzzy.h:1534: method != FUZZY_DEFUZZ_MOM &&
+      00189F E5 08            [12] 5099 	mov	a,_bp
+      0018A1 24 F1            [12] 5100 	add	a,#0xf1
+      0018A3 F8               [12] 5101 	mov	r0,a
+      0018A4 B6 01 02         [24] 5102 	cjne	@r0,#0x01,00282$
+      0018A7 80 1D            [24] 5103 	sjmp	00107$
+      0018A9                       5104 00282$:
+                           0017F2  5105 	C$fuzzy.h$1535$1_0$88 ==.
+                                   5106 ;	../../fuzzy.h:1535: method != FUZZY_DEFUZZ_SOM &&
+      0018A9 E5 08            [12] 5107 	mov	a,_bp
+      0018AB 24 F1            [12] 5108 	add	a,#0xf1
+      0018AD F8               [12] 5109 	mov	r0,a
+      0018AE B6 02 02         [24] 5110 	cjne	@r0,#0x02,00283$
+      0018B1 80 13            [24] 5111 	sjmp	00107$
+      0018B3                       5112 00283$:
+                           0017FC  5113 	C$fuzzy.h$1537$1_0$88 ==.
+                                   5114 ;	../../fuzzy.h:1537: ) {
+      0018B3 E5 08            [12] 5115 	mov	a,_bp
+      0018B5 24 F1            [12] 5116 	add	a,#0xf1
+      0018B7 F8               [12] 5117 	mov	r0,a
+      0018B8 B6 03 02         [24] 5118 	cjne	@r0,#0x03,00284$
+      0018BB 80 09            [24] 5119 	sjmp	00107$
+      0018BD                       5120 00284$:
+                           001806  5121 	C$fuzzy.h$1538$2_0$90 ==.
+                                   5122 ;	../../fuzzy.h:1538: return 0.0f;
+      0018BD 90 00 00         [24] 5123 	mov	dptr,#0x0000
+      0018C0 E4               [12] 5124 	clr	a
+      0018C1 F5 F0            [12] 5125 	mov	b,a
+      0018C3 02 1E DF         [24] 5126 	ljmp	00137$
+      0018C6                       5127 00107$:
+                           00180F  5128 	C$fuzzy.h$1542$1_0$88 ==.
+                                   5129 ;	../../fuzzy.h:1542: 0.0f;
+      0018C6 E5 08            [12] 5130 	mov	a,_bp
+      0018C8 24 14            [12] 5131 	add	a,#0x14
+      0018CA F8               [12] 5132 	mov	r0,a
+      0018CB E4               [12] 5133 	clr	a
+      0018CC F6               [12] 5134 	mov	@r0,a
+      0018CD 08               [12] 5135 	inc	r0
+      0018CE F6               [12] 5136 	mov	@r0,a
+      0018CF 08               [12] 5137 	inc	r0
+      0018D0 F6               [12] 5138 	mov	@r0,a
+      0018D1 08               [12] 5139 	inc	r0
+      0018D2 F6               [12] 5140 	mov	@r0,a
+                           00181C  5141 	C$fuzzy.h$1545$1_0$88 ==.
+                                   5142 ;	../../fuzzy.h:1545: 0.0f;
+      0018D3 E5 08            [12] 5143 	mov	a,_bp
+      0018D5 24 18            [12] 5144 	add	a,#0x18
+      0018D7 F8               [12] 5145 	mov	r0,a
+      0018D8 E4               [12] 5146 	clr	a
+      0018D9 F6               [12] 5147 	mov	@r0,a
+      0018DA 08               [12] 5148 	inc	r0
+      0018DB F6               [12] 5149 	mov	@r0,a
+      0018DC 08               [12] 5150 	inc	r0
+      0018DD F6               [12] 5151 	mov	@r0,a
+      0018DE 08               [12] 5152 	inc	r0
+      0018DF F6               [12] 5153 	mov	@r0,a
+                           001829  5154 	C$fuzzy.h$1548$1_0$88 ==.
+                                   5155 ;	../../fuzzy.h:1548: LEVEL_LO;
+      0018E0 E5 08            [12] 5156 	mov	a,_bp
+      0018E2 24 1C            [12] 5157 	add	a,#0x1c
+      0018E4 F8               [12] 5158 	mov	r0,a
+      0018E5 E4               [12] 5159 	clr	a
+      0018E6 F6               [12] 5160 	mov	@r0,a
+      0018E7 08               [12] 5161 	inc	r0
+      0018E8 F6               [12] 5162 	mov	@r0,a
+      0018E9 08               [12] 5163 	inc	r0
+      0018EA F6               [12] 5164 	mov	@r0,a
+      0018EB 08               [12] 5165 	inc	r0
+      0018EC F6               [12] 5166 	mov	@r0,a
+                           001836  5167 	C$fuzzy.h$1551$1_0$88 ==.
+                                   5168 ;	../../fuzzy.h:1551: 0.0f;
+      0018ED E5 08            [12] 5169 	mov	a,_bp
+      0018EF 24 20            [12] 5170 	add	a,#0x20
+      0018F1 F8               [12] 5171 	mov	r0,a
+      0018F2 E4               [12] 5172 	clr	a
+      0018F3 F6               [12] 5173 	mov	@r0,a
+      0018F4 08               [12] 5174 	inc	r0
+      0018F5 F6               [12] 5175 	mov	@r0,a
+      0018F6 08               [12] 5176 	inc	r0
+      0018F7 F6               [12] 5177 	mov	@r0,a
+      0018F8 08               [12] 5178 	inc	r0
+      0018F9 F6               [12] 5179 	mov	@r0,a
+                           001843  5180 	C$fuzzy.h$1554$1_0$88 ==.
+                                   5181 ;	../../fuzzy.h:1554: lower;
+      0018FA E5 08            [12] 5182 	mov	a,_bp
+      0018FC 24 FA            [12] 5183 	add	a,#0xfa
+      0018FE F8               [12] 5184 	mov	r0,a
+      0018FF E5 08            [12] 5185 	mov	a,_bp
+      001901 24 24            [12] 5186 	add	a,#0x24
+      001903 F9               [12] 5187 	mov	r1,a
+      001904 E6               [12] 5188 	mov	a,@r0
+      001905 F7               [12] 5189 	mov	@r1,a
+      001906 08               [12] 5190 	inc	r0
+      001907 E6               [12] 5191 	mov	a,@r0
+      001908 09               [12] 5192 	inc	r1
+      001909 F7               [12] 5193 	mov	@r1,a
+      00190A 08               [12] 5194 	inc	r0
+      00190B E6               [12] 5195 	mov	a,@r0
+      00190C 09               [12] 5196 	inc	r1
+      00190D F7               [12] 5197 	mov	@r1,a
+      00190E 08               [12] 5198 	inc	r0
+      00190F E6               [12] 5199 	mov	a,@r0
+      001910 09               [12] 5200 	inc	r1
+      001911 F7               [12] 5201 	mov	@r1,a
+                           00185B  5202 	C$fuzzy.h$1557$1_0$88 ==.
+                                   5203 ;	../../fuzzy.h:1557: lower;
+      001912 E5 08            [12] 5204 	mov	a,_bp
+      001914 24 24            [12] 5205 	add	a,#0x24
+      001916 F8               [12] 5206 	mov	r0,a
+      001917 E5 08            [12] 5207 	mov	a,_bp
+      001919 24 28            [12] 5208 	add	a,#0x28
+      00191B F9               [12] 5209 	mov	r1,a
+      00191C E6               [12] 5210 	mov	a,@r0
+      00191D F7               [12] 5211 	mov	@r1,a
+      00191E 08               [12] 5212 	inc	r0
+      00191F E6               [12] 5213 	mov	a,@r0
+      001920 09               [12] 5214 	inc	r1
+      001921 F7               [12] 5215 	mov	@r1,a
+      001922 08               [12] 5216 	inc	r0
+      001923 E6               [12] 5217 	mov	a,@r0
+      001924 09               [12] 5218 	inc	r1
+      001925 F7               [12] 5219 	mov	@r1,a
+      001926 08               [12] 5220 	inc	r0
+      001927 E6               [12] 5221 	mov	a,@r0
+      001928 09               [12] 5222 	inc	r1
+      001929 F7               [12] 5223 	mov	@r1,a
+                           001873  5224 	C$fuzzy.h$1560$1_0$88 ==.
+                                   5225 ;	../../fuzzy.h:1560: 0u;
+      00192A E5 08            [12] 5226 	mov	a,_bp
+      00192C 24 38            [12] 5227 	add	a,#0x38
+      00192E F8               [12] 5228 	mov	r0,a
+      00192F E4               [12] 5229 	clr	a
+      001930 F6               [12] 5230 	mov	@r0,a
+      001931 08               [12] 5231 	inc	r0
+      001932 F6               [12] 5232 	mov	@r0,a
+                           00187C  5233 	C$fuzzy.h$1563$1_0$88 ==.
+                                   5234 ;	../../fuzzy.h:1563: false;
+      001933 E5 08            [12] 5235 	mov	a,_bp
+      001935 24 3C            [12] 5236 	add	a,#0x3c
+      001937 F8               [12] 5237 	mov	r0,a
+      001938 76 00            [12] 5238 	mov	@r0,#0x00
+                           001883  5239 	C$fuzzy.h$1566$2_0$91 ==.
+                                   5240 ;	../../fuzzy.h:1566: value = lower;
+      00193A E5 08            [12] 5241 	mov	a,_bp
+      00193C 24 24            [12] 5242 	add	a,#0x24
+      00193E F8               [12] 5243 	mov	r0,a
+      00193F E5 08            [12] 5244 	mov	a,_bp
+      001941 24 2C            [12] 5245 	add	a,#0x2c
+      001943 F9               [12] 5246 	mov	r1,a
+      001944 E6               [12] 5247 	mov	a,@r0
+      001945 F7               [12] 5248 	mov	@r1,a
+      001946 08               [12] 5249 	inc	r0
+      001947 E6               [12] 5250 	mov	a,@r0
+      001948 09               [12] 5251 	inc	r1
+      001949 F7               [12] 5252 	mov	@r1,a
+      00194A 08               [12] 5253 	inc	r0
+      00194B E6               [12] 5254 	mov	a,@r0
+      00194C 09               [12] 5255 	inc	r1
+      00194D F7               [12] 5256 	mov	@r1,a
+      00194E 08               [12] 5257 	inc	r0
+      00194F E6               [12] 5258 	mov	a,@r0
+      001950 09               [12] 5259 	inc	r1
+      001951 F7               [12] 5260 	mov	@r1,a
+      001952 A8 08            [24] 5261 	mov	r0,_bp
+      001954 08               [12] 5262 	inc	r0
+      001955 E5 08            [12] 5263 	mov	a,_bp
+      001957 24 0D            [12] 5264 	add	a,#0x0d
+      001959 F9               [12] 5265 	mov	r1,a
+      00195A E6               [12] 5266 	mov	a,@r0
+      00195B F7               [12] 5267 	mov	@r1,a
+      00195C 08               [12] 5268 	inc	r0
+      00195D E6               [12] 5269 	mov	a,@r0
+      00195E 09               [12] 5270 	inc	r1
+      00195F F7               [12] 5271 	mov	@r1,a
+      001960 08               [12] 5272 	inc	r0
+      001961 E6               [12] 5273 	mov	a,@r0
+      001962 09               [12] 5274 	inc	r1
+      001963 F7               [12] 5275 	mov	@r1,a
+      001964                       5276 00135$:
+                           0018AD  5277 	C$fuzzy.h$1567$1_0$88 ==.
+                                   5278 ;	../../fuzzy.h:1567: value <= upper;
+      001964 E5 08            [12] 5279 	mov	a,_bp
+      001966 24 2C            [12] 5280 	add	a,#0x2c
+      001968 F8               [12] 5281 	mov	r0,a
+      001969 E6               [12] 5282 	mov	a,@r0
+      00196A C0 E0            [24] 5283 	push	acc
+      00196C 08               [12] 5284 	inc	r0
+      00196D E6               [12] 5285 	mov	a,@r0
+      00196E C0 E0            [24] 5286 	push	acc
+      001970 08               [12] 5287 	inc	r0
+      001971 E6               [12] 5288 	mov	a,@r0
+      001972 C0 E0            [24] 5289 	push	acc
+      001974 08               [12] 5290 	inc	r0
+      001975 E6               [12] 5291 	mov	a,@r0
+      001976 C0 E0            [24] 5292 	push	acc
+      001978 E5 08            [12] 5293 	mov	a,_bp
+      00197A 24 F6            [12] 5294 	add	a,#0xf6
+      00197C F8               [12] 5295 	mov	r0,a
+      00197D 86 82            [24] 5296 	mov	dpl, @r0
+      00197F 08               [12] 5297 	inc	r0
+      001980 86 83            [24] 5298 	mov	dph, @r0
+      001982 08               [12] 5299 	inc	r0
+      001983 86 F0            [24] 5300 	mov	b, @r0
+      001985 08               [12] 5301 	inc	r0
+      001986 E6               [12] 5302 	mov	a, @r0
+      001987 12 24 3A         [24] 5303 	lcall	___fslt
+      00198A E5 81            [12] 5304 	mov	a,sp
+      00198C 24 FC            [12] 5305 	add	a,#0xfc
+      00198E F5 81            [12] 5306 	mov	sp,a
+      001990 E5 82            [12] 5307 	mov	a, dpl
+      001992 24 FF            [12] 5308 	add	a,#0xff
+      001994 92 00            [24] 5309 	mov	b0,c
+      001996 50 03            [24] 5310 	jnc	00285$
+      001998 02 1D 98         [24] 5311 	ljmp	00118$
+      00199B                       5312 00285$:
+                           0018E4  5313 	C$fuzzy.h$1571$3_0$92 ==.
+                                   5314 ;	../../fuzzy.h:1571: LEVEL_LO;
+      00199B E5 08            [12] 5315 	mov	a,_bp
+      00199D 24 07            [12] 5316 	add	a,#0x07
+      00199F F8               [12] 5317 	mov	r0,a
+      0019A0 E4               [12] 5318 	clr	a
+      0019A1 F6               [12] 5319 	mov	@r0,a
+      0019A2 08               [12] 5320 	inc	r0
+      0019A3 F6               [12] 5321 	mov	@r0,a
+      0019A4 08               [12] 5322 	inc	r0
+      0019A5 F6               [12] 5323 	mov	@r0,a
+      0019A6 08               [12] 5324 	inc	r0
+      0019A7 F6               [12] 5325 	mov	@r0,a
+                           0018F1  5326 	C$fuzzy.h$1580$1_0$88 ==.
+                                   5327 ;	../../fuzzy.h:1580: i = 0;
+      0019A8 E5 08            [12] 5328 	mov	a,_bp
+      0019AA 24 3A            [12] 5329 	add	a,#0x3a
+      0019AC F8               [12] 5330 	mov	r0,a
+      0019AD E4               [12] 5331 	clr	a
+      0019AE F6               [12] 5332 	mov	@r0,a
+      0019AF 08               [12] 5333 	inc	r0
+      0019B0 F6               [12] 5334 	mov	@r0,a
+      0019B1 E5 08            [12] 5335 	mov	a,_bp
+      0019B3 24 0B            [12] 5336 	add	a,#0x0b
+      0019B5 F8               [12] 5337 	mov	r0,a
+      0019B6 E4               [12] 5338 	clr	a
+      0019B7 F6               [12] 5339 	mov	@r0,a
+      0019B8 08               [12] 5340 	inc	r0
+      0019B9 F6               [12] 5341 	mov	@r0,a
+      0019BA                       5342 00132$:
+                           001903  5343 	C$fuzzy.h$1581$1_0$88 ==.
+                                   5344 ;	../../fuzzy.h:1581: i < rules->count;
+      0019BA E5 08            [12] 5345 	mov	a,_bp
+      0019BC 24 04            [12] 5346 	add	a,#0x04
+      0019BE F8               [12] 5347 	mov	r0,a
+      0019BF 86 82            [24] 5348 	mov	dpl,@r0
+      0019C1 08               [12] 5349 	inc	r0
+      0019C2 86 83            [24] 5350 	mov	dph,@r0
+      0019C4 08               [12] 5351 	inc	r0
+      0019C5 86 F0            [24] 5352 	mov	b,@r0
+      0019C7 12 26 66         [24] 5353 	lcall	__gptrget
+      0019CA FA               [12] 5354 	mov	r2,a
+      0019CB A3               [24] 5355 	inc	dptr
+      0019CC 12 26 66         [24] 5356 	lcall	__gptrget
+      0019CF FF               [12] 5357 	mov	r7,a
+      0019D0 E5 08            [12] 5358 	mov	a,_bp
+      0019D2 24 3A            [12] 5359 	add	a,#0x3a
+      0019D4 F8               [12] 5360 	mov	r0,a
+      0019D5 C3               [12] 5361 	clr	c
+      0019D6 E6               [12] 5362 	mov	a,@r0
+      0019D7 9A               [12] 5363 	subb	a,r2
+      0019D8 08               [12] 5364 	inc	r0
+      0019D9 E6               [12] 5365 	mov	a,@r0
+      0019DA 9F               [12] 5366 	subb	a,r7
+      0019DB 40 03            [24] 5367 	jc	00286$
+      0019DD 02 1B 5B         [24] 5368 	ljmp	00111$
+      0019E0                       5369 00286$:
+                           001929  5370 	C$fuzzy.h$1585$1_0$88 ==.
+                                   5371 ;	../../fuzzy.h:1585: rules->rules[i]
+      0019E0 E5 08            [12] 5372 	mov	a,_bp
+      0019E2 24 0D            [12] 5373 	add	a,#0x0d
+      0019E4 F8               [12] 5374 	mov	r0,a
+      0019E5 E5 08            [12] 5375 	mov	a,_bp
+      0019E7 24 0B            [12] 5376 	add	a,#0x0b
+      0019E9 F9               [12] 5377 	mov	r1,a
+      0019EA E7               [12] 5378 	mov	a,@r1
+      0019EB 26               [12] 5379 	add	a, @r0
+      0019EC FA               [12] 5380 	mov	r2,a
+      0019ED 09               [12] 5381 	inc	r1
+      0019EE E7               [12] 5382 	mov	a,@r1
+      0019EF 08               [12] 5383 	inc	r0
+      0019F0 36               [12] 5384 	addc	a, @r0
+      0019F1 FB               [12] 5385 	mov	r3,a
+      0019F2 08               [12] 5386 	inc	r0
+      0019F3 86 06            [24] 5387 	mov	ar6,@r0
+      0019F5 74 07            [12] 5388 	mov	a,#0x07
+      0019F7 2A               [12] 5389 	add	a, r2
+      0019F8 FA               [12] 5390 	mov	r2,a
+      0019F9 E4               [12] 5391 	clr	a
+      0019FA 3B               [12] 5392 	addc	a, r3
+      0019FB FB               [12] 5393 	mov	r3,a
+      0019FC 8A 82            [24] 5394 	mov	dpl,r2
+      0019FE 8B 83            [24] 5395 	mov	dph,r3
+      001A00 8E F0            [24] 5396 	mov	b,r6
+      001A02 12 26 66         [24] 5397 	lcall	__gptrget
+      001A05 FA               [12] 5398 	mov	r2,a
+      001A06 A3               [24] 5399 	inc	dptr
+      001A07 12 26 66         [24] 5400 	lcall	__gptrget
+      001A0A FB               [12] 5401 	mov	r3,a
+                           001954  5402 	C$fuzzy.h$1587$5_0$94 ==.
+                                   5403 ;	../../fuzzy.h:1587: value
+      001A0B 12 1A 10         [24] 5404 	lcall	00287$
+      001A0E 80 14            [24] 5405 	sjmp	00288$
+      001A10                       5406 00287$:
+      001A10 C0 02            [24] 5407 	push	ar2
+      001A12 C0 03            [24] 5408 	push	ar3
+      001A14 E5 08            [12] 5409 	mov	a,_bp
+      001A16 24 2C            [12] 5410 	add	a,#0x2c
+      001A18 F8               [12] 5411 	mov	r0,a
+      001A19 86 82            [24] 5412 	mov	dpl, @r0
+      001A1B 08               [12] 5413 	inc	r0
+      001A1C 86 83            [24] 5414 	mov	dph, @r0
+      001A1E 08               [12] 5415 	inc	r0
+      001A1F 86 F0            [24] 5416 	mov	b, @r0
+      001A21 08               [12] 5417 	inc	r0
+      001A22 E6               [12] 5418 	mov	a, @r0
+      001A23 22               [24] 5419 	ret
+      001A24                       5420 00288$:
+                           00196D  5421 	C$fuzzy.h$1592$5_0$94 ==.
+                                   5422 ;	../../fuzzy.h:1592: output_membership
+      001A24 12 00 EA         [24] 5423 	lcall	_fuzzy_clamp
+      001A27 C8               [12] 5424 	xch	a,r0
+      001A28 E5 08            [12] 5425 	mov	a,_bp
+      001A2A 24 34            [12] 5426 	add	a,#0x34
+      001A2C C8               [12] 5427 	xch	a,r0
+      001A2D A6 82            [24] 5428 	mov	@r0, dpl
+      001A2F 08               [12] 5429 	inc	r0
+      001A30 A6 83            [24] 5430 	mov	@r0, dph
+      001A32 08               [12] 5431 	inc	r0
+      001A33 A6 F0            [24] 5432 	mov	@r0, b
+      001A35 08               [12] 5433 	inc	r0
+      001A36 F6               [12] 5434 	mov	@r0,a
+                           001980  5435 	C$fuzzy.h$1596$5_0$94 ==.
+                                   5436 ;	../../fuzzy.h:1596: rules->rules[i].value <
+      001A37 A8 08            [24] 5437 	mov	r0,_bp
+      001A39 08               [12] 5438 	inc	r0
+      001A3A E5 08            [12] 5439 	mov	a,_bp
+      001A3C 24 0B            [12] 5440 	add	a,#0x0b
+      001A3E F9               [12] 5441 	mov	r1,a
+      001A3F E7               [12] 5442 	mov	a,@r1
+      001A40 26               [12] 5443 	add	a, @r0
+      001A41 FD               [12] 5444 	mov	r5,a
+      001A42 09               [12] 5445 	inc	r1
+      001A43 E7               [12] 5446 	mov	a,@r1
+      001A44 08               [12] 5447 	inc	r0
+      001A45 36               [12] 5448 	addc	a, @r0
+      001A46 FE               [12] 5449 	mov	r6,a
+      001A47 08               [12] 5450 	inc	r0
+      001A48 86 07            [24] 5451 	mov	ar7,@r0
+      001A4A 74 03            [12] 5452 	mov	a,#0x03
+      001A4C 2D               [12] 5453 	add	a, r5
+      001A4D FD               [12] 5454 	mov	r5,a
+      001A4E E4               [12] 5455 	clr	a
+      001A4F 3E               [12] 5456 	addc	a, r6
+      001A50 FE               [12] 5457 	mov	r6,a
+      001A51 8D 82            [24] 5458 	mov	dpl,r5
+      001A53 8E 83            [24] 5459 	mov	dph,r6
+      001A55 8F F0            [24] 5460 	mov	b,r7
+      001A57 E5 08            [12] 5461 	mov	a,_bp
+      001A59 24 10            [12] 5462 	add	a,#0x10
+      001A5B F8               [12] 5463 	mov	r0,a
+      001A5C 12 26 66         [24] 5464 	lcall	__gptrget
+      001A5F F6               [12] 5465 	mov	@r0,a
+      001A60 A3               [24] 5466 	inc	dptr
+      001A61 12 26 66         [24] 5467 	lcall	__gptrget
+      001A64 08               [12] 5468 	inc	r0
+      001A65 F6               [12] 5469 	mov	@r0,a
+      001A66 A3               [24] 5470 	inc	dptr
+      001A67 12 26 66         [24] 5471 	lcall	__gptrget
+      001A6A 08               [12] 5472 	inc	r0
+      001A6B F6               [12] 5473 	mov	@r0,a
+      001A6C A3               [24] 5474 	inc	dptr
+      001A6D 12 26 66         [24] 5475 	lcall	__gptrget
+      001A70 08               [12] 5476 	inc	r0
+      001A71 F6               [12] 5477 	mov	@r0,a
+      001A72 E5 08            [12] 5478 	mov	a,_bp
+      001A74 24 34            [12] 5479 	add	a,#0x34
+      001A76 F8               [12] 5480 	mov	r0,a
+      001A77 E6               [12] 5481 	mov	a,@r0
+      001A78 C0 E0            [24] 5482 	push	acc
+      001A7A 08               [12] 5483 	inc	r0
+      001A7B E6               [12] 5484 	mov	a,@r0
+      001A7C C0 E0            [24] 5485 	push	acc
+      001A7E 08               [12] 5486 	inc	r0
+      001A7F E6               [12] 5487 	mov	a,@r0
+      001A80 C0 E0            [24] 5488 	push	acc
+      001A82 08               [12] 5489 	inc	r0
+      001A83 E6               [12] 5490 	mov	a,@r0
+      001A84 C0 E0            [24] 5491 	push	acc
+      001A86 E5 08            [12] 5492 	mov	a,_bp
+      001A88 24 10            [12] 5493 	add	a,#0x10
+      001A8A F8               [12] 5494 	mov	r0,a
+      001A8B 86 82            [24] 5495 	mov	dpl, @r0
+      001A8D 08               [12] 5496 	inc	r0
+      001A8E 86 83            [24] 5497 	mov	dph, @r0
+      001A90 08               [12] 5498 	inc	r0
+      001A91 86 F0            [24] 5499 	mov	b, @r0
+      001A93 08               [12] 5500 	inc	r0
+      001A94 E6               [12] 5501 	mov	a, @r0
+      001A95 12 24 3A         [24] 5502 	lcall	___fslt
+      001A98 AF 82            [24] 5503 	mov	r7, dpl
+      001A9A E5 81            [12] 5504 	mov	a,sp
+      001A9C 24 FC            [12] 5505 	add	a,#0xfc
+      001A9E F5 81            [12] 5506 	mov	sp,a
+      001AA0 EF               [12] 5507 	mov	a,r7
+      001AA1 60 12            [24] 5508 	jz	00139$
+                           0019EC  5509 	C$fuzzy.h$1598$5_0$94 ==.
+                                   5510 ;	../../fuzzy.h:1598: ? rules->rules[i].value
+      001AA3 E5 08            [12] 5511 	mov	a,_bp
+      001AA5 24 10            [12] 5512 	add	a,#0x10
+      001AA7 F8               [12] 5513 	mov	r0,a
+      001AA8 86 02            [24] 5514 	mov	ar2,@r0
+      001AAA 08               [12] 5515 	inc	r0
+      001AAB 86 04            [24] 5516 	mov	ar4,@r0
+      001AAD 08               [12] 5517 	inc	r0
+      001AAE 86 05            [24] 5518 	mov	ar5,@r0
+      001AB0 08               [12] 5519 	inc	r0
+      001AB1 86 07            [24] 5520 	mov	ar7,@r0
+      001AB3 80 10            [24] 5521 	sjmp	00140$
+      001AB5                       5522 00139$:
+                           0019FE  5523 	C$fuzzy.h$1599$5_0$94 ==.
+                                   5524 ;	../../fuzzy.h:1599: : output_membership;
+      001AB5 E5 08            [12] 5525 	mov	a,_bp
+      001AB7 24 34            [12] 5526 	add	a,#0x34
+      001AB9 F8               [12] 5527 	mov	r0,a
+      001ABA 86 02            [24] 5528 	mov	ar2,@r0
+      001ABC 08               [12] 5529 	inc	r0
+      001ABD 86 04            [24] 5530 	mov	ar4,@r0
+      001ABF 08               [12] 5531 	inc	r0
+      001AC0 86 05            [24] 5532 	mov	ar5,@r0
+      001AC2 08               [12] 5533 	inc	r0
+      001AC3 86 07            [24] 5534 	mov	ar7,@r0
+      001AC5                       5535 00140$:
+                           001A0E  5536 	C$fuzzy.h$1604$1_0$88 ==.
+                                   5537 ;	../../fuzzy.h:1604: ? aggregated_height
+      001AC5 C0 07            [24] 5538 	push	ar7
+      001AC7 C0 05            [24] 5539 	push	ar5
+      001AC9 C0 04            [24] 5540 	push	ar4
+      001ACB C0 02            [24] 5541 	push	ar2
+      001ACD E5 08            [12] 5542 	mov	a,_bp
+      001ACF 24 07            [12] 5543 	add	a,#0x07
+      001AD1 F8               [12] 5544 	mov	r0,a
+      001AD2 E6               [12] 5545 	mov	a,@r0
+      001AD3 C0 E0            [24] 5546 	push	acc
+      001AD5 08               [12] 5547 	inc	r0
+      001AD6 E6               [12] 5548 	mov	a,@r0
+      001AD7 C0 E0            [24] 5549 	push	acc
+      001AD9 08               [12] 5550 	inc	r0
+      001ADA E6               [12] 5551 	mov	a,@r0
+      001ADB C0 E0            [24] 5552 	push	acc
+      001ADD 08               [12] 5553 	inc	r0
+      001ADE E6               [12] 5554 	mov	a,@r0
+      001ADF C0 E0            [24] 5555 	push	acc
+      001AE1 8A 82            [24] 5556 	mov	dpl, r2
+      001AE3 8C 83            [24] 5557 	mov	dph, r4
+      001AE5 8D F0            [24] 5558 	mov	b, r5
+      001AE7 EF               [12] 5559 	mov	a, r7
+      001AE8 12 24 3A         [24] 5560 	lcall	___fslt
+      001AEB AE 82            [24] 5561 	mov	r6, dpl
+      001AED E5 81            [12] 5562 	mov	a,sp
+      001AEF 24 FC            [12] 5563 	add	a,#0xfc
+      001AF1 F5 81            [12] 5564 	mov	sp,a
+      001AF3 D0 02            [24] 5565 	pop	ar2
+      001AF5 D0 04            [24] 5566 	pop	ar4
+      001AF7 D0 05            [24] 5567 	pop	ar5
+      001AF9 D0 07            [24] 5568 	pop	ar7
+      001AFB EE               [12] 5569 	mov	a,r6
+      001AFC 60 1A            [24] 5570 	jz	00141$
+      001AFE E5 08            [12] 5571 	mov	a,_bp
+      001B00 24 07            [12] 5572 	add	a,#0x07
+      001B02 F8               [12] 5573 	mov	r0,a
+      001B03 E5 08            [12] 5574 	mov	a,_bp
+      001B05 24 10            [12] 5575 	add	a,#0x10
+      001B07 F9               [12] 5576 	mov	r1,a
+      001B08 E6               [12] 5577 	mov	a,@r0
+      001B09 F7               [12] 5578 	mov	@r1,a
+      001B0A 08               [12] 5579 	inc	r0
+      001B0B E6               [12] 5580 	mov	a,@r0
+      001B0C 09               [12] 5581 	inc	r1
+      001B0D F7               [12] 5582 	mov	@r1,a
+      001B0E 08               [12] 5583 	inc	r0
+      001B0F E6               [12] 5584 	mov	a,@r0
+      001B10 09               [12] 5585 	inc	r1
+      001B11 F7               [12] 5586 	mov	@r1,a
+      001B12 08               [12] 5587 	inc	r0
+      001B13 E6               [12] 5588 	mov	a,@r0
+      001B14 09               [12] 5589 	inc	r1
+      001B15 F7               [12] 5590 	mov	@r1,a
+      001B16 80 10            [24] 5591 	sjmp	00142$
+      001B18                       5592 00141$:
+                           001A61  5593 	C$fuzzy.h$1605$5_0$94 ==.
+                                   5594 ;	../../fuzzy.h:1605: : clipped_height;
+      001B18 E5 08            [12] 5595 	mov	a,_bp
+      001B1A 24 10            [12] 5596 	add	a,#0x10
+      001B1C F8               [12] 5597 	mov	r0,a
+      001B1D A6 02            [24] 5598 	mov	@r0,ar2
+      001B1F 08               [12] 5599 	inc	r0
+      001B20 A6 04            [24] 5600 	mov	@r0,ar4
+      001B22 08               [12] 5601 	inc	r0
+      001B23 A6 05            [24] 5602 	mov	@r0,ar5
+      001B25 08               [12] 5603 	inc	r0
+      001B26 A6 07            [24] 5604 	mov	@r0,ar7
+      001B28                       5605 00142$:
+      001B28 E5 08            [12] 5606 	mov	a,_bp
+      001B2A 24 10            [12] 5607 	add	a,#0x10
+      001B2C F8               [12] 5608 	mov	r0,a
+      001B2D E5 08            [12] 5609 	mov	a,_bp
+      001B2F 24 07            [12] 5610 	add	a,#0x07
+      001B31 F9               [12] 5611 	mov	r1,a
+      001B32 E6               [12] 5612 	mov	a,@r0
+      001B33 F7               [12] 5613 	mov	@r1,a
+      001B34 08               [12] 5614 	inc	r0
+      001B35 E6               [12] 5615 	mov	a,@r0
+      001B36 09               [12] 5616 	inc	r1
+      001B37 F7               [12] 5617 	mov	@r1,a
+      001B38 08               [12] 5618 	inc	r0
+      001B39 E6               [12] 5619 	mov	a,@r0
+      001B3A 09               [12] 5620 	inc	r1
+      001B3B F7               [12] 5621 	mov	@r1,a
+      001B3C 08               [12] 5622 	inc	r0
+      001B3D E6               [12] 5623 	mov	a,@r0
+      001B3E 09               [12] 5624 	inc	r1
+      001B3F F7               [12] 5625 	mov	@r1,a
+                           001A89  5626 	C$fuzzy.h$1582$1_0$88 ==.
+                                   5627 ;	../../fuzzy.h:1582: i++
+      001B40 E5 08            [12] 5628 	mov	a,_bp
+      001B42 24 0B            [12] 5629 	add	a,#0x0b
+      001B44 F8               [12] 5630 	mov	r0,a
+      001B45 74 09            [12] 5631 	mov	a,#0x09
+      001B47 26               [12] 5632 	add	a, @r0
+      001B48 F6               [12] 5633 	mov	@r0,a
+      001B49 E4               [12] 5634 	clr	a
+      001B4A 08               [12] 5635 	inc	r0
+      001B4B 36               [12] 5636 	addc	a, @r0
+      001B4C F6               [12] 5637 	mov	@r0,a
+      001B4D E5 08            [12] 5638 	mov	a,_bp
+      001B4F 24 3A            [12] 5639 	add	a,#0x3a
+      001B51 F8               [12] 5640 	mov	r0,a
+      001B52 06               [12] 5641 	inc	@r0
+      001B53 B6 00 02         [24] 5642 	cjne	@r0,#0x00,00291$
+      001B56 08               [12] 5643 	inc	r0
+      001B57 06               [12] 5644 	inc	@r0
+      001B58                       5645 00291$:
+      001B58 02 19 BA         [24] 5646 	ljmp	00132$
+      001B5B                       5647 00111$:
+                           001AA4  5648 	C$fuzzy.h$1610$3_0$92 ==.
+                                   5649 ;	../../fuzzy.h:1610: aggregated_height
+      001B5B E5 08            [12] 5650 	mov	a,_bp
+      001B5D 24 07            [12] 5651 	add	a,#0x07
+      001B5F F8               [12] 5652 	mov	r0,a
+      001B60 86 82            [24] 5653 	mov	dpl, @r0
+      001B62 08               [12] 5654 	inc	r0
+      001B63 86 83            [24] 5655 	mov	dph, @r0
+      001B65 08               [12] 5656 	inc	r0
+      001B66 86 F0            [24] 5657 	mov	b, @r0
+      001B68 08               [12] 5658 	inc	r0
+      001B69 E6               [12] 5659 	mov	a, @r0
+      001B6A 12 00 EA         [24] 5660 	lcall	_fuzzy_clamp
+      001B6D C8               [12] 5661 	xch	a,r0
+      001B6E E5 08            [12] 5662 	mov	a,_bp
+      001B70 24 30            [12] 5663 	add	a,#0x30
+      001B72 C8               [12] 5664 	xch	a,r0
+      001B73 A6 82            [24] 5665 	mov	@r0, dpl
+      001B75 08               [12] 5666 	inc	r0
+      001B76 A6 83            [24] 5667 	mov	@r0, dph
+      001B78 08               [12] 5668 	inc	r0
+      001B79 A6 F0            [24] 5669 	mov	@r0, b
+      001B7B 08               [12] 5670 	inc	r0
+      001B7C F6               [12] 5671 	mov	@r0,a
+                           001AC6  5672 	C$fuzzy.h$1618$1_0$88 ==.
+                                   5673 ;	../../fuzzy.h:1618: aggregated_height;
+      001B7D E5 08            [12] 5674 	mov	a,_bp
+      001B7F 24 30            [12] 5675 	add	a,#0x30
+      001B81 F8               [12] 5676 	mov	r0,a
+      001B82 E6               [12] 5677 	mov	a,@r0
+      001B83 C0 E0            [24] 5678 	push	acc
+      001B85 08               [12] 5679 	inc	r0
+      001B86 E6               [12] 5680 	mov	a,@r0
+      001B87 C0 E0            [24] 5681 	push	acc
+      001B89 08               [12] 5682 	inc	r0
+      001B8A E6               [12] 5683 	mov	a,@r0
+      001B8B C0 E0            [24] 5684 	push	acc
+      001B8D 08               [12] 5685 	inc	r0
+      001B8E E6               [12] 5686 	mov	a,@r0
+      001B8F C0 E0            [24] 5687 	push	acc
+      001B91 E5 08            [12] 5688 	mov	a,_bp
+      001B93 24 2C            [12] 5689 	add	a,#0x2c
+      001B95 F8               [12] 5690 	mov	r0,a
+      001B96 86 82            [24] 5691 	mov	dpl, @r0
+      001B98 08               [12] 5692 	inc	r0
+      001B99 86 83            [24] 5693 	mov	dph, @r0
+      001B9B 08               [12] 5694 	inc	r0
+      001B9C 86 F0            [24] 5695 	mov	b, @r0
+      001B9E 08               [12] 5696 	inc	r0
+      001B9F E6               [12] 5697 	mov	a, @r0
+      001BA0 12 23 0A         [24] 5698 	lcall	___fsmul
+      001BA3 AA 82            [24] 5699 	mov	r2, dpl
+      001BA5 AB 83            [24] 5700 	mov	r3, dph
+      001BA7 AE F0            [24] 5701 	mov	r6, b
+      001BA9 FF               [12] 5702 	mov	r7, a
+      001BAA E5 81            [12] 5703 	mov	a,sp
+      001BAC 24 FC            [12] 5704 	add	a,#0xfc
+      001BAE F5 81            [12] 5705 	mov	sp,a
+      001BB0 C0 02            [24] 5706 	push	ar2
+      001BB2 C0 03            [24] 5707 	push	ar3
+      001BB4 C0 06            [24] 5708 	push	ar6
+      001BB6 C0 07            [24] 5709 	push	ar7
+                           001B01  5710 	C$fuzzy.h$1621$1_0$88 ==.
+                                   5711 ;	../../fuzzy.h:1621: aggregated_height;
+      001BB8 E5 08            [12] 5712 	mov	a,_bp
+      001BBA 24 14            [12] 5713 	add	a,#0x14
+      001BBC F8               [12] 5714 	mov	r0,a
+      001BBD 86 82            [24] 5715 	mov	dpl, @r0
+      001BBF 08               [12] 5716 	inc	r0
+      001BC0 86 83            [24] 5717 	mov	dph, @r0
+      001BC2 08               [12] 5718 	inc	r0
+      001BC3 86 F0            [24] 5719 	mov	b, @r0
+      001BC5 08               [12] 5720 	inc	r0
+      001BC6 E6               [12] 5721 	mov	a, @r0
+      001BC7 12 24 8C         [24] 5722 	lcall	___fsadd
+      001BCA C8               [12] 5723 	xch	a,r0
+      001BCB E5 08            [12] 5724 	mov	a,_bp
+      001BCD 24 14            [12] 5725 	add	a,#0x14
+      001BCF C8               [12] 5726 	xch	a,r0
+      001BD0 A6 82            [24] 5727 	mov	@r0, dpl
+      001BD2 08               [12] 5728 	inc	r0
+      001BD3 A6 83            [24] 5729 	mov	@r0, dph
+      001BD5 08               [12] 5730 	inc	r0
+      001BD6 A6 F0            [24] 5731 	mov	@r0, b
+      001BD8 08               [12] 5732 	inc	r0
+      001BD9 F6               [12] 5733 	mov	@r0,a
+      001BDA E5 81            [12] 5734 	mov	a,sp
+      001BDC 24 FC            [12] 5735 	add	a,#0xfc
+      001BDE F5 81            [12] 5736 	mov	sp,a
+      001BE0 E5 08            [12] 5737 	mov	a,_bp
+      001BE2 24 30            [12] 5738 	add	a,#0x30
+      001BE4 F8               [12] 5739 	mov	r0,a
+      001BE5 E6               [12] 5740 	mov	a,@r0
+      001BE6 C0 E0            [24] 5741 	push	acc
+      001BE8 08               [12] 5742 	inc	r0
+      001BE9 E6               [12] 5743 	mov	a,@r0
+      001BEA C0 E0            [24] 5744 	push	acc
+      001BEC 08               [12] 5745 	inc	r0
+      001BED E6               [12] 5746 	mov	a,@r0
+      001BEE C0 E0            [24] 5747 	push	acc
+      001BF0 08               [12] 5748 	inc	r0
+      001BF1 E6               [12] 5749 	mov	a,@r0
+      001BF2 C0 E0            [24] 5750 	push	acc
+                           001B3D  5751 	C$fuzzy.h$1629$1_0$88 ==.
+                                   5752 ;	../../fuzzy.h:1629: !maximum_found ||
+      001BF4 E5 08            [12] 5753 	mov	a,_bp
+      001BF6 24 18            [12] 5754 	add	a,#0x18
+      001BF8 F8               [12] 5755 	mov	r0,a
+      001BF9 86 82            [24] 5756 	mov	dpl, @r0
+      001BFB 08               [12] 5757 	inc	r0
+      001BFC 86 83            [24] 5758 	mov	dph, @r0
+      001BFE 08               [12] 5759 	inc	r0
+      001BFF 86 F0            [24] 5760 	mov	b, @r0
+      001C01 08               [12] 5761 	inc	r0
+      001C02 E6               [12] 5762 	mov	a, @r0
+      001C03 12 24 8C         [24] 5763 	lcall	___fsadd
+      001C06 C8               [12] 5764 	xch	a,r0
+      001C07 E5 08            [12] 5765 	mov	a,_bp
+      001C09 24 18            [12] 5766 	add	a,#0x18
+      001C0B C8               [12] 5767 	xch	a,r0
+      001C0C A6 82            [24] 5768 	mov	@r0, dpl
+      001C0E 08               [12] 5769 	inc	r0
+      001C0F A6 83            [24] 5770 	mov	@r0, dph
+      001C11 08               [12] 5771 	inc	r0
+      001C12 A6 F0            [24] 5772 	mov	@r0, b
+      001C14 08               [12] 5773 	inc	r0
+      001C15 F6               [12] 5774 	mov	@r0,a
+      001C16 E5 81            [12] 5775 	mov	a,sp
+      001C18 24 FC            [12] 5776 	add	a,#0xfc
+      001C1A F5 81            [12] 5777 	mov	sp,a
+      001C1C E5 08            [12] 5778 	mov	a,_bp
+      001C1E 24 3C            [12] 5779 	add	a,#0x3c
+      001C20 F8               [12] 5780 	mov	r0,a
+      001C21 E6               [12] 5781 	mov	a,@r0
+      001C22 60 31            [24] 5782 	jz	00114$
+                           001B6D  5783 	C$fuzzy.h$1631$1_0$88 ==.
+                                   5784 ;	../../fuzzy.h:1631: ) {
+      001C24 E5 08            [12] 5785 	mov	a,_bp
+      001C26 24 30            [12] 5786 	add	a,#0x30
+      001C28 F8               [12] 5787 	mov	r0,a
+      001C29 E6               [12] 5788 	mov	a,@r0
+      001C2A C0 E0            [24] 5789 	push	acc
+      001C2C 08               [12] 5790 	inc	r0
+      001C2D E6               [12] 5791 	mov	a,@r0
+      001C2E C0 E0            [24] 5792 	push	acc
+      001C30 08               [12] 5793 	inc	r0
+      001C31 E6               [12] 5794 	mov	a,@r0
+      001C32 C0 E0            [24] 5795 	push	acc
+      001C34 08               [12] 5796 	inc	r0
+      001C35 E6               [12] 5797 	mov	a,@r0
+      001C36 C0 E0            [24] 5798 	push	acc
+      001C38 E5 08            [12] 5799 	mov	a,_bp
+      001C3A 24 1C            [12] 5800 	add	a,#0x1c
+      001C3C F8               [12] 5801 	mov	r0,a
+      001C3D 86 82            [24] 5802 	mov	dpl, @r0
+      001C3F 08               [12] 5803 	inc	r0
+      001C40 86 83            [24] 5804 	mov	dph, @r0
+      001C42 08               [12] 5805 	inc	r0
+      001C43 86 F0            [24] 5806 	mov	b, @r0
+      001C45 08               [12] 5807 	inc	r0
+      001C46 E6               [12] 5808 	mov	a, @r0
+      001C47 12 24 3A         [24] 5809 	lcall	___fslt
+      001C4A AF 82            [24] 5810 	mov	r7, dpl
+      001C4C E5 81            [12] 5811 	mov	a,sp
+      001C4E 24 FC            [12] 5812 	add	a,#0xfc
+      001C50 F5 81            [12] 5813 	mov	sp,a
+      001C52 EF               [12] 5814 	mov	a,r7
+      001C53 60 74            [24] 5815 	jz	00115$
+      001C55                       5816 00114$:
+                           001B9E  5817 	C$fuzzy.h$1633$4_0$95 ==.
+                                   5818 ;	../../fuzzy.h:1633: aggregated_height;
+      001C55 E5 08            [12] 5819 	mov	a,_bp
+      001C57 24 30            [12] 5820 	add	a,#0x30
+      001C59 F8               [12] 5821 	mov	r0,a
+      001C5A E5 08            [12] 5822 	mov	a,_bp
+      001C5C 24 1C            [12] 5823 	add	a,#0x1c
+      001C5E F9               [12] 5824 	mov	r1,a
+      001C5F E6               [12] 5825 	mov	a,@r0
+      001C60 F7               [12] 5826 	mov	@r1,a
+      001C61 08               [12] 5827 	inc	r0
+      001C62 E6               [12] 5828 	mov	a,@r0
+      001C63 09               [12] 5829 	inc	r1
+      001C64 F7               [12] 5830 	mov	@r1,a
+      001C65 08               [12] 5831 	inc	r0
+      001C66 E6               [12] 5832 	mov	a,@r0
+      001C67 09               [12] 5833 	inc	r1
+      001C68 F7               [12] 5834 	mov	@r1,a
+      001C69 08               [12] 5835 	inc	r0
+      001C6A E6               [12] 5836 	mov	a,@r0
+      001C6B 09               [12] 5837 	inc	r1
+      001C6C F7               [12] 5838 	mov	@r1,a
+                           001BB6  5839 	C$fuzzy.h$1636$4_0$95 ==.
+                                   5840 ;	../../fuzzy.h:1636: value;
+      001C6D E5 08            [12] 5841 	mov	a,_bp
+      001C6F 24 2C            [12] 5842 	add	a,#0x2c
+      001C71 F8               [12] 5843 	mov	r0,a
+      001C72 E5 08            [12] 5844 	mov	a,_bp
+      001C74 24 24            [12] 5845 	add	a,#0x24
+      001C76 F9               [12] 5846 	mov	r1,a
+      001C77 E6               [12] 5847 	mov	a,@r0
+      001C78 F7               [12] 5848 	mov	@r1,a
+      001C79 08               [12] 5849 	inc	r0
+      001C7A E6               [12] 5850 	mov	a,@r0
+      001C7B 09               [12] 5851 	inc	r1
+      001C7C F7               [12] 5852 	mov	@r1,a
+      001C7D 08               [12] 5853 	inc	r0
+      001C7E E6               [12] 5854 	mov	a,@r0
+      001C7F 09               [12] 5855 	inc	r1
+      001C80 F7               [12] 5856 	mov	@r1,a
+      001C81 08               [12] 5857 	inc	r0
+      001C82 E6               [12] 5858 	mov	a,@r0
+      001C83 09               [12] 5859 	inc	r1
+      001C84 F7               [12] 5860 	mov	@r1,a
+                           001BCE  5861 	C$fuzzy.h$1639$4_0$95 ==.
+                                   5862 ;	../../fuzzy.h:1639: value;
+      001C85 E5 08            [12] 5863 	mov	a,_bp
+      001C87 24 2C            [12] 5864 	add	a,#0x2c
+      001C89 F8               [12] 5865 	mov	r0,a
+      001C8A E5 08            [12] 5866 	mov	a,_bp
+      001C8C 24 28            [12] 5867 	add	a,#0x28
+      001C8E F9               [12] 5868 	mov	r1,a
+      001C8F E6               [12] 5869 	mov	a,@r0
+      001C90 F7               [12] 5870 	mov	@r1,a
+      001C91 08               [12] 5871 	inc	r0
+      001C92 E6               [12] 5872 	mov	a,@r0
+      001C93 09               [12] 5873 	inc	r1
+      001C94 F7               [12] 5874 	mov	@r1,a
+      001C95 08               [12] 5875 	inc	r0
+      001C96 E6               [12] 5876 	mov	a,@r0
+      001C97 09               [12] 5877 	inc	r1
+      001C98 F7               [12] 5878 	mov	@r1,a
+      001C99 08               [12] 5879 	inc	r0
+      001C9A E6               [12] 5880 	mov	a,@r0
+      001C9B 09               [12] 5881 	inc	r1
+      001C9C F7               [12] 5882 	mov	@r1,a
+                           001BE6  5883 	C$fuzzy.h$1642$4_0$95 ==.
+                                   5884 ;	../../fuzzy.h:1642: value;
+      001C9D E5 08            [12] 5885 	mov	a,_bp
+      001C9F 24 2C            [12] 5886 	add	a,#0x2c
+      001CA1 F8               [12] 5887 	mov	r0,a
+      001CA2 E5 08            [12] 5888 	mov	a,_bp
+      001CA4 24 20            [12] 5889 	add	a,#0x20
+      001CA6 F9               [12] 5890 	mov	r1,a
+      001CA7 E6               [12] 5891 	mov	a,@r0
+      001CA8 F7               [12] 5892 	mov	@r1,a
+      001CA9 08               [12] 5893 	inc	r0
+      001CAA E6               [12] 5894 	mov	a,@r0
+      001CAB 09               [12] 5895 	inc	r1
+      001CAC F7               [12] 5896 	mov	@r1,a
+      001CAD 08               [12] 5897 	inc	r0
+      001CAE E6               [12] 5898 	mov	a,@r0
+      001CAF 09               [12] 5899 	inc	r1
+      001CB0 F7               [12] 5900 	mov	@r1,a
+      001CB1 08               [12] 5901 	inc	r0
+      001CB2 E6               [12] 5902 	mov	a,@r0
+      001CB3 09               [12] 5903 	inc	r1
+      001CB4 F7               [12] 5904 	mov	@r1,a
+                           001BFE  5905 	C$fuzzy.h$1645$4_0$95 ==.
+                                   5906 ;	../../fuzzy.h:1645: 1u;
+      001CB5 E5 08            [12] 5907 	mov	a,_bp
+      001CB7 24 38            [12] 5908 	add	a,#0x38
+      001CB9 F8               [12] 5909 	mov	r0,a
+      001CBA 76 01            [12] 5910 	mov	@r0,#0x01
+      001CBC 08               [12] 5911 	inc	r0
+      001CBD 76 00            [12] 5912 	mov	@r0,#0x00
+                           001C08  5913 	C$fuzzy.h$1648$4_0$95 ==.
+                                   5914 ;	../../fuzzy.h:1648: true;
+      001CBF E5 08            [12] 5915 	mov	a,_bp
+      001CC1 24 3C            [12] 5916 	add	a,#0x3c
+      001CC3 F8               [12] 5917 	mov	r0,a
+      001CC4 76 01            [12] 5918 	mov	@r0,#0x01
+      001CC6 02 1D 59         [24] 5919 	ljmp	00136$
+      001CC9                       5920 00115$:
+                           001C12  5921 	C$fuzzy.h$1652$1_0$88 ==.
+                                   5922 ;	../../fuzzy.h:1652: ) {
+      001CC9 E5 08            [12] 5923 	mov	a,_bp
+      001CCB 24 1C            [12] 5924 	add	a,#0x1c
+      001CCD F8               [12] 5925 	mov	r0,a
+      001CCE E6               [12] 5926 	mov	a,@r0
+      001CCF C0 E0            [24] 5927 	push	acc
+      001CD1 08               [12] 5928 	inc	r0
+      001CD2 E6               [12] 5929 	mov	a,@r0
+      001CD3 C0 E0            [24] 5930 	push	acc
+      001CD5 08               [12] 5931 	inc	r0
+      001CD6 E6               [12] 5932 	mov	a,@r0
+      001CD7 C0 E0            [24] 5933 	push	acc
+      001CD9 08               [12] 5934 	inc	r0
+      001CDA E6               [12] 5935 	mov	a,@r0
+      001CDB C0 E0            [24] 5936 	push	acc
+      001CDD E5 08            [12] 5937 	mov	a,_bp
+      001CDF 24 30            [12] 5938 	add	a,#0x30
+      001CE1 F8               [12] 5939 	mov	r0,a
+      001CE2 86 82            [24] 5940 	mov	dpl, @r0
+      001CE4 08               [12] 5941 	inc	r0
+      001CE5 86 83            [24] 5942 	mov	dph, @r0
+      001CE7 08               [12] 5943 	inc	r0
+      001CE8 86 F0            [24] 5944 	mov	b, @r0
+      001CEA 08               [12] 5945 	inc	r0
+      001CEB E6               [12] 5946 	mov	a, @r0
+      001CEC 12 24 0E         [24] 5947 	lcall	___fseq
+      001CEF AF 82            [24] 5948 	mov	r7, dpl
+      001CF1 E5 81            [12] 5949 	mov	a,sp
+      001CF3 24 FC            [12] 5950 	add	a,#0xfc
+      001CF5 F5 81            [12] 5951 	mov	sp,a
+      001CF7 EF               [12] 5952 	mov	a,r7
+      001CF8 60 5F            [24] 5953 	jz	00136$
+                           001C43  5954 	C$fuzzy.h$1654$4_0$96 ==.
+                                   5955 ;	../../fuzzy.h:1654: value;
+      001CFA E5 08            [12] 5956 	mov	a,_bp
+      001CFC 24 2C            [12] 5957 	add	a,#0x2c
+      001CFE F8               [12] 5958 	mov	r0,a
+      001CFF E5 08            [12] 5959 	mov	a,_bp
+      001D01 24 28            [12] 5960 	add	a,#0x28
+      001D03 F9               [12] 5961 	mov	r1,a
+      001D04 E6               [12] 5962 	mov	a,@r0
+      001D05 F7               [12] 5963 	mov	@r1,a
+      001D06 08               [12] 5964 	inc	r0
+      001D07 E6               [12] 5965 	mov	a,@r0
+      001D08 09               [12] 5966 	inc	r1
+      001D09 F7               [12] 5967 	mov	@r1,a
+      001D0A 08               [12] 5968 	inc	r0
+      001D0B E6               [12] 5969 	mov	a,@r0
+      001D0C 09               [12] 5970 	inc	r1
+      001D0D F7               [12] 5971 	mov	@r1,a
+      001D0E 08               [12] 5972 	inc	r0
+      001D0F E6               [12] 5973 	mov	a,@r0
+      001D10 09               [12] 5974 	inc	r1
+      001D11 F7               [12] 5975 	mov	@r1,a
+                           001C5B  5976 	C$fuzzy.h$1657$1_0$88 ==.
+                                   5977 ;	../../fuzzy.h:1657: value;
+      001D12 E5 08            [12] 5978 	mov	a,_bp
+      001D14 24 2C            [12] 5979 	add	a,#0x2c
+      001D16 F8               [12] 5980 	mov	r0,a
+      001D17 E6               [12] 5981 	mov	a,@r0
+      001D18 C0 E0            [24] 5982 	push	acc
+      001D1A 08               [12] 5983 	inc	r0
+      001D1B E6               [12] 5984 	mov	a,@r0
+      001D1C C0 E0            [24] 5985 	push	acc
+      001D1E 08               [12] 5986 	inc	r0
+      001D1F E6               [12] 5987 	mov	a,@r0
+      001D20 C0 E0            [24] 5988 	push	acc
+      001D22 08               [12] 5989 	inc	r0
+      001D23 E6               [12] 5990 	mov	a,@r0
+      001D24 C0 E0            [24] 5991 	push	acc
+                           001C6F  5992 	C$fuzzy.h$1659$1_0$88 ==.
+                                   5993 ;	../../fuzzy.h:1659: maximum_count++;
+      001D26 E5 08            [12] 5994 	mov	a,_bp
+      001D28 24 20            [12] 5995 	add	a,#0x20
+      001D2A F8               [12] 5996 	mov	r0,a
+      001D2B 86 82            [24] 5997 	mov	dpl, @r0
+      001D2D 08               [12] 5998 	inc	r0
+      001D2E 86 83            [24] 5999 	mov	dph, @r0
+      001D30 08               [12] 6000 	inc	r0
+      001D31 86 F0            [24] 6001 	mov	b, @r0
+      001D33 08               [12] 6002 	inc	r0
+      001D34 E6               [12] 6003 	mov	a, @r0
+      001D35 12 24 8C         [24] 6004 	lcall	___fsadd
+      001D38 C8               [12] 6005 	xch	a,r0
+      001D39 E5 08            [12] 6006 	mov	a,_bp
+      001D3B 24 20            [12] 6007 	add	a,#0x20
+      001D3D C8               [12] 6008 	xch	a,r0
+      001D3E A6 82            [24] 6009 	mov	@r0, dpl
+      001D40 08               [12] 6010 	inc	r0
+      001D41 A6 83            [24] 6011 	mov	@r0, dph
+      001D43 08               [12] 6012 	inc	r0
+      001D44 A6 F0            [24] 6013 	mov	@r0, b
+      001D46 08               [12] 6014 	inc	r0
+      001D47 F6               [12] 6015 	mov	@r0,a
+      001D48 E5 81            [12] 6016 	mov	a,sp
+      001D4A 24 FC            [12] 6017 	add	a,#0xfc
+      001D4C F5 81            [12] 6018 	mov	sp,a
+      001D4E E5 08            [12] 6019 	mov	a,_bp
+      001D50 24 38            [12] 6020 	add	a,#0x38
+      001D52 F8               [12] 6021 	mov	r0,a
+      001D53 06               [12] 6022 	inc	@r0
+      001D54 B6 00 02         [24] 6023 	cjne	@r0,#0x00,00295$
+      001D57 08               [12] 6024 	inc	r0
+      001D58 06               [12] 6025 	inc	@r0
+      001D59                       6026 00295$:
+      001D59                       6027 00136$:
+                           001CA2  6028 	C$fuzzy.h$1569$1_0$88 ==.
+                                   6029 ;	../../fuzzy.h:1569: ) {
+      001D59 E5 08            [12] 6030 	mov	a,_bp
+      001D5B 24 F2            [12] 6031 	add	a,#0xf2
+      001D5D F8               [12] 6032 	mov	r0,a
+      001D5E E6               [12] 6033 	mov	a,@r0
+      001D5F C0 E0            [24] 6034 	push	acc
+      001D61 08               [12] 6035 	inc	r0
+      001D62 E6               [12] 6036 	mov	a,@r0
+      001D63 C0 E0            [24] 6037 	push	acc
+      001D65 08               [12] 6038 	inc	r0
+      001D66 E6               [12] 6039 	mov	a,@r0
+      001D67 C0 E0            [24] 6040 	push	acc
+      001D69 08               [12] 6041 	inc	r0
+      001D6A E6               [12] 6042 	mov	a,@r0
+      001D6B C0 E0            [24] 6043 	push	acc
+      001D6D E5 08            [12] 6044 	mov	a,_bp
+      001D6F 24 2C            [12] 6045 	add	a,#0x2c
+      001D71 F8               [12] 6046 	mov	r0,a
+      001D72 86 82            [24] 6047 	mov	dpl, @r0
+      001D74 08               [12] 6048 	inc	r0
+      001D75 86 83            [24] 6049 	mov	dph, @r0
+      001D77 08               [12] 6050 	inc	r0
+      001D78 86 F0            [24] 6051 	mov	b, @r0
+      001D7A 08               [12] 6052 	inc	r0
+      001D7B E6               [12] 6053 	mov	a, @r0
+      001D7C 12 24 8C         [24] 6054 	lcall	___fsadd
+      001D7F C8               [12] 6055 	xch	a,r0
+      001D80 E5 08            [12] 6056 	mov	a,_bp
+      001D82 24 2C            [12] 6057 	add	a,#0x2c
+      001D84 C8               [12] 6058 	xch	a,r0
+      001D85 A6 82            [24] 6059 	mov	@r0, dpl
+      001D87 08               [12] 6060 	inc	r0
+      001D88 A6 83            [24] 6061 	mov	@r0, dph
+      001D8A 08               [12] 6062 	inc	r0
+      001D8B A6 F0            [24] 6063 	mov	@r0, b
+      001D8D 08               [12] 6064 	inc	r0
+      001D8E F6               [12] 6065 	mov	@r0,a
+      001D8F E5 81            [12] 6066 	mov	a,sp
+      001D91 24 FC            [12] 6067 	add	a,#0xfc
+      001D93 F5 81            [12] 6068 	mov	sp,a
+      001D95 02 19 64         [24] 6069 	ljmp	00135$
+      001D98                       6070 00118$:
+                           001CE1  6071 	C$fuzzy.h$1667$1_0$88 ==.
+                                   6072 ;	../../fuzzy.h:1667: !maximum_found ||
+      001D98 E5 08            [12] 6073 	mov	a,_bp
+      001D9A 24 3C            [12] 6074 	add	a,#0x3c
+      001D9C F8               [12] 6075 	mov	r0,a
+      001D9D E6               [12] 6076 	mov	a,@r0
+      001D9E 60 56            [24] 6077 	jz	00119$
+                           001CE9  6078 	C$fuzzy.h$1668$1_0$88 ==.
+                                   6079 ;	../../fuzzy.h:1668: maximum_height <= LEVEL_LO ||
+      001DA0 E5 08            [12] 6080 	mov	a,_bp
+      001DA2 24 1C            [12] 6081 	add	a,#0x1c
+      001DA4 F8               [12] 6082 	mov	r0,a
+      001DA5 E6               [12] 6083 	mov	a,@r0
+      001DA6 C0 E0            [24] 6084 	push	acc
+      001DA8 08               [12] 6085 	inc	r0
+      001DA9 E6               [12] 6086 	mov	a,@r0
+      001DAA C0 E0            [24] 6087 	push	acc
+      001DAC 08               [12] 6088 	inc	r0
+      001DAD E6               [12] 6089 	mov	a,@r0
+      001DAE C0 E0            [24] 6090 	push	acc
+      001DB0 08               [12] 6091 	inc	r0
+      001DB1 E6               [12] 6092 	mov	a,@r0
+      001DB2 C0 E0            [24] 6093 	push	acc
+      001DB4 90 00 00         [24] 6094 	mov	dptr,#0x0000
+      001DB7 E4               [12] 6095 	clr	a
+      001DB8 F5 F0            [12] 6096 	mov	b,a
+      001DBA 12 24 3A         [24] 6097 	lcall	___fslt
+      001DBD E5 81            [12] 6098 	mov	a,sp
+      001DBF 24 FC            [12] 6099 	add	a,#0xfc
+      001DC1 F5 81            [12] 6100 	mov	sp,a
+      001DC3 E5 82            [12] 6101 	mov	a, dpl
+      001DC5 24 FF            [12] 6102 	add	a,#0xff
+      001DC7 92 00            [24] 6103 	mov	b0,c
+      001DC9 50 2B            [24] 6104 	jnc	00119$
+                           001D14  6105 	C$fuzzy.h$1670$1_0$88 ==.
+                                   6106 ;	../../fuzzy.h:1670: ) {
+      001DCB E5 08            [12] 6107 	mov	a,_bp
+      001DCD 24 18            [12] 6108 	add	a,#0x18
+      001DCF F8               [12] 6109 	mov	r0,a
+      001DD0 E6               [12] 6110 	mov	a,@r0
+      001DD1 C0 E0            [24] 6111 	push	acc
+      001DD3 08               [12] 6112 	inc	r0
+      001DD4 E6               [12] 6113 	mov	a,@r0
+      001DD5 C0 E0            [24] 6114 	push	acc
+      001DD7 08               [12] 6115 	inc	r0
+      001DD8 E6               [12] 6116 	mov	a,@r0
+      001DD9 C0 E0            [24] 6117 	push	acc
+      001DDB 08               [12] 6118 	inc	r0
+      001DDC E6               [12] 6119 	mov	a,@r0
+      001DDD C0 E0            [24] 6120 	push	acc
+      001DDF 90 00 00         [24] 6121 	mov	dptr,#0x0000
+      001DE2 E4               [12] 6122 	clr	a
+      001DE3 F5 F0            [12] 6123 	mov	b,a
+      001DE5 12 24 3A         [24] 6124 	lcall	___fslt
+      001DE8 E5 81            [12] 6125 	mov	a,sp
+      001DEA 24 FC            [12] 6126 	add	a,#0xfc
+      001DEC F5 81            [12] 6127 	mov	sp,a
+      001DEE E5 82            [12] 6128 	mov	a, dpl
+      001DF0 24 FF            [12] 6129 	add	a,#0xff
+      001DF2 92 00            [24] 6130 	mov	b0,c
+      001DF4 40 09            [24] 6131 	jc	00120$
+      001DF6                       6132 00119$:
+                           001D3F  6133 	C$fuzzy.h$1671$2_0$97 ==.
+                                   6134 ;	../../fuzzy.h:1671: return 0.0f;
+      001DF6 90 00 00         [24] 6135 	mov	dptr,#0x0000
+      001DF9 E4               [12] 6136 	clr	a
+      001DFA F5 F0            [12] 6137 	mov	b,a
+      001DFC 02 1E DF         [24] 6138 	ljmp	00137$
+      001DFF                       6139 00120$:
+                           001D48  6140 	C$fuzzy.h$1674$1_0$88 ==.
+                                   6141 ;	../../fuzzy.h:1674: switch (method) {
+      001DFF E5 08            [12] 6142 	mov	a,_bp
+      001E01 24 F1            [12] 6143 	add	a,#0xf1
+      001E03 F8               [12] 6144 	mov	r0,a
+      001E04 E6               [12] 6145 	mov	a,@r0
+      001E05 24 FC            [12] 6146 	add	a,#0xff - 0x03
+      001E07 50 03            [24] 6147 	jnc	00299$
+      001E09 02 1E D9         [24] 6148 	ljmp	00129$
+      001E0C                       6149 00299$:
+      001E0C E5 08            [12] 6150 	mov	a,_bp
+      001E0E 24 F1            [12] 6151 	add	a,#0xf1
+      001E10 F8               [12] 6152 	mov	r0,a
+      001E11 E6               [12] 6153 	mov	a,@r0
+      001E12 26               [12] 6154 	add	a,@r0
+      001E13 26               [12] 6155 	add	a,@r0
+      001E14 90 1E 18         [24] 6156 	mov	dptr,#00300$
+      001E17 73               [24] 6157 	jmp	@a+dptr
+      001E18                       6158 00300$:
+      001E18 02 1E 24         [24] 6159 	ljmp	00123$
+      001E1B 02 1E 61         [24] 6160 	ljmp	00124$
+      001E1E 02 1E B7         [24] 6161 	ljmp	00127$
+      001E21 02 1E C8         [24] 6162 	ljmp	00128$
+                           001D6D  6163 	C$fuzzy.h$1675$2_0$98 ==.
+                                   6164 ;	../../fuzzy.h:1675: case FUZZY_DEFUZZ_COG:
+      001E24                       6165 00123$:
+                           001D6D  6166 	C$fuzzy.h$1677$1_0$88 ==.
+                                   6167 ;	../../fuzzy.h:1677: height_sum;
+      001E24 E5 08            [12] 6168 	mov	a,_bp
+      001E26 24 18            [12] 6169 	add	a,#0x18
+      001E28 F8               [12] 6170 	mov	r0,a
+      001E29 E6               [12] 6171 	mov	a,@r0
+      001E2A C0 E0            [24] 6172 	push	acc
+      001E2C 08               [12] 6173 	inc	r0
+      001E2D E6               [12] 6174 	mov	a,@r0
+      001E2E C0 E0            [24] 6175 	push	acc
+      001E30 08               [12] 6176 	inc	r0
+      001E31 E6               [12] 6177 	mov	a,@r0
+      001E32 C0 E0            [24] 6178 	push	acc
+      001E34 08               [12] 6179 	inc	r0
+      001E35 E6               [12] 6180 	mov	a,@r0
+      001E36 C0 E0            [24] 6181 	push	acc
+      001E38 E5 08            [12] 6182 	mov	a,_bp
+      001E3A 24 14            [12] 6183 	add	a,#0x14
+      001E3C F8               [12] 6184 	mov	r0,a
+      001E3D 86 82            [24] 6185 	mov	dpl, @r0
+      001E3F 08               [12] 6186 	inc	r0
+      001E40 86 83            [24] 6187 	mov	dph, @r0
+      001E42 08               [12] 6188 	inc	r0
+      001E43 86 F0            [24] 6189 	mov	b, @r0
+      001E45 08               [12] 6190 	inc	r0
+      001E46 E6               [12] 6191 	mov	a, @r0
+      001E47 12 25 A3         [24] 6192 	lcall	___fsdiv
+      001E4A AC 82            [24] 6193 	mov	r4, dpl
+      001E4C AD 83            [24] 6194 	mov	r5, dph
+      001E4E AE F0            [24] 6195 	mov	r6, b
+      001E50 FF               [12] 6196 	mov	r7, a
+      001E51 E5 81            [12] 6197 	mov	a,sp
+      001E53 24 FC            [12] 6198 	add	a,#0xfc
+      001E55 F5 81            [12] 6199 	mov	sp,a
+      001E57 8C 82            [24] 6200 	mov	dpl, r4
+      001E59 8D 83            [24] 6201 	mov	dph, r5
+      001E5B 8E F0            [24] 6202 	mov	b, r6
+      001E5D EF               [12] 6203 	mov	a, r7
+      001E5E 02 1E DF         [24] 6204 	ljmp	00137$
+                           001DAA  6205 	C$fuzzy.h$1679$2_0$98 ==.
+                                   6206 ;	../../fuzzy.h:1679: case FUZZY_DEFUZZ_MOM:
+      001E61                       6207 00124$:
+                           001DAA  6208 	C$fuzzy.h$1680$2_0$98 ==.
+                                   6209 ;	../../fuzzy.h:1680: if (maximum_count == 0u) {
+      001E61 E5 08            [12] 6210 	mov	a,_bp
+      001E63 24 38            [12] 6211 	add	a,#0x38
+      001E65 F8               [12] 6212 	mov	r0,a
+      001E66 E6               [12] 6213 	mov	a,@r0
+      001E67 08               [12] 6214 	inc	r0
+      001E68 46               [12] 6215 	orl	a,@r0
+      001E69 70 08            [24] 6216 	jnz	00126$
+                           001DB4  6217 	C$fuzzy.h$1681$3_0$99 ==.
+                                   6218 ;	../../fuzzy.h:1681: return 0.0f;
+      001E6B 90 00 00         [24] 6219 	mov	dptr,#0x0000
+      001E6E E4               [12] 6220 	clr	a
+      001E6F F5 F0            [12] 6221 	mov	b,a
+      001E71 80 6C            [24] 6222 	sjmp	00137$
+      001E73                       6223 00126$:
+                           001DBC  6224 	C$fuzzy.h$1685$1_0$88 ==.
+                                   6225 ;	../../fuzzy.h:1685: (float)maximum_count;
+      001E73 E5 08            [12] 6226 	mov	a,_bp
+      001E75 24 38            [12] 6227 	add	a,#0x38
+      001E77 F8               [12] 6228 	mov	r0,a
+      001E78 86 82            [24] 6229 	mov	dpl, @r0
+      001E7A 08               [12] 6230 	inc	r0
+      001E7B 86 83            [24] 6231 	mov	dph, @r0
+      001E7D 12 25 2E         [24] 6232 	lcall	___uint2fs
+      001E80 AC 82            [24] 6233 	mov	r4, dpl
+      001E82 AD 83            [24] 6234 	mov	r5, dph
+      001E84 AE F0            [24] 6235 	mov	r6, b
+      001E86 FF               [12] 6236 	mov	r7, a
+      001E87 C0 04            [24] 6237 	push	ar4
+      001E89 C0 05            [24] 6238 	push	ar5
+      001E8B C0 06            [24] 6239 	push	ar6
+      001E8D C0 07            [24] 6240 	push	ar7
+      001E8F E5 08            [12] 6241 	mov	a,_bp
+      001E91 24 20            [12] 6242 	add	a,#0x20
+      001E93 F8               [12] 6243 	mov	r0,a
+      001E94 86 82            [24] 6244 	mov	dpl, @r0
+      001E96 08               [12] 6245 	inc	r0
+      001E97 86 83            [24] 6246 	mov	dph, @r0
+      001E99 08               [12] 6247 	inc	r0
+      001E9A 86 F0            [24] 6248 	mov	b, @r0
+      001E9C 08               [12] 6249 	inc	r0
+      001E9D E6               [12] 6250 	mov	a, @r0
+      001E9E 12 25 A3         [24] 6251 	lcall	___fsdiv
+      001EA1 AC 82            [24] 6252 	mov	r4, dpl
+      001EA3 AD 83            [24] 6253 	mov	r5, dph
+      001EA5 AE F0            [24] 6254 	mov	r6, b
+      001EA7 FF               [12] 6255 	mov	r7, a
+      001EA8 E5 81            [12] 6256 	mov	a,sp
+      001EAA 24 FC            [12] 6257 	add	a,#0xfc
+      001EAC F5 81            [12] 6258 	mov	sp,a
+      001EAE 8C 82            [24] 6259 	mov	dpl, r4
+      001EB0 8D 83            [24] 6260 	mov	dph, r5
+      001EB2 8E F0            [24] 6261 	mov	b, r6
+      001EB4 EF               [12] 6262 	mov	a, r7
+                           001DFE  6263 	C$fuzzy.h$1687$2_0$98 ==.
+                                   6264 ;	../../fuzzy.h:1687: case FUZZY_DEFUZZ_SOM:
+      001EB5 80 28            [24] 6265 	sjmp	00137$
+      001EB7                       6266 00127$:
+                           001E00  6267 	C$fuzzy.h$1688$2_0$98 ==.
+                                   6268 ;	../../fuzzy.h:1688: return smallest_maximum;
+      001EB7 E5 08            [12] 6269 	mov	a,_bp
+      001EB9 24 24            [12] 6270 	add	a,#0x24
+      001EBB F8               [12] 6271 	mov	r0,a
+      001EBC 86 82            [24] 6272 	mov	dpl, @r0
+      001EBE 08               [12] 6273 	inc	r0
+      001EBF 86 83            [24] 6274 	mov	dph, @r0
+      001EC1 08               [12] 6275 	inc	r0
+      001EC2 86 F0            [24] 6276 	mov	b, @r0
+      001EC4 08               [12] 6277 	inc	r0
+      001EC5 E6               [12] 6278 	mov	a, @r0
+                           001E0F  6279 	C$fuzzy.h$1690$2_0$98 ==.
+                                   6280 ;	../../fuzzy.h:1690: case FUZZY_DEFUZZ_LOM:
+      001EC6 80 17            [24] 6281 	sjmp	00137$
+      001EC8                       6282 00128$:
+                           001E11  6283 	C$fuzzy.h$1691$2_0$98 ==.
+                                   6284 ;	../../fuzzy.h:1691: return largest_maximum;
+      001EC8 E5 08            [12] 6285 	mov	a,_bp
+      001ECA 24 28            [12] 6286 	add	a,#0x28
+      001ECC F8               [12] 6287 	mov	r0,a
+      001ECD 86 82            [24] 6288 	mov	dpl, @r0
+      001ECF 08               [12] 6289 	inc	r0
+      001ED0 86 83            [24] 6290 	mov	dph, @r0
+      001ED2 08               [12] 6291 	inc	r0
+      001ED3 86 F0            [24] 6292 	mov	b, @r0
+      001ED5 08               [12] 6293 	inc	r0
+      001ED6 E6               [12] 6294 	mov	a, @r0
+                           001E20  6295 	C$fuzzy.h$1693$2_0$98 ==.
+                                   6296 ;	../../fuzzy.h:1693: default:
+      001ED7 80 06            [24] 6297 	sjmp	00137$
+      001ED9                       6298 00129$:
+                           001E22  6299 	C$fuzzy.h$1694$2_0$98 ==.
+                                   6300 ;	../../fuzzy.h:1694: return 0.0f;
+      001ED9 90 00 00         [24] 6301 	mov	dptr,#0x0000
+      001EDC E4               [12] 6302 	clr	a
+      001EDD F5 F0            [12] 6303 	mov	b,a
+                           001E28  6304 	C$fuzzy.h$1695$1_0$88 ==.
+                                   6305 ;	../../fuzzy.h:1695: }
+      001EDF                       6306 00137$:
+                           001E28  6307 	C$fuzzy.h$1696$1_0$88 ==.
+                                   6308 ;	../../fuzzy.h:1696: }
+      001EDF 85 08 81         [24] 6309 	mov	sp,_bp
+      001EE2 D0 08            [24] 6310 	pop	_bp
+                           001E2D  6311 	C$fuzzy.h$1696$1_0$88 ==.
+                           001E2D  6312 	XG$fuzzy_rules_defuzzify$0$0 ==.
+      001EE4 22               [24] 6313 	ret
+                                   6314 ;------------------------------------------------------------
+                                   6315 ;Allocation info for local variables in function 'fuzzy_rules_cog'
+                                   6316 ;------------------------------------------------------------
+                                   6317 ;lower         Allocated to stack - _bp -6 +4 
+                                   6318 ;upper         Allocated to stack - _bp -10 +4 
+                                   6319 ;step          Allocated to stack - _bp -14 +4 
+                                   6320 ;rules         Allocated to registers r5 r6 r7 
+                                   6321 ;------------------------------------------------------------
+                           001E2E  6322 	G$fuzzy_rules_cog$0$0 ==.
+                           001E2E  6323 	C$fuzzy.h$1702$1_0$101 ==.
+                                   6324 ;	../../fuzzy.h:1702: float fuzzy_rules_cog(
+                                   6325 ;	-----------------------------------------
+                                   6326 ;	 function fuzzy_rules_cog
+                                   6327 ;	-----------------------------------------
+      001EE5                       6328 _fuzzy_rules_cog:
+      001EE5 C0 08            [24] 6329 	push	_bp
+      001EE7 85 81 08         [24] 6330 	mov	_bp,sp
+      001EEA AD 82            [24] 6331 	mov	r5, dpl
+      001EEC AE 83            [24] 6332 	mov	r6, dph
+      001EEE AF F0            [24] 6333 	mov	r7, b
+                           001E39  6334 	C$fuzzy.h$1710$1_0$101 ==.
+                                   6335 ;	../../fuzzy.h:1710: rules,
+      001EF0 E4               [12] 6336 	clr	a
+      001EF1 C0 E0            [24] 6337 	push	acc
+      001EF3 E5 08            [12] 6338 	mov	a,_bp
+      001EF5 24 F2            [12] 6339 	add	a,#0xf2
+      001EF7 F8               [12] 6340 	mov	r0,a
+      001EF8 E6               [12] 6341 	mov	a,@r0
+      001EF9 C0 E0            [24] 6342 	push	acc
+      001EFB 08               [12] 6343 	inc	r0
+      001EFC E6               [12] 6344 	mov	a,@r0
+      001EFD C0 E0            [24] 6345 	push	acc
+      001EFF 08               [12] 6346 	inc	r0
+      001F00 E6               [12] 6347 	mov	a,@r0
+      001F01 C0 E0            [24] 6348 	push	acc
+      001F03 08               [12] 6349 	inc	r0
+      001F04 E6               [12] 6350 	mov	a,@r0
+      001F05 C0 E0            [24] 6351 	push	acc
+      001F07 E5 08            [12] 6352 	mov	a,_bp
+      001F09 24 F6            [12] 6353 	add	a,#0xf6
+      001F0B F8               [12] 6354 	mov	r0,a
+      001F0C E6               [12] 6355 	mov	a,@r0
+      001F0D C0 E0            [24] 6356 	push	acc
+      001F0F 08               [12] 6357 	inc	r0
+      001F10 E6               [12] 6358 	mov	a,@r0
+      001F11 C0 E0            [24] 6359 	push	acc
+      001F13 08               [12] 6360 	inc	r0
+      001F14 E6               [12] 6361 	mov	a,@r0
+      001F15 C0 E0            [24] 6362 	push	acc
+      001F17 08               [12] 6363 	inc	r0
+      001F18 E6               [12] 6364 	mov	a,@r0
+      001F19 C0 E0            [24] 6365 	push	acc
+      001F1B E5 08            [12] 6366 	mov	a,_bp
+      001F1D 24 FA            [12] 6367 	add	a,#0xfa
+      001F1F F8               [12] 6368 	mov	r0,a
+      001F20 E6               [12] 6369 	mov	a,@r0
+      001F21 C0 E0            [24] 6370 	push	acc
+      001F23 08               [12] 6371 	inc	r0
+      001F24 E6               [12] 6372 	mov	a,@r0
+      001F25 C0 E0            [24] 6373 	push	acc
+      001F27 08               [12] 6374 	inc	r0
+      001F28 E6               [12] 6375 	mov	a,@r0
+      001F29 C0 E0            [24] 6376 	push	acc
+      001F2B 08               [12] 6377 	inc	r0
+      001F2C E6               [12] 6378 	mov	a,@r0
+      001F2D C0 E0            [24] 6379 	push	acc
+      001F2F 8D 82            [24] 6380 	mov	dpl, r5
+      001F31 8E 83            [24] 6381 	mov	dph, r6
+      001F33 8F F0            [24] 6382 	mov	b, r7
+      001F35 12 17 E9         [24] 6383 	lcall	_fuzzy_rules_defuzzify
+      001F38 AC 82            [24] 6384 	mov	r4, dpl
+      001F3A AD 83            [24] 6385 	mov	r5, dph
+      001F3C AE F0            [24] 6386 	mov	r6, b
+      001F3E FF               [12] 6387 	mov	r7, a
+      001F3F E5 81            [12] 6388 	mov	a,sp
+      001F41 24 F3            [12] 6389 	add	a,#0xf3
+      001F43 F5 81            [12] 6390 	mov	sp,a
+      001F45 8C 82            [24] 6391 	mov	dpl, r4
+      001F47 8D 83            [24] 6392 	mov	dph, r5
+      001F49 8E F0            [24] 6393 	mov	b, r6
+      001F4B EF               [12] 6394 	mov	a, r7
+                           001E95  6395 	C$fuzzy.h$1716$1_0$101 ==.
+                                   6396 ;	../../fuzzy.h:1716: }
+      001F4C D0 08            [24] 6397 	pop	_bp
+                           001E97  6398 	C$fuzzy.h$1716$1_0$101 ==.
+                           001E97  6399 	XG$fuzzy_rules_cog$0$0 ==.
+      001F4E 22               [24] 6400 	ret
+                                   6401 ;------------------------------------------------------------
+                                   6402 ;Allocation info for local variables in function 'fuzzy_rules_free'
+                                   6403 ;------------------------------------------------------------
+                                   6404 ;rules         Allocated to registers r5 r6 r7 
+                                   6405 ;------------------------------------------------------------
+                           001E98  6406 	G$fuzzy_rules_free$0$0 ==.
+                           001E98  6407 	C$fuzzy.h$1718$1_0$103 ==.
+                                   6408 ;	../../fuzzy.h:1718: void fuzzy_rules_free(
+                                   6409 ;	-----------------------------------------
+                                   6410 ;	 function fuzzy_rules_free
+                                   6411 ;	-----------------------------------------
+      001F4F                       6412 _fuzzy_rules_free:
+      001F4F AD 82            [24] 6413 	mov	r5, dpl
+      001F51 AE 83            [24] 6414 	mov	r6, dph
+      001F53 AF F0            [24] 6415 	mov	r7, b
+                           001E9E  6416 	C$fuzzy.h$1722$1_0$103 ==.
+                                   6417 ;	../../fuzzy.h:1722: if (rules == NULL) {
+      001F55 ED               [12] 6418 	mov	a,r5
+      001F56 4E               [12] 6419 	orl	a,r6
+      001F57 70 02            [24] 6420 	jnz	00102$
+                           001EA2  6421 	C$fuzzy.h$1723$2_0$104 ==.
+                                   6422 ;	../../fuzzy.h:1723: return;
+      001F59 80 15            [24] 6423 	sjmp	00103$
+      001F5B                       6424 00102$:
+                           001EA4  6425 	C$fuzzy.h$1731$1_0$103 ==.
+                                   6426 ;	../../fuzzy.h:1731: rules->count = 0;
+      001F5B 74 90            [12] 6427 	mov	a,#0x90
+      001F5D 2D               [12] 6428 	add	a, r5
+      001F5E FD               [12] 6429 	mov	r5,a
+      001F5F E4               [12] 6430 	clr	a
+      001F60 3E               [12] 6431 	addc	a, r6
+      001F61 FE               [12] 6432 	mov	r6,a
+      001F62 8D 82            [24] 6433 	mov	dpl,r5
+      001F64 8E 83            [24] 6434 	mov	dph,r6
+      001F66 8F F0            [24] 6435 	mov	b,r7
+      001F68 E4               [12] 6436 	clr	a
+      001F69 12 24 1F         [24] 6437 	lcall	__gptrput
+      001F6C A3               [24] 6438 	inc	dptr
+      001F6D 12 24 1F         [24] 6439 	lcall	__gptrput
+      001F70                       6440 00103$:
+                           001EB9  6441 	C$fuzzy.h$1732$1_0$103 ==.
+                                   6442 ;	../../fuzzy.h:1732: }
+                           001EB9  6443 	C$fuzzy.h$1732$1_0$103 ==.
+                           001EB9  6444 	XG$fuzzy_rules_free$0$0 ==.
+      001F70 22               [24] 6445 	ret
+                                   6446 ;------------------------------------------------------------
+                                   6447 ;Allocation info for local variables in function 'temperature_low'
+                                   6448 ;------------------------------------------------------------
+                                   6449 ;value         Allocated to registers r4 r5 r6 r7 
+                                   6450 ;------------------------------------------------------------
+                           001EBA  6451 	Fcontroller_8051$temperature_low$0$0 ==.
+                           001EBA  6452 	C$controller_8051.c$59$1_0$106 ==.
+                                   6453 ;	../../controller_8051.c:59: static float temperature_low(
+                                   6454 ;	-----------------------------------------
+                                   6455 ;	 function temperature_low
+                                   6456 ;	-----------------------------------------
+      001F71                       6457 _temperature_low:
+      001F71 AC 82            [24] 6458 	mov	r4,dpl
+      001F73 AD 83            [24] 6459 	mov	r5,dph
+      001F75 AE F0            [24] 6460 	mov	r6,b
+      001F77 FF               [12] 6461 	mov	r7,a
+                           001EC1  6462 	C$controller_8051.c$68$1_0$106 ==.
+                                   6463 ;	../../controller_8051.c:68: hedges.none
+      001F78 90 27 28         [24] 6464 	mov	dptr,#_hedges
+      001F7B E4               [12] 6465 	clr	a
+      001F7C 93               [24] 6466 	movc	a,@a+dptr
+      001F7D FB               [12] 6467 	mov	r3,a
+                           001EC7  6468 	C$controller_8051.c$64$1_0$106 ==.
+                                   6469 ;	../../controller_8051.c:64: 20.0f,
+      001F7E C0 03            [24] 6470 	push	ar3
+      001F80 E4               [12] 6471 	clr	a
+      001F81 C0 E0            [24] 6472 	push	acc
+      001F83 C0 04            [24] 6473 	push	ar4
+      001F85 C0 05            [24] 6474 	push	ar5
+      001F87 C0 06            [24] 6475 	push	ar6
+      001F89 C0 07            [24] 6476 	push	ar7
+      001F8B C0 E0            [24] 6477 	push	acc
+      001F8D C0 E0            [24] 6478 	push	acc
+      001F8F 74 20            [12] 6479 	mov	a,#0x20
+      001F91 C0 E0            [24] 6480 	push	acc
+      001F93 74 42            [12] 6481 	mov	a,#0x42
+      001F95 C0 E0            [24] 6482 	push	acc
+      001F97 90 00 00         [24] 6483 	mov	dptr,#0x0000
+      001F9A 75 F0 A0         [24] 6484 	mov	b, #0xa0
+      001F9D 14               [12] 6485 	dec	a
+      001F9E 12 0A EC         [24] 6486 	lcall	_fuzzy_ramp
+      001FA1 AC 82            [24] 6487 	mov	r4, dpl
+      001FA3 AD 83            [24] 6488 	mov	r5, dph
+      001FA5 AE F0            [24] 6489 	mov	r6, b
+      001FA7 FF               [12] 6490 	mov	r7, a
+      001FA8 E5 81            [12] 6491 	mov	a,sp
+      001FAA 24 F6            [12] 6492 	add	a,#0xf6
+      001FAC F5 81            [12] 6493 	mov	sp,a
+      001FAE 8C 82            [24] 6494 	mov	dpl, r4
+      001FB0 8D 83            [24] 6495 	mov	dph, r5
+      001FB2 8E F0            [24] 6496 	mov	b, r6
+      001FB4 EF               [12] 6497 	mov	a, r7
+                           001EFE  6498 	C$controller_8051.c$70$1_0$106 ==.
+                                   6499 ;	../../controller_8051.c:70: }
+                           001EFE  6500 	C$controller_8051.c$70$1_0$106 ==.
+                           001EFE  6501 	XFcontroller_8051$temperature_low$0$0 ==.
+      001FB5 22               [24] 6502 	ret
+                                   6503 ;------------------------------------------------------------
+                                   6504 ;Allocation info for local variables in function 'temperature_high'
+                                   6505 ;------------------------------------------------------------
+                                   6506 ;value         Allocated to registers r4 r5 r6 r7 
+                                   6507 ;------------------------------------------------------------
+                           001EFF  6508 	Fcontroller_8051$temperature_high$0$0 ==.
+                           001EFF  6509 	C$controller_8051.c$73$1_0$108 ==.
+                                   6510 ;	../../controller_8051.c:73: static float temperature_high(
+                                   6511 ;	-----------------------------------------
+                                   6512 ;	 function temperature_high
+                                   6513 ;	-----------------------------------------
+      001FB6                       6514 _temperature_high:
+      001FB6 AC 82            [24] 6515 	mov	r4,dpl
+      001FB8 AD 83            [24] 6516 	mov	r5,dph
+      001FBA AE F0            [24] 6517 	mov	r6,b
+      001FBC FF               [12] 6518 	mov	r7,a
+                           001F06  6519 	C$controller_8051.c$82$1_0$108 ==.
+                                   6520 ;	../../controller_8051.c:82: hedges.none
+      001FBD 90 27 28         [24] 6521 	mov	dptr,#_hedges
+      001FC0 E4               [12] 6522 	clr	a
+      001FC1 93               [24] 6523 	movc	a,@a+dptr
+      001FC2 FB               [12] 6524 	mov	r3,a
+                           001F0C  6525 	C$controller_8051.c$78$1_0$108 ==.
+                                   6526 ;	../../controller_8051.c:78: 30.0f,
+      001FC3 C0 03            [24] 6527 	push	ar3
+      001FC5 74 01            [12] 6528 	mov	a,#0x01
+      001FC7 C0 E0            [24] 6529 	push	acc
+      001FC9 C0 04            [24] 6530 	push	ar4
+      001FCB C0 05            [24] 6531 	push	ar5
+      001FCD C0 06            [24] 6532 	push	ar6
+      001FCF C0 07            [24] 6533 	push	ar7
+      001FD1 E4               [12] 6534 	clr	a
+      001FD2 C0 E0            [24] 6535 	push	acc
+      001FD4 C0 E0            [24] 6536 	push	acc
+      001FD6 74 70            [12] 6537 	mov	a,#0x70
+      001FD8 C0 E0            [24] 6538 	push	acc
+      001FDA 74 42            [12] 6539 	mov	a,#0x42
+      001FDC C0 E0            [24] 6540 	push	acc
+      001FDE 90 00 00         [24] 6541 	mov	dptr,#0x0000
+      001FE1 75 F0 F0         [24] 6542 	mov	b, #0xf0
+      001FE4 14               [12] 6543 	dec	a
+      001FE5 12 0A EC         [24] 6544 	lcall	_fuzzy_ramp
+      001FE8 AC 82            [24] 6545 	mov	r4, dpl
+      001FEA AD 83            [24] 6546 	mov	r5, dph
+      001FEC AE F0            [24] 6547 	mov	r6, b
+      001FEE FF               [12] 6548 	mov	r7, a
+      001FEF E5 81            [12] 6549 	mov	a,sp
+      001FF1 24 F6            [12] 6550 	add	a,#0xf6
+      001FF3 F5 81            [12] 6551 	mov	sp,a
+      001FF5 8C 82            [24] 6552 	mov	dpl, r4
+      001FF7 8D 83            [24] 6553 	mov	dph, r5
+      001FF9 8E F0            [24] 6554 	mov	b, r6
+      001FFB EF               [12] 6555 	mov	a, r7
+                           001F45  6556 	C$controller_8051.c$84$1_0$108 ==.
+                                   6557 ;	../../controller_8051.c:84: }
+                           001F45  6558 	C$controller_8051.c$84$1_0$108 ==.
+                           001F45  6559 	XFcontroller_8051$temperature_high$0$0 ==.
+      001FFC 22               [24] 6560 	ret
+                                   6561 ;------------------------------------------------------------
+                                   6562 ;Allocation info for local variables in function 'fan_slow'
+                                   6563 ;------------------------------------------------------------
+                                   6564 ;value         Allocated to registers r4 r5 r6 r7 
+                                   6565 ;------------------------------------------------------------
+                           001F46  6566 	Fcontroller_8051$fan_slow$0$0 ==.
+                           001F46  6567 	C$controller_8051.c$91$1_0$110 ==.
+                                   6568 ;	../../controller_8051.c:91: static float fan_slow(
+                                   6569 ;	-----------------------------------------
+                                   6570 ;	 function fan_slow
+                                   6571 ;	-----------------------------------------
+      001FFD                       6572 _fan_slow:
+      001FFD AC 82            [24] 6573 	mov	r4,dpl
+      001FFF AD 83            [24] 6574 	mov	r5,dph
+      002001 AE F0            [24] 6575 	mov	r6,b
+      002003 FF               [12] 6576 	mov	r7,a
+                           001F4D  6577 	C$controller_8051.c$100$1_0$110 ==.
+                                   6578 ;	../../controller_8051.c:100: hedges.none
+      002004 90 27 28         [24] 6579 	mov	dptr,#_hedges
+      002007 E4               [12] 6580 	clr	a
+      002008 93               [24] 6581 	movc	a,@a+dptr
+      002009 FB               [12] 6582 	mov	r3,a
+                           001F53  6583 	C$controller_8051.c$96$1_0$110 ==.
+                                   6584 ;	../../controller_8051.c:96: 20.0f,
+      00200A C0 03            [24] 6585 	push	ar3
+      00200C E4               [12] 6586 	clr	a
+      00200D C0 E0            [24] 6587 	push	acc
+      00200F C0 04            [24] 6588 	push	ar4
+      002011 C0 05            [24] 6589 	push	ar5
+      002013 C0 06            [24] 6590 	push	ar6
+      002015 C0 07            [24] 6591 	push	ar7
+      002017 C0 E0            [24] 6592 	push	acc
+      002019 C0 E0            [24] 6593 	push	acc
+      00201B 74 48            [12] 6594 	mov	a,#0x48
+      00201D C0 E0            [24] 6595 	push	acc
+      00201F 74 42            [12] 6596 	mov	a,#0x42
+      002021 C0 E0            [24] 6597 	push	acc
+      002023 90 00 00         [24] 6598 	mov	dptr,#0x0000
+      002026 75 F0 A0         [24] 6599 	mov	b, #0xa0
+      002029 14               [12] 6600 	dec	a
+      00202A 12 0A EC         [24] 6601 	lcall	_fuzzy_ramp
+      00202D AC 82            [24] 6602 	mov	r4, dpl
+      00202F AD 83            [24] 6603 	mov	r5, dph
+      002031 AE F0            [24] 6604 	mov	r6, b
+      002033 FF               [12] 6605 	mov	r7, a
+      002034 E5 81            [12] 6606 	mov	a,sp
+      002036 24 F6            [12] 6607 	add	a,#0xf6
+      002038 F5 81            [12] 6608 	mov	sp,a
+      00203A 8C 82            [24] 6609 	mov	dpl, r4
+      00203C 8D 83            [24] 6610 	mov	dph, r5
+      00203E 8E F0            [24] 6611 	mov	b, r6
+      002040 EF               [12] 6612 	mov	a, r7
+                           001F8A  6613 	C$controller_8051.c$102$1_0$110 ==.
+                                   6614 ;	../../controller_8051.c:102: }
+                           001F8A  6615 	C$controller_8051.c$102$1_0$110 ==.
+                           001F8A  6616 	XFcontroller_8051$fan_slow$0$0 ==.
+      002041 22               [24] 6617 	ret
+                                   6618 ;------------------------------------------------------------
+                                   6619 ;Allocation info for local variables in function 'fan_fast'
+                                   6620 ;------------------------------------------------------------
+                                   6621 ;value         Allocated to registers r4 r5 r6 r7 
+                                   6622 ;------------------------------------------------------------
+                           001F8B  6623 	Fcontroller_8051$fan_fast$0$0 ==.
+                           001F8B  6624 	C$controller_8051.c$105$1_0$112 ==.
+                                   6625 ;	../../controller_8051.c:105: static float fan_fast(
+                                   6626 ;	-----------------------------------------
+                                   6627 ;	 function fan_fast
+                                   6628 ;	-----------------------------------------
+      002042                       6629 _fan_fast:
+      002042 AC 82            [24] 6630 	mov	r4,dpl
+      002044 AD 83            [24] 6631 	mov	r5,dph
+      002046 AE F0            [24] 6632 	mov	r6,b
+      002048 FF               [12] 6633 	mov	r7,a
+                           001F92  6634 	C$controller_8051.c$114$1_0$112 ==.
+                                   6635 ;	../../controller_8051.c:114: hedges.none
+      002049 90 27 28         [24] 6636 	mov	dptr,#_hedges
+      00204C E4               [12] 6637 	clr	a
+      00204D 93               [24] 6638 	movc	a,@a+dptr
+      00204E FB               [12] 6639 	mov	r3,a
+                           001F98  6640 	C$controller_8051.c$110$1_0$112 ==.
+                                   6641 ;	../../controller_8051.c:110: 40.0f,
+      00204F C0 03            [24] 6642 	push	ar3
+      002051 74 01            [12] 6643 	mov	a,#0x01
+      002053 C0 E0            [24] 6644 	push	acc
+      002055 C0 04            [24] 6645 	push	ar4
+      002057 C0 05            [24] 6646 	push	ar5
+      002059 C0 06            [24] 6647 	push	ar6
+      00205B C0 07            [24] 6648 	push	ar7
+      00205D E4               [12] 6649 	clr	a
+      00205E C0 E0            [24] 6650 	push	acc
+      002060 C0 E0            [24] 6651 	push	acc
+      002062 74 A0            [12] 6652 	mov	a,#0xa0
+      002064 C0 E0            [24] 6653 	push	acc
+      002066 74 42            [12] 6654 	mov	a,#0x42
+      002068 C0 E0            [24] 6655 	push	acc
+      00206A 90 00 00         [24] 6656 	mov	dptr,#0x0000
+      00206D 75 F0 20         [24] 6657 	mov	b, #0x20
+      002070 12 0A EC         [24] 6658 	lcall	_fuzzy_ramp
+      002073 AC 82            [24] 6659 	mov	r4, dpl
+      002075 AD 83            [24] 6660 	mov	r5, dph
+      002077 AE F0            [24] 6661 	mov	r6, b
+      002079 FF               [12] 6662 	mov	r7, a
+      00207A E5 81            [12] 6663 	mov	a,sp
+      00207C 24 F6            [12] 6664 	add	a,#0xf6
+      00207E F5 81            [12] 6665 	mov	sp,a
+      002080 8C 82            [24] 6666 	mov	dpl, r4
+      002082 8D 83            [24] 6667 	mov	dph, r5
+      002084 8E F0            [24] 6668 	mov	b, r6
+      002086 EF               [12] 6669 	mov	a, r7
+                           001FD0  6670 	C$controller_8051.c$116$1_0$112 ==.
+                                   6671 ;	../../controller_8051.c:116: }
+                           001FD0  6672 	C$controller_8051.c$116$1_0$112 ==.
+                           001FD0  6673 	XFcontroller_8051$fan_fast$0$0 ==.
+      002087 22               [24] 6674 	ret
+                                   6675 ;------------------------------------------------------------
+                                   6676 ;Allocation info for local variables in function 'calculate_fan_speed'
+                                   6677 ;------------------------------------------------------------
+                                   6678 ;temperature   Allocated to stack - _bp +1 +4 
+                                   6679 ;rules         Allocated to stack - _bp +9 +146 
+                                   6680 ;result        Allocated to stack - _bp +155 +4 
+                                   6681 ;sloc0         Allocated to stack - _bp +5 +4 
+                                   6682 ;------------------------------------------------------------
+                           001FD1  6683 	Fcontroller_8051$calculate_fan_speed$0$0 ==.
+                           001FD1  6684 	C$controller_8051.c$123$1_0$114 ==.
+                                   6685 ;	../../controller_8051.c:123: static float calculate_fan_speed(
+                                   6686 ;	-----------------------------------------
+                                   6687 ;	 function calculate_fan_speed
+                                   6688 ;	-----------------------------------------
+      002088                       6689 _calculate_fan_speed:
+      002088 C0 08            [24] 6690 	push	_bp
+      00208A 85 81 08         [24] 6691 	mov	_bp,sp
+      00208D C0 82            [24] 6692 	push	dpl
+      00208F C0 83            [24] 6693 	push	dph
+      002091 C0 F0            [24] 6694 	push	b
+      002093 C0 E0            [24] 6695 	push	acc
+      002095 E5 81            [12] 6696 	mov	a,sp
+      002097 24 9A            [12] 6697 	add	a,#0x9a
+      002099 F5 81            [12] 6698 	mov	sp,a
+                           001FE4  6699 	C$controller_8051.c$132$1_0$114 ==.
+                                   6700 ;	../../controller_8051.c:132: );
+      00209B E5 08            [12] 6701 	mov	a,_bp
+      00209D 24 09            [12] 6702 	add	a,#0x09
+      00209F FB               [12] 6703 	mov	r3,a
+      0020A0 FA               [12] 6704 	mov	r2,a
+      0020A1 7E 00            [12] 6705 	mov	r6,#0x00
+      0020A3 7F 40            [12] 6706 	mov	r7,#0x40
+      0020A5 8A 82            [24] 6707 	mov	dpl, r2
+      0020A7 8E 83            [24] 6708 	mov	dph, r6
+      0020A9 8F F0            [24] 6709 	mov	b, r7
+      0020AB C0 03            [24] 6710 	push	ar3
+      0020AD 12 16 63         [24] 6711 	lcall	_fuzzy_rules_create
+                           001FF9  6712 	C$controller_8051.c$134$1_0$114 ==.
+                                   6713 ;	../../controller_8051.c:134: if (!FUZZY_RULE_ADD(
+      0020B0 A8 08            [24] 6714 	mov	r0,_bp
+      0020B2 08               [12] 6715 	inc	r0
+      0020B3 86 82            [24] 6716 	mov	dpl, @r0
+      0020B5 08               [12] 6717 	inc	r0
+      0020B6 86 83            [24] 6718 	mov	dph, @r0
+      0020B8 08               [12] 6719 	inc	r0
+      0020B9 86 F0            [24] 6720 	mov	b, @r0
+      0020BB 08               [12] 6721 	inc	r0
+      0020BC E6               [12] 6722 	mov	a, @r0
+      0020BD 12 1F 71         [24] 6723 	lcall	_temperature_low
+      0020C0 C8               [12] 6724 	xch	a,r0
+      0020C1 E5 08            [12] 6725 	mov	a,_bp
+      0020C3 24 05            [12] 6726 	add	a,#0x05
+      0020C5 C8               [12] 6727 	xch	a,r0
+      0020C6 A6 82            [24] 6728 	mov	@r0, dpl
+      0020C8 08               [12] 6729 	inc	r0
+      0020C9 A6 83            [24] 6730 	mov	@r0, dph
+      0020CB 08               [12] 6731 	inc	r0
+      0020CC A6 F0            [24] 6732 	mov	@r0, b
+      0020CE 08               [12] 6733 	inc	r0
+      0020CF F6               [12] 6734 	mov	@r0,a
+      0020D0 D0 03            [24] 6735 	pop	ar3
+      0020D2 8B 02            [24] 6736 	mov	ar2,r3
+      0020D4 7E 00            [12] 6737 	mov	r6,#0x00
+      0020D6 7F 40            [12] 6738 	mov	r7,#0x40
+      0020D8 C0 03            [24] 6739 	push	ar3
+      0020DA 74 FD            [12] 6740 	mov	a,#_fan_slow
+      0020DC C0 E0            [24] 6741 	push	acc
+      0020DE 74 1F            [12] 6742 	mov	a,#(_fan_slow >> 8)
+      0020E0 C0 E0            [24] 6743 	push	acc
+      0020E2 E5 08            [12] 6744 	mov	a,_bp
+      0020E4 24 05            [12] 6745 	add	a,#0x05
+      0020E6 F8               [12] 6746 	mov	r0,a
+      0020E7 E6               [12] 6747 	mov	a,@r0
+      0020E8 C0 E0            [24] 6748 	push	acc
+      0020EA 08               [12] 6749 	inc	r0
+      0020EB E6               [12] 6750 	mov	a,@r0
+      0020EC C0 E0            [24] 6751 	push	acc
+      0020EE 08               [12] 6752 	inc	r0
+      0020EF E6               [12] 6753 	mov	a,@r0
+      0020F0 C0 E0            [24] 6754 	push	acc
+      0020F2 08               [12] 6755 	inc	r0
+      0020F3 E6               [12] 6756 	mov	a,@r0
+      0020F4 C0 E0            [24] 6757 	push	acc
+      0020F6 74 2B            [12] 6758 	mov	a,#___str_0
+      0020F8 C0 E0            [24] 6759 	push	acc
+      0020FA 74 27            [12] 6760 	mov	a,#(___str_0 >> 8)
+      0020FC C0 E0            [24] 6761 	push	acc
+      0020FE 74 80            [12] 6762 	mov	a,#0x80
+      002100 C0 E0            [24] 6763 	push	acc
+      002102 8A 82            [24] 6764 	mov	dpl, r2
+      002104 8E 83            [24] 6765 	mov	dph, r6
+      002106 8F F0            [24] 6766 	mov	b, r7
+      002108 12 16 85         [24] 6767 	lcall	_fuzzy_rules_add
+      00210B AF 82            [24] 6768 	mov	r7, dpl
+      00210D E5 81            [12] 6769 	mov	a,sp
+      00210F 24 F7            [12] 6770 	add	a,#0xf7
+      002111 F5 81            [12] 6771 	mov	sp,a
+      002113 D0 03            [24] 6772 	pop	ar3
+      002115 EF               [12] 6773 	mov	a,r7
+                           00205F  6774 	C$controller_8051.c$141$2_0$115 ==.
+                                   6775 ;	../../controller_8051.c:141: );
+      002116 70 17            [24] 6776 	jnz	00102$
+      002118 8B 05            [24] 6777 	mov	ar5,r3
+      00211A FE               [12] 6778 	mov	r6,a
+      00211B 7F 40            [12] 6779 	mov	r7,#0x40
+      00211D 8D 82            [24] 6780 	mov	dpl, r5
+      00211F 8E 83            [24] 6781 	mov	dph, r6
+      002121 8F F0            [24] 6782 	mov	b, r7
+      002123 12 1F 4F         [24] 6783 	lcall	_fuzzy_rules_free
+                           00206F  6784 	C$controller_8051.c$143$2_0$115 ==.
+                                   6785 ;	../../controller_8051.c:143: return 0.0f;
+      002126 90 00 00         [24] 6786 	mov	dptr,#0x0000
+      002129 E4               [12] 6787 	clr	a
+      00212A F5 F0            [12] 6788 	mov	b,a
+      00212C 02 22 1D         [24] 6789 	ljmp	00105$
+      00212F                       6790 00102$:
+                           002078  6791 	C$controller_8051.c$146$1_0$114 ==.
+                                   6792 ;	../../controller_8051.c:146: if (!FUZZY_RULE_ADD(
+      00212F A8 08            [24] 6793 	mov	r0,_bp
+      002131 08               [12] 6794 	inc	r0
+      002132 86 82            [24] 6795 	mov	dpl, @r0
+      002134 08               [12] 6796 	inc	r0
+      002135 86 83            [24] 6797 	mov	dph, @r0
+      002137 08               [12] 6798 	inc	r0
+      002138 86 F0            [24] 6799 	mov	b, @r0
+      00213A 08               [12] 6800 	inc	r0
+      00213B E6               [12] 6801 	mov	a, @r0
+      00213C C0 03            [24] 6802 	push	ar3
+      00213E 12 1F B6         [24] 6803 	lcall	_temperature_high
+      002141 C8               [12] 6804 	xch	a,r0
+      002142 E5 08            [12] 6805 	mov	a,_bp
+      002144 24 05            [12] 6806 	add	a,#0x05
+      002146 C8               [12] 6807 	xch	a,r0
+      002147 A6 82            [24] 6808 	mov	@r0, dpl
+      002149 08               [12] 6809 	inc	r0
+      00214A A6 83            [24] 6810 	mov	@r0, dph
+      00214C 08               [12] 6811 	inc	r0
+      00214D A6 F0            [24] 6812 	mov	@r0, b
+      00214F 08               [12] 6813 	inc	r0
+      002150 F6               [12] 6814 	mov	@r0,a
+      002151 D0 03            [24] 6815 	pop	ar3
+      002153 8B 02            [24] 6816 	mov	ar2,r3
+      002155 7E 00            [12] 6817 	mov	r6,#0x00
+      002157 7F 40            [12] 6818 	mov	r7,#0x40
+      002159 C0 03            [24] 6819 	push	ar3
+      00215B 74 42            [12] 6820 	mov	a,#_fan_fast
+      00215D C0 E0            [24] 6821 	push	acc
+      00215F 74 20            [12] 6822 	mov	a,#(_fan_fast >> 8)
+      002161 C0 E0            [24] 6823 	push	acc
+      002163 E5 08            [12] 6824 	mov	a,_bp
+      002165 24 05            [12] 6825 	add	a,#0x05
+      002167 F8               [12] 6826 	mov	r0,a
+      002168 E6               [12] 6827 	mov	a,@r0
+      002169 C0 E0            [24] 6828 	push	acc
+      00216B 08               [12] 6829 	inc	r0
+      00216C E6               [12] 6830 	mov	a,@r0
+      00216D C0 E0            [24] 6831 	push	acc
+      00216F 08               [12] 6832 	inc	r0
+      002170 E6               [12] 6833 	mov	a,@r0
+      002171 C0 E0            [24] 6834 	push	acc
+      002173 08               [12] 6835 	inc	r0
+      002174 E6               [12] 6836 	mov	a,@r0
+      002175 C0 E0            [24] 6837 	push	acc
+      002177 74 34            [12] 6838 	mov	a,#___str_1
+      002179 C0 E0            [24] 6839 	push	acc
+      00217B 74 27            [12] 6840 	mov	a,#(___str_1 >> 8)
+      00217D C0 E0            [24] 6841 	push	acc
+      00217F 74 80            [12] 6842 	mov	a,#0x80
+      002181 C0 E0            [24] 6843 	push	acc
+      002183 8A 82            [24] 6844 	mov	dpl, r2
+      002185 8E 83            [24] 6845 	mov	dph, r6
+      002187 8F F0            [24] 6846 	mov	b, r7
+      002189 12 16 85         [24] 6847 	lcall	_fuzzy_rules_add
+      00218C AF 82            [24] 6848 	mov	r7, dpl
+      00218E E5 81            [12] 6849 	mov	a,sp
+      002190 24 F7            [12] 6850 	add	a,#0xf7
+      002192 F5 81            [12] 6851 	mov	sp,a
+      002194 D0 03            [24] 6852 	pop	ar3
+      002196 EF               [12] 6853 	mov	a,r7
+                           0020E0  6854 	C$controller_8051.c$153$2_0$116 ==.
+                                   6855 ;	../../controller_8051.c:153: );
+      002197 70 16            [24] 6856 	jnz	00104$
+      002199 8B 05            [24] 6857 	mov	ar5,r3
+      00219B FE               [12] 6858 	mov	r6,a
+      00219C 7F 40            [12] 6859 	mov	r7,#0x40
+      00219E 8D 82            [24] 6860 	mov	dpl, r5
+      0021A0 8E 83            [24] 6861 	mov	dph, r6
+      0021A2 8F F0            [24] 6862 	mov	b, r7
+      0021A4 12 1F 4F         [24] 6863 	lcall	_fuzzy_rules_free
+                           0020F0  6864 	C$controller_8051.c$155$2_0$116 ==.
+                                   6865 ;	../../controller_8051.c:155: return 0.0f;
+      0021A7 90 00 00         [24] 6866 	mov	dptr,#0x0000
+      0021AA E4               [12] 6867 	clr	a
+      0021AB F5 F0            [12] 6868 	mov	b,a
+      0021AD 80 6E            [24] 6869 	sjmp	00105$
+      0021AF                       6870 00104$:
+                           0020F8  6871 	C$controller_8051.c$160$1_0$114 ==.
+                                   6872 ;	../../controller_8051.c:160: &rules,
+      0021AF 8B 05            [24] 6873 	mov	ar5,r3
+      0021B1 7E 00            [12] 6874 	mov	r6,#0x00
+      0021B3 7F 40            [12] 6875 	mov	r7,#0x40
+      0021B5 C0 03            [24] 6876 	push	ar3
+      0021B7 74 01            [12] 6877 	mov	a,#0x01
+      0021B9 C0 E0            [24] 6878 	push	acc
+      0021BB E4               [12] 6879 	clr	a
+      0021BC C0 E0            [24] 6880 	push	acc
+      0021BE C0 E0            [24] 6881 	push	acc
+      0021C0 74 20            [12] 6882 	mov	a,#0x20
+      0021C2 C0 E0            [24] 6883 	push	acc
+      0021C4 74 41            [12] 6884 	mov	a,#0x41
+      0021C6 C0 E0            [24] 6885 	push	acc
+      0021C8 E4               [12] 6886 	clr	a
+      0021C9 C0 E0            [24] 6887 	push	acc
+      0021CB C0 E0            [24] 6888 	push	acc
+      0021CD 74 C8            [12] 6889 	mov	a,#0xc8
+      0021CF C0 E0            [24] 6890 	push	acc
+      0021D1 74 42            [12] 6891 	mov	a,#0x42
+      0021D3 C0 E0            [24] 6892 	push	acc
+      0021D5 E4               [12] 6893 	clr	a
+      0021D6 C0 E0            [24] 6894 	push	acc
+      0021D8 C0 E0            [24] 6895 	push	acc
+      0021DA C0 E0            [24] 6896 	push	acc
+      0021DC C0 E0            [24] 6897 	push	acc
+      0021DE 8D 82            [24] 6898 	mov	dpl, r5
+      0021E0 8E 83            [24] 6899 	mov	dph, r6
+      0021E2 8F F0            [24] 6900 	mov	b, r7
+      0021E4 12 17 E9         [24] 6901 	lcall	_fuzzy_rules_defuzzify
+      0021E7 C8               [12] 6902 	xch	a,r0
+      0021E8 E5 08            [12] 6903 	mov	a,_bp
+      0021EA 24 9B            [12] 6904 	add	a,#0x9b
+      0021EC C8               [12] 6905 	xch	a,r0
+      0021ED A6 82            [24] 6906 	mov	@r0, dpl
+      0021EF 08               [12] 6907 	inc	r0
+      0021F0 A6 83            [24] 6908 	mov	@r0, dph
+      0021F2 08               [12] 6909 	inc	r0
+      0021F3 A6 F0            [24] 6910 	mov	@r0, b
+      0021F5 08               [12] 6911 	inc	r0
+      0021F6 F6               [12] 6912 	mov	@r0,a
+      0021F7 E5 81            [12] 6913 	mov	a,sp
+      0021F9 24 F3            [12] 6914 	add	a,#0xf3
+      0021FB F5 81            [12] 6915 	mov	sp,a
+      0021FD D0 03            [24] 6916 	pop	ar3
+                           002148  6917 	C$controller_8051.c$169$1_0$114 ==.
+                                   6918 ;	../../controller_8051.c:169: );
+      0021FF 8B 02            [24] 6919 	mov	ar2,r3
+      002201 7B 00            [12] 6920 	mov	r3,#0x00
+      002203 7F 40            [12] 6921 	mov	r7,#0x40
+      002205 8A 82            [24] 6922 	mov	dpl, r2
+      002207 8B 83            [24] 6923 	mov	dph, r3
+      002209 8F F0            [24] 6924 	mov	b, r7
+      00220B 12 1F 4F         [24] 6925 	lcall	_fuzzy_rules_free
+                           002157  6926 	C$controller_8051.c$171$1_0$114 ==.
+                                   6927 ;	../../controller_8051.c:171: return result;
+      00220E E5 08            [12] 6928 	mov	a,_bp
+      002210 24 9B            [12] 6929 	add	a,#0x9b
+      002212 F8               [12] 6930 	mov	r0,a
+      002213 86 82            [24] 6931 	mov	dpl, @r0
+      002215 08               [12] 6932 	inc	r0
+      002216 86 83            [24] 6933 	mov	dph, @r0
+      002218 08               [12] 6934 	inc	r0
+      002219 86 F0            [24] 6935 	mov	b, @r0
+      00221B 08               [12] 6936 	inc	r0
+      00221C E6               [12] 6937 	mov	a, @r0
+      00221D                       6938 00105$:
+                           002166  6939 	C$controller_8051.c$172$1_0$114 ==.
+                                   6940 ;	../../controller_8051.c:172: }
+      00221D 85 08 81         [24] 6941 	mov	sp,_bp
+      002220 D0 08            [24] 6942 	pop	_bp
+                           00216B  6943 	C$controller_8051.c$172$1_0$114 ==.
+                           00216B  6944 	XFcontroller_8051$calculate_fan_speed$0$0 ==.
+      002222 22               [24] 6945 	ret
+                                   6946 ;------------------------------------------------------------
+                                   6947 ;Allocation info for local variables in function 'fan_speed_to_pwm'
+                                   6948 ;------------------------------------------------------------
+                                   6949 ;fan_speed     Allocated to registers r4 r5 r6 r7 
+                                   6950 ;------------------------------------------------------------
+                           00216C  6951 	Fcontroller_8051$fan_speed_to_pwm$0$0 ==.
+                           00216C  6952 	C$controller_8051.c$179$1_0$118 ==.
+                                   6953 ;	../../controller_8051.c:179: static unsigned char fan_speed_to_pwm(
+                                   6954 ;	-----------------------------------------
+                                   6955 ;	 function fan_speed_to_pwm
+                                   6956 ;	-----------------------------------------
+      002223                       6957 _fan_speed_to_pwm:
+      002223 AC 82            [24] 6958 	mov	r4,dpl
+      002225 AD 83            [24] 6959 	mov	r5,dph
+      002227 AE F0            [24] 6960 	mov	r6,b
+      002229 FF               [12] 6961 	mov	r7,a
+                           002173  6962 	C$controller_8051.c$183$1_0$118 ==.
+                                   6963 ;	../../controller_8051.c:183: if (fan_speed <= 0.0f) {
+      00222A C0 07            [24] 6964 	push	ar7
+      00222C C0 06            [24] 6965 	push	ar6
+      00222E C0 05            [24] 6966 	push	ar5
+      002230 C0 04            [24] 6967 	push	ar4
+      002232 C0 04            [24] 6968 	push	ar4
+      002234 C0 05            [24] 6969 	push	ar5
+      002236 C0 06            [24] 6970 	push	ar6
+      002238 C0 07            [24] 6971 	push	ar7
+      00223A 90 00 00         [24] 6972 	mov	dptr,#0x0000
+      00223D E4               [12] 6973 	clr	a
+      00223E F5 F0            [12] 6974 	mov	b,a
+      002240 12 24 3A         [24] 6975 	lcall	___fslt
+      002243 E5 81            [12] 6976 	mov	a,sp
+      002245 24 FC            [12] 6977 	add	a,#0xfc
+      002247 F5 81            [12] 6978 	mov	sp,a
+      002249 D0 04            [24] 6979 	pop	ar4
+      00224B D0 05            [24] 6980 	pop	ar5
+      00224D D0 06            [24] 6981 	pop	ar6
+      00224F D0 07            [24] 6982 	pop	ar7
+      002251 E5 82            [12] 6983 	mov	a, dpl
+      002253 24 FF            [12] 6984 	add	a,#0xff
+      002255 92 00            [24] 6985 	mov	b0,c
+      002257 40 05            [24] 6986 	jc	00102$
+                           0021A2  6987 	C$controller_8051.c$184$2_0$119 ==.
+                                   6988 ;	../../controller_8051.c:184: return 0u;
+      002259 75 82 00         [24] 6989 	mov	dpl, #0x00
+      00225C 80 66            [24] 6990 	sjmp	00105$
+      00225E                       6991 00102$:
+                           0021A7  6992 	C$controller_8051.c$187$1_0$118 ==.
+                                   6993 ;	../../controller_8051.c:187: if (fan_speed >= 100.0f) {
+      00225E C0 07            [24] 6994 	push	ar7
+      002260 C0 06            [24] 6995 	push	ar6
+      002262 C0 05            [24] 6996 	push	ar5
+      002264 C0 04            [24] 6997 	push	ar4
+      002266 E4               [12] 6998 	clr	a
+      002267 C0 E0            [24] 6999 	push	acc
+      002269 C0 E0            [24] 7000 	push	acc
+      00226B 74 C8            [12] 7001 	mov	a,#0xc8
+      00226D C0 E0            [24] 7002 	push	acc
+      00226F 74 42            [12] 7003 	mov	a,#0x42
+      002271 C0 E0            [24] 7004 	push	acc
+      002273 8C 82            [24] 7005 	mov	dpl, r4
+      002275 8D 83            [24] 7006 	mov	dph, r5
+      002277 8E F0            [24] 7007 	mov	b, r6
+      002279 EF               [12] 7008 	mov	a, r7
+      00227A 12 24 3A         [24] 7009 	lcall	___fslt
+      00227D E5 81            [12] 7010 	mov	a,sp
+      00227F 24 FC            [12] 7011 	add	a,#0xfc
+      002281 F5 81            [12] 7012 	mov	sp,a
+      002283 D0 04            [24] 7013 	pop	ar4
+      002285 D0 05            [24] 7014 	pop	ar5
+      002287 D0 06            [24] 7015 	pop	ar6
+      002289 D0 07            [24] 7016 	pop	ar7
+      00228B E5 82            [12] 7017 	mov	a, dpl
+      00228D 24 FF            [12] 7018 	add	a,#0xff
+      00228F 92 00            [24] 7019 	mov	b0,c
+      002291 40 05            [24] 7020 	jc	00104$
+                           0021DC  7021 	C$controller_8051.c$188$2_0$120 ==.
+                                   7022 ;	../../controller_8051.c:188: return 100u;
+      002293 75 82 64         [24] 7023 	mov	dpl, #0x64
+      002296 80 2C            [24] 7024 	sjmp	00105$
+      002298                       7025 00104$:
+                           0021E1  7026 	C$controller_8051.c$193$1_0$118 ==.
+                                   7027 ;	../../controller_8051.c:193: );
+      002298 E4               [12] 7028 	clr	a
+      002299 C0 E0            [24] 7029 	push	acc
+      00229B C0 E0            [24] 7030 	push	acc
+      00229D C0 E0            [24] 7031 	push	acc
+      00229F 74 3F            [12] 7032 	mov	a,#0x3f
+      0022A1 C0 E0            [24] 7033 	push	acc
+      0022A3 8C 82            [24] 7034 	mov	dpl, r4
+      0022A5 8D 83            [24] 7035 	mov	dph, r5
+      0022A7 8E F0            [24] 7036 	mov	b, r6
+      0022A9 EF               [12] 7037 	mov	a, r7
+      0022AA 12 24 8C         [24] 7038 	lcall	___fsadd
+      0022AD AC 82            [24] 7039 	mov	r4, dpl
+      0022AF AD 83            [24] 7040 	mov	r5, dph
+      0022B1 AE F0            [24] 7041 	mov	r6, b
+      0022B3 FF               [12] 7042 	mov	r7, a
+      0022B4 E5 81            [12] 7043 	mov	a,sp
+      0022B6 24 FC            [12] 7044 	add	a,#0xfc
+      0022B8 F5 81            [12] 7045 	mov	sp,a
+      0022BA 8C 82            [24] 7046 	mov	dpl, r4
+      0022BC 8D 83            [24] 7047 	mov	dph, r5
+      0022BE 8E F0            [24] 7048 	mov	b, r6
+      0022C0 EF               [12] 7049 	mov	a, r7
+      0022C1 12 26 82         [24] 7050 	lcall	___fs2uchar
+      0022C4                       7051 00105$:
+                           00220D  7052 	C$controller_8051.c$194$1_0$118 ==.
+                                   7053 ;	../../controller_8051.c:194: }
+                           00220D  7054 	C$controller_8051.c$194$1_0$118 ==.
+                           00220D  7055 	XFcontroller_8051$fan_speed_to_pwm$0$0 ==.
+      0022C4 22               [24] 7056 	ret
+                                   7057 ;------------------------------------------------------------
+                                   7058 ;Allocation info for local variables in function 'main'
+                                   7059 ;------------------------------------------------------------
+                           00220E  7060 	G$main$0$0 ==.
+                           00220E  7061 	C$controller_8051.c$211$1_0$122 ==.
+                                   7062 ;	../../controller_8051.c:211: void main(void)
+                                   7063 ;	-----------------------------------------
+                                   7064 ;	 function main
+                                   7065 ;	-----------------------------------------
+      0022C5                       7066 _main:
+                           00220E  7067 	C$controller_8051.c$219$1_0$122 ==.
+                                   7068 ;	../../controller_8051.c:219: 42u;
+      0022C5 75 61 2A         [24] 7069 	mov	_test_temperature,#0x2a
+                           002211  7070 	C$controller_8051.c$225$1_0$122 ==.
+                                   7071 ;	../../controller_8051.c:225: 0x55u;
+      0022C8 75 80 55         [24] 7072 	mov	_P0,#0x55
+                           002214  7073 	C$controller_8051.c$228$1_0$122 ==.
+                                   7074 ;	../../controller_8051.c:228: 0x00u;
+      0022CB 75 90 00         [24] 7075 	mov	_P1,#0x00
+                           002217  7076 	C$controller_8051.c$234$1_0$122 ==.
+                                   7077 ;	../../controller_8051.c:234: test_temperature = P2;
+      0022CE 85 A0 61         [24] 7078 	mov	_test_temperature,_P2
+                           00221A  7079 	C$controller_8051.c$239$2_0$122 ==.
+                                   7080 ;	../../controller_8051.c:239: );
+      0022D1 85 61 82         [24] 7081 	mov	dpl, _test_temperature
+      0022D4 12 26 8A         [24] 7082 	lcall	___uchar2fs
+      0022D7 12 20 88         [24] 7083 	lcall	_calculate_fan_speed
+      0022DA 85 82 63         [24] 7084 	mov	_test_fan_speed,dpl
+      0022DD 85 83 64         [24] 7085 	mov	(_test_fan_speed + 1),dph
+      0022E0 85 F0 65         [24] 7086 	mov	(_test_fan_speed + 2),b
+      0022E3 F5 66            [12] 7087 	mov	(_test_fan_speed + 3),a
+                           00222E  7088 	C$controller_8051.c$243$1_0$122 ==.
+                                   7089 ;	../../controller_8051.c:243: test_fan_speed
+      0022E5 85 63 82         [24] 7090 	mov	dpl, _test_fan_speed
+      0022E8 85 64 83         [24] 7091 	mov	dph, (_test_fan_speed + 1)
+      0022EB 85 65 F0         [24] 7092 	mov	b, (_test_fan_speed + 2)
+      0022EE E5 66            [12] 7093 	mov	a, (_test_fan_speed + 3)
+      0022F0 12 22 23         [24] 7094 	lcall	_fan_speed_to_pwm
+      0022F3 85 82 62         [24] 7095 	mov	_test_pwm,dpl
+                           00223F  7096 	C$controller_8051.c$250$1_0$122 ==.
+                                   7097 ;	../../controller_8051.c:250: test_pwm;
+      0022F6 85 62 90         [24] 7098 	mov	_P1,_test_pwm
+                           002242  7099 	C$controller_8051.c$256$1_0$122 ==.
+                                   7100 ;	../../controller_8051.c:256: 0xAAu;
+      0022F9 75 80 AA         [24] 7101 	mov	_P0,#0xaa
+      0022FC                       7102 00103$:
+      0022FC 80 FE            [24] 7103 	sjmp	00103$
+                           002247  7104 	C$controller_8051.c$261$2_0$122 ==.
+                                   7105 ;	../../controller_8051.c:261: }
+                           002247  7106 	C$controller_8051.c$261$2_0$122 ==.
+                           002247  7107 	XG$main$0$0 ==.
+      0022FE 22               [24] 7108 	ret
+                                   7109 	.area CSEG    (CODE)
+                                   7110 	.area CONST   (CODE)
+                                   7111 	.area CONST   (CODE)
+                           000000  7112 Fcontroller_8051$hedges$0_0$0 == .
+      002728                       7113 _hedges:
+      002728 01                    7114 	.db #0x01	; 1
+      002729 02                    7115 	.db #0x02	; 2
+      00272A 03                    7116 	.db #0x03	; 3
+                                   7117 	.area CSEG    (CODE)
+                           002248  7118 Fcontroller_8051$__str_0$0_0$0 == .
+                                   7119 	.area CONST   (CODE)
+      00272B                       7120 ___str_0:
+      00272B 66 61 6E 5F 73 6C 6F  7121 	.ascii "fan_slow"
              77
-      002700 00                    7056 	.db 0x00
-                                   7057 	.area CSEG    (CODE)
-                           002215  7058 Fcontroller_8051$__str_1$0_0$0 == .
-                                   7059 	.area CONST   (CODE)
-      002701                       7060 ___str_1:
-      002701 66 61 6E 5F 66 61 73  7061 	.ascii "fan_fast"
+      002733 00                    7122 	.db 0x00
+                                   7123 	.area CSEG    (CODE)
+                           002248  7124 Fcontroller_8051$__str_1$0_0$0 == .
+                                   7125 	.area CONST   (CODE)
+      002734                       7126 ___str_1:
+      002734 66 61 6E 5F 66 61 73  7127 	.ascii "fan_fast"
              74
-      002709 00                    7062 	.db 0x00
-                                   7063 	.area CSEG    (CODE)
-                                   7064 	.area XINIT   (CODE)
-                                   7065 	.area CABS    (ABS,CODE)
+      00273C 00                    7128 	.db 0x00
+                                   7129 	.area CSEG    (CODE)
+                                   7130 	.area XINIT   (CODE)
+                                   7131 	.area CABS    (ABS,CODE)
