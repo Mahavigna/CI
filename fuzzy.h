@@ -243,7 +243,12 @@ typedef enum FuzzyShape {
     FUZZY_SHAPE_ZMF,
     FUZZY_SHAPE_GAUSSIAN,
     FUZZY_SHAPE_BELL,
-    FUZZY_SHAPE_SIGMOID
+    FUZZY_SHAPE_SIGMOID,
+    FUZZY_SHAPE_PIMF,
+    FUZZY_SHAPE_DSIGMOID,
+    FUZZY_SHAPE_PSIGMOID,
+    FUZZY_SHAPE_GAUSSIAN2,
+    FUZZY_SHAPE_PIECEWISE
 } fuzzy_shape_t;
 
 
@@ -1107,13 +1112,6 @@ float fuzzy_ramp(
 /*
  * Generic membership-function wrapper.
  *
- * The public fuzzy_function() macro collects its parameters
- * into a float buffer and automatically calculates the
- * number of supplied parameters.
- *
- * Desktop builds use a temporary compound-literal array.
- * FUZZY_8051 builds use the shared fixed-value buffer.
- *
  * Supported shapes and parameter layouts:
  *
  * FUZZY_SHAPE_RAMP:
@@ -1131,17 +1129,28 @@ float fuzzy_ramp(
  * FUZZY_SHAPE_ZMF:
  *     lower_boundary, upper_boundary
  *
+ * FUZZY_SHAPE_PIMF:
+ *     a, b, c, d
+ *
  * FUZZY_SHAPE_GAUSSIAN:
  *     mean, standard_deviation
+ *
+ * FUZZY_SHAPE_GAUSSIAN2:
+ *     mean_1, standard_deviation_1,
+ *     mean_2, standard_deviation_2
  *
  * FUZZY_SHAPE_BELL:
  *     width, slope, center
  *
  * FUZZY_SHAPE_SIGMOID:
  *     slope, center
+ *
+ * FUZZY_SHAPE_DSIGMOID:
+ *     slope_1, center_1, slope_2, center_2
+ *
+ * FUZZY_SHAPE_PSIGMOID:
+ *     slope_1, center_1, slope_2, center_2
  */
-
-
 float fuzzy_function_array(
     fuzzy_shape_t shape,
     float value,
@@ -1162,7 +1171,9 @@ float fuzzy_function_array(
     float normalized;
     float difference;
     float exponent;
-#endif /* FUZZY_8051 */
+    float sigmoid_1;
+    float sigmoid_2;
+#endif
 
     if (parameters == NULL) {
         return LEVEL_LO;
@@ -1207,14 +1218,12 @@ float fuzzy_function_array(
                 result = LEVEL_HI;
             }
             else if (value < parameter_2) {
-                result =
-                    (value - parameter_1) /
-                    (parameter_2 - parameter_1);
+                result = (value - parameter_1) /
+                         (parameter_2 - parameter_1);
             }
             else {
-                result =
-                    (parameter_3 - value) /
-                    (parameter_3 - parameter_2);
+                result = (parameter_3 - value) /
+                         (parameter_3 - parameter_2);
             }
             break;
 
@@ -1244,14 +1253,12 @@ float fuzzy_function_array(
                 result = LEVEL_HI;
             }
             else if (value < parameter_2) {
-                result =
-                    (value - parameter_1) /
-                    (parameter_2 - parameter_1);
+                result = (value - parameter_1) /
+                         (parameter_2 - parameter_1);
             }
             else {
-                result =
-                    (parameter_4 - value) /
-                    (parameter_4 - parameter_3);
+                result = (parameter_4 - value) /
+                         (parameter_4 - parameter_3);
             }
             break;
 
@@ -1265,7 +1272,10 @@ float fuzzy_function_array(
             parameter_1 = parameters[0];
             parameter_2 = parameters[1];
 
-            if (parameter_1 >= parameter_2 || value <= parameter_1) {
+            if (
+                parameter_1 >= parameter_2 ||
+                value <= parameter_1
+            ) {
                 result = LEVEL_LO;
             }
             else if (value >= parameter_2) {
@@ -1275,20 +1285,17 @@ float fuzzy_function_array(
                 middle = (parameter_1 + parameter_2) / 2.0f;
 
                 if (value <= middle) {
-                    normalized =
-                        (value - parameter_1) /
-                        (parameter_2 - parameter_1);
+                    normalized = (value - parameter_1) /
+                                 (parameter_2 - parameter_1);
 
                     result = 2.0f * normalized * normalized;
                 }
                 else {
-                    normalized =
-                        (parameter_2 - value) /
-                        (parameter_2 - parameter_1);
+                    normalized = (parameter_2 - value) /
+                                 (parameter_2 - parameter_1);
 
-                    result =
-                        LEVEL_HI -
-                        2.0f * normalized * normalized;
+                    result = LEVEL_HI -
+                             2.0f * normalized * normalized;
                 }
             }
             break;
@@ -1301,7 +1308,10 @@ float fuzzy_function_array(
             parameter_1 = parameters[0];
             parameter_2 = parameters[1];
 
-            if (parameter_1 >= parameter_2 || value >= parameter_2) {
+            if (
+                parameter_1 >= parameter_2 ||
+                value >= parameter_2
+            ) {
                 result = LEVEL_LO;
             }
             else if (value <= parameter_1) {
@@ -1311,18 +1321,81 @@ float fuzzy_function_array(
                 middle = (parameter_1 + parameter_2) / 2.0f;
 
                 if (value <= middle) {
-                    normalized =
-                        (value - parameter_1) /
-                        (parameter_2 - parameter_1);
+                    normalized = (value - parameter_1) /
+                                 (parameter_2 - parameter_1);
 
-                    result =
-                        LEVEL_HI -
-                        2.0f * normalized * normalized;
+                    result = LEVEL_HI -
+                             2.0f * normalized * normalized;
                 }
                 else {
-                    normalized =
-                        (parameter_2 - value) /
-                        (parameter_2 - parameter_1);
+                    normalized = (parameter_2 - value) /
+                                 (parameter_2 - parameter_1);
+
+                    result = 2.0f * normalized * normalized;
+                }
+            }
+            break;
+
+        case FUZZY_SHAPE_PIMF:
+            if (parameter_count != 4u) {
+                return LEVEL_LO;
+            }
+
+            parameter_1 = parameters[0];
+            parameter_2 = parameters[1];
+            parameter_3 = parameters[2];
+            parameter_4 = parameters[3];
+
+            if (
+                parameter_1 >= parameter_2 ||
+                parameter_2 > parameter_3 ||
+                parameter_3 >= parameter_4
+            ) {
+                return LEVEL_LO;
+            }
+
+            if (
+                value <= parameter_1 ||
+                value >= parameter_4
+            ) {
+                result = LEVEL_LO;
+            }
+            else if (
+                value >= parameter_2 &&
+                value <= parameter_3
+            ) {
+                result = LEVEL_HI;
+            }
+            else if (value < parameter_2) {
+                middle = (parameter_1 + parameter_2) / 2.0f;
+
+                if (value <= middle) {
+                    normalized = (value - parameter_1) /
+                                 (parameter_2 - parameter_1);
+
+                    result = 2.0f * normalized * normalized;
+                }
+                else {
+                    normalized = (parameter_2 - value) /
+                                 (parameter_2 - parameter_1);
+
+                    result = LEVEL_HI -
+                             2.0f * normalized * normalized;
+                }
+            }
+            else {
+                middle = (parameter_3 + parameter_4) / 2.0f;
+
+                if (value <= middle) {
+                    normalized = (value - parameter_3) /
+                                 (parameter_4 - parameter_3);
+
+                    result = LEVEL_HI -
+                             2.0f * normalized * normalized;
+                }
+                else {
+                    normalized = (parameter_4 - value) /
+                                 (parameter_4 - parameter_3);
 
                     result = 2.0f * normalized * normalized;
                 }
@@ -1342,9 +1415,46 @@ float fuzzy_function_array(
             }
             else {
                 difference = value - parameter_1;
-                exponent =
-                    -(difference * difference) /
-                    (2.0f * parameter_2 * parameter_2);
+                exponent = -(difference * difference) /
+                           (2.0f * parameter_2 * parameter_2);
+
+                result = expf(exponent);
+            }
+            break;
+
+        case FUZZY_SHAPE_GAUSSIAN2:
+            if (parameter_count != 4u) {
+                return LEVEL_LO;
+            }
+
+            parameter_1 = parameters[0];
+            parameter_2 = parameters[1];
+            parameter_3 = parameters[2];
+            parameter_4 = parameters[3];
+
+            if (
+                parameter_2 <= 0.0f ||
+                parameter_4 <= 0.0f ||
+                parameter_1 > parameter_3
+            ) {
+                return LEVEL_LO;
+            }
+
+            if (value < parameter_1) {
+                difference = value - parameter_1;
+                exponent = -(difference * difference) /
+                           (2.0f * parameter_2 * parameter_2);
+
+                result = expf(exponent);
+            }
+            else if (value <= parameter_3) {
+                result = LEVEL_HI;
+            }
+            else {
+                difference = value - parameter_3;
+                exponent = -(difference * difference) /
+                           (2.0f * parameter_4 * parameter_4);
+
                 result = expf(exponent);
             }
             break;
@@ -1362,18 +1472,16 @@ float fuzzy_function_array(
                 result = LEVEL_LO;
             }
             else {
-                normalized =
-                    fabsf(
-                        (value - parameter_3) /
-                        (parameter_1 / 2.0f)
-                    );
+                normalized = fabsf(
+                    (value - parameter_3) /
+                    (parameter_1 / 2.0f)
+                );
 
-                result =
-                    LEVEL_HI /
-                    (
-                        LEVEL_HI +
-                        powf(normalized, 2.0f * parameter_2)
-                    );
+                result = LEVEL_HI /
+                         (
+                             LEVEL_HI +
+                             powf(normalized, 2.0f * parameter_2)
+                         );
             }
             break;
 
@@ -1385,35 +1493,84 @@ float fuzzy_function_array(
             parameter_1 = parameters[0];
             parameter_2 = parameters[1];
 
-            result =
-                LEVEL_HI /
-                (
-                    LEVEL_HI +
-                    expf(-parameter_1 * (value - parameter_2))
-                );
+            result = LEVEL_HI /
+                     (
+                         LEVEL_HI +
+                         expf(-parameter_1 * (value - parameter_2))
+                     );
+            break;
+
+        case FUZZY_SHAPE_DSIGMOID:
+            if (parameter_count != 4u) {
+                return LEVEL_LO;
+            }
+
+            parameter_1 = parameters[0];
+            parameter_2 = parameters[1];
+            parameter_3 = parameters[2];
+            parameter_4 = parameters[3];
+
+            sigmoid_1 = LEVEL_HI /
+                        (
+                            LEVEL_HI +
+                            expf(-parameter_1 * (value - parameter_2))
+                        );
+
+            sigmoid_2 = LEVEL_HI /
+                        (
+                            LEVEL_HI +
+                            expf(-parameter_3 * (value - parameter_4))
+                        );
+
+            result = sigmoid_1 - sigmoid_2;
+            break;
+
+        case FUZZY_SHAPE_PSIGMOID:
+            if (parameter_count != 4u) {
+                return LEVEL_LO;
+            }
+
+            parameter_1 = parameters[0];
+            parameter_2 = parameters[1];
+            parameter_3 = parameters[2];
+            parameter_4 = parameters[3];
+
+            sigmoid_1 = LEVEL_HI /
+                        (
+                            LEVEL_HI +
+                            expf(-parameter_1 * (value - parameter_2))
+                        );
+
+            sigmoid_2 = LEVEL_HI /
+                        (
+                            LEVEL_HI +
+                            expf(-parameter_3 * (value - parameter_4))
+                        );
+
+            result = sigmoid_1 * sigmoid_2;
             break;
 
 #else
 
         case FUZZY_SHAPE_SMF:
         case FUZZY_SHAPE_ZMF:
+        case FUZZY_SHAPE_PIMF:
         case FUZZY_SHAPE_GAUSSIAN:
+        case FUZZY_SHAPE_GAUSSIAN2:
         case FUZZY_SHAPE_BELL:
         case FUZZY_SHAPE_SIGMOID:
+        case FUZZY_SHAPE_DSIGMOID:
+        case FUZZY_SHAPE_PSIGMOID:
             return LEVEL_LO;
 
-#endif /* FUZZY_8051 */
+#endif
 
         default:
             return LEVEL_LO;
     }
 
-    return fuzzy_apply_hedge(
-        result,
-        hedge
-    );
+    return fuzzy_apply_hedge(result, hedge);
 }
-
 
 void fuzzy_rules_create(
     fuzzy_rules_t *rules

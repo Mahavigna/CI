@@ -24,10 +24,13 @@
  * - Trapezoid membership functions
  * - S-shaped membership functions
  * - Z-shaped membership functions
+ * - Pi-shaped membership functions
  * - Gaussian membership functions
+ * - Two-sided Gaussian membership functions
  * - Generalized bell membership functions
  * - Sigmoid membership functions
- * - Linguistic hedges
+ * - Difference-of-sigmoids membership functions
+ * - Product-of-sigmoids membership functions * - Linguistic hedges
  * - Fuzzy AND
  * - Fuzzy OR
  * - Nested fuzzy expressions
@@ -132,9 +135,13 @@ typedef struct RandomFuzzyParameters {
     float shape_trapezoid[4];
     float shape_smf[2];
     float shape_zmf[2];
+    float shape_pimf[4];
     float shape_gauss[2];
+    float shape_gauss2[4];
     float shape_bell[3];
     float shape_sigmoid[2];
+    float shape_dsigmoid[4];
+    float shape_psigmoid[4];
 
     /*
      * Shared randomized trapezoid for hedge comparison.
@@ -251,17 +258,34 @@ static void randomize_membership_parameters(void)
     random_ordered_4(parameters.shape_trapezoid, 5.0f, 95.0f, 12.0f);
     random_ordered_2(parameters.shape_smf, 10.0f, 90.0f, 20.0f);
     random_ordered_2(parameters.shape_zmf, 10.0f, 90.0f, 20.0f);
+    random_ordered_4(parameters.shape_pimf, 5.0f, 95.0f, 12.0f);
 
     parameters.shape_gauss[0] = random_float(30.0f, 70.0f);
     parameters.shape_gauss[1] = random_float(8.0f, 22.0f);
+
+    parameters.shape_gauss2[0] = random_float(20.0f, 40.0f);
+    parameters.shape_gauss2[1] = random_float(6.0f, 15.0f);
+    parameters.shape_gauss2[2] = random_float(60.0f, 80.0f);
+    parameters.shape_gauss2[3] = random_float(6.0f, 15.0f);
+
     parameters.shape_bell[0] = random_float(20.0f, 55.0f);
     parameters.shape_bell[1] = random_float(1.5f, 4.0f);
     parameters.shape_bell[2] = random_float(30.0f, 70.0f);
+
     parameters.shape_sigmoid[0] = random_float(0.06f, 0.20f);
     parameters.shape_sigmoid[1] = random_float(30.0f, 70.0f);
 
-    random_ordered_4(parameters.hedge_trapezoid, 5.0f, 95.0f, 12.0f);
-    random_not_rule = (random_not_rule_t)(rand() % RANDOM_NOT_RULE_COUNT);
+    parameters.shape_dsigmoid[0] = random_float(0.08f, 0.20f);
+    parameters.shape_dsigmoid[1] = random_float(20.0f, 40.0f);
+    parameters.shape_dsigmoid[2] = random_float(0.08f, 0.20f);
+    parameters.shape_dsigmoid[3] = random_float(60.0f, 80.0f);
+
+    parameters.shape_psigmoid[0] = random_float(0.08f, 0.20f);
+    parameters.shape_psigmoid[1] = random_float(20.0f, 40.0f);
+    parameters.shape_psigmoid[2] = -random_float(0.08f, 0.20f);
+    parameters.shape_psigmoid[3] = random_float(60.0f, 80.0f);
+
+    random_ordered_4(parameters.hedge_trapezoid, 5.0f, 95.0f, 12.0f); random_not_rule = (random_not_rule_t)(rand() % RANDOM_NOT_RULE_COUNT);
 }
 
 /* ==========================================================
@@ -317,21 +341,29 @@ FUZZY_VAR(hedge_somewhat_demo, FUZZY_SHAPE_TRAPEZOID, hedges.somewhat, parameter
 
 FUZZY_VAR(hedge_slightly_demo, FUZZY_SHAPE_TRAPEZOID, hedges.slightly, parameters.hedge_trapezoid[0], parameters.hedge_trapezoid[1], parameters.hedge_trapezoid[2], parameters.hedge_trapezoid[3])
 
-FUZZY_VAR(shape_ramp_demo, FUZZY_SHAPE_RAMP, hedges.none, 20.0f, 80.0f, true)
+FUZZY_VAR(shape_ramp_demo, FUZZY_SHAPE_RAMP, hedges.none, parameters.shape_ramp[0], parameters.shape_ramp[1], true)
 
-FUZZY_VAR(shape_triangle_demo, FUZZY_SHAPE_TRIANGLE, hedges.none, 10.0f, 50.0f, 90.0f)
+FUZZY_VAR(shape_triangle_demo, FUZZY_SHAPE_TRIANGLE, hedges.none, parameters.shape_triangle[0], parameters.shape_triangle[1], parameters.shape_triangle[2])
 
-FUZZY_VAR(shape_trapezoid_demo, FUZZY_SHAPE_TRAPEZOID, hedges.none, 10.0f, 30.0f, 70.0f, 90.0f)
+FUZZY_VAR(shape_trapezoid_demo, FUZZY_SHAPE_TRAPEZOID, hedges.none, parameters.shape_trapezoid[0], parameters.shape_trapezoid[1], parameters.shape_trapezoid[2], parameters.shape_trapezoid[3])
 
-FUZZY_VAR(shape_smf_demo, FUZZY_SHAPE_SMF, hedges.none, 20.0f, 80.0f)
+FUZZY_VAR(shape_smf_demo, FUZZY_SHAPE_SMF, hedges.none, parameters.shape_smf[0], parameters.shape_smf[1])
 
-FUZZY_VAR(shape_zmf_demo, FUZZY_SHAPE_ZMF, hedges.none, 20.0f, 80.0f)
+FUZZY_VAR(shape_zmf_demo, FUZZY_SHAPE_ZMF, hedges.none, parameters.shape_zmf[0], parameters.shape_zmf[1])
 
-FUZZY_VAR(shape_gauss_demo, FUZZY_SHAPE_GAUSSIAN, hedges.none, 50.0f, 15.0f)
+FUZZY_VAR(shape_pimf_demo, FUZZY_SHAPE_PIMF, hedges.none, parameters.shape_pimf[0], parameters.shape_pimf[1], parameters.shape_pimf[2], parameters.shape_pimf[3])
 
-FUZZY_VAR(shape_bell_demo, FUZZY_SHAPE_BELL, hedges.none, 40.0f, 2.0f, 50.0f)
+FUZZY_VAR(shape_gauss_demo, FUZZY_SHAPE_GAUSSIAN, hedges.none, parameters.shape_gauss[0], parameters.shape_gauss[1])
 
-FUZZY_VAR(shape_sigmoid_demo, FUZZY_SHAPE_SIGMOID, hedges.none, 0.12f, 50.0f)
+FUZZY_VAR(shape_gauss2_demo, FUZZY_SHAPE_GAUSSIAN2, hedges.none, parameters.shape_gauss2[0], parameters.shape_gauss2[1], parameters.shape_gauss2[2], parameters.shape_gauss2[3])
+
+FUZZY_VAR(shape_bell_demo, FUZZY_SHAPE_BELL, hedges.none, parameters.shape_bell[0], parameters.shape_bell[1], parameters.shape_bell[2])
+
+FUZZY_VAR(shape_sigmoid_demo, FUZZY_SHAPE_SIGMOID, hedges.none, parameters.shape_sigmoid[0], parameters.shape_sigmoid[1])
+
+FUZZY_VAR(shape_dsigmoid_demo, FUZZY_SHAPE_DSIGMOID, hedges.none, parameters.shape_dsigmoid[0], parameters.shape_dsigmoid[1], parameters.shape_dsigmoid[2], parameters.shape_dsigmoid[3])
+
+FUZZY_VAR(shape_psigmoid_demo, FUZZY_SHAPE_PSIGMOID, hedges.none, parameters.shape_psigmoid[0], parameters.shape_psigmoid[1], parameters.shape_psigmoid[2], parameters.shape_psigmoid[3])
 
 /* ==========================================================
  * Randomized fuzzy-NOT rule evaluation
@@ -753,10 +785,16 @@ static void plot_all_membership_functions(void)
         SERIES(shape_triangle_demo, "#f97316"),
         SERIES(shape_trapezoid_demo, "#eab308"),
         SERIES(shape_smf_demo, "#22c55e"),
-        SERIES(shape_zmf_demo, "#3b82f6"),
-        SERIES(shape_gauss_demo, "#8b5cf6"),
+        SERIES(shape_zmf_demo, "#3b82f6"),    
+        SERIES(shape_gauss_demo, "#8b5cf6"));
+
+    PLOT(DEMO_DIRECTORY "/all_shapes_extended", "All Supported Membership Shapes Extended", 100.0f, 0.5f,
+        SERIES(shape_gauss2_demo, "#6366f1"),
         SERIES(shape_bell_demo, "#ec4899"),
-        SERIES(shape_sigmoid_demo, "#06b6d4"));
+        SERIES(shape_sigmoid_demo, "#06b6d4"),
+        SERIES(shape_dsigmoid_demo, "#84cc16"),
+        SERIES(shape_psigmoid_demo, "#f43f5e"),
+        SERIES(shape_pimf_demo, "#14b8a6"));
 
     PLOT(DEMO_DIRECTORY "/all_hedges", "All Linguistic Hedge Exponents", 100.0f, 0.5f,
         SERIES(hedge_none_demo, "#111827"),
