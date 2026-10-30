@@ -420,6 +420,24 @@ float fuzzy_function_array(
     )
 
 
+/*FUZZY ADAPTER LESS VERBOSE SYNTAX*/    
+#define SAND(a, b) fuzzy_and_method(FUZZY_LOGIC_STANDARD, (a), (b))
+#define SOR(a, b)  fuzzy_or_method(FUZZY_LOGIC_STANDARD, (a), (b))
+#define AAND(a, b) fuzzy_and_method(FUZZY_LOGIC_ALGEBRAIC, (a), (b))
+#define AOR(a, b)  fuzzy_or_method(FUZZY_LOGIC_ALGEBRAIC, (a), (b))
+#define BAND(a, b) fuzzy_and_method(FUZZY_LOGIC_BOUNDED, (a), (b))
+#define BOR(a, b)  fuzzy_or_method(FUZZY_LOGIC_BOUNDED, (a), (b))
+
+#define RULE(name, activation, output) FUZZY_RULE_ADD_NAMED(rules, name, activation, output)
+#define OPERATOR(name, operation, method) static float name(float x) { return operation(method, x, 0.5f); }
+
+#ifndef FUZZY_8051
+
+    /*FUZZY VARIABLE NAMING AND SHAPE SET WITH PY-STYLE SYNTAX*/        
+    #define FUZZY_VAR(name, shape, hedge, ...) static float name(float x) { return fuzzy_function(shape, x, hedge, __VA_ARGS__); }
+
+#endif
+
 
 void fuzzy_rules_create(
     fuzzy_rules_t *rules
@@ -604,6 +622,10 @@ typedef struct FuzzyCogSweep {
         }                                             \
     )
 
+/* PLOTTING ADAPTER FOR COMPRESSED SYNTAX */
+#define SERIES(fn, color) FUZZY_PLOT_FUNCTION_NAMED(#fn, color, fn)
+#define PLOT(path, title, max, step, ...) \
+    FUZZY_PLOT(path, title, 0.0f, max, step, __VA_ARGS__)
 
 bool fuzzy_plot_many(
     const char *filename,
@@ -1893,9 +1915,9 @@ bool fuzzy_rules_plot_cog(
         "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
         "stroke=\"#a855f7\" stroke-width=\"4\" />\n",
         left + 15,
-        top + 20,
+        top - 20,
         left + 45,
-        top + 20
+        top - 20
     );
 
     fprintf(
@@ -1904,7 +1926,7 @@ bool fuzzy_rules_plot_cog(
         "font-family=\"sans-serif\" font-size=\"14\" "
         "fill=\"black\">Aggregated output</text>\n",
         left + 55,
-        top + 20
+        top - 20
     );
 
     fuzzy_plot_end(&plot);

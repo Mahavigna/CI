@@ -172,132 +172,30 @@ typedef enum RandomNotRule {
 
 static random_not_rule_t random_not_rule = RANDOM_NOT_TEMPERATURE_HIGH;
 
-/* ==========================================================
- * Random-number helper
- * ========================================================== */
-
-static float random_float(
-    float lower,
-    float upper
-)
+static float random_float(float lower, float upper)
 {
-    if (lower >= upper) {
-        return lower;
-    }
-
-    float ratio =
-        (float)rand() /
-        (float)RAND_MAX;
-
-    return lower +
-        ratio * (upper - lower);
+    return lower + (float)rand() / (float)RAND_MAX * (upper - lower);
 }
 
-/*
- * Generate two strictly ordered parameters:
- *
- * a < b
- */
-static void random_ordered_2(
-    float output[2],
-    float lower,
-    float upper,
-    float minimum_gap
-)
+static void random_ordered_2(float output[2], float lower, float upper, float gap)
 {
-    if (
-        output == NULL ||
-        upper - lower < minimum_gap
-    ) {
-        return;
-    }
-
-    output[0] = random_float(
-        lower,
-        upper - minimum_gap
-    );
-
-    output[1] = random_float(
-        output[0] + minimum_gap,
-        upper
-    );
+    output[0] = random_float(lower, upper - gap);
+    output[1] = random_float(output[0] + gap, upper);
 }
 
-
-/*
- * Generate three strictly ordered parameters:
- *
- * a < b < c
- */
-static void random_ordered_3(
-    float output[3],
-    float lower,
-    float upper,
-    float minimum_gap
-)
+static void random_ordered_3(float output[3], float lower, float upper, float gap)
 {
-    if (
-        output == NULL ||
-        upper - lower < 2.0f * minimum_gap
-    ) {
-        return;
-    }
-
-    output[0] = random_float(
-        lower,
-        upper - 2.0f * minimum_gap
-    );
-
-    output[1] = random_float(
-        output[0] + minimum_gap,
-        upper - minimum_gap
-    );
-
-    output[2] = random_float(
-        output[1] + minimum_gap,
-        upper
-    );
+    output[0] = random_float(lower, upper - 2.0f * gap);
+    output[1] = random_float(output[0] + gap, upper - gap);
+    output[2] = random_float(output[1] + gap, upper);
 }
 
-
-/*
- * Generate four strictly ordered parameters:
- *
- * a < b < c < d
- */
-static void random_ordered_4(
-    float output[4],
-    float lower,
-    float upper,
-    float minimum_gap
-)
+static void random_ordered_4(float output[4], float lower, float upper, float gap)
 {
-    if (
-        output == NULL ||
-        upper - lower < 3.0f * minimum_gap
-    ) {
-        return;
-    }
-
-    output[0] = random_float(
-        lower,
-        upper - 3.0f * minimum_gap
-    );
-
-    output[1] = random_float(
-        output[0] + minimum_gap,
-        upper - 2.0f * minimum_gap
-    );
-
-    output[2] = random_float(
-        output[1] + minimum_gap,
-        upper - minimum_gap
-    );
-
-    output[3] = random_float(
-        output[2] + minimum_gap,
-        upper
-    );
+    output[0] = random_float(lower, upper - 3.0f * gap);
+    output[1] = random_float(output[0] + gap, upper - 2.0f * gap);
+    output[2] = random_float(output[1] + gap, upper - gap);
+    output[3] = random_float(output[2] + gap, upper);
 }
 
 
@@ -316,691 +214,124 @@ static void random_ordered_4(
  */
 static void randomize_membership_parameters(void)
 {
-    /*
-     * Temperature: 0 to 100.
-     */
-    random_ordered_2(
-        parameters.temperature_low,
-        10.0f,
-        48.0f,
-        8.0f
-    );
+    random_ordered_2(parameters.temperature_low, 10.0f, 48.0f, 8.0f);
+    parameters.temperature_medium[0] = random_float(38.0f, 62.0f);
+    parameters.temperature_medium[1] = random_float(8.0f, 20.0f);
+    random_ordered_2(parameters.temperature_high, 52.0f, 95.0f, 8.0f);
 
-    parameters.temperature_medium[0] =
-        random_float(38.0f, 62.0f);
+    random_ordered_2(parameters.humidity_low, 10.0f, 48.0f, 8.0f);
+    random_ordered_4(parameters.humidity_medium, 18.0f, 82.0f, 8.0f);
+    parameters.humidity_high[0] = random_float(0.07f, 0.20f);
+    parameters.humidity_high[1] = random_float(55.0f, 78.0f);
 
-    parameters.temperature_medium[1] =
-        random_float(8.0f, 20.0f);
+    random_ordered_2(parameters.vibration_low, 0.5f, 4.8f, 1.0f);
+    parameters.vibration_medium[0] = random_float(3.0f, 6.5f);
+    parameters.vibration_medium[1] = random_float(1.5f, 4.0f);
+    parameters.vibration_medium[2] = random_float(3.5f, 6.5f);
+    random_ordered_2(parameters.vibration_high, 5.0f, 9.8f, 1.0f);
 
-    random_ordered_2(
-        parameters.temperature_high,
-        52.0f,
-        95.0f,
-        8.0f
-    );
+    random_ordered_2(parameters.pressure_low, 20.0f, 95.0f, 20.0f);
+    random_ordered_3(parameters.pressure_normal, 45.0f, 175.0f, 25.0f);
+    parameters.pressure_high[0] = random_float(0.035f, 0.095f);
+    parameters.pressure_high[1] = random_float(125.0f, 170.0f);
 
-    /*
-     * Humidity: 0 to 100.
-     */
-    random_ordered_2(
-        parameters.humidity_low,
-        10.0f,
-        48.0f,
-        8.0f
-    );
+    random_ordered_2(parameters.quality_poor, 10.0f, 52.0f, 10.0f);
+    parameters.quality_average[0] = random_float(42.0f, 65.0f);
+    parameters.quality_average[1] = random_float(8.0f, 20.0f);
+    random_ordered_2(parameters.quality_good, 50.0f, 96.0f, 10.0f);
 
-    random_ordered_4(
-        parameters.humidity_medium,
-        18.0f,
-        82.0f,
-        8.0f
-    );
+    random_ordered_2(parameters.response_minimal, 5.0f, 35.0f, 8.0f);
+    random_ordered_3(parameters.response_low, 5.0f, 55.0f, 10.0f);
+    random_ordered_4(parameters.response_moderate, 22.0f, 76.0f, 8.0f);
+    random_ordered_3(parameters.response_high, 48.0f, 95.0f, 8.0f);
+    random_ordered_2(parameters.response_critical, 68.0f, 99.0f, 7.0f);
 
-    random_not_rule =
-        (random_not_rule_t)(
-            rand() %
-            (int)RANDOM_NOT_RULE_COUNT
-        );
+    random_ordered_2(parameters.shape_ramp, 10.0f, 90.0f, 20.0f);
+    random_ordered_3(parameters.shape_triangle, 5.0f, 95.0f, 15.0f);
+    random_ordered_4(parameters.shape_trapezoid, 5.0f, 95.0f, 12.0f);
+    random_ordered_2(parameters.shape_smf, 10.0f, 90.0f, 20.0f);
+    random_ordered_2(parameters.shape_zmf, 10.0f, 90.0f, 20.0f);
 
-    parameters.humidity_high[0] =
-        random_float(0.07f, 0.20f);
+    parameters.shape_gauss[0] = random_float(30.0f, 70.0f);
+    parameters.shape_gauss[1] = random_float(8.0f, 22.0f);
+    parameters.shape_bell[0] = random_float(20.0f, 55.0f);
+    parameters.shape_bell[1] = random_float(1.5f, 4.0f);
+    parameters.shape_bell[2] = random_float(30.0f, 70.0f);
+    parameters.shape_sigmoid[0] = random_float(0.06f, 0.20f);
+    parameters.shape_sigmoid[1] = random_float(30.0f, 70.0f);
 
-    parameters.humidity_high[1] =
-        random_float(55.0f, 78.0f);
-
-    /*
-     * Vibration: 0 to 10.
-     */
-    random_ordered_2(
-        parameters.vibration_low,
-        0.5f,
-        4.8f,
-        1.0f
-    );
-
-    parameters.vibration_medium[0] =
-        random_float(3.0f, 6.5f);
-
-    parameters.vibration_medium[1] =
-        random_float(1.5f, 4.0f);
-
-    parameters.vibration_medium[2] =
-        random_float(3.5f, 6.5f);
-
-    random_ordered_2(
-        parameters.vibration_high,
-        5.0f,
-        9.8f,
-        1.0f
-    );
-
-    /*
-     * Pressure: 0 to 200.
-     */
-    random_ordered_2(
-        parameters.pressure_low,
-        20.0f,
-        95.0f,
-        20.0f
-    );
-
-    random_ordered_3(
-        parameters.pressure_normal,
-        45.0f,
-        175.0f,
-        25.0f
-    );
-
-    parameters.pressure_high[0] =
-        random_float(0.035f, 0.095f);
-
-    parameters.pressure_high[1] =
-        random_float(125.0f, 170.0f);
-
-    /*
-     * Material quality: 0 to 100.
-     */
-    random_ordered_2(
-        parameters.quality_poor,
-        10.0f,
-        52.0f,
-        10.0f
-    );
-
-    parameters.quality_average[0] =
-        random_float(42.0f, 65.0f);
-
-    parameters.quality_average[1] =
-        random_float(8.0f, 20.0f);
-
-    random_ordered_2(
-        parameters.quality_good,
-        50.0f,
-        96.0f,
-        10.0f
-    );
-
-    /*
-     * Process response: 0 to 100.
-     */
-    random_ordered_2(
-        parameters.response_minimal,
-        5.0f,
-        35.0f,
-        8.0f
-    );
-
-    random_ordered_3(
-        parameters.response_low,
-        5.0f,
-        55.0f,
-        10.0f
-    );
-
-    random_ordered_4(
-        parameters.response_moderate,
-        22.0f,
-        76.0f,
-        8.0f
-    );
-
-    random_ordered_3(
-        parameters.response_high,
-        48.0f,
-        95.0f,
-        8.0f
-    );
-
-    random_ordered_2(
-        parameters.response_critical,
-        68.0f,
-        99.0f,
-        7.0f
-    );
-
-    /*
-     * Generic shape demonstration: 0 to 100.
-     */
-    random_ordered_2(
-        parameters.shape_ramp,
-        10.0f,
-        90.0f,
-        20.0f
-    );
-
-    random_ordered_3(
-        parameters.shape_triangle,
-        5.0f,
-        95.0f,
-        15.0f
-    );
-
-    random_ordered_4(
-        parameters.shape_trapezoid,
-        5.0f,
-        95.0f,
-        12.0f
-    );
-
-    random_ordered_2(
-        parameters.shape_smf,
-        10.0f,
-        90.0f,
-        20.0f
-    );
-
-    random_ordered_2(
-        parameters.shape_zmf,
-        10.0f,
-        90.0f,
-        20.0f
-    );
-
-    parameters.shape_gauss[0] =
-        random_float(30.0f, 70.0f);
-
-    parameters.shape_gauss[1] =
-        random_float(8.0f, 22.0f);
-
-    parameters.shape_bell[0] =
-        random_float(20.0f, 55.0f);
-
-    parameters.shape_bell[1] =
-        random_float(1.5f, 4.0f);
-
-    parameters.shape_bell[2] =
-        random_float(30.0f, 70.0f);
-
-    parameters.shape_sigmoid[0] =
-        random_float(0.06f, 0.20f);
-
-    parameters.shape_sigmoid[1] =
-        random_float(30.0f, 70.0f);
-
-    /*
-     * Shared hedge demonstration trapezoid.
-     */
-    random_ordered_4(
-        parameters.hedge_trapezoid,
-        5.0f,
-        95.0f,
-        12.0f
-    );
+    random_ordered_4(parameters.hedge_trapezoid, 5.0f, 95.0f, 12.0f);
+    random_not_rule = (random_not_rule_t)(rand() % RANDOM_NOT_RULE_COUNT);
 }
-
 
 /* ==========================================================
  * Randomized temperature membership functions
  * ========================================================== */
+FUZZY_VAR(temperature_low, FUZZY_SHAPE_ZMF, hedges.none, parameters.temperature_low[0], parameters.temperature_low[1])
 
-static float temperature_low(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_ZMF,
-        value,
-        hedges.none,
-        parameters.temperature_low[0],
-        parameters.temperature_low[1]
-    );
-}
-
-
-static float temperature_medium(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_GAUSSIAN,
-        value,
-        hedges.none,
-        parameters.temperature_medium[0],
-        parameters.temperature_medium[1]
-    );
-}
-
-
-static float temperature_high(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SMF,
-        value,
-        hedges.none,
-        parameters.temperature_high[0],
-        parameters.temperature_high[1]
-    );
-}
-
-
-/* ==========================================================
- * Randomized humidity membership functions
- * ========================================================== */
-
-static float humidity_low(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_RAMP,
-        value,
-        hedges.none,
-        parameters.humidity_low[0],
-        parameters.humidity_low[1],
-        false
-    );
-}
-
-
-static float humidity_medium(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.none,
-        parameters.humidity_medium[0],
-        parameters.humidity_medium[1],
-        parameters.humidity_medium[2],
-        parameters.humidity_medium[3]
-    );
-}
-
-
-static float humidity_high(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SIGMOID,
-        value,
-        hedges.none,
-        parameters.humidity_high[0],
-        parameters.humidity_high[1]
-    );
-}
-
-
-/* ==========================================================
- * Randomized vibration membership functions
- * ========================================================== */
-
-static float vibration_low(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_ZMF,
-        value,
-        hedges.none,
-        parameters.vibration_low[0],
-        parameters.vibration_low[1]
-    );
-}
-
-
-static float vibration_medium(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_BELL,
-        value,
-        hedges.none,
-        parameters.vibration_medium[0],
-        parameters.vibration_medium[1],
-        parameters.vibration_medium[2]
-    );
-}
-
-
-static float vibration_high(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SMF,
-        value,
-        hedges.none,
-        parameters.vibration_high[0],
-        parameters.vibration_high[1]
-    );
-}
-
-
-/* ==========================================================
- * Randomized pressure membership functions
- * ========================================================== */
-
-static float pressure_low(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_RAMP,
-        value,
-        hedges.none,
-        parameters.pressure_low[0],
-        parameters.pressure_low[1],
-        false
-    );
-}
-
-
-static float pressure_normal(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRIANGLE,
-        value,
-        hedges.none,
-        parameters.pressure_normal[0],
-        parameters.pressure_normal[1],
-        parameters.pressure_normal[2]
-    );
-}
-
-
-static float pressure_high(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SIGMOID,
-        value,
-        hedges.none,
-        parameters.pressure_high[0],
-        parameters.pressure_high[1]
-    );
-}
-
-
-/* ==========================================================
- * Randomized quality membership functions
- * ========================================================== */
-
-static float quality_poor(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_ZMF,
-        value,
-        hedges.none,
-        parameters.quality_poor[0],
-        parameters.quality_poor[1]
-    );
-}
-
-
-static float quality_average(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_GAUSSIAN,
-        value,
-        hedges.none,
-        parameters.quality_average[0],
-        parameters.quality_average[1]
-    );
-}
-
-
-static float quality_good(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SMF,
-        value,
-        hedges.none,
-        parameters.quality_good[0],
-        parameters.quality_good[1]
-    );
-}
-
-
-/* ==========================================================
- * Randomized response membership functions
- * ========================================================== */
-
-static float response_minimal(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_ZMF,
-        value,
-        hedges.none,
-        parameters.response_minimal[0],
-        parameters.response_minimal[1]
-    );
-}
-
-
-static float response_low(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRIANGLE,
-        value,
-        hedges.none,
-        parameters.response_low[0],
-        parameters.response_low[1],
-        parameters.response_low[2]
-    );
-}
-
-
-static float response_moderate(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.none,
-        parameters.response_moderate[0],
-        parameters.response_moderate[1],
-        parameters.response_moderate[2],
-        parameters.response_moderate[3]
-    );
-}
-
-
-static float response_high(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRIANGLE,
-        value,
-        hedges.none,
-        parameters.response_high[0],
-        parameters.response_high[1],
-        parameters.response_high[2]
-    );
-}
-
-
-static float response_critical(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SMF,
-        value,
-        hedges.none,
-        parameters.response_critical[0],
-        parameters.response_critical[1]
-    );
-}
-
-
-/* ==========================================================
- * Randomized hedge demonstration
- * ========================================================== */
-
-static float hedge_none_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.none,
-        parameters.hedge_trapezoid[0],
-        parameters.hedge_trapezoid[1],
-        parameters.hedge_trapezoid[2],
-        parameters.hedge_trapezoid[3]
-    );
-}
-
-
-static float hedge_very_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.very,
-        parameters.hedge_trapezoid[0],
-        parameters.hedge_trapezoid[1],
-        parameters.hedge_trapezoid[2],
-        parameters.hedge_trapezoid[3]
-    );
-}
-
-
-static float hedge_extremely_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.extremely,
-        parameters.hedge_trapezoid[0],
-        parameters.hedge_trapezoid[1],
-        parameters.hedge_trapezoid[2],
-        parameters.hedge_trapezoid[3]
-    );
-}
-
-
-static float hedge_somewhat_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.somewhat,
-        parameters.hedge_trapezoid[0],
-        parameters.hedge_trapezoid[1],
-        parameters.hedge_trapezoid[2],
-        parameters.hedge_trapezoid[3]
-    );
-}
-
-
-static float hedge_slightly_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.slightly,
-        parameters.hedge_trapezoid[0],
-        parameters.hedge_trapezoid[1],
-        parameters.hedge_trapezoid[2],
-        parameters.hedge_trapezoid[3]
-    );
-}
-
-/* ==========================================================
- * Individual membership-shape demonstration functions
- *
- * These place every supported shape on one SVG graph.
- * ========================================================== */
-
-static float shape_ramp_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_RAMP,
-        value,
-        hedges.none,
-        20.0f,
-        80.0f,
-        true
-    );
-}
-
-
-static float shape_triangle_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRIANGLE,
-        value,
-        hedges.none,
-        10.0f,
-        50.0f,
-        90.0f
-    );
-}
-
-
-static float shape_trapezoid_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_TRAPEZOID,
-        value,
-        hedges.none,
-        10.0f,
-        30.0f,
-        70.0f,
-        90.0f
-    );
-}
-
-
-static float shape_smf_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SMF,
-        value,
-        hedges.none,
-        20.0f,
-        80.0f
-    );
-}
-
-
-static float shape_zmf_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_ZMF,
-        value,
-        hedges.none,
-        20.0f,
-        80.0f
-    );
-}
-
-
-static float shape_gauss_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_GAUSSIAN,
-        value,
-        hedges.none,
-        50.0f,
-        15.0f
-    );
-}
-
-
-static float shape_bell_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_BELL,
-        value,
-        hedges.none,
-        40.0f,
-        2.0f,
-        50.0f
-    );
-}
-
-
-static float shape_sigmoid_demo(float value)
-{
-    return fuzzy_function(
-        FUZZY_SHAPE_SIGMOID,
-        value,
-        hedges.none,
-        0.12f,
-        50.0f
-    );
-}
+FUZZY_VAR(temperature_medium, FUZZY_SHAPE_GAUSSIAN, hedges.none, parameters.temperature_medium[0], parameters.temperature_medium[1])
+
+FUZZY_VAR(temperature_high, FUZZY_SHAPE_SMF, hedges.none, parameters.temperature_high[0], parameters.temperature_high[1])
+
+FUZZY_VAR(humidity_low, FUZZY_SHAPE_RAMP, hedges.none, parameters.humidity_low[0], parameters.humidity_low[1], false)
+
+FUZZY_VAR(humidity_medium, FUZZY_SHAPE_TRAPEZOID, hedges.none, parameters.humidity_medium[0], parameters.humidity_medium[1], parameters.humidity_medium[2], parameters.humidity_medium[3])
+
+FUZZY_VAR(humidity_high, FUZZY_SHAPE_SIGMOID, hedges.none, parameters.humidity_high[0], parameters.humidity_high[1])
+
+FUZZY_VAR(vibration_low, FUZZY_SHAPE_ZMF, hedges.none, parameters.vibration_low[0], parameters.vibration_low[1])
+
+FUZZY_VAR(vibration_medium, FUZZY_SHAPE_BELL, hedges.none, parameters.vibration_medium[0], parameters.vibration_medium[1], parameters.vibration_medium[2])
+
+FUZZY_VAR(vibration_high, FUZZY_SHAPE_SMF, hedges.none, parameters.vibration_high[0], parameters.vibration_high[1])
+
+FUZZY_VAR(pressure_low, FUZZY_SHAPE_RAMP, hedges.none, parameters.pressure_low[0], parameters.pressure_low[1], false)
+
+FUZZY_VAR(pressure_normal, FUZZY_SHAPE_TRIANGLE, hedges.none, parameters.pressure_normal[0], parameters.pressure_normal[1], parameters.pressure_normal[2])
+
+FUZZY_VAR(pressure_high, FUZZY_SHAPE_SIGMOID, hedges.none, parameters.pressure_high[0], parameters.pressure_high[1])
+
+FUZZY_VAR(quality_poor, FUZZY_SHAPE_ZMF, hedges.none, parameters.quality_poor[0], parameters.quality_poor[1])
+
+FUZZY_VAR(quality_average, FUZZY_SHAPE_GAUSSIAN, hedges.none, parameters.quality_average[0], parameters.quality_average[1])
+
+FUZZY_VAR(quality_good, FUZZY_SHAPE_SMF, hedges.none, parameters.quality_good[0], parameters.quality_good[1])
+
+FUZZY_VAR(response_minimal, FUZZY_SHAPE_ZMF, hedges.none, parameters.response_minimal[0], parameters.response_minimal[1])
+
+FUZZY_VAR(response_low, FUZZY_SHAPE_TRIANGLE, hedges.none, parameters.response_low[0], parameters.response_low[1], parameters.response_low[2])
+
+FUZZY_VAR(response_moderate, FUZZY_SHAPE_TRAPEZOID, hedges.none, parameters.response_moderate[0], parameters.response_moderate[1], parameters.response_moderate[2], parameters.response_moderate[3])
+
+FUZZY_VAR(response_high, FUZZY_SHAPE_TRIANGLE, hedges.none, parameters.response_high[0], parameters.response_high[1], parameters.response_high[2])
+
+FUZZY_VAR(response_critical, FUZZY_SHAPE_SMF, hedges.none, parameters.response_critical[0], parameters.response_critical[1])
+
+FUZZY_VAR(hedge_none_demo, FUZZY_SHAPE_TRAPEZOID, hedges.none, parameters.hedge_trapezoid[0], parameters.hedge_trapezoid[1], parameters.hedge_trapezoid[2], parameters.hedge_trapezoid[3])
+
+FUZZY_VAR(hedge_very_demo, FUZZY_SHAPE_TRAPEZOID, hedges.very, parameters.hedge_trapezoid[0], parameters.hedge_trapezoid[1], parameters.hedge_trapezoid[2], parameters.hedge_trapezoid[3])
+
+FUZZY_VAR(hedge_extremely_demo, FUZZY_SHAPE_TRAPEZOID, hedges.extremely, parameters.hedge_trapezoid[0], parameters.hedge_trapezoid[1], parameters.hedge_trapezoid[2], parameters.hedge_trapezoid[3])
+
+FUZZY_VAR(hedge_somewhat_demo, FUZZY_SHAPE_TRAPEZOID, hedges.somewhat, parameters.hedge_trapezoid[0], parameters.hedge_trapezoid[1], parameters.hedge_trapezoid[2], parameters.hedge_trapezoid[3])
+
+FUZZY_VAR(hedge_slightly_demo, FUZZY_SHAPE_TRAPEZOID, hedges.slightly, parameters.hedge_trapezoid[0], parameters.hedge_trapezoid[1], parameters.hedge_trapezoid[2], parameters.hedge_trapezoid[3])
+
+FUZZY_VAR(shape_ramp_demo, FUZZY_SHAPE_RAMP, hedges.none, 20.0f, 80.0f, true)
+
+FUZZY_VAR(shape_triangle_demo, FUZZY_SHAPE_TRIANGLE, hedges.none, 10.0f, 50.0f, 90.0f)
+
+FUZZY_VAR(shape_trapezoid_demo, FUZZY_SHAPE_TRAPEZOID, hedges.none, 10.0f, 30.0f, 70.0f, 90.0f)
+
+FUZZY_VAR(shape_smf_demo, FUZZY_SHAPE_SMF, hedges.none, 20.0f, 80.0f)
+
+FUZZY_VAR(shape_zmf_demo, FUZZY_SHAPE_ZMF, hedges.none, 20.0f, 80.0f)
+
+FUZZY_VAR(shape_gauss_demo, FUZZY_SHAPE_GAUSSIAN, hedges.none, 50.0f, 15.0f)
+
+FUZZY_VAR(shape_bell_demo, FUZZY_SHAPE_BELL, hedges.none, 40.0f, 2.0f, 50.0f)
+
+FUZZY_VAR(shape_sigmoid_demo, FUZZY_SHAPE_SIGMOID, hedges.none, 0.12f, 50.0f)
 
 /* ==========================================================
  * Randomized fuzzy-NOT rule evaluation
@@ -1030,136 +361,50 @@ static float shape_sigmoid_demo(float value)
  *    THEN response is high.
  * ========================================================== */
 
-static float evaluate_random_not_rule(
-    float temperature,
-    float humidity,
-    float vibration,
-    float pressure,
-    float quality,
-    fuzzy_logic_method_t method
-)
+static float evaluate_random_not_rule(float temperature, float humidity, float vibration, float pressure, float quality, fuzzy_logic_method_t method)
 {
     switch (random_not_rule) {
         case RANDOM_NOT_TEMPERATURE_HIGH:
-            return fuzzy_and_method(
-                method,
-                fuzzy_not(
-                    temperature_high(
-                        temperature
-                    )
-                ),
-                pressure_normal(
-                    pressure
-                )
-            );
+            return fuzzy_and_method(method, fuzzy_not(temperature_high(temperature)), pressure_normal(pressure));
 
         case RANDOM_NOT_HUMIDITY_LOW:
-            return fuzzy_and_method(
-                method,
-                fuzzy_not(
-                    humidity_low(
-                        humidity
-                    )
-                ),
-                vibration_medium(
-                    vibration
-                )
-            );
+            return fuzzy_and_method(method, fuzzy_not(humidity_low(humidity)), vibration_medium(vibration));
 
         case RANDOM_NOT_VIBRATION_LOW:
-            return fuzzy_and_method(
-                method,
-                fuzzy_not(
-                    vibration_low(
-                        vibration
-                    )
-                ),
-                pressure_high(
-                    pressure
-                )
-            );
+            return fuzzy_and_method(method, fuzzy_not(vibration_low(vibration)), pressure_high(pressure));
 
         case RANDOM_NOT_PRESSURE_HIGH:
-            return fuzzy_and_method(
-                method,
-                fuzzy_not(
-                    pressure_high(
-                        pressure
-                    )
-                ),
-                quality_good(
-                    quality
-                )
-            );
-
-        case RANDOM_NOT_QUALITY_GOOD:
-            return fuzzy_or_method(
-                method,
-                fuzzy_not(
-                    quality_good(
-                        quality
-                    )
-                ),
-                temperature_high(
-                    temperature
-                )
-            );
+            return fuzzy_and_method(method, fuzzy_not(pressure_high(pressure)), quality_good(quality));
 
         default:
-            return LEVEL_LO;
+            return fuzzy_or_method(method, fuzzy_not(quality_good(quality)), temperature_high(temperature));
     }
 }
 
 static const char *random_not_rule_name(void)
 {
-    switch (random_not_rule) {
-        case RANDOM_NOT_TEMPERATURE_HIGH:
-            return
-                "Rule 11: NOT high temperature response";
+    static const char *names[] = {
+        "Rule 11: NOT high temperature response",
+        "Rule 11: NOT low humidity response",
+        "Rule 11: NOT low vibration response",
+        "Rule 11: NOT high pressure response",
+        "Rule 11: NOT good quality response"
+    };
 
-        case RANDOM_NOT_HUMIDITY_LOW:
-            return
-                "Rule 11: NOT low humidity response";
-
-        case RANDOM_NOT_VIBRATION_LOW:
-            return
-                "Rule 11: NOT low vibration response";
-
-        case RANDOM_NOT_PRESSURE_HIGH:
-            return
-                "Rule 11: NOT high pressure response";
-
-        case RANDOM_NOT_QUALITY_GOOD:
-            return
-                "Rule 11: NOT good quality response";
-
-        default:
-            return
-                "Rule 11: Random fuzzy-NOT response";
-    }
+    return names[random_not_rule];
 }
 
 static fuzzy_output_function_t random_not_output(void)
 {
-    switch (random_not_rule) {
-        case RANDOM_NOT_TEMPERATURE_HIGH:
-            return response_low;
+    static fuzzy_output_function_t outputs[] = {
+        response_low,
+        response_moderate,
+        response_high,
+        response_minimal,
+        response_high
+    };
 
-        case RANDOM_NOT_HUMIDITY_LOW:
-            return response_moderate;
-
-        case RANDOM_NOT_VIBRATION_LOW:
-            return response_high;
-
-        case RANDOM_NOT_PRESSURE_HIGH:
-            return response_minimal;
-
-        case RANDOM_NOT_QUALITY_GOOD:
-            return response_high;
-
-        default:
-            return response_moderate;
-    }
+    return outputs[random_not_rule];
 }
 
 /* ==========================================================
@@ -1178,516 +423,48 @@ static fuzzy_output_function_t random_not_output(void)
  * and bounded operator families.
  * ========================================================== */
 
-static bool build_process_rules(
-    fuzzy_rules_t *rules,
-    float temperature,
-    float humidity,
-    float vibration,
-    float pressure,
-    float quality,
-    fuzzy_logic_method_t method
-)
+static void build_process_rules(fuzzy_rules_t *rules, float temperature, float humidity,
+                                float vibration, float pressure, float quality,
+                                fuzzy_logic_method_t method)
 {
-    float rule1;
-    float rule2;
-    float rule3;
-    float rule4;
-    float rule5;
-    float rule6;
-    float rule7;
-    float rule8;
-    float rule9;
-    float rule10;
-    float rule11;
+    RULE("Rule 1: Minimal response", fuzzy_and_method(method, temperature_low(temperature), humidity_medium(humidity), vibration_low(vibration), pressure_normal(pressure), quality_good(quality)), response_minimal);
 
-    float very_high_temperature;
-    float extremely_high_vibration;
-    float very_poor_quality;
-    float somewhat_high_humidity;
+    RULE("Rule 2: Low response", fuzzy_and_method(method, temperature_medium(temperature), pressure_normal(pressure), quality_average(quality)), response_low);
 
-    float rule8_left;
-    float rule8_right;
+    RULE("Rule 3: Moderate response", fuzzy_or_method(method, humidity_high(humidity), vibration_medium(vibration), quality_poor(quality)), response_moderate);
 
-    float rule9_environment;
-    float rule9_machine;
+    RULE("Rule 4: High thermal-vibration response", fuzzy_and_method(method, temperature_high(temperature), vibration_high(vibration)), response_high);
 
-    if (rules == NULL) {
-        return false;
-    }
+    RULE("Rule 5: High machine response", fuzzy_or_method(method, pressure_high(pressure), vibration_high(vibration), temperature_high(temperature)), response_high);
 
-    /*
-     * Rule 1:
-     *
-     * IF temperature is low
-     * AND humidity is medium
-     * AND vibration is low
-     * AND pressure is normal
-     * AND quality is good
-     * THEN response is minimal.
-     */
-    rule1 =
-        fuzzy_and_method(
-            method,
-            temperature_low(
-                temperature
-            ),
-            humidity_medium(
-                humidity
-            ),
-            vibration_low(
-                vibration
-            ),
-            pressure_normal(
-                pressure
-            ),
-            quality_good(
-                quality
-            )
-        );
+    RULE("Rule 6: Critical heat-pressure response", fuzzy_and_method(method, powf(temperature_high(temperature), hedges.very), pressure_high(pressure)), response_critical);
 
-    /*
-     * Rule 2:
-     *
-     * IF temperature is medium
-     * AND pressure is normal
-     * AND quality is average
-     * THEN response is low.
-     */
-    rule2 =
-        fuzzy_and_method(
-            method,
-            temperature_medium(
-                temperature
-            ),
-            pressure_normal(
-                pressure
-            ),
-            quality_average(
-                quality
-            )
-        );
+    RULE("Rule 7: Critical vibration-quality response", fuzzy_or_method(method, powf(vibration_high(vibration), hedges.extremely), powf(quality_poor(quality), hedges.very)), response_critical);
 
-    /*
-     * Rule 3:
-     *
-     * IF humidity is high
-     * OR vibration is medium
-     * OR quality is poor
-     * THEN response is moderate.
-     */
-    rule3 =
-        fuzzy_or_method(
-            method,
-            humidity_high(
-                humidity
-            ),
-            vibration_medium(
-                vibration
-            ),
-            quality_poor(
-                quality
-            )
-        );
+    RULE("Rule 8: High compound response", fuzzy_or_method(method, fuzzy_and_method(method, temperature_medium(temperature), powf(humidity_high(humidity), hedges.somewhat)), fuzzy_and_method(method, pressure_high(pressure), quality_poor(quality))), response_high);
 
-    /*
-     * Rule 4:
-     *
-     * IF temperature is high
-     * AND vibration is high
-     * THEN response is high.
-     */
-    rule4 =
-        fuzzy_and_method(
-            method,
-            temperature_high(
-                temperature
-            ),
-            vibration_high(
-                vibration
-            )
-        );
+    RULE("Rule 9: Low stable-process response", fuzzy_and_method(method, fuzzy_or_method(method, temperature_low(temperature), humidity_low(humidity)), fuzzy_or_method(method, vibration_low(vibration), pressure_normal(pressure)), quality_good(quality)), response_low);
 
-    /*
-     * Rule 5:
-     *
-     * IF pressure is high
-     * OR vibration is high
-     * OR temperature is high
-     * THEN response is high.
-     */
-    rule5 =
-        fuzzy_or_method(
-            method,
-            pressure_high(
-                pressure
-            ),
-            vibration_high(
-                vibration
-            ),
-            temperature_high(
-                temperature
-            )
-        );
+    RULE("Rule 10: Critical combined response", fuzzy_and_method(method, temperature_high(temperature), humidity_high(humidity), vibration_high(vibration), pressure_high(pressure), quality_poor(quality)), response_critical);
 
-    /*
-     * Rule 6:
-     *
-     * IF temperature is very high
-     * AND pressure is high
-     * THEN response is critical.
-     */
-    very_high_temperature =
-        powf(
-            temperature_high(
-                temperature
-            ),
-            hedges.very
-        );
-
-    rule6 =
-        fuzzy_and_method(
-            method,
-            very_high_temperature,
-            pressure_high(
-                pressure
-            )
-        );
-
-    /*
-     * Rule 7:
-     *
-     * IF vibration is extremely high
-     * OR quality is very poor
-     * THEN response is critical.
-     */
-    extremely_high_vibration =
-        powf(
-            vibration_high(
-                vibration
-            ),
-            hedges.extremely
-        );
-
-    very_poor_quality =
-        powf(
-            quality_poor(
-                quality
-            ),
-            hedges.very
-        );
-
-    rule7 =
-        fuzzy_or_method(
-            method,
-            extremely_high_vibration,
-            very_poor_quality
-        );
-
-    /*
-     * Rule 8:
-     *
-     * IF
-     *     temperature is medium
-     *     AND humidity is somewhat high
-     *
-     * OR
-     *
-     *     pressure is high
-     *     AND quality is poor
-     *
-     * THEN response is high.
-     *
-     * Every nested operator uses the same selected family.
-     */
-    somewhat_high_humidity =
-        powf(
-            humidity_high(
-                humidity
-            ),
-            hedges.somewhat
-        );
-
-    rule8_left =
-        fuzzy_and_method(
-            method,
-            temperature_medium(
-                temperature
-            ),
-            somewhat_high_humidity
-        );
-
-    rule8_right =
-        fuzzy_and_method(
-            method,
-            pressure_high(
-                pressure
-            ),
-            quality_poor(
-                quality
-            )
-        );
-
-    rule8 =
-        fuzzy_or_method(
-            method,
-            rule8_left,
-            rule8_right
-        );
-
-    /*
-     * Rule 9:
-     *
-     * IF
-     *     temperature is low
-     *     OR humidity is low
-     *
-     * AND
-     *
-     *     vibration is low
-     *     OR pressure is normal
-     *
-     * AND quality is good
-     *
-     * THEN response is low.
-     *
-     * Every nested operator uses the same selected family.
-     */
-    rule9_environment =
-        fuzzy_or_method(
-            method,
-            temperature_low(
-                temperature
-            ),
-            humidity_low(
-                humidity
-            )
-        );
-
-    rule9_machine =
-        fuzzy_or_method(
-            method,
-            vibration_low(
-                vibration
-            ),
-            pressure_normal(
-                pressure
-            )
-        );
-
-    rule9 =
-        fuzzy_and_method(
-            method,
-            rule9_environment,
-            rule9_machine,
-            quality_good(
-                quality
-            )
-        );
-
-    /*
-     * Rule 10:
-     *
-     * IF temperature is high
-     * AND humidity is high
-     * AND vibration is high
-     * AND pressure is high
-     * AND quality is poor
-     * THEN response is critical.
-     */
-    rule10 =
-        fuzzy_and_method(
-            method,
-            temperature_high(
-                temperature
-            ),
-            humidity_high(
-                humidity
-            ),
-            vibration_high(
-                vibration
-            ),
-            pressure_high(
-                pressure
-            ),
-            quality_poor(
-                quality
-            )
-        );
-
-    /*
-     * Rule 11:
-     *
-     * The selected NOT rule also uses the same AND/OR
-     * operator family.
-     */
-    rule11 =
-        evaluate_random_not_rule(
-            temperature,
-            humidity,
-            vibration,
-            pressure,
-            quality,
-            method
-        );
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 1: Minimal response",
-        rule1,
-        response_minimal
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 2: Low response",
-        rule2,
-        response_low
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 3: Moderate response",
-        rule3,
-        response_moderate
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 4: High thermal-vibration response",
-        rule4,
-        response_high
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 5: High machine response",
-        rule5,
-        response_high
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 6: Critical heat-pressure response",
-        rule6,
-        response_critical
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 7: Critical vibration-quality response",
-        rule7,
-        response_critical
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 8: High compound response",
-        rule8,
-        response_high
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 9: Low stable-process response",
-        rule9,
-        response_low
-    )) {
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        rules,
-        "Rule 10: Critical combined response",
-        rule10,
-        response_critical
-    )) {
-        return false;
-    }
-
-    if (!fuzzy_rules_add(
-        rules,
-        random_not_rule_name(),
-        rule11,
-        random_not_output()
-    )) {
-        return false;
-    }
-
-    return true;
+    RULE(random_not_rule_name(), evaluate_random_not_rule( temperature, humidity, vibration, pressure, quality, method), random_not_output());
 }
 
-/* ==========================================================
+ /* ==========================================================
  * Pure process-response evaluation
  *
  * Safe for repeated sweep evaluations.
  * ========================================================== */
 
-static float evaluate_process_response(
-    float temperature,
-    float humidity,
-    float vibration,
-    float pressure,
-    float quality,
-    float cog_step,
-    fuzzy_logic_method_t method
-)
+static float evaluate_process_response(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t method)
 {
     fuzzy_rules_t rules;
-    float result;
+    fuzzy_rules_create(&rules);
+    build_process_rules(&rules, temperature, humidity, vibration, pressure, quality, method);
 
-    fuzzy_rules_create(
-        &rules
-    );
+    float result = fuzzy_rules_defuzzify(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COG);
 
-    if (!build_process_rules(
-        &rules,
-        temperature,
-        humidity,
-        vibration,
-        pressure,
-        quality,
-        method
-    )) {
-        fprintf(stderr, 
-            "Failed to construct process-response rules.\n"
-        );
-
-        fuzzy_rules_free(
-            &rules
-        );
-
-        return 0.0f;
-    }
-
-    result =
-        fuzzy_rules_defuzzify(
-            &rules,
-            RESPONSE_LOWER,
-            RESPONSE_UPPER,
-            cog_step,
-            FUZZY_DEFUZZ_COG
-        );
-
-    fuzzy_rules_free(
-        &rules
-    );
-
+    fuzzy_rules_free(&rules);
     return result;
 }
 
@@ -1719,16 +496,10 @@ static bool plot_selected_process_cog(
     float defuzz_step
 )
 {
-    const fuzzy_logic_method_t methods[] = {
-        FUZZY_LOGIC_STANDARD,
-        FUZZY_LOGIC_ALGEBRAIC,
-        FUZZY_LOGIC_BOUNDED
+    const fuzzy_logic_method_t methods[] = { FUZZY_LOGIC_STANDARD, FUZZY_LOGIC_ALGEBRAIC, FUZZY_LOGIC_BOUNDED
     };
 
-    const char *method_names[] = {
-        "Standard Zadeh",
-        "Algebraic",
-        "Bounded Lukasiewicz"
+    const char *method_names[] = { "Standard Zadeh", "Algebraic", "Bounded Lukasiewicz"
     };
 
     const char *cog_filenames[] = {
@@ -1810,27 +581,8 @@ static bool plot_selected_process_cog(
          * Rebuild the same complete controller using only
          * the currently selected AND/OR operator family.
          */
-        if (!build_process_rules(
-            &rules,
-            temperature,
-            humidity,
-            vibration,
-            pressure,
-            quality,
-            methods[method_index]
-        )) {
-            fprintf(stderr, 
-                "Failed to construct %s controller.\n",
-                method_names[method_index]
-            );
-
-            fuzzy_rules_free(
-                &rules
-            );
-
-            return false;
-        }
-
+        build_process_rules(&rules, temperature, humidity, vibration,pressure, quality, methods[method_index]);
+        
         printf(
             "\n%s controller rule activations\n"
             "========================================\n",
@@ -1976,526 +728,74 @@ static bool plot_selected_process_cog(
  *     - Bounded sum
  * ========================================================== */
 
-static float operator_and_standard(
-    float value
-)
+OPERATOR(operator_and_standard, fuzzy_and_method, FUZZY_LOGIC_STANDARD)
+OPERATOR(operator_and_algebraic, fuzzy_and_method, FUZZY_LOGIC_ALGEBRAIC)
+OPERATOR(operator_and_bounded, fuzzy_and_method, FUZZY_LOGIC_BOUNDED)
+
+OPERATOR(operator_or_standard, fuzzy_or_method, FUZZY_LOGIC_STANDARD)
+OPERATOR(operator_or_algebraic, fuzzy_or_method, FUZZY_LOGIC_ALGEBRAIC)
+OPERATOR(operator_or_bounded, fuzzy_or_method, FUZZY_LOGIC_BOUNDED)
+
+static void plot_all_membership_functions(void)
 {
-    return fuzzy_and_method(
-        FUZZY_LOGIC_STANDARD,
-        value,
-        0.5f
-    );
-}
-
-
-static float operator_and_algebraic(
-    float value
-)
-{
-    return fuzzy_and_method(
-        FUZZY_LOGIC_ALGEBRAIC,
-        value,
-        0.5f
-    );
-}
-
-
-static float operator_and_bounded(
-    float value
-)
-{
-    return fuzzy_and_method(
-        FUZZY_LOGIC_BOUNDED,
-        value,
-        0.5f
-    );
-}
-
-
-static float operator_or_standard(
-    float value
-)
-{
-    return fuzzy_or_method(
-        FUZZY_LOGIC_STANDARD,
-        value,
-        0.5f
-    );
-}
-
-
-static float operator_or_algebraic(
-    float value
-)
-{
-    return fuzzy_or_method(
-        FUZZY_LOGIC_ALGEBRAIC,
-        value,
-        0.5f
-    );
-}
-
-
-static float operator_or_bounded(
-    float value
-)
-{
-    return fuzzy_or_method(
-        FUZZY_LOGIC_BOUNDED,
-        value,
-        0.5f
-    );
-}
-
-
-/* ==========================================================
- * Plot every supported T-norm on one SVG.
- * ========================================================== */
-
-static bool plot_t_norms(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/t_norms",
-        "T-Norm Comparison: Second Operand = 0.5",
-        0.0f,
-        1.0f,
-        0.01f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Standard AND: min(a, 0.5)",
-            "#2563eb",
-            operator_and_standard
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Algebraic AND: a * 0.5",
-            "#16a34a",
-            operator_and_algebraic
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Bounded AND: max(0, a - 0.5)",
-            "#ef4444",
-            operator_and_bounded
-        )
-    );
-}
-
-
-/* ==========================================================
- * Plot every supported T-conorm on one SVG.
- * ========================================================== */
-
-static bool plot_t_conorms(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/t_conorms",
-        "T-Conorm Comparison: Second Operand = 0.5",
-        0.0f,
-        1.0f,
-        0.01f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Standard OR: max(a, 0.5)",
-            "#2563eb",
-            operator_or_standard
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Algebraic OR: a + 0.5 - 0.5a",
-            "#16a34a",
-            operator_or_algebraic
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Bounded OR: min(1, a + 0.5)",
-            "#ef4444",
-            operator_or_bounded
-        )
-    );
-}
-
-static bool plot_all_shapes(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/all_shapes",
-        "All Supported Membership Shapes",
-        0.0f,
-        100.0f,
-        0.5f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Ramp",
-            "#ef4444",
-            shape_ramp_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Triangle",
-            "#f97316",
-            shape_triangle_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Trapezoid",
-            "#eab308",
-            shape_trapezoid_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "SMF",
-            "#22c55e",
-            shape_smf_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "ZMF",
-            "#3b82f6",
-            shape_zmf_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Gaussian",
-            "#8b5cf6",
-            shape_gauss_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Bell",
-            "#ec4899",
-            shape_bell_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Sigmoid",
-            "#06b6d4",
-            shape_sigmoid_demo
-        )
-    );
-}
-
-
-static bool plot_all_hedges(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/all_hedges",
-        "All Linguistic Hedge Exponents",
-        0.0f,
-        100.0f,
-        0.5f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "None",
-            "#111827",
-            hedge_none_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Very",
-            "#ef4444",
-            hedge_very_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Extremely",
-            "#a855f7",
-            hedge_extremely_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Somewhat",
-            "#22c55e",
-            hedge_somewhat_demo
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Slightly",
-            "#3b82f6",
-            hedge_slightly_demo
-        )
-    );
-}
-
-
-static bool plot_temperature_functions(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/temperature",
-        "Temperature Membership Functions",
-        0.0f,
-        100.0f,
-        0.5f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Low",
-            "#3b82f6",
-            temperature_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Medium",
-            "#22c55e",
-            temperature_medium
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "High",
-            "#ef4444",
-            temperature_high
-        )
-    );
-}
-
-
-static bool plot_humidity_functions(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/humidity",
-        "Humidity Membership Functions",
-        0.0f,
-        100.0f,
-        0.5f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Low",
-            "#3b82f6",
-            humidity_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Medium",
-            "#22c55e",
-            humidity_medium
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "High",
-            "#ef4444",
-            humidity_high
-        )
-    );
-}
-
-
-static bool plot_vibration_functions(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/vibration",
-        "Vibration Membership Functions",
-        0.0f,
-        10.0f,
-        0.05f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Low",
-            "#3b82f6",
-            vibration_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Medium",
-            "#22c55e",
-            vibration_medium
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "High",
-            "#ef4444",
-            vibration_high
-        )
-    );
-}
-
-
-static bool plot_pressure_functions(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/pressure",
-        "Pressure Membership Functions",
-        0.0f,
-        200.0f,
-        1.0f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Low",
-            "#3b82f6",
-            pressure_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Normal",
-            "#22c55e",
-            pressure_normal
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "High",
-            "#ef4444",
-            pressure_high
-        )
-    );
-}
-
-
-static bool plot_quality_functions(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/quality",
-        "Material-Quality Membership Functions",
-        0.0f,
-        100.0f,
-        0.5f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Poor",
-            "#ef4444",
-            quality_poor
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Average",
-            "#eab308",
-            quality_average
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Good",
-            "#22c55e",
-            quality_good
-        )
-    );
-}
-
-
-static bool plot_response_functions(void)
-{
-    return FUZZY_PLOT(
-        DEMO_DIRECTORY "/response",
-        "Process-Response Membership Functions",
-        RESPONSE_LOWER,
-        RESPONSE_UPPER,
-        0.5f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Minimal",
-            "#3b82f6",
-            response_minimal
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Low",
-            "#06b6d4",
-            response_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Moderate",
-            "#22c55e",
-            response_moderate
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "High",
-            "#f97316",
-            response_high
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Critical",
-            "#ef4444",
-            response_critical
-        )
-    );
-}
-
-static bool plot_all_membership_functions(void)
-{
-    if (!plot_all_shapes()) {
-        fprintf(stderr, 
-            "Failed to generate all-shapes plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_all_hedges()) {
-        fprintf(stderr, 
-            "Failed to generate hedge plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_temperature_functions()) {
-        fprintf(stderr, 
-            "Failed to generate temperature plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_humidity_functions()) {
-        fprintf(stderr, 
-            "Failed to generate humidity plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_vibration_functions()) {
-        fprintf(stderr, 
-            "Failed to generate vibration plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_pressure_functions()) {
-        fprintf(stderr, 
-            "Failed to generate pressure plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_quality_functions()) {
-        fprintf(stderr, 
-            "Failed to generate quality plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_response_functions()) {
-        fprintf(stderr, 
-            "Failed to generate response plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_t_norms()) {
-        fprintf(stderr, 
-            "Failed to generate T-norm comparison plot.\n"
-        );
-
-        return false;
-    }
-
-    if (!plot_t_conorms()) {
-        fprintf(stderr, 
-            "Failed to generate T-conorm comparison plot.\n"
-        );
-
-        return false;
-    }
-
-    printf(
-        "\nGenerated all membership-function "
-        "and fuzzy-operator plots.\n"
-    );
-
-    return true;
+    PLOT(DEMO_DIRECTORY "/t_norms", "T-Norm Comparison: Second Operand = 0.5", 1.0f, 0.01f,
+        SERIES(operator_and_standard, "#2563eb"),
+        SERIES(operator_and_algebraic, "#16a34a"),
+        SERIES(operator_and_bounded, "#ef4444"));
+
+    PLOT(DEMO_DIRECTORY "/t_conorms", "T-Conorm Comparison: Second Operand = 0.5", 1.0f, 0.01f,
+        SERIES(operator_or_standard, "#2563eb"),
+        SERIES(operator_or_algebraic, "#16a34a"),
+        SERIES(operator_or_bounded, "#ef4444"));
+
+    PLOT(DEMO_DIRECTORY "/all_shapes", "All Supported Membership Shapes", 100.0f, 0.5f,
+        SERIES(shape_ramp_demo, "#ef4444"),
+        SERIES(shape_triangle_demo, "#f97316"),
+        SERIES(shape_trapezoid_demo, "#eab308"),
+        SERIES(shape_smf_demo, "#22c55e"),
+        SERIES(shape_zmf_demo, "#3b82f6"),
+        SERIES(shape_gauss_demo, "#8b5cf6"),
+        SERIES(shape_bell_demo, "#ec4899"),
+        SERIES(shape_sigmoid_demo, "#06b6d4"));
+
+    PLOT(DEMO_DIRECTORY "/all_hedges", "All Linguistic Hedge Exponents", 100.0f, 0.5f,
+        SERIES(hedge_none_demo, "#111827"),
+        SERIES(hedge_very_demo, "#ef4444"),
+        SERIES(hedge_extremely_demo, "#a855f7"),
+        SERIES(hedge_somewhat_demo, "#22c55e"),
+        SERIES(hedge_slightly_demo, "#3b82f6"));
+
+    PLOT(DEMO_DIRECTORY "/temperature", "Temperature Membership Functions", 100.0f, 0.5f,
+        SERIES(temperature_low, "#3b82f6"),
+        SERIES(temperature_medium, "#22c55e"),
+        SERIES(temperature_high, "#ef4444"));
+
+    PLOT(DEMO_DIRECTORY "/humidity", "Humidity Membership Functions", 100.0f, 0.5f,
+        SERIES(humidity_low, "#3b82f6"),
+        SERIES(humidity_medium, "#22c55e"),
+        SERIES(humidity_high, "#ef4444"));
+
+    PLOT(DEMO_DIRECTORY "/vibration", "Vibration Membership Functions", 10.0f, 0.05f,
+        SERIES(vibration_low, "#3b82f6"),
+        SERIES(vibration_medium, "#22c55e"),
+        SERIES(vibration_high, "#ef4444"));
+
+    PLOT(DEMO_DIRECTORY "/pressure", "Pressure Membership Functions", 200.0f, 1.0f,
+        SERIES(pressure_low, "#3b82f6"),
+        SERIES(pressure_normal, "#22c55e"),
+        SERIES(pressure_high, "#ef4444"));
+
+    PLOT(DEMO_DIRECTORY "/quality", "Material-Quality Membership Functions", 100.0f, 0.5f,
+        SERIES(quality_poor, "#ef4444"),
+        SERIES(quality_average, "#eab308"),
+        SERIES(quality_good, "#22c55e"));
+
+    PLOT(DEMO_DIRECTORY "/response", "Process-Response Membership Functions", 100.0f, 0.5f,
+        SERIES(response_minimal, "#3b82f6"),
+        SERIES(response_low, "#06b6d4"),
+        SERIES(response_moderate, "#22c55e"),
+        SERIES(response_high, "#f97316"),
+        SERIES(response_critical, "#ef4444"));
 }
 
 /* ==========================================================
@@ -2510,27 +810,12 @@ static bool plot_all_membership_functions(void)
  * inputs[4] = material quality
  * ========================================================== */
 
-static float evaluate_process_sweep(
-    const float inputs[],
-    size_t input_count,
-    float cog_step
-)
+static float evaluate_process_sweep(const float inputs[], size_t input_count, float cog_step)
 {
-    if (
-        inputs == NULL ||
-        input_count != 5
-    ) {
-        return 0.0f;
-    }
-
+    (void)input_count;
     return evaluate_process_response(
-        inputs[0],
-        inputs[1],
-        inputs[2],
-        inputs[3],
-        inputs[4],
-        cog_step,
-        FUZZY_LOGIC_STANDARD
+        inputs[0], inputs[1], inputs[2], inputs[3], inputs[4],
+        cog_step, FUZZY_LOGIC_STANDARD
     );
 }
 
@@ -2598,47 +883,19 @@ static bool plot_process_sweep(void)
      *     - Interactive SVG slice selection
      *     - Internal allocation and cleanup
      */
-    return FUZZY_COG_SWEEP(
+
+    FUZZY_COG_SWEEP(
         DEMO_DIRECTORY "/process_sweep",
         "High-Resolution Five-Dimensional Process Sweep",
         evaluate_process_sweep,
         SWEEP_COG_STEP,
+        FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 20.0f),
+        FUZZY_SWEEP_DIMENSION("Humidity", 0.0f, 100.0f, 20.0f),
+        FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.5f),
+        FUZZY_SWEEP_DIMENSION("Pressure", 0.0f, 200.0f, 10.0f),
+        FUZZY_SWEEP_DIMENSION("Material quality", 0.0f, 100.0f, 5.0f));
 
-        FUZZY_SWEEP_DIMENSION(
-            "Temperature",
-            0.0f,
-            100.0f,
-            20.0f
-        ),
-
-        FUZZY_SWEEP_DIMENSION(
-            "Humidity",
-            0.0f,
-            100.0f,
-            20.0f
-        ),
-
-        FUZZY_SWEEP_DIMENSION(
-            "Vibration",
-            0.0f,
-            10.0f,
-            0.5f
-        ),
-
-        FUZZY_SWEEP_DIMENSION(
-            "Pressure",
-            0.0f,
-            200.0f,
-            10.0f
-        ),
-
-        FUZZY_SWEEP_DIMENSION(
-            "Material quality",
-            0.0f,
-            100.0f,
-            5.0f
-        )
-    );
+    return true;
 }
 
 
@@ -2840,99 +1097,17 @@ static void print_random_not_rule(void)
  * ========================================================== */
 int main(void)
 {
-    /*
-     * Seed the pseudorandom generator once.
-     */
-    srand(
-        (unsigned int)time(NULL)
-    );
-
-    /*
-     * Generate one randomized fuzzy system for this run.
-     *
-     * All subsequent plots, rules, COG evaluations, and
-     * sweep points use these same parameters.
-     */
+    srand((unsigned int)time(NULL));
     randomize_membership_parameters();
 
-    printf(
-        "\nfuzzy.h Complete API Demonstration\n"
-        "==================================\n"
-    );
+    printf("\nfuzzy.h Complete API Demonstration\n");
+    printf("==================================\n");
 
     print_random_not_rule();
+    plot_all_membership_functions();
+    plot_process_sweep();
+    run_random_demonstration();
 
-    /*
-     * Generate:
-     *
-     * - Membership-function plots
-     * - Hedge comparison plot
-     * - T-norm comparison plot
-     * - T-conorm comparison plot
-     */
-    if (!plot_all_membership_functions()) {
-        return 1;
-    }
-
-    printf(
-        "\nGenerated fuzzy-operator comparison plots:\n"
-        "  " DEMO_DIRECTORY "/t_norms.svg\n"
-        "  " DEMO_DIRECTORY "/t_conorms.svg\n"
-    );
-
-    /*
-     * Generate:
-     *
-     * demo-all/process_sweep.csv
-     * demo-all/process_sweep.svg
-     */
-    if (!plot_process_sweep()) {
-        fprintf(stderr, 
-            "Failed to generate five-dimensional "
-            "COG sweep.\n"
-        );
-
-        return 1;
-    }
-
-    printf(
-        "\nGenerated five-dimensional sweep files:\n"
-        "  " DEMO_DIRECTORY "/process_sweep.csv\n"
-        "  " DEMO_DIRECTORY "/process_sweep.svg\n"
-    );
-
-    /*
-     * Evaluate one randomly generated operating condition,
-     * print all eleven rule activations, and generate
-     * separate COG, MOM, SOM, and LOM plots.
-     */
-    if (!run_random_demonstration()) {
-        return 1;
-    }
-
-    printf(
-        "\nGenerated complete operator-family controller plots:\n"
-
-        "\nStandard Zadeh controller:\n"
-        "  " DEMO_DIRECTORY "/selected_standard_cog.svg\n"
-        "  " DEMO_DIRECTORY "/selected_standard_mom.svg\n"
-        "  " DEMO_DIRECTORY "/selected_standard_som.svg\n"
-        "  " DEMO_DIRECTORY "/selected_standard_lom.svg\n"
-
-        "\nAlgebraic controller:\n"
-        "  " DEMO_DIRECTORY "/selected_algebraic_cog.svg\n"
-        "  " DEMO_DIRECTORY "/selected_algebraic_mom.svg\n"
-        "  " DEMO_DIRECTORY "/selected_algebraic_som.svg\n"
-        "  " DEMO_DIRECTORY "/selected_algebraic_lom.svg\n"
-
-        "\nBounded Lukasiewicz controller:\n"
-        "  " DEMO_DIRECTORY "/selected_bounded_cog.svg\n"
-        "  " DEMO_DIRECTORY "/selected_bounded_mom.svg\n"
-        "  " DEMO_DIRECTORY "/selected_bounded_som.svg\n"
-        "  " DEMO_DIRECTORY "/selected_bounded_lom.svg\n"
-
-        "\nComplete fuzzy.h demonstration finished.\n"
-    );
-
+    printf("\nComplete fuzzy.h demonstration finished.\n");
     return 0;
 }
