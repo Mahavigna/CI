@@ -420,13 +420,13 @@ float fuzzy_function_array(
     )
 
 
-/*FUZZY ADAPTER LESS VERBOSE SYNTAX*/    
-#define SAND(a, b) fuzzy_and_method(FUZZY_LOGIC_STANDARD, (a), (b))
-#define SOR(a, b)  fuzzy_or_method(FUZZY_LOGIC_STANDARD, (a), (b))
-#define AAND(a, b) fuzzy_and_method(FUZZY_LOGIC_ALGEBRAIC, (a), (b))
-#define AOR(a, b)  fuzzy_or_method(FUZZY_LOGIC_ALGEBRAIC, (a), (b))
-#define BAND(a, b) fuzzy_and_method(FUZZY_LOGIC_BOUNDED, (a), (b))
-#define BOR(a, b)  fuzzy_or_method(FUZZY_LOGIC_BOUNDED, (a), (b))
+/* FUZZY LOGIC OPERATOR ADAPTERS */
+#define SAND(...) fuzzy_and_method(FUZZY_LOGIC_STANDARD, __VA_ARGS__)
+#define SOR(...)  fuzzy_or_method(FUZZY_LOGIC_STANDARD, __VA_ARGS__)
+#define AAND(...) fuzzy_and_method(FUZZY_LOGIC_ALGEBRAIC, __VA_ARGS__)
+#define AOR(...)  fuzzy_or_method(FUZZY_LOGIC_ALGEBRAIC, __VA_ARGS__)
+#define BAND(...) fuzzy_and_method(FUZZY_LOGIC_BOUNDED, __VA_ARGS__)
+#define BOR(...)  fuzzy_or_method(FUZZY_LOGIC_BOUNDED, __VA_ARGS__)
 
 #define RULE(name, activation, output) FUZZY_RULE_ADD_NAMED(rules, name, activation, output)
 #define OPERATOR(name, operation, method) static float name(float x) { return operation(method, x, 0.5f); }

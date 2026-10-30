@@ -27,10 +27,11 @@ static float brake(float speed, float distance, const char *plot)
     RULE("Medium AND Medium -> Medium", SAND(speed_medium(speed), distance_medium(distance)), brake_force_medium);
     RULE("Medium AND Close -> High",    SAND(speed_medium(speed), distance_close(distance)), brake_force_high);
 
-    RULE("High OR Far -> Medium", SAND(speed_high(speed), distance_far(distance)), brake_force_medium);
+    RULE("High OR Far -> Medium", SOR(speed_high(speed), distance_far(distance)), brake_force_medium);
     RULE("High AND Medium -> High", SAND(speed_high(speed), distance_medium(distance)), brake_force_high);
     RULE("High AND Close -> High", SAND(speed_high(speed), distance_close(distance)), brake_force_high);
 
+    fuzzy_rules_print(rules);
     float force = fuzzy_rules_defuzzify(rules, 0.0f, 100.0f, 1.0f, FUZZY_DEFUZZ_COG);
     fuzzy_rules_plot_cog(rules, plot, "Brake Force COG", force, 0.0f, 100.0f, 1.0f);
     fuzzy_rules_free(rules);
