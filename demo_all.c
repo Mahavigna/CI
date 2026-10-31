@@ -515,24 +515,24 @@ static void build_process_rules(fuzzy_rules_t *rules, float temperature, float h
 static float evaluate_process_response_method(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t logic_method, fuzzy_implication_method_t implication_method, fuzzy_aggregation_method_t aggregation_method)
 {
     fuzzy_rules_t rules;
-    fuzzy_rules_create(&rules);
+    rules.count = 0;
+
     build_process_rules(&rules, temperature, humidity, vibration, pressure, quality, logic_method);
 
     float result = fuzzy_rules_defuzzify_method(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COG, implication_method, aggregation_method);
 
-    fuzzy_rules_free(&rules);
     return result;
 }
 
 static float evaluate_process_response(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t method)
 {
     fuzzy_rules_t rules;
-    fuzzy_rules_create(&rules);
+    rules.count = 0;
+
     build_process_rules(&rules, temperature, humidity, vibration, pressure, quality, method);
 
     float result = fuzzy_rules_defuzzify(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COG);
-
-    fuzzy_rules_free(&rules);
+    
     return result;
 }
 
@@ -641,9 +641,7 @@ static bool plot_selected_process_cog(
         bool som_success;
         bool lom_success;
 
-        fuzzy_rules_create(
-            &rules
-        );
+        rules.count = 0;
 
         /*
          * Rebuild the same complete controller using only
@@ -657,9 +655,7 @@ static bool plot_selected_process_cog(
             method_names[method_index]
         );
 
-        fuzzy_rules_print(
-            &rules
-        );
+        fuzzy_rules_print(&rules);
 
         cog =
             fuzzy_rules_defuzzify(
@@ -755,9 +751,7 @@ static bool plot_selected_process_cog(
                 defuzz_step
             );
 
-        fuzzy_rules_free(
-            &rules
-        );
+            rules.count = 0;
 
         if (
             !cog_success ||

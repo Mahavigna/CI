@@ -13,39 +13,24 @@ FUZZY_VAR(time_short,  FUZZY_SHAPE_TRAPEZOID, 1.0f, 0.0f, 10.0f, 20.0f, 30.0f)
 FUZZY_VAR(time_medium, FUZZY_SHAPE_TRIANGLE,  1.0f, 15.0f, 30.0f, 45.0f)
 FUZZY_VAR(time_long,   FUZZY_SHAPE_TRAPEZOID, 1.0f, 30.0f, 40.0f, 50.0f, 60.0f)
 
-static void build_rules(fuzzy_rules_t *rules, float temperature, float humidity)
+static float watering(float temperature, float humidity, float step, const char *plot)
 {
+    fuzzy_rules_t rules;
+    rules.count = 0;
+
     RULE("Time: Short", SOR(temp_low(temperature), humidity_medium(humidity)), time_short);
     RULE("Time: Medium", SAND(humidity_medium(humidity), temp_medium(temperature)), time_medium);
     RULE("Time: Long", SOR(humidity_low(humidity), temp_high(temperature)), time_long);
-}
 
-static float watering(float temperature, float humidity, float step, const char *plot)
-{
-    fuzzy_rules_t system;
-    fuzzy_rules_t *rules = &system;
-    fuzzy_rules_create(rules);
-    build_rules(rules, temperature, humidity);
+    float result = fuzzy_rules_defuzzify(&rules, 0.0f, 60.0f, step, FUZZY_DEFUZZ_COG);
 
-    float result = fuzzy_rules_defuzzify(rules, 0.0f, 60.0f, step, FUZZY_DEFUZZ_COG);
+    fuzzy_rules_print(&rules);
+    fuzzy_rules_plot_cog(&rules, plot, "Center of Gravity Defuzzification", result, 0.0f, 60.0f, step);
 
-    if (plot) {
-        fuzzy_rules_print(rules);
-        fuzzy_rules_plot_cog(
-            rules, plot, "Center of Gravity Defuzzification",
-            result, 0.0f, 60.0f, step
-        );
-    }
-
-    fuzzy_rules_free(rules);
     return result;
 }
 
-static float sweep(const float inputs[], size_t count, float step)
-{
-    (void)count;
-    return watering(inputs[0], inputs[1], step, NULL);
-}
+SWEEP_EVALUATOR(sweep, watering, inputs[0], inputs[1], cog_step, NULL)
 
 int main(void)
 {

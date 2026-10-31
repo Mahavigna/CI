@@ -15,9 +15,9 @@ FUZZY_VAR(brake_force_high,   FUZZY_SHAPE_RAMP,      1.0f, 60.0f, 75.0f, true)
 
 static float brake(float speed, float distance, const char *plot)
 {
-    fuzzy_rules_t system;
-    fuzzy_rules_t *rules = &system;
-    fuzzy_rules_create(rules);
+    fuzzy_rules_t rules;
+
+    rules.count = 0;
 
     RULE("Low OR Far -> Low",       SOR(speed_low(speed), distance_far(distance)), brake_force_low);
     RULE("Low AND Medium -> Low",   SAND(speed_low(speed), distance_medium(distance)), brake_force_low);
@@ -31,10 +31,9 @@ static float brake(float speed, float distance, const char *plot)
     RULE("High AND Medium -> High", SAND(speed_high(speed), distance_medium(distance)), brake_force_high);
     RULE("High AND Close -> High", SAND(speed_high(speed), distance_close(distance)), brake_force_high);
 
-    fuzzy_rules_print(rules);
-    float force = fuzzy_rules_defuzzify(rules, 0.0f, 100.0f, 1.0f, FUZZY_DEFUZZ_COG);
-    fuzzy_rules_plot_cog(rules, plot, "Brake Force COG", force, 0.0f, 100.0f, 1.0f);
-    fuzzy_rules_free(rules);
+    fuzzy_rules_print(&rules);
+    float force = fuzzy_rules_defuzzify(&rules, 0.0f, 100.0f, 1.0f, FUZZY_DEFUZZ_COG);
+    fuzzy_rules_plot_cog(&rules, plot, "Brake Force COG", force, 0.0f, 100.0f, 1.0f);
     return force;
 }
 

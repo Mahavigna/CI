@@ -2641,6 +2641,7 @@
 </div>
 </foreignObject>
 <script type="application/ecmascript"><![CDATA[
+const fuzzyValueName="COG";
 const fuzzySampleCounts=[51,51,21];
 const fuzzyLowers=[0,0,0];
 const fuzzySteps=[2,2,0.5];
@@ -6203,7 +6204,7 @@ function fuzzyRenderHeatmap(){
           text+=', '+fuzzyNames[d]+' = '+physicalValues[local].toFixed(4);
         }
 
-        title.textContent=text+', COG = '+cog.toFixed(5);
+        title.textContent=text+', '+fuzzyValueName+' = '+cog.toFixed(5);
       }
     }
   }

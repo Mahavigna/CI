@@ -120,40 +120,18 @@ static float fan_fast(
  * Fuzzy fan controller
  * ========================================================== */
 
-static float calculate_fan_speed(
-    float temperature
-)
+static float calculate_fan_speed(float temperature)
 {
     fuzzy_rules_t rules;
     float result;
 
-    fuzzy_rules_create(
-        &rules
-    );
+    //Init rules
+    rules.count = 0;
 
-    if (!FUZZY_RULE_ADD(
-        &rules,
-        temperature_low(temperature),
-        fan_slow
-    )) {
-        fuzzy_rules_free(
-            &rules
-        );
 
-        return 0.0f;
-    }
+    if (!FUZZY_RULE_ADD(&rules, temperature_low(temperature), fan_slow)) return 0.0f;
 
-    if (!FUZZY_RULE_ADD(
-        &rules,
-        temperature_high(temperature),
-        fan_fast
-    )) {
-        fuzzy_rules_free(
-            &rules
-        );
-
-        return 0.0f;
-    }
+    if (!FUZZY_RULE_ADD(&rules, temperature_high(temperature), fan_fast)) return 0.0f;
 
     result =
         fuzzy_rules_defuzzify(
@@ -164,9 +142,8 @@ static float calculate_fan_speed(
         FUZZY_DEFUZZ_MOM
     );
 
-    fuzzy_rules_free(
-        &rules
-    );
+    //reset rules
+    rules.count = 0;
 
     return result;
 }
@@ -349,9 +326,7 @@ static bool plot_selected_cog(
     float result;
     bool success;
 
-    fuzzy_rules_create(
-        &rules
-    );
+    rules.count = 0 ;
 
     if (!FUZZY_RULE_ADD_NAMED(
         &rules,
@@ -361,9 +336,7 @@ static bool plot_selected_cog(
         ),
         fan_slow
     )) {
-        fuzzy_rules_free(
-            &rules
-        );
+        rules.count = 0;
 
         return false;
     }
@@ -376,9 +349,7 @@ static bool plot_selected_cog(
         ),
         fan_fast
     )) {
-        fuzzy_rules_free(
-            &rules
-        );
+        rules.count = 0;
 
         return false;
     }
@@ -410,9 +381,7 @@ static bool plot_selected_cog(
             10.0f
         );
 
-    fuzzy_rules_free(
-        &rules
-    );
+        rules.count = 0 ;
 
     return success;
 }
