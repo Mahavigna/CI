@@ -13,7 +13,7 @@ typedef unsigned char bool;
 typedef unsigned char uint8_t;
 
 #define false 0u
-#define true  1u
+#define true 1u
 
 #define FUZZY_MAX_RULES 16u
 
@@ -26,102 +26,162 @@ typedef struct FuzzyHedges {
 } hedges_t;
 
 #else
+
 /* ==========================================================
  * Minimal compiler and CRT declarations
  *
  * Supported:
  *
- * - GCC
- * - Clang
- * - MinGW
+ * - GCC on Linux
+ * - Clang on Linux
+ * - MinGW-w64
  * - MSVC
  * - clang-cl
+ * - Apple Clang
  *
- * This declares the APIs without including the standard
- * library headers. The platform C runtime still provides
- * the linked implementations.
+ * Standard library headers are intentionally not included.
+ * The platform C runtime supplies the linked definitions.
  * ========================================================== */
 
 #if defined(_MSC_VER)
 
-    #if defined(_WIN64)
-        typedef unsigned __int64 size_t;
-    #else
-        typedef unsigned int size_t;
-    #endif
-
-    typedef unsigned char bool;
-
-    #define true  1
-    #define false 0
-    #define NULL  ((void *)0)
-
-    typedef struct _iobuf FILE;
-
-    #define FUZZY_CDECL __cdecl
-
-    extern FILE *FUZZY_CDECL __acrt_iob_func(unsigned int);
-
-    #define stderr (__acrt_iob_func(2))
-
-    #ifndef RAND_MAX
-        #define RAND_MAX 32767
-    #endif
+typedef unsigned char bool;
 
 #else
 
-    typedef __SIZE_TYPE__ size_t;
-    typedef _Bool bool;
-
-    #define true  1
-    #define false 0
-    #define NULL  ((void *)0)
-
-    typedef struct _IO_FILE FILE;
-
-    #define FUZZY_CDECL
-
-    extern FILE *stderr;
-
-    #ifndef RAND_MAX
-        #define RAND_MAX 2147483647
-    #endif
+typedef _Bool bool;
 
 #endif
 
+#define true 1
+#define false 0
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* ==========================================================
+ * Platform FILE type and standard streams
+ * ========================================================== */
+
+#if defined(_WIN32)
+
+typedef struct _iobuf FILE;
+
+#if defined(_MSC_VER)
+
+#define FUZZY_CDECL __cdecl
+
+#else
+
+#define FUZZY_CDECL
+
+#endif
+
+extern FILE *FUZZY_CDECL __acrt_iob_func(unsigned int);
+
+#define FUZZY_STDERR (__acrt_iob_func(2u))
+#define FUZZY_STDOUT (__acrt_iob_func(1u))
+#define FUZZY_STDIN (__acrt_iob_func(0u))
+
+#ifndef stderr
+#define stderr FUZZY_STDERR
+#endif
+
+#ifndef stdout
+#define stdout FUZZY_STDOUT
+#endif
+
+#ifndef stdin
+#define stdin FUZZY_STDIN
+#endif
+
+#ifndef RAND_MAX
+#define RAND_MAX 32767
+#endif
+
+#elif defined(__APPLE__)
+
+typedef struct __sFILE FILE;
+
+#define FUZZY_CDECL
+
+extern FILE *__stderrp;
+extern FILE *__stdoutp;
+extern FILE *__stdinp;
+
+#define FUZZY_STDERR (__stderrp)
+#define FUZZY_STDOUT (__stdoutp)
+#define FUZZY_STDIN (__stdinp)
+
+#ifndef stderr
+#define stderr FUZZY_STDERR
+#endif
+
+#ifndef stdout
+#define stdout FUZZY_STDOUT
+#endif
+
+#ifndef stdin
+#define stdin FUZZY_STDIN
+#endif
+
+#ifndef RAND_MAX
+#define RAND_MAX 2147483647
+#endif
+
+#else
+
+typedef struct _IO_FILE FILE;
+
+#define FUZZY_CDECL
+
+extern FILE *stderr;
+extern FILE *stdout;
+extern FILE *stdin;
+
+#define FUZZY_STDERR (stderr)
+#define FUZZY_STDOUT (stdout)
+#define FUZZY_STDIN (stdin)
+
+#ifndef RAND_MAX
+#define RAND_MAX 2147483647
+#endif
+
+#endif
 
 /* ==========================================================
  * Formatted input and output
  * ========================================================== */
 
-extern int FUZZY_CDECL printf(const char *,...);
-extern int FUZZY_CDECL fprintf(FILE *,const char *,...);
-extern int FUZZY_CDECL snprintf(char *,size_t,const char *,...);
-extern int FUZZY_CDECL scanf(const char *,...);
+extern int FUZZY_CDECL printf(const char *, ...);
+extern int FUZZY_CDECL fprintf(FILE *, const char *, ...);
+extern int FUZZY_CDECL snprintf(char *, size_t, const char *, ...);
+extern int FUZZY_CDECL scanf(const char *, ...);
 
 /* ==========================================================
  * File operations
  * ========================================================== */
 
-extern FILE *FUZZY_CDECL fopen(const char *,const char *);
+extern FILE *FUZZY_CDECL fopen(const char *, const char *);
 extern int FUZZY_CDECL fclose(FILE *);
 extern int FUZZY_CDECL ferror(FILE *);
-extern int FUZZY_CDECL fputc(int,FILE *);
-extern int FUZZY_CDECL fputs(const char *,FILE *);
+extern int FUZZY_CDECL fputc(int, FILE *);
+extern int FUZZY_CDECL fputs(const char *, FILE *);
 
 /* ==========================================================
  * Dynamic memory
  * ========================================================== */
 
 extern void *FUZZY_CDECL malloc(size_t);
-extern void *FUZZY_CDECL calloc(size_t,size_t);
+extern void *FUZZY_CDECL calloc(size_t, size_t);
 extern void FUZZY_CDECL free(void *);
 
 /* ==========================================================
  * Mathematics
  * ========================================================== */
 
-extern float FUZZY_CDECL powf(float,float);
+extern float FUZZY_CDECL powf(float, float);
 extern float FUZZY_CDECL expf(float);
 extern float FUZZY_CDECL fabsf(float);
 extern float FUZZY_CDECL ceilf(float);
@@ -132,7 +192,10 @@ extern float FUZZY_CDECL ceilf(float);
 
 extern int FUZZY_CDECL rand(void);
 extern void FUZZY_CDECL srand(unsigned int);
-//Compiler Compatibilty for MSVC and Clang-CL
+
+/* ==========================================================
+ * Desktop configuration
+ * ========================================================== */
 
 #define FUZZY_MAX_RULES 32u
 
@@ -146,7 +209,6 @@ typedef struct FuzzyHedges {
     fuzzy_hedge_t slightly;
 } hedges_t;
 
-
 typedef struct FuzzyPoint {
     const float *coordinates;
     size_t dimension_count;
@@ -159,9 +221,7 @@ float fuzzy_interpolate_membership_array(const float *inputs, size_t dimension_c
 #define FUZZY_POINT(membership, ...) ((fuzzy_point_t){(const float[]){__VA_ARGS__}, FUZZY_VALUE_COUNT(__VA_ARGS__), (float)(membership)})
 #define fuzzy_interpolate_membership(inputs, ...) fuzzy_interpolate_membership_array((inputs).coordinates, (inputs).dimension_count, (const fuzzy_point_t[]){__VA_ARGS__}, sizeof((const fuzzy_point_t[]){__VA_ARGS__}) / sizeof(fuzzy_point_t))
 
-
 #endif /* FUZZY_8051 */
-
 
 /* ==========================================================
  * Shared constants and argument-array helpers
