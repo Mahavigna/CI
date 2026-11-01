@@ -7,8 +7,17 @@ CFLAGS := -O3 -Wall -Wextra -Wpedantic -std=c11
 LDFLAGS :=
 LDLIBS := -lm
 
+GPU_CFLAGS := \
+	-DFUZZY_OPENCL \
+	-Wno-overlength-strings \
+	-Wno-unused-function
 
+GPU_LDLIBS := -lOpenCL
+
+
+# ============================================================
 # Optional desktop acceleration tools
+# ============================================================
 
 ifneq (,$(shell command -v ccache 2>/dev/null))
 	CC_CMD := ccache $(CC)
@@ -41,10 +50,9 @@ SUGENO_TARGET := sugeno-app
 SUGENO_SOURCE := sugeno_demo.c
 SUGENO_OUTPUT := sugeno
 
-GPU_TARGET := braking-gpu
-GPU_SOURCE := braking_gpu_demo.c
-GPU_OUTPUT := braking_gpu
-GPU_LDLIBS := -lOpenCL
+GPU_TARGET := demo-all-gpu
+GPU_SOURCE := demo_all_gpu.c
+GPU_OUTPUT := demo-gpu
 
 SIM_8051_ROOT := sim-8051
 
@@ -84,20 +92,46 @@ endif
 # Main targets
 # ============================================================
 
-.PHONY: all desktop embedded \
-	run-strength run-greenhouse run-demo run-sugeno run-gpu \
+.PHONY: \
+	all \
+	desktop \
+	embedded \
+	run-strength \
+	run-greenhouse \
+	run-demo \
+	run-sugeno \
+	run-gpu \
+	time-demo \
+	time-gpu \
 	run-sim-8051 \
-	embedded-mamdani embedded-sugeno \
-	build-8051 build-sugeno-8051 \
-	simulate-8051 simulate-sugeno \
+	embedded-mamdani \
+	embedded-sugeno \
+	build-8051 \
+	build-sugeno-8051 \
+	simulate-8051 \
+	simulate-sugeno \
 	debug-8051 \
-	check-dependencies install-dependencies \
-	png png-strength png-greenhouse png-demo png-sugeno \
-	png-gpu png-sim-8051 \
-	pdf pdf-strength pdf-greenhouse pdf-demo pdf-sugeno \
-	pdf-gpu pdf-sim-8051 \
-	clean clean-desktop clean-embedded \
-	clean-embedded-mamdani clean-embedded-sugeno \
+	check-dependencies \
+	install-dependencies \
+	png \
+	png-strength \
+	png-greenhouse \
+	png-demo \
+	png-sugeno \
+	png-gpu \
+	png-sim-8051 \
+	pdf \
+	pdf-strength \
+	pdf-greenhouse \
+	pdf-demo \
+	pdf-sugeno \
+	pdf-gpu \
+	pdf-sim-8051 \
+	clean \
+	clean-desktop \
+	clean-embedded \
+	clean-embedded-mamdani \
+	clean-embedded-sugeno \
 	help
 
 all: desktop embedded
@@ -133,7 +167,8 @@ $(SUGENO_EMBEDDED_OUTPUT):
 # ============================================================
 
 $(STRENGTH_TARGET): $(STRENGTH_SOURCE) fuzzy.h | $(STRENGTH_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building $@ from $<..."
 	@echo "============================================================"
 	$(CC_CMD) $(CFLAGS) $< $(LDFLAGS) -o $@ $(LDLIBS)
@@ -141,7 +176,8 @@ $(STRENGTH_TARGET): $(STRENGTH_SOURCE) fuzzy.h | $(STRENGTH_OUTPUT)
 
 
 $(GREENHOUSE_TARGET): $(GREENHOUSE_SOURCE) fuzzy.h | $(GREENHOUSE_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building $@ from $<..."
 	@echo "============================================================"
 	$(CC_CMD) $(CFLAGS) $< $(LDFLAGS) -o $@ $(LDLIBS)
@@ -149,15 +185,18 @@ $(GREENHOUSE_TARGET): $(GREENHOUSE_SOURCE) fuzzy.h | $(GREENHOUSE_OUTPUT)
 
 
 $(DEMO_TARGET): $(DEMO_SOURCE) fuzzy.h | $(DEMO_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building $@ from $<..."
+	@echo "CPU sweep mode"
 	@echo "============================================================"
 	$(CC_CMD) $(CFLAGS) $< $(LDFLAGS) -o $@ $(LDLIBS)
 	@echo "[OK] Built $@"
 
 
 $(SUGENO_TARGET): $(SUGENO_SOURCE) fuzzy.h | $(SUGENO_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building $@ from $<..."
 	@echo "Desktop simulation mode: -DSIMULATION"
 	@echo "============================================================"
@@ -166,16 +205,26 @@ $(SUGENO_TARGET): $(SUGENO_SOURCE) fuzzy.h | $(SUGENO_OUTPUT)
 
 
 $(GPU_TARGET): $(GPU_SOURCE) fuzzy.h | $(GPU_OUTPUT)
-	@echo "\n============================================================"
-	@echo "Building OpenCL GPU application from $<..."
+	@echo ""
+	@echo "============================================================"
+	@echo "Building OpenCL GPU demonstration from $<..."
+	@echo "GPU COG sweep and GPU interpolation sweep enabled"
 	@echo "GPU acceleration mode: -DFUZZY_OPENCL"
 	@echo "============================================================"
-	$(CC_CMD) $(CFLAGS) -DFUZZY_OPENCL $< $(LDFLAGS) -o $@ $(GPU_LDLIBS) $(LDLIBS)
+	$(CC_CMD) \
+		$(CFLAGS) \
+		$(GPU_CFLAGS) \
+		$< \
+		$(LDFLAGS) \
+		-o $@ \
+		$(GPU_LDLIBS) \
+		$(LDLIBS)
 	@echo "[OK] Built $@"
 
 
 $(MAMDANI_8051_TARGET): $(MAMDANI_8051_SOURCE) fuzzy.h | $(MAMDANI_8051_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building $@ from $<..."
 	@echo "Desktop simulation mode: -DSIMULATION"
 	@echo "============================================================"
@@ -188,42 +237,66 @@ $(MAMDANI_8051_TARGET): $(MAMDANI_8051_SOURCE) fuzzy.h | $(MAMDANI_8051_OUTPUT)
 # ============================================================
 
 run-strength: $(STRENGTH_TARGET) | $(STRENGTH_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Running paint-strength example"
 	@echo "============================================================"
 	./$(STRENGTH_TARGET)
 
 
 run-greenhouse: $(GREENHOUSE_TARGET) | $(GREENHOUSE_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Running greenhouse example"
 	@echo "============================================================"
 	./$(GREENHOUSE_TARGET)
 
 
 run-demo: $(DEMO_TARGET) | $(DEMO_OUTPUT)
-	@echo "\n============================================================"
-	@echo "Running complete fuzzy.h demonstration"
+	@echo ""
+	@echo "============================================================"
+	@echo "Running complete CPU fuzzy.h demonstration"
 	@echo "============================================================"
 	./$(DEMO_TARGET)
 
 
 run-sugeno: $(SUGENO_TARGET) | $(SUGENO_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Running complex Sugeno controller demonstration"
 	@echo "============================================================"
 	cd $(SUGENO_OUTPUT) && ../$(SUGENO_TARGET)
 
 
 run-gpu: $(GPU_TARGET) | $(GPU_OUTPUT)
-	@echo "\n============================================================"
-	@echo "Running OpenCL fuzzy GPU sweep"
+	@echo ""
+	@echo "============================================================"
+	@echo "Running complete OpenCL fuzzy.h demonstration"
+	@echo "GPU interpolation sweep enabled"
+	@echo "GPU COG sweep enabled"
 	@echo "============================================================"
 	./$(GPU_TARGET)
 
 
+time-demo: $(DEMO_TARGET) | $(DEMO_OUTPUT)
+	@echo ""
+	@echo "============================================================"
+	@echo "Timing complete CPU fuzzy.h demonstration"
+	@echo "============================================================"
+	time ./$(DEMO_TARGET)
+
+
+time-gpu: $(GPU_TARGET) | $(GPU_OUTPUT)
+	@echo ""
+	@echo "============================================================"
+	@echo "Timing complete OpenCL fuzzy.h demonstration"
+	@echo "============================================================"
+	time ./$(GPU_TARGET)
+
+
 run-sim-8051: $(MAMDANI_8051_TARGET) | $(MAMDANI_8051_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Running desktop Mamdani 8051 simulation harness"
 	@echo "============================================================"
 	cd $(MAMDANI_8051_OUTPUT) && ../../$(MAMDANI_8051_TARGET)
@@ -235,7 +308,8 @@ run-sim-8051: $(MAMDANI_8051_TARGET) | $(MAMDANI_8051_OUTPUT)
 
 embedded-mamdani build-8051: \
 	$(MAMDANI_EMBEDDED_SOURCE) fuzzy.h | $(MAMDANI_EMBEDDED_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building Mamdani AT89S52 firmware with SDCC"
 	@echo "============================================================"
 	@rm -f $(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).*
@@ -255,14 +329,16 @@ embedded-mamdani build-8051: \
 		$(PACKIHX) \
 		$(MAMDANI_EMBEDDED_BASENAME).ihx \
 		> $(MAMDANI_EMBEDDED_BASENAME).hex
-	@echo "\nGenerated Mamdani firmware:"
+	@echo ""
+	@echo "Generated Mamdani firmware:"
 	@echo "  $(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).ihx"
 	@echo "  $(MAMDANI_EMBEDDED_OUTPUT)/$(MAMDANI_EMBEDDED_BASENAME).hex"
 
 
 embedded-sugeno build-sugeno-8051: \
 	$(SUGENO_SOURCE) fuzzy.h | $(SUGENO_EMBEDDED_OUTPUT)
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Building Sugeno AT89S52 firmware with SDCC"
 	@echo "============================================================"
 	@rm -f $(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).*
@@ -282,7 +358,8 @@ embedded-sugeno build-sugeno-8051: \
 		$(PACKIHX) \
 		$(SUGENO_EMBEDDED_BASENAME).ihx \
 		> $(SUGENO_EMBEDDED_BASENAME).hex
-	@echo "\nGenerated Sugeno firmware:"
+	@echo ""
+	@echo "Generated Sugeno firmware:"
 	@echo "  $(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).ihx"
 	@echo "  $(SUGENO_EMBEDDED_OUTPUT)/$(SUGENO_EMBEDDED_BASENAME).hex"
 
@@ -296,7 +373,8 @@ simulate-8051: embedded-mamdani
 		echo "Error: no 8051 simulator was found."; \
 		exit 1; \
 	fi
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Starting Mamdani 8051 simulator"
 	@echo "============================================================"
 	$(SIMULATOR_COMMAND) \
@@ -310,7 +388,8 @@ simulate-sugeno: embedded-sugeno
 		echo "Error: no 8051 simulator was found."; \
 		exit 1; \
 	fi
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Starting Sugeno 8051 simulator"
 	@echo "============================================================"
 	$(SIMULATOR_COMMAND) \
@@ -320,7 +399,8 @@ simulate-sugeno: embedded-sugeno
 
 
 debug-8051: embedded-mamdani
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Starting Mamdani 8051 source-level debugger"
 	@echo "============================================================"
 	mkdir -p $(MAMDANI_EMBEDDED_OUTPUT)/tools
@@ -440,7 +520,8 @@ clean: clean-desktop clean-embedded
 
 
 clean-desktop:
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Cleaning desktop outputs"
 	@echo "============================================================"
 	rm -f \
@@ -476,7 +557,8 @@ clean-embedded: clean-embedded-mamdani clean-embedded-sugeno
 
 
 clean-embedded-mamdani:
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Cleaning Mamdani embedded outputs"
 	@echo "============================================================"
 	rm -rf $(MAMDANI_EMBEDDED_OUTPUT)/* 2>/dev/null || true
@@ -484,7 +566,8 @@ clean-embedded-mamdani:
 
 
 clean-embedded-sugeno:
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Cleaning Sugeno embedded outputs"
 	@echo "============================================================"
 	rm -rf $(SUGENO_EMBEDDED_OUTPUT)/* 2>/dev/null || true
@@ -496,7 +579,8 @@ clean-embedded-sugeno:
 # ============================================================
 
 check-dependencies:
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Checking dependencies"
 	@echo "============================================================"
 	@for cmd in gcc make bash sdcc packihx; do \
@@ -532,7 +616,8 @@ check-dependencies:
 # ============================================================
 
 install-dependencies:
-	@echo "\n============================================================"
+	@echo ""
+	@echo "============================================================"
 	@echo "Installing project dependencies"
 	@echo "============================================================"
 	@if ! command -v apt-get >/dev/null 2>&1; then \
@@ -584,10 +669,21 @@ help:
 	@echo "  make run-sim-8051"
 	@echo ""
 	@echo "GPU commands:"
-	@echo "  make braking-gpu         Build the OpenCL GPU application."
-	@echo "  make run-gpu             Build and run the OpenCL GPU sweep."
+	@echo "  make demo-all-gpu        Build the complete OpenCL GPU demonstration."
+	@echo "  make run-gpu             Build and run the complete OpenCL GPU demonstration."
+	@echo "  make time-gpu            Build and time the complete OpenCL GPU demonstration."
 	@echo "  make png-gpu             Convert GPU SVG outputs to PNG."
 	@echo "  make pdf-gpu             Convert GPU SVG outputs to PDF."
+	@echo ""
+	@echo "Benchmark commands:"
+	@echo "  make time-demo           Build and time the CPU demonstration."
+	@echo "  make time-gpu            Build and time the GPU demonstration."
+	@echo ""
+	@echo "GPU demonstration includes:"
+	@echo "  OpenCL COG sweep."
+	@echo "  OpenCL sampled-membership interpolation sweep."
+	@echo "  Five-dimensional Cartesian input generation."
+	@echo "  CSV and interactive SVG generation."
 	@echo ""
 	@echo "Mamdani 8051 commands:"
 	@echo "  make embedded-mamdani"

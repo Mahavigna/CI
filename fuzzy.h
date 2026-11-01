@@ -781,27 +781,6 @@ typedef struct FuzzyInterpolationSweep {
         .function = (function_arg)                     \
     }
 
-#ifdef FUZZY_OPENCL
-
-typedef const char *(*fuzzy_gpu_kernel_source_t)(void);
-
-typedef struct FuzzyGpuSweep {
-    const char *filename;
-    const char *title;
-    const char *value_name;
-
-    fuzzy_gpu_kernel_source_t kernel_source;
-    const char *kernel_name;
-
-    const fuzzy_sweep_dimension_t *dimensions;
-    size_t dimension_count;
-
-    float defuzz_step;
-} fuzzy_gpu_sweep_t;
-
-#endif /* FUZZY_OPENCL */
-
-
 #define FUZZY_PLOT_FUNCTION_NAMED(                     \
     name_arg, color_arg, function_arg                  \
 )                                                      \
@@ -867,36 +846,109 @@ typedef struct FuzzyGpuSweep {
         }                                             \
     )
 
+
 #ifdef FUZZY_OPENCL
 
-#define FUZZY_GPU_SWEEP(                              \
-    filename_arg,                                     \
-    title_arg,                                        \
-    value_name_arg,                                   \
-    kernel_source_arg,                                \
-    kernel_name_arg,                                  \
-    defuzz_step_arg,                                  \
-    ...                                               \
-)                                                     \
-    fuzzy_gpu_sweep(                                  \
-        &(const fuzzy_gpu_sweep_t) {                  \
-            .filename = (filename_arg),               \
-            .title = (title_arg),                     \
-            .value_name = (value_name_arg),           \
-            .kernel_source = (kernel_source_arg),     \
-            .kernel_name = (kernel_name_arg),         \
+#ifndef CL_TARGET_OPENCL_VERSION
+#define CL_TARGET_OPENCL_VERSION 120
+#endif
+
+#include <CL/cl.h>
+
+typedef enum FuzzyGpuShape {
+    FUZZY_GPU_RAMP,
+    FUZZY_GPU_TRIANGLE,
+    FUZZY_GPU_TRAPEZOID,
+    FUZZY_GPU_SMF,
+    FUZZY_GPU_ZMF,
+    FUZZY_GPU_GAUSSIAN,
+    FUZZY_GPU_GAUSSIAN2,
+    FUZZY_GPU_BELL,
+    FUZZY_GPU_SIGMOID,
+    FUZZY_GPU_DSIGMOID,
+    FUZZY_GPU_PSIGMOID,
+    FUZZY_GPU_PIMF,
+    FUZZY_GPU_PIECEWISE
+} fuzzy_gpu_shape_t;
+
+typedef enum FuzzyGpuOperation {
+    FUZZY_GPU_AND,
+    FUZZY_GPU_OR
+} fuzzy_gpu_operation_t;
+
+typedef struct FuzzyGpuVariable {
+    cl_uint input;
+    cl_uint shape;
+    float parameters[4];
+} fuzzy_gpu_variable_t;
+
+typedef struct FuzzyGpuRule {
+    cl_uint left;
+    cl_uint right;
+    cl_uint operation;
+    cl_uint output;
+} fuzzy_gpu_rule_t;
+
+typedef struct FuzzyGpuController {
+    const fuzzy_gpu_variable_t *variables;
+    size_t variable_count;
+
+    const fuzzy_gpu_variable_t *outputs;
+    size_t output_count;
+
+    const fuzzy_gpu_rule_t *rules;
+    size_t rule_count;
+
+    float output_minimum;
+    float output_maximum;
+} fuzzy_gpu_controller_t;
+
+typedef struct FuzzyGpuSweep {
+    const char *filename;
+    const char *title;
+    const char *value_name;
+
+    const fuzzy_gpu_controller_t *controller;
+
+    const fuzzy_sweep_dimension_t *dimensions;
+    size_t dimension_count;
+
+    float defuzz_step;
+} fuzzy_gpu_sweep_t;
+
+#define FUZZY_GPU_VARIABLE(input_arg, shape_arg, ...) { .input = (input_arg), .shape = (shape_arg), .parameters = { __VA_ARGS__ } }
+#define FUZZY_GPU_OUTPUT(shape_arg, ...) { .input = 0u, .shape = (shape_arg), .parameters = { __VA_ARGS__ } }
+#define FUZZY_GPU_RULE(left_arg, operation_arg, right_arg, output_arg) { .left = (left_arg), .right = (right_arg), .operation = (operation_arg), .output = (output_arg) }
+
+#define FUZZY_GPU_CONTROLLER(name, variables_arg, outputs_arg, rules_arg, minimum_arg, maximum_arg) static const fuzzy_gpu_controller_t name = { .variables = (variables_arg), .variable_count = sizeof(variables_arg) / sizeof((variables_arg)[0]), .outputs = (outputs_arg), .output_count = sizeof(outputs_arg) / sizeof((outputs_arg)[0]), .rules = (rules_arg), .rule_count = sizeof(rules_arg) / sizeof((rules_arg)[0]), .output_minimum = (minimum_arg), .output_maximum = (maximum_arg) }
+
+#define FUZZY_GPU_SWEEP(filename_arg, title_arg, value_name_arg, controller_arg, defuzz_step_arg, ...) fuzzy_gpu_sweep(&(const fuzzy_gpu_sweep_t) { .filename = (filename_arg), .title = (title_arg), .value_name = (value_name_arg), .controller = &(controller_arg), .dimensions = (const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }) / sizeof(fuzzy_sweep_dimension_t), .defuzz_step = (defuzz_step_arg) })
+
+#define FUZZY_GPU_INTERPOLATION_SWEEP(                  \
+    filename_arg,                                      \
+    title_arg,                                         \
+    points_arg,                                        \
+    ...                                                \
+)                                                      \
+    fuzzy_gpu_interpolation_sweep(                     \
+        &(const fuzzy_interpolation_sweep_t) {         \
+            .filename = (filename_arg),                \
+            .title = (title_arg),                      \
             .dimensions =                             \
-                (const fuzzy_sweep_dimension_t[]) {   \
-                    __VA_ARGS__                       \
-                },                                    \
+                (const fuzzy_sweep_dimension_t[]) {    \
+                    __VA_ARGS__                        \
+                },                                     \
             .dimension_count =                        \
                 sizeof(                               \
-                    (const fuzzy_sweep_dimension_t[]) { \
+                    (const fuzzy_sweep_dimension_t[]) {\
                         __VA_ARGS__                    \
-                    }                                 \
-                ) / sizeof(fuzzy_sweep_dimension_t),  \
-            .defuzz_step = (defuzz_step_arg)          \
-        }                                             \
+                    }                                  \
+                ) / sizeof(fuzzy_sweep_dimension_t),   \
+            .points = (points_arg),                    \
+            .point_count =                            \
+                sizeof(points_arg) /                  \
+                sizeof((points_arg)[0])                \
+        }                                              \
     )
 
 #endif /* FUZZY_OPENCL */
@@ -972,6 +1024,10 @@ bool fuzzy_gpu_sweep(
     const fuzzy_gpu_sweep_t *sweep
 );
 
+bool fuzzy_gpu_interpolation_sweep(
+    const fuzzy_interpolation_sweep_t *sweep
+);
+
 #endif /* FUZZY_OPENCL */
 
 #endif /* FUZZY_8051 */
@@ -988,54 +1044,14 @@ bool fuzzy_gpu_sweep(
 
 #ifdef FUZZY_IMPLEMENTATION
 
-#if defined(FUZZY_OPENCL) && !defined(FUZZY_8051)
-
-#ifndef CL_TARGET_OPENCL_VERSION
-#define CL_TARGET_OPENCL_VERSION 120
-#endif
-
-#include <CL/cl.h>
-
-#define FUZZY_GPU_KERNEL_HEADER                       \
-    "float fuzzy_ramp("                               \
-    "float x,float a,float b,int rising)"             \
-    "{\n"                                             \
-    "if(x<=a)return rising?0.0f:1.0f;\n"              \
-    "if(x>=b)return rising?1.0f:0.0f;\n"              \
-    "float t=(x-a)/(b-a);\n"                          \
-    "return rising?t:1.0f-t;\n"                       \
-    "}\n"                                             \
-    "float fuzzy_triangle("                           \
-    "float x,float a,float b,float c)"                \
-    "{\n"                                             \
-    "if(x<=a||x>=c)return 0.0f;\n"                    \
-    "if(x==b)return 1.0f;\n"                          \
-    "if(x<b)return(x-a)/(b-a);\n"                     \
-    "return(c-x)/(c-b);\n"                            \
-    "}\n"                                             \
-    "float fuzzy_trapezoid("                          \
-    "float x,float a,float b,float c,float d)"        \
-    "{\n"                                             \
-    "if(x<=a||x>=d)return 0.0f;\n"                    \
-    "if(x>=b&&x<=c)return 1.0f;\n"                    \
-    "if(x<b)return(x-a)/(b-a);\n"                     \
-    "return(d-x)/(d-c);\n"                            \
-    "}\n"
-
-#endif /* FUZZY_OPENCL */
-
 /*
  * Keep a membership value inside the valid fuzzy range.
  */
 static float fuzzy_clamp(float value)
 {
-    if (value < LEVEL_LO) {
-        return LEVEL_LO;
-    }
+    if (value < LEVEL_LO) return LEVEL_LO;
 
-    if (value > LEVEL_HI) {
-        return LEVEL_HI;
-    }
+    if (value > LEVEL_HI) return LEVEL_HI;
 
     return value;
 }
@@ -1043,13 +1059,9 @@ static float fuzzy_clamp(float value)
 /*
  * Keep a membership value inside the valid fuzzy range.
  */
-float fuzzy_not(
-    float membership
-)
+float fuzzy_not(float membership)
 {
-    return LEVEL_HI -
-        fuzzy_clamp( membership
-        );
+    return LEVEL_HI - fuzzy_clamp(membership);
 }
 
 
@@ -4723,6 +4735,286 @@ typedef struct FuzzyGpuHarness {
     cl_device_id device;
 } fuzzy_gpu_harness_t;
 
+static const char *fuzzy_gpu_interpolation_kernel_source =
+    "__kernel void fuzzy_gpu_interpolation_kernel(\n"
+    "    __global const float *inputs,\n"
+    "    __global float *outputs,\n"
+    "    __global const float *point_coordinates,\n"
+    "    __global const float *point_memberships,\n"
+    "    const uint sweep_point_count,\n"
+    "    const uint dimension_count,\n"
+    "    const uint interpolation_point_count)\n"
+    "{\n"
+    "    const uint id = get_global_id(0);\n"
+    "\n"
+    "    if (id >= sweep_point_count) return;\n"
+    "\n"
+    "    const uint input_base = id * dimension_count;\n"
+    "\n"
+    "    float weighted_membership = 0.0f;\n"
+    "    float weight_sum = 0.0f;\n"
+    "\n"
+    "    for (\n"
+    "        uint point = 0u;\n"
+    "        point < interpolation_point_count;\n"
+    "        point++\n"
+    "    ) {\n"
+    "        const uint point_base = point * dimension_count;\n"
+    "        float distance_squared = 0.0f;\n"
+    "\n"
+    "        for (\n"
+    "            uint dimension = 0u;\n"
+    "            dimension < dimension_count;\n"
+    "            dimension++\n"
+    "        ) {\n"
+    "            const float difference =\n"
+    "                inputs[input_base + dimension] -\n"
+    "                point_coordinates[point_base + dimension];\n"
+    "\n"
+    "            distance_squared +=\n"
+    "                difference * difference;\n"
+    "        }\n"
+    "\n"
+    "        const float membership = clamp(\n"
+    "            point_memberships[point],\n"
+    "            0.0f,\n"
+    "            1.0f\n"
+    "        );\n"
+    "\n"
+    "        if (distance_squared == 0.0f) {\n"
+    "            outputs[id] = membership;\n"
+    "            return;\n"
+    "        }\n"
+    "\n"
+    "        const float weight =\n"
+    "            1.0f / distance_squared;\n"
+    "\n"
+    "        weighted_membership +=\n"
+    "            weight * membership;\n"
+    "\n"
+    "        weight_sum +=\n"
+    "            weight;\n"
+    "    }\n"
+    "\n"
+    "    outputs[id] = clamp(\n"
+    "        weighted_membership / weight_sum,\n"
+    "        0.0f,\n"
+    "        1.0f\n"
+    "    );\n"
+    "}\n";
+
+static const char *fuzzy_gpu_kernel_source =
+    "typedef struct{uint input;uint shape;float parameters[4];}fuzzy_gpu_variable_t;\n"
+    "typedef struct{uint left;uint right;uint operation;uint output;}fuzzy_gpu_rule_t;\n"
+
+    "float fuzzy_gpu_membership(uint shape,float value,float4 p)\n"
+    "{\n"
+    "    switch(shape){\n"
+
+    "        case 0u:{\n"
+    "            float a=p.x,b=p.y;\n"
+    "            if(a>=b)return 0.0f;\n"
+    "            if(value<=a)return p.z!=0.0f?0.0f:1.0f;\n"
+    "            if(value>=b)return p.z!=0.0f?1.0f:0.0f;\n"
+    "            float t=(value-a)/(b-a);\n"
+    "            return p.z!=0.0f?t:1.0f-t;\n"
+    "        }\n"
+
+    "        case 1u:{\n"
+    "            float a=p.x,b=p.y,c=p.z;\n"
+    "            if(a>=b||b>=c||value<=a||value>=c)return 0.0f;\n"
+    "            if(value==b)return 1.0f;\n"
+    "            if(value<b)return(value-a)/(b-a);\n"
+    "            return(c-value)/(c-b);\n"
+    "        }\n"
+
+    "        case 2u:{\n"
+    "            float a=p.x,b=p.y,c=p.z,d=p.w;\n"
+    "            if(a>=b||b>c||c>=d||value<=a||value>=d)return 0.0f;\n"
+    "            if(value>=b&&value<=c)return 1.0f;\n"
+    "            if(value<b)return(value-a)/(b-a);\n"
+    "            return(d-value)/(d-c);\n"
+    "        }\n"
+
+    "        case 3u:{\n"
+    "            float a=p.x,b=p.y;\n"
+    "            if(a>=b||value<=a)return 0.0f;\n"
+    "            if(value>=b)return 1.0f;\n"
+    "            float m=(a+b)*0.5f;\n"
+    "            float n;\n"
+    "            if(value<=m){\n"
+    "                n=(value-a)/(b-a);\n"
+    "                return 2.0f*n*n;\n"
+    "            }\n"
+    "            n=(b-value)/(b-a);\n"
+    "            return 1.0f-2.0f*n*n;\n"
+    "        }\n"
+
+    "        case 4u:{\n"
+    "            float a=p.x,b=p.y;\n"
+    "            if(a>=b||value>=b)return 0.0f;\n"
+    "            if(value<=a)return 1.0f;\n"
+    "            float m=(a+b)*0.5f;\n"
+    "            float n;\n"
+    "            if(value<=m){\n"
+    "                n=(value-a)/(b-a);\n"
+    "                return 1.0f-2.0f*n*n;\n"
+    "            }\n"
+    "            n=(b-value)/(b-a);\n"
+    "            return 2.0f*n*n;\n"
+    "        }\n"
+
+    "        case 5u:{\n"
+    "            if(p.y<=0.0f)return 0.0f;\n"
+    "            float difference=value-p.x;\n"
+    "            return exp(-(difference*difference)/(2.0f*p.y*p.y));\n"
+    "        }\n"
+
+    "        case 6u:{\n"
+    "            if(p.y<=0.0f||p.w<=0.0f||p.x>p.z)return 0.0f;\n"
+    "            if(value<p.x){\n"
+    "                float difference=value-p.x;\n"
+    "                return exp(-(difference*difference)/(2.0f*p.y*p.y));\n"
+    "            }\n"
+    "            if(value<=p.z)return 1.0f;\n"
+    "            float difference=value-p.z;\n"
+    "            return exp(-(difference*difference)/(2.0f*p.w*p.w));\n"
+    "        }\n"
+
+    "        case 7u:{\n"
+    "            if(p.x==0.0f)return 0.0f;\n"
+    "            float normalized=fabs((value-p.z)/(p.x*0.5f));\n"
+    "            return 1.0f/(1.0f+pow(normalized,2.0f*p.y));\n"
+    "        }\n"
+
+    "        case 8u:\n"
+    "            return 1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
+
+    "        case 9u:{\n"
+    "            float first=1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
+    "            float second=1.0f/(1.0f+exp(-p.z*(value-p.w)));\n"
+    "            return first-second;\n"
+    "        }\n"
+
+    "        case 10u:{\n"
+    "            float first=1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
+    "            float second=1.0f/(1.0f+exp(-p.z*(value-p.w)));\n"
+    "            return first*second;\n"
+    "        }\n"
+
+    "        case 11u:{\n"
+    "            float a=p.x,b=p.y,c=p.z,d=p.w;\n"
+    "            if(a>=b||b>c||c>=d||value<=a||value>=d)return 0.0f;\n"
+    "            if(value>=b&&value<=c)return 1.0f;\n"
+    "            float m,n;\n"
+    "            if(value<b){\n"
+    "                m=(a+b)*0.5f;\n"
+    "                if(value<=m){\n"
+    "                    n=(value-a)/(b-a);\n"
+    "                    return 2.0f*n*n;\n"
+    "                }\n"
+    "                n=(b-value)/(b-a);\n"
+    "                return 1.0f-2.0f*n*n;\n"
+    "            }\n"
+    "            m=(c+d)*0.5f;\n"
+    "            if(value<=m){\n"
+    "                n=(value-c)/(d-c);\n"
+    "                return 1.0f-2.0f*n*n;\n"
+    "            }\n"
+    "            n=(d-value)/(d-c);\n"
+    "            return 2.0f*n*n;\n"
+    "        }\n"
+
+    "        case 12u:{\n"
+    "            float a=p.x,b=p.y,c=p.z;\n"
+    "            if(a>=b||b>=c||value<=a||value>=c)return 0.0f;\n"
+    "            if(value<=b)return(value-a)/(b-a);\n"
+    "            return(c-value)/(c-b);\n"
+    "        }\n"
+
+    "        default:\n"
+    "            return 0.0f;\n"
+    "    }\n"
+    "}\n"
+
+    "__kernel void fuzzy_gpu_sweep_kernel(\n"
+    "    __global const float *inputs,\n"
+    "    __global float *results,\n"
+    "    __global const fuzzy_gpu_variable_t *variables,\n"
+    "    __global const fuzzy_gpu_variable_t *output_variables,\n"
+    "    __global const fuzzy_gpu_rule_t *rules,\n"
+    "    const uint point_count,\n"
+    "    const uint dimension_count,\n"
+    "    const uint variable_count,\n"
+    "    const uint output_count,\n"
+    "    const uint rule_count,\n"
+    "    const float cog_step,\n"
+    "    const float output_minimum,\n"
+    "    const float output_maximum)\n"
+    "{\n"
+    "    const uint id=get_global_id(0);\n"
+    "    if(id>=point_count)return;\n"
+    "\n"
+    "    const uint base=id*dimension_count;\n"
+    "\n"
+    "    float memberships[32];\n"
+    "    float activations[32];\n"
+    "\n"
+    "    for(uint i=0u;i<variable_count;i++){\n"
+    "        const fuzzy_gpu_variable_t variable=variables[i];\n"
+    "        memberships[i]=fuzzy_gpu_membership(\n"
+    "            variable.shape,\n"
+    "            inputs[base+variable.input],\n"
+    "            vload4(0,variable.parameters)\n"
+    "        );\n"
+    "    }\n"
+    "\n"
+    "    for(uint i=0u;i<rule_count;i++){\n"
+    "        const fuzzy_gpu_rule_t rule=rules[i];\n"
+    "        const float left=memberships[rule.left];\n"
+    "        const float right=memberships[rule.right];\n"
+    "        activations[i]=rule.operation==0u\n"
+    "            ? fmin(left,right)\n"
+    "            : fmax(left,right);\n"
+    "    }\n"
+    "\n"
+    "    float weighted_sum=0.0f;\n"
+    "    float height_sum=0.0f;\n"
+    "\n"
+    "    for(\n"
+    "        float value=output_minimum;\n"
+    "        value<=output_maximum;\n"
+    "        value+=cog_step\n"
+    "    ){\n"
+    "        float aggregated=0.0f;\n"
+    "\n"
+    "        for(uint i=0u;i<rule_count;i++){\n"
+    "            const uint output=rules[i].output;\n"
+    "            if(output>=output_count)continue;\n"
+    "\n"
+    "            const fuzzy_gpu_variable_t variable=\n"
+    "                output_variables[output];\n"
+    "\n"
+    "            const float membership=fuzzy_gpu_membership(\n"
+    "                variable.shape,\n"
+    "                value,\n"
+    "                vload4(0,variable.parameters)\n"
+    "            );\n"
+    "\n"
+    "            aggregated=fmax(\n"
+    "                aggregated,\n"
+    "                fmin(activations[i],membership)\n"
+    "            );\n"
+    "        }\n"
+    "\n"
+    "        weighted_sum+=value*aggregated;\n"
+    "        height_sum+=aggregated;\n"
+    "    }\n"
+    "\n"
+    "    results[id]=height_sum>0.0f\n"
+    "        ? weighted_sum/height_sum\n"
+    "        : 0.0f;\n"
+    "}\n";
 
 static bool fuzzy_gpu_harness_begin(
     fuzzy_gpu_harness_t *gpu,
@@ -4860,9 +5152,9 @@ static bool fuzzy_gpu_harness_begin(
     return error == CL_SUCCESS;
 }
 
-
 static bool fuzzy_gpu_harness_run(
     fuzzy_gpu_harness_t *gpu,
+    const fuzzy_gpu_controller_t *controller,
     const float *inputs,
     float *outputs,
     size_t point_count,
@@ -4872,9 +5164,15 @@ static bool fuzzy_gpu_harness_run(
 {
     cl_mem input_buffer;
     cl_mem output_buffer;
+    cl_mem variable_buffer;
+    cl_mem fuzzy_output_buffer;
+    cl_mem rule_buffer;
 
     cl_uint gpu_point_count;
     cl_uint gpu_dimension_count;
+    cl_uint gpu_variable_count;
+    cl_uint gpu_output_count;
+    cl_uint gpu_rule_count;
 
     cl_int error;
     size_t global_size;
@@ -4884,6 +5182,15 @@ static bool fuzzy_gpu_harness_run(
 
     gpu_dimension_count =
         (cl_uint)dimension_count;
+
+    gpu_variable_count =
+        (cl_uint)controller->variable_count;
+
+    gpu_output_count =
+        (cl_uint)controller->output_count;
+
+    gpu_rule_count =
+        (cl_uint)controller->rule_count;
 
     input_buffer =
         clCreateBuffer(
@@ -4912,6 +5219,91 @@ static bool fuzzy_gpu_harness_run(
         );
 
     if (error != CL_SUCCESS) {
+        clReleaseMemObject(
+            input_buffer
+        );
+
+        return false;
+    }
+
+    variable_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_READ_ONLY |
+            CL_MEM_COPY_HOST_PTR,
+            controller->variable_count *
+            sizeof(fuzzy_gpu_variable_t),
+            (void *)controller->variables,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        clReleaseMemObject(
+            input_buffer
+        );
+
+        clReleaseMemObject(
+            output_buffer
+        );
+
+        return false;
+    }
+
+    fuzzy_output_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_READ_ONLY |
+            CL_MEM_COPY_HOST_PTR,
+            controller->output_count *
+            sizeof(fuzzy_gpu_variable_t),
+            (void *)controller->outputs,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        clReleaseMemObject(
+            input_buffer
+        );
+
+        clReleaseMemObject(
+            output_buffer
+        );
+
+        clReleaseMemObject(
+            variable_buffer
+        );
+
+        return false;
+    }
+
+    rule_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_READ_ONLY |
+            CL_MEM_COPY_HOST_PTR,
+            controller->rule_count *
+            sizeof(fuzzy_gpu_rule_t),
+            (void *)controller->rules,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        clReleaseMemObject(
+            input_buffer
+        );
+
+        clReleaseMemObject(
+            output_buffer
+        );
+
+        clReleaseMemObject(
+            variable_buffer
+        );
+
+        clReleaseMemObject(
+            fuzzy_output_buffer
+        );
+
         return false;
     }
 
@@ -4935,6 +5327,30 @@ static bool fuzzy_gpu_harness_run(
         clSetKernelArg(
             gpu->kernel,
             2,
+            sizeof(variable_buffer),
+            &variable_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            3,
+            sizeof(fuzzy_output_buffer),
+            &fuzzy_output_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            4,
+            sizeof(rule_buffer),
+            &rule_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            5,
             sizeof(gpu_point_count),
             &gpu_point_count
         );
@@ -4942,7 +5358,7 @@ static bool fuzzy_gpu_harness_run(
     error |=
         clSetKernelArg(
             gpu->kernel,
-            3,
+            6,
             sizeof(gpu_dimension_count),
             &gpu_dimension_count
         );
@@ -4950,57 +5366,91 @@ static bool fuzzy_gpu_harness_run(
     error |=
         clSetKernelArg(
             gpu->kernel,
-            4,
+            7,
+            sizeof(gpu_variable_count),
+            &gpu_variable_count
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            8,
+            sizeof(gpu_output_count),
+            &gpu_output_count
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            9,
+            sizeof(gpu_rule_count),
+            &gpu_rule_count
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            10,
             sizeof(defuzz_step),
             &defuzz_step
         );
 
-    if (error != CL_SUCCESS) {
-        return false;
-    }
-
-    global_size =
-        point_count;
-
-    error =
-        clEnqueueNDRangeKernel(
-            gpu->queue,
+    error |=
+        clSetKernelArg(
             gpu->kernel,
-            1,
-            NULL,
-            &global_size,
-            NULL,
-            0,
-            NULL,
-            NULL
+            11,
+            sizeof(controller->output_minimum),
+            &controller->output_minimum
         );
 
-    if (error != CL_SUCCESS) {
-        return false;
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            12,
+            sizeof(controller->output_maximum),
+            &controller->output_maximum
+        );
+
+    if (error == CL_SUCCESS) {
+        global_size =
+            point_count;
+
+        error =
+            clEnqueueNDRangeKernel(
+                gpu->queue,
+                gpu->kernel,
+                1,
+                NULL,
+                &global_size,
+                NULL,
+                0,
+                NULL,
+                NULL
+            );
     }
 
-    error =
-        clFinish(
-            gpu->queue
-        );
-
-    if (error != CL_SUCCESS) {
-        return false;
+    if (error == CL_SUCCESS) {
+        error =
+            clFinish(
+                gpu->queue
+            );
     }
 
-    error =
-        clEnqueueReadBuffer(
-            gpu->queue,
-            output_buffer,
-            CL_TRUE,
-            0,
-            point_count *
-            sizeof(float),
-            outputs,
-            0,
-            NULL,
-            NULL
-        );
+    if (error == CL_SUCCESS) {
+        error =
+            clEnqueueReadBuffer(
+                gpu->queue,
+                output_buffer,
+                CL_TRUE,
+                0,
+                point_count *
+                sizeof(float),
+                outputs,
+                0,
+                NULL,
+                NULL
+            );
+    }
 
     clReleaseMemObject(
         input_buffer
@@ -5010,9 +5460,217 @@ static bool fuzzy_gpu_harness_run(
         output_buffer
     );
 
+    clReleaseMemObject(
+        variable_buffer
+    );
+
+    clReleaseMemObject(
+        fuzzy_output_buffer
+    );
+
+    clReleaseMemObject(
+        rule_buffer
+    );
+
     return error == CL_SUCCESS;
 }
 
+static bool fuzzy_gpu_interpolation_run(
+    fuzzy_gpu_harness_t *gpu,
+    const float *inputs,
+    float *outputs,
+    const float *point_coordinates,
+    const float *point_memberships,
+    size_t sweep_point_count,
+    size_t dimension_count,
+    size_t interpolation_point_count
+)
+{
+    cl_mem input_buffer;
+    cl_mem output_buffer;
+    cl_mem coordinate_buffer;
+    cl_mem membership_buffer;
+
+    cl_uint gpu_sweep_point_count;
+    cl_uint gpu_dimension_count;
+    cl_uint gpu_interpolation_point_count;
+
+    cl_int error;
+    size_t global_size;
+
+    gpu_sweep_point_count =
+        (cl_uint)sweep_point_count;
+
+    gpu_dimension_count =
+        (cl_uint)dimension_count;
+
+    gpu_interpolation_point_count =
+        (cl_uint)interpolation_point_count;
+
+    input_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_READ_ONLY |
+            CL_MEM_COPY_HOST_PTR,
+            sweep_point_count *
+            dimension_count *
+            sizeof(float),
+            (void *)inputs,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        return false;
+    }
+
+    output_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_WRITE_ONLY,
+            sweep_point_count *
+            sizeof(float),
+            NULL,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        clReleaseMemObject(input_buffer);
+        return false;
+    }
+
+    coordinate_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_READ_ONLY |
+            CL_MEM_COPY_HOST_PTR,
+            interpolation_point_count *
+            dimension_count *
+            sizeof(float),
+            (void *)point_coordinates,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        clReleaseMemObject(input_buffer);
+        clReleaseMemObject(output_buffer);
+        return false;
+    }
+
+    membership_buffer =
+        clCreateBuffer(
+            gpu->context,
+            CL_MEM_READ_ONLY |
+            CL_MEM_COPY_HOST_PTR,
+            interpolation_point_count *
+            sizeof(float),
+            (void *)point_memberships,
+            &error
+        );
+
+    if (error != CL_SUCCESS) {
+        clReleaseMemObject(input_buffer);
+        clReleaseMemObject(output_buffer);
+        clReleaseMemObject(coordinate_buffer);
+        return false;
+    }
+
+    error =
+        clSetKernelArg(
+            gpu->kernel,
+            0,
+            sizeof(input_buffer),
+            &input_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            1,
+            sizeof(output_buffer),
+            &output_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            2,
+            sizeof(coordinate_buffer),
+            &coordinate_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            3,
+            sizeof(membership_buffer),
+            &membership_buffer
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            4,
+            sizeof(gpu_sweep_point_count),
+            &gpu_sweep_point_count
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            5,
+            sizeof(gpu_dimension_count),
+            &gpu_dimension_count
+        );
+
+    error |=
+        clSetKernelArg(
+            gpu->kernel,
+            6,
+            sizeof(gpu_interpolation_point_count),
+            &gpu_interpolation_point_count
+        );
+
+    if (error == CL_SUCCESS) {
+        global_size =
+            sweep_point_count;
+
+        error =
+            clEnqueueNDRangeKernel(
+                gpu->queue,
+                gpu->kernel,
+                1,
+                NULL,
+                &global_size,
+                NULL,
+                0,
+                NULL,
+                NULL
+            );
+    }
+
+    if (error == CL_SUCCESS) {
+        error =
+            clEnqueueReadBuffer(
+                gpu->queue,
+                output_buffer,
+                CL_TRUE,
+                0,
+                sweep_point_count *
+                sizeof(float),
+                outputs,
+                0,
+                NULL,
+                NULL
+            );
+    }
+
+    clReleaseMemObject(input_buffer);
+    clReleaseMemObject(output_buffer);
+    clReleaseMemObject(coordinate_buffer);
+    clReleaseMemObject(membership_buffer);
+
+    return error == CL_SUCCESS;
+}
 
 static void fuzzy_gpu_harness_end(
     fuzzy_gpu_harness_t *gpu
@@ -5036,7 +5694,6 @@ static void fuzzy_gpu_harness_end(
 }
 
 #endif /* FUZZY_OPENCL */
-
 
 static bool fuzzy_sweep_generate(
     const fuzzy_cog_sweep_t *sweep,
@@ -5353,9 +6010,8 @@ static bool fuzzy_sweep_generate(
 
 #ifdef FUZZY_OPENCL
 
-bool fuzzy_gpu_sweep(
-    const fuzzy_gpu_sweep_t *sweep
-)
+
+bool fuzzy_gpu_sweep(const fuzzy_gpu_sweep_t *sweep)
 {
     fuzzy_gpu_harness_t gpu;
     fuzzy_cog_sweep_t render_sweep;
@@ -5480,14 +6136,15 @@ bool fuzzy_gpu_sweep(
     success =
         fuzzy_gpu_harness_begin(
             &gpu,
-            sweep->kernel_source(),
-            sweep->kernel_name
+            fuzzy_gpu_kernel_source,
+            "fuzzy_gpu_sweep_kernel"
         );
 
     if (success) {
         success =
             fuzzy_gpu_harness_run(
                 &gpu,
+                sweep->controller,
                 inputs,
                 outputs,
                 total_points,
@@ -5610,6 +6267,313 @@ bool fuzzy_gpu_sweep(
     return success;
 }
 
+bool fuzzy_gpu_interpolation_sweep(
+    const fuzzy_interpolation_sweep_t *sweep
+)
+{
+    fuzzy_gpu_harness_t gpu;
+    fuzzy_cog_sweep_t render_sweep;
+
+    size_t *sample_counts;
+    size_t *indices;
+
+    float *inputs;
+    float *outputs;
+    float *point_coordinates;
+    float *point_memberships;
+
+    size_t dimension_count;
+    size_t total_points;
+    size_t point;
+    size_t dimension;
+
+    FILE *csv_file;
+    char csv_filename[256];
+
+    bool success;
+
+    dimension_count =
+        sweep->dimension_count;
+
+    sample_counts =
+        calloc(
+            dimension_count,
+            sizeof(sample_counts[0])
+        );
+
+    indices =
+        calloc(
+            dimension_count,
+            sizeof(indices[0])
+        );
+
+    total_points =
+        1u;
+
+    for (
+        dimension = 0u;
+        dimension < dimension_count;
+        dimension++
+    ) {
+        sample_counts[dimension] =
+            (size_t)ceilf(
+                (
+                    sweep->dimensions[dimension].upper -
+                    sweep->dimensions[dimension].lower
+                ) /
+                sweep->dimensions[dimension].step
+            ) + 1u;
+
+        total_points *=
+            sample_counts[dimension];
+    }
+
+    inputs =
+        malloc(
+            total_points *
+            dimension_count *
+            sizeof(inputs[0])
+        );
+
+    outputs =
+        malloc(
+            total_points *
+            sizeof(outputs[0])
+        );
+
+    point_coordinates =
+        malloc(
+            sweep->point_count *
+            dimension_count *
+            sizeof(point_coordinates[0])
+        );
+
+    point_memberships =
+        malloc(
+            sweep->point_count *
+            sizeof(point_memberships[0])
+        );
+
+    for (
+        point = 0u;
+        point < sweep->point_count;
+        point++
+    ) {
+        point_memberships[point] =
+            sweep->points[point].membership;
+
+        for (
+            dimension = 0u;
+            dimension < dimension_count;
+            dimension++
+        ) {
+            point_coordinates[
+                point *
+                dimension_count +
+                dimension
+            ] =
+                sweep->points[point]
+                    .coordinates[dimension];
+        }
+    }
+
+    for (
+        point = 0u;
+        point < total_points;
+        point++
+    ) {
+        for (
+            dimension = 0u;
+            dimension < dimension_count;
+            dimension++
+        ) {
+            float input =
+                sweep->dimensions[dimension].lower +
+                (float)indices[dimension] *
+                sweep->dimensions[dimension].step;
+
+            if (
+                input >
+                sweep->dimensions[dimension].upper
+            ) {
+                input =
+                    sweep->dimensions[dimension].upper;
+            }
+
+            inputs[
+                point *
+                dimension_count +
+                dimension
+            ] = input;
+        }
+
+        for (
+            dimension = dimension_count;
+            dimension > 0u;
+            dimension--
+        ) {
+            size_t current =
+                dimension - 1u;
+
+            indices[current]++;
+
+            if (
+                indices[current] <
+                sample_counts[current]
+            ) {
+                break;
+            }
+
+            indices[current] =
+                0u;
+        }
+    }
+
+    success =
+        fuzzy_gpu_harness_begin(
+            &gpu,
+            fuzzy_gpu_interpolation_kernel_source,
+            "fuzzy_gpu_interpolation_kernel"
+        );
+
+    if (success) {
+        success =
+            fuzzy_gpu_interpolation_run(
+                &gpu,
+                inputs,
+                outputs,
+                point_coordinates,
+                point_memberships,
+                total_points,
+                dimension_count,
+                sweep->point_count
+            );
+
+        fuzzy_gpu_harness_end(
+            &gpu
+        );
+    }
+
+    if (!success) {
+        free(sample_counts);
+        free(indices);
+        free(inputs);
+        free(outputs);
+        free(point_coordinates);
+        free(point_memberships);
+
+        return false;
+    }
+
+    snprintf(
+        csv_filename,
+        sizeof(csv_filename),
+        "%s.csv",
+        sweep->filename
+    );
+
+    csv_file =
+        fopen(
+            csv_filename,
+            "w"
+        );
+
+    for (
+        dimension = 0u;
+        dimension < dimension_count;
+        dimension++
+    ) {
+        fprintf(
+            csv_file,
+            "%s,",
+            sweep->dimensions[dimension].name
+        );
+    }
+
+    fprintf(
+        csv_file,
+        "Membership\n"
+    );
+
+    for (
+        point = 0u;
+        point < total_points;
+        point++
+    ) {
+        for (
+            dimension = 0u;
+            dimension < dimension_count;
+            dimension++
+        ) {
+            fprintf(
+                csv_file,
+                "%.9g,",
+                inputs[
+                    point *
+                    dimension_count +
+                    dimension
+                ]
+            );
+        }
+
+        fprintf(
+            csv_file,
+            "%.9g\n",
+            outputs[point]
+        );
+    }
+
+    fclose(
+        csv_file
+    );
+
+    render_sweep.filename =
+        sweep->filename;
+
+    render_sweep.title =
+        sweep->title;
+
+    render_sweep.value_name =
+        "Membership";
+
+    render_sweep.dimensions =
+        sweep->dimensions;
+
+    render_sweep.dimension_count =
+        dimension_count;
+
+    render_sweep.cog_step =
+        0.0f;
+
+    render_sweep.evaluate =
+        NULL;
+
+    success =
+        fuzzy_sweep_write_svg(
+            &render_sweep,
+            sample_counts,
+            total_points,
+            inputs,
+            outputs
+        );
+
+    free(sample_counts);
+    free(indices);
+    free(inputs);
+    free(outputs);
+    free(point_coordinates);
+    free(point_memberships);
+
+    printf(
+        "GPU membership sweep complete "
+        "(%zu dimensions, %zu points)\n",
+        dimension_count,
+        total_points
+    );
+
+    return success;
+}
+
 #endif /* FUZZY_OPENCL */
 
 bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
@@ -5628,8 +6592,6 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
         0u
     );
 }
-
-
 
 bool fuzzy_interpolation_slices(
     const fuzzy_interpolation_sweep_t *sweep
