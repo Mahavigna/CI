@@ -19,17 +19,17 @@ static float brake(float speed, float distance, const char *plot)
 
     system.count = 0;
 
-    RULE("Low OR Far -> Low",       SOR(speed_low(speed), distance_far(distance)), brake_force_low);
-    RULE("Low AND Medium -> Low",   SAND(speed_low(speed), distance_medium(distance)), brake_force_low);
-    RULE("Low AND Close -> Medium", SAND(speed_low(speed), distance_close(distance)), brake_force_medium);
+    RULE(system, "Low OR Far -> Low",       SOR(speed_low(speed), distance_far(distance)), brake_force_low);
+    RULE(system, "Low AND Medium -> Low",   SAND(speed_low(speed), distance_medium(distance)), brake_force_low);
+    RULE(system, "Low AND Close -> Medium", SAND(speed_low(speed), distance_close(distance)), brake_force_medium);
 
-    RULE("Medium OR Far -> Low",       SOR(speed_medium(speed), distance_far(distance)), brake_force_low);
-    RULE("Medium AND Medium -> Medium", SAND(speed_medium(speed), distance_medium(distance)), brake_force_medium);
-    RULE("Medium AND Close -> High",    SAND(speed_medium(speed), distance_close(distance)), brake_force_high);
+    RULE(system, "Medium OR Far -> Low",       SOR(speed_medium(speed), distance_far(distance)), brake_force_low);
+    RULE(system, "Medium AND Medium -> Medium", SAND(speed_medium(speed), distance_medium(distance)), brake_force_medium);
+    RULE(system, "Medium AND Close -> High",    SAND(speed_medium(speed), distance_close(distance)), brake_force_high);
 
-    RULE("High OR Far -> Medium", SOR(speed_high(speed), distance_far(distance)), brake_force_medium);
-    RULE("High AND Medium -> High", SAND(speed_high(speed), distance_medium(distance)), brake_force_high);
-    RULE("High AND Close -> High", SAND(speed_high(speed), distance_close(distance)), brake_force_high);
+    RULE(system, "High OR Far -> Medium", SOR(speed_high(speed), distance_far(distance)), brake_force_medium);
+    RULE(system, "High AND Medium -> High", SAND(speed_high(speed), distance_medium(distance)), brake_force_high);
+    RULE(system, "High AND Close -> High", SAND(speed_high(speed), distance_close(distance)), brake_force_high);
 
     if (plot)  fuzzy_rules_print(&system);
     float force = fuzzy_rules_defuzzify(&system, 0.0f, 100.0f, 1.0f, FUZZY_DEFUZZ_COG);

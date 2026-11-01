@@ -22,11 +22,11 @@ static float paint_strength(
     fuzzy_rules_t rules;
     rules.count = 0;
 
-    RULE("Strength: Little",SAND(    mixture_content_small(mixture),    temperature_low(temperature)),strength_little);
+    RULE(rules, "Strength: Little",SAND(    mixture_content_small(mixture),    temperature_low(temperature)),strength_little);
 
-    RULE("Strength: Fair",SAND(    mixture_content_huge(mixture),    temperature_medium(temperature)),strength_fair);
+    RULE(rules, "Strength: Fair",SAND(    mixture_content_huge(mixture),    temperature_medium(temperature)),strength_fair);
 
-    RULE("Strength: Massive",SOR(    mixture_content_huge(mixture),    temperature_high(temperature)),strength_massive);
+    RULE(rules, "Strength: Massive",SOR(    mixture_content_huge(mixture),    temperature_high(temperature)),strength_massive);
 
     float result = fuzzy_rules_defuzzify(&rules,30.0f,100.0f,step,FUZZY_DEFUZZ_COG);
 

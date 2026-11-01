@@ -18,9 +18,9 @@ static float watering(float temperature, float humidity, float step, const char 
     fuzzy_rules_t rules;
     rules.count = 0;
 
-    RULE("Time: Short", SOR(temp_low(temperature), humidity_medium(humidity)), time_short);
-    RULE("Time: Medium", SAND(humidity_medium(humidity), temp_medium(temperature)), time_medium);
-    RULE("Time: Long", SOR(humidity_low(humidity), temp_high(temperature)), time_long);
+    RULE(rules, "Time: Short", SOR(temp_low(temperature), humidity_medium(humidity)), time_short);
+    RULE(rules, "Time: Medium", SAND(humidity_medium(humidity), temp_medium(temperature)), time_medium);
+    RULE(rules, "Time: Long", SOR(humidity_low(humidity), temp_high(temperature)), time_long);
 
     float result = fuzzy_rules_defuzzify(&rules, 0.0f, 60.0f, step, FUZZY_DEFUZZ_COG);
 

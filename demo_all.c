@@ -40,8 +40,13 @@
  * - Maximum, algebraic, and bounded aggregation
  * - Mamdani rule aggregation
  * - COG defuzzification
+ * - BOA defuzzification
+ * - COS defuzzification
+ * - MOM defuzzification
+ * - SOM defuzzification
+ * - LOM defuzzification
  * - Membership-function SVG plots
- * - Selected COG SVG plot
+ * - Selected COG, BOA, COS, MOM, SOM, and LOM SVG plots
  * - Five-dimensional membership interpolation sweep CSV
  * - Interactive five-dimensional membership sweep SVG
  * - Five-dimensional COG sweep CSV
@@ -479,31 +484,182 @@ static fuzzy_output_function_t random_not_output(void)
  * and bounded operator families.
  * ========================================================== */
 
-static void build_process_rules(fuzzy_rules_t *rules, float temperature, float humidity,
-                                float vibration, float pressure, float quality,
-                                fuzzy_logic_method_t method)
+static void build_process_rules(
+    fuzzy_rules_t *rules,
+    float temperature,
+    float humidity,
+    float vibration,
+    float pressure,
+    float quality,
+    fuzzy_logic_method_t method
+)
 {
-    RULE("Rule 1: Minimal response", fuzzy_and_method(method, temperature_low(temperature), humidity_medium(humidity), vibration_low(vibration), pressure_normal(pressure), quality_good(quality)), response_minimal);
+    RULE(
+        *rules,
+        "Rule 1: Minimal response",
+        fuzzy_and_method(
+            method,
+            temperature_low(temperature),
+            humidity_medium(humidity),
+            vibration_low(vibration),
+            pressure_normal(pressure),
+            quality_good(quality)
+        ),
+        response_minimal
+    );
 
-    RULE("Rule 2: Low response", fuzzy_and_method(method, temperature_medium(temperature), pressure_normal(pressure), quality_average(quality)), response_low);
+    RULE(
+        *rules,
+        "Rule 2: Low response",
+        fuzzy_and_method(
+            method,
+            temperature_medium(temperature),
+            pressure_normal(pressure),
+            quality_average(quality)
+        ),
+        response_low
+    );
 
-    RULE("Rule 3: Moderate response", fuzzy_or_method(method, humidity_high(humidity), vibration_medium(vibration), quality_poor(quality)), response_moderate);
+    RULE(
+        *rules,
+        "Rule 3: Moderate response",
+        fuzzy_or_method(
+            method,
+            humidity_high(humidity),
+            vibration_medium(vibration),
+            quality_poor(quality)
+        ),
+        response_moderate
+    );
 
-    RULE("Rule 4: High thermal-vibration response", fuzzy_and_method(method, temperature_high(temperature), vibration_high(vibration)), response_high);
+    RULE(
+        *rules,
+        "Rule 4: High thermal-vibration response",
+        fuzzy_and_method(
+            method,
+            temperature_high(temperature),
+            vibration_high(vibration)
+        ),
+        response_high
+    );
 
-    RULE("Rule 5: High machine response", fuzzy_or_method(method, pressure_high(pressure), vibration_high(vibration), temperature_high(temperature)), response_high);
+    RULE(
+        *rules,
+        "Rule 5: High machine response",
+        fuzzy_or_method(
+            method,
+            pressure_high(pressure),
+            vibration_high(vibration),
+            temperature_high(temperature)
+        ),
+        response_high
+    );
 
-    RULE("Rule 6: Critical heat-pressure response", fuzzy_and_method(method, powf(temperature_high(temperature), hedges.very), pressure_high(pressure)), response_critical);
+    RULE(
+        *rules,
+        "Rule 6: Critical heat-pressure response",
+        fuzzy_and_method(
+            method,
+            powf(
+                temperature_high(temperature),
+                hedges.very
+            ),
+            pressure_high(pressure)
+        ),
+        response_critical
+    );
 
-    RULE("Rule 7: Critical vibration-quality response", fuzzy_or_method(method, powf(vibration_high(vibration), hedges.extremely), powf(quality_poor(quality), hedges.very)), response_critical);
+    RULE(
+        *rules,
+        "Rule 7: Critical vibration-quality response",
+        fuzzy_or_method(
+            method,
+            powf(
+                vibration_high(vibration),
+                hedges.extremely
+            ),
+            powf(
+                quality_poor(quality),
+                hedges.very
+            )
+        ),
+        response_critical
+    );
 
-    RULE("Rule 8: High compound response", fuzzy_or_method(method, fuzzy_and_method(method, temperature_medium(temperature), powf(humidity_high(humidity), hedges.somewhat)), fuzzy_and_method(method, pressure_high(pressure), quality_poor(quality))), response_high);
- 
-    RULE("Rule 9: Low stable-process response", fuzzy_and_method(method, fuzzy_or_method(method, temperature_low(temperature), humidity_low(humidity)), fuzzy_or_method(method, vibration_low(vibration), pressure_normal(pressure)), quality_good(quality)), response_low);
+    RULE(
+        *rules,
+        "Rule 8: High compound response",
+        fuzzy_or_method(
+            method,
 
-    RULE("Rule 10: Critical combined response", fuzzy_and_method(method, temperature_high(temperature), humidity_high(humidity), vibration_high(vibration), pressure_high(pressure), quality_poor(quality)), response_critical);
+            fuzzy_and_method(
+                method,
+                temperature_medium(temperature),
+                powf(
+                    humidity_high(humidity),
+                    hedges.somewhat
+                )
+            ),
 
-    RULE(random_not_rule_name(), evaluate_random_not_rule( temperature, humidity, vibration, pressure, quality, method), random_not_output());
+            fuzzy_and_method(
+                method,
+                pressure_high(pressure),
+                quality_poor(quality)
+            )
+        ),
+        response_high
+    );
+
+    RULE(
+        *rules,
+        "Rule 9: Low stable-process response",
+        fuzzy_and_method(
+            method,
+
+            fuzzy_or_method(
+                method,
+                temperature_low(temperature),
+                humidity_low(humidity)
+            ),
+
+            fuzzy_or_method(
+                method,
+                vibration_low(vibration),
+                pressure_normal(pressure)
+            ),
+
+            quality_good(quality)
+        ),
+        response_low
+    );
+
+    RULE(
+        *rules,
+        "Rule 10: Critical combined response",
+        fuzzy_and_method(
+            method,
+            temperature_high(temperature),
+            humidity_high(humidity),
+            vibration_high(vibration),
+            pressure_high(pressure),
+            quality_poor(quality)
+        ),
+        response_critical
+    );
+
+    RULE(
+        *rules,
+        random_not_rule_name(),
+        evaluate_random_not_rule(
+            temperature,
+            humidity,
+            vibration,
+            pressure,
+            quality,
+            method
+        ),
+        random_not_output()
+    );
 }
 
  /* ==========================================================
@@ -512,16 +668,42 @@ static void build_process_rules(fuzzy_rules_t *rules, float temperature, float h
  * Safe for repeated sweep evaluations.
  * ========================================================== */
 
-static float evaluate_process_response_method(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t logic_method, fuzzy_implication_method_t implication_method, fuzzy_aggregation_method_t aggregation_method)
+static float evaluate_process_response_method(
+    float temperature,
+    float humidity,
+    float vibration,
+    float pressure,
+    float quality,
+    float defuzz_step,
+    fuzzy_logic_method_t logic_method,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method,
+    fuzzy_defuzz_method_t defuzz_method
+)
 {
     fuzzy_rules_t rules;
+
     rules.count = 0;
 
-    build_process_rules(&rules, temperature, humidity, vibration, pressure, quality, logic_method);
+    build_process_rules(
+        &rules,
+        temperature,
+        humidity,
+        vibration,
+        pressure,
+        quality,
+        logic_method
+    );
 
-    float result = fuzzy_rules_defuzzify_method(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COG, implication_method, aggregation_method);
-
-    return result;
+    return fuzzy_rules_defuzzify_method(
+        &rules,
+        RESPONSE_LOWER,
+        RESPONSE_UPPER,
+        defuzz_step,
+        defuzz_method,
+        implication_method,
+        aggregation_method
+    );
 }
 
 static float evaluate_process_response(float temperature, float humidity, float vibration, float pressure, float quality, float cog_step, fuzzy_logic_method_t method)
@@ -564,214 +746,158 @@ static bool plot_selected_process_cog(
     float defuzz_step
 )
 {
-    const fuzzy_logic_method_t methods[] = { FUZZY_LOGIC_STANDARD, FUZZY_LOGIC_ALGEBRAIC, FUZZY_LOGIC_BOUNDED
+    const fuzzy_logic_method_t logic_methods[] = {
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_LOGIC_ALGEBRAIC,
+        FUZZY_LOGIC_BOUNDED
     };
 
-    const char *method_names[] = { "Standard Zadeh", "Algebraic", "Bounded Lukasiewicz"
+    const char *logic_names[] = {
+        "Standard Zadeh",
+        "Algebraic",
+        "Bounded Lukasiewicz"
     };
 
-    const char *cog_filenames[] = {
-        DEMO_DIRECTORY "/selected_standard_cog",
-        DEMO_DIRECTORY "/selected_algebraic_cog",
-        DEMO_DIRECTORY "/selected_bounded_cog"
+    const char *logic_paths[] = {
+        "standard",
+        "algebraic",
+        "bounded"
     };
 
-    const char *mom_filenames[] = {
-        DEMO_DIRECTORY "/selected_standard_mom",
-        DEMO_DIRECTORY "/selected_algebraic_mom",
-        DEMO_DIRECTORY "/selected_bounded_mom"
+    const fuzzy_defuzz_method_t defuzz_methods[] = {
+        FUZZY_DEFUZZ_COG,
+        FUZZY_DEFUZZ_BOA,
+        FUZZY_DEFUZZ_COS,
+        FUZZY_DEFUZZ_MOM,
+        FUZZY_DEFUZZ_SOM,
+        FUZZY_DEFUZZ_LOM
     };
 
-    const char *som_filenames[] = {
-        DEMO_DIRECTORY "/selected_standard_som",
-        DEMO_DIRECTORY "/selected_algebraic_som",
-        DEMO_DIRECTORY "/selected_bounded_som"
+    const char *defuzz_names[] = {
+        "COG",
+        "BOA",
+        "COS",
+        "MOM",
+        "SOM",
+        "LOM"
     };
 
-    const char *lom_filenames[] = {
-        DEMO_DIRECTORY "/selected_standard_lom",
-        DEMO_DIRECTORY "/selected_algebraic_lom",
-        DEMO_DIRECTORY "/selected_bounded_lom"
+    const char *defuzz_paths[] = {
+        "cog",
+        "boa",
+        "cos",
+        "mom",
+        "som",
+        "lom"
     };
 
-    const char *cog_titles[] = {
-        "Standard Min-Max Controller - COG",
-        "Algebraic Product-Sum Controller - COG",
-        "Bounded Lukasiewicz Controller - COG"
-    };
+    const size_t logic_count =
+        sizeof(logic_methods) /
+        sizeof(logic_methods[0]);
 
-    const char *mom_titles[] = {
-        "Standard Min-Max Controller - MOM",
-        "Algebraic Product-Sum Controller - MOM",
-        "Bounded Lukasiewicz Controller - MOM"
-    };
+    const size_t defuzz_count =
+        sizeof(defuzz_methods) /
+        sizeof(defuzz_methods[0]);
 
-    const char *som_titles[] = {
-        "Standard Min-Max Controller - SOM",
-        "Algebraic Product-Sum Controller - SOM",
-        "Bounded Lukasiewicz Controller - SOM"
-    };
-
-    const char *lom_titles[] = {
-        "Standard Min-Max Controller - LOM",
-        "Algebraic Product-Sum Controller - LOM",
-        "Bounded Lukasiewicz Controller - LOM"
-    };
-
-    const size_t method_count =
-        sizeof(methods) /
-        sizeof(methods[0]);
-
-    size_t method_index;
+    size_t logic_index;
+    size_t defuzz_index;
 
     for (
-        method_index = 0;
-        method_index < method_count;
-        method_index++
+        logic_index = 0u;
+        logic_index < logic_count;
+        logic_index++
     ) {
         fuzzy_rules_t rules;
 
-        float cog;
-        float mom;
-        float som;
-        float lom;
-
-        bool cog_success;
-        bool mom_success;
-        bool som_success;
-        bool lom_success;
+        char filename[256];
+        char title[256];
 
         rules.count = 0;
 
-        /*
-         * Rebuild the same complete controller using only
-         * the currently selected AND/OR operator family.
-         */
-        build_process_rules(&rules, temperature, humidity, vibration,pressure, quality, methods[method_index]);
-        
+        build_process_rules(
+            &rules,
+            temperature,
+            humidity,
+            vibration,
+            pressure,
+            quality,
+            logic_methods[logic_index]
+        );
+
         printf(
             "\n%s controller rule activations\n"
             "========================================\n",
-            method_names[method_index]
+            logic_names[logic_index]
         );
 
         fuzzy_rules_print(&rules);
 
-        cog =
-            fuzzy_rules_defuzzify(
-                &rules,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step,
-                FUZZY_DEFUZZ_COG
-            );
-
-        mom =
-            fuzzy_rules_defuzzify(
-                &rules,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step,
-                FUZZY_DEFUZZ_MOM
-            );
-
-        som =
-            fuzzy_rules_defuzzify(
-                &rules,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step,
-                FUZZY_DEFUZZ_SOM
-            );
-
-        lom =
-            fuzzy_rules_defuzzify(
-                &rules,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step,
-                FUZZY_DEFUZZ_LOM
-            );
-
         printf(
-            "\n%s controller results\n"
-            "========================================\n"
-            "COG: %.5f\n"
-            "MOM: %.5f\n"
-            "SOM: %.5f\n"
-            "LOM: %.5f\n",
-            method_names[method_index],
-            cog,
-            mom,
-            som,
-            lom
+            "\n%s controller defuzzification results\n"
+            "========================================\n",
+            logic_names[logic_index]
         );
 
-        cog_success =
-            fuzzy_rules_plot_cog(
-                &rules,
-                cog_filenames[method_index],
-                cog_titles[method_index],
-                cog,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step
-            );
-
-        mom_success =
-            fuzzy_rules_plot_cog(
-                &rules,
-                mom_filenames[method_index],
-                mom_titles[method_index],
-                mom,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step
-            );
-
-        som_success =
-            fuzzy_rules_plot_cog(
-                &rules,
-                som_filenames[method_index],
-                som_titles[method_index],
-                som,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step
-            );
-
-        lom_success =
-            fuzzy_rules_plot_cog(
-                &rules,
-                lom_filenames[method_index],
-                lom_titles[method_index],
-                lom,
-                RESPONSE_LOWER,
-                RESPONSE_UPPER,
-                defuzz_step
-            );
-
-            rules.count = 0;
-
-        if (
-            !cog_success ||
-            !mom_success ||
-            !som_success ||
-            !lom_success
+        for (
+            defuzz_index = 0u;
+            defuzz_index < defuzz_count;
+            defuzz_index++
         ) {
-            fprintf(stderr, 
-                "Failed to plot %s controller results.\n",
-                method_names[method_index]
+            float result = fuzzy_rules_defuzzify(
+                &rules,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step,
+                defuzz_methods[defuzz_index]
             );
 
-            return false;
+            printf(
+                "%s: %.5f\n",
+                defuzz_names[defuzz_index],
+                result
+            );
+
+            snprintf(
+                filename,
+                sizeof(filename),
+                DEMO_DIRECTORY "/selected_%s_%s",
+                logic_paths[logic_index],
+                defuzz_paths[defuzz_index]
+            );
+
+            snprintf(
+                title,
+                sizeof(title),
+                "%s Controller - %s",
+                logic_names[logic_index],
+                defuzz_names[defuzz_index]
+            );
+
+            if (!fuzzy_rules_plot_cog(
+                &rules,
+                filename,
+                title,
+                result,
+                RESPONSE_LOWER,
+                RESPONSE_UPPER,
+                defuzz_step
+            )) {
+                fprintf(
+                    stderr,
+                    "Failed to plot %s controller %s result.\n",
+                    logic_names[logic_index],
+                    defuzz_names[defuzz_index]
+                );
+
+                return false;
+            }
         }
     }
 
     return true;
 }
 
-/* ==========================================================
+ /* ==========================================================
  * T-norm and T-conorm curve demonstrations
  *
  * The first operand varies from 0 to 1.
@@ -1011,7 +1137,7 @@ static bool run_random_demonstration(void)
     float pressure;
     float quality;
 
-     float standard_cog;
+    float standard_cog;
     float algebraic_cog;
     float bounded_cog;
 
@@ -1021,6 +1147,12 @@ static bool run_random_demonstration(void)
     float product_algebraic_cog;
     float min_bounded_cog;
     float product_bounded_cog;
+
+    float standard_boa;
+    float standard_cos;
+    float standard_mom;
+    float standard_som;
+    float standard_lom;
 
     float interpolated_membership;
 
@@ -1105,6 +1237,71 @@ static bool run_random_demonstration(void)
     algebraic_cog = evaluate_process_response(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_ALGEBRAIC);
     bounded_cog = evaluate_process_response(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_BOUNDED);
 
+    standard_boa = evaluate_process_response_method(
+        temperature,
+        humidity,
+        vibration,
+        pressure,
+        quality,
+        NORMAL_COG_STEP,
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX,
+        FUZZY_DEFUZZ_BOA
+    );
+
+    standard_cos = evaluate_process_response_method(
+        temperature,
+        humidity,
+        vibration,
+        pressure,
+        quality,
+        NORMAL_COG_STEP,
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX,
+        FUZZY_DEFUZZ_COS
+    );
+
+    standard_mom = evaluate_process_response_method(
+        temperature,
+        humidity,
+        vibration,
+        pressure,
+        quality,
+        NORMAL_COG_STEP,
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX,
+        FUZZY_DEFUZZ_MOM
+    );
+
+    standard_som = evaluate_process_response_method(
+        temperature,
+        humidity,
+        vibration,
+        pressure,
+        quality,
+        NORMAL_COG_STEP,
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX,
+        FUZZY_DEFUZZ_SOM
+    );
+
+    standard_lom = evaluate_process_response_method(
+        temperature,
+        humidity,
+        vibration,
+        pressure,
+        quality,
+        NORMAL_COG_STEP,
+        FUZZY_LOGIC_STANDARD,
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX,
+        FUZZY_DEFUZZ_LOM
+    );
+
     printf(
         "\nOperator-family COG comparison\n"
         "==============================\n"
@@ -1116,12 +1313,29 @@ static bool run_random_demonstration(void)
         bounded_cog
     );
 
-    min_max_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_MAX);
-    product_max_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_MAX);
-    min_algebraic_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_ALGEBRAIC);
-    product_algebraic_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_ALGEBRAIC);
-    min_bounded_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_BOUNDED);
-    product_bounded_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_BOUNDED);
+    printf(
+        "\nStandard-controller defuzzification comparison\n"
+        "=============================================\n"
+        "COG: %.5f\n"
+        "BOA: %.5f\n"
+        "COS: %.5f\n"
+        "MOM: %.5f\n"
+        "SOM: %.5f\n"
+        "LOM: %.5f\n",
+        standard_cog,
+        standard_boa,
+        standard_cos,
+        standard_mom,
+        standard_som,
+        standard_lom
+    );
+
+    min_max_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_MAX, FUZZY_DEFUZZ_COG);
+    product_max_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_MAX, FUZZY_DEFUZZ_COG);
+    min_algebraic_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_ALGEBRAIC, FUZZY_DEFUZZ_COG);
+    product_algebraic_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_ALGEBRAIC, FUZZY_DEFUZZ_COG);
+    min_bounded_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_MIN, FUZZY_AGGREGATION_BOUNDED, FUZZY_DEFUZZ_COG);
+    product_bounded_cog = evaluate_process_response_method(temperature, humidity, vibration, pressure, quality, NORMAL_COG_STEP, FUZZY_LOGIC_STANDARD, FUZZY_IMPLICATION_PRODUCT, FUZZY_AGGREGATION_BOUNDED, FUZZY_DEFUZZ_COG);
 
     printf(
         "\nImplication and aggregation comparison\n"

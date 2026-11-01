@@ -58,6 +58,11 @@ extern float powf(float, float);
 extern float expf(float);
 extern float fabsf(float);
 extern float ceilf(float);
+
+extern int rand(void);
+extern void srand(unsigned int);
+
+#define RAND_MAX 2147483647
 //Test for minimal libc, since linker does it automatically, but we need to declare it for the compiler
 
 #define FUZZY_MAX_RULES 32u
@@ -310,6 +315,8 @@ typedef enum FuzzyShape {
 
 typedef enum FuzzyDefuzzMethod {
     FUZZY_DEFUZZ_COG = 0,
+    FUZZY_DEFUZZ_BOA,
+    FUZZY_DEFUZZ_COS,
     FUZZY_DEFUZZ_MOM,
     FUZZY_DEFUZZ_SOM,
     FUZZY_DEFUZZ_LOM
@@ -614,6 +621,67 @@ bool fuzzy_rules_add(
     fuzzy_output_function_t output_function
 );
 
+/*
+ * Direct low-level Mamdani defuzzification functions.
+ */
+
+float fuzzy_rules_defuzzify_cog(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+);
+
+float fuzzy_rules_defuzzify_boa(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+);
+
+float fuzzy_rules_defuzzify_cos(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method
+);
+
+float fuzzy_rules_defuzzify_mom(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+);
+
+float fuzzy_rules_defuzzify_som(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+);
+
+float fuzzy_rules_defuzzify_lom(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+);
+
+
+/*
+ * Configurable method-selection wrapper.
+ */
 float fuzzy_rules_defuzzify_method(
     const fuzzy_rules_t *rules,
     float lower,
@@ -626,21 +694,7 @@ float fuzzy_rules_defuzzify_method(
 
 
 /*
- * Defuzzify the aggregated Mamdani output.
- *
- * Supported methods:
- *
- * FUZZY_DEFUZZ_COG
- *     Center of gravity.
- *
- * FUZZY_DEFUZZ_MOM
- *     Mean of all sampled maximum positions.
- *
- * FUZZY_DEFUZZ_SOM
- *     Smallest sampled maximum position.
- *
- * FUZZY_DEFUZZ_LOM
- *     Largest sampled maximum position.
+ * Default min-implication and max-aggregation wrapper.
  */
 float fuzzy_rules_defuzzify(
     const fuzzy_rules_t *rules,
@@ -652,9 +706,7 @@ float fuzzy_rules_defuzzify(
 
 
 /*
- * Compatibility wrapper.
- *
- * Existing calls to fuzzy_rules_cog() continue to work.
+ * Existing COG compatibility wrapper.
  */
 float fuzzy_rules_cog(
     const fuzzy_rules_t *rules,
@@ -2176,19 +2228,456 @@ static float fuzzy_aggregation(
 }
 
 /*
- * Mamdani defuzzification.
+ * Calculate the aggregated Mamdani output height at one
+ * sampled output value.
+ */
+static float fuzzy_rules_aggregated_height(
+    const fuzzy_rules_t *rules,
+    float value,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+)
+{
+    float aggregated_height;
+    float output_membership;
+    float implied_height;
+    size_t index;
+
+    aggregated_height =
+        LEVEL_LO;
+
+    for (
+        index = 0u;
+        index < rules->count;
+        index++
+    ) {
+        output_membership =
+            fuzzy_clamp(
+                rules->rules[index]
+                    .output_function(value)
+            );
+
+        implied_height =
+            fuzzy_implication(
+                implication_method,
+                rules->rules[index].value,
+                output_membership
+            );
+
+        aggregated_height =
+            fuzzy_aggregation(
+                aggregation_method,
+                aggregated_height,
+                implied_height
+            );
+    }
+
+    return fuzzy_clamp(
+        aggregated_height
+    );
+}
+
+
+/*
+ * Internal result used by MOM, SOM and LOM.
+ */
+typedef struct FuzzyMaximumResult {
+    float height;
+    float smallest_position;
+    float largest_position;
+    float position_sum;
+    size_t position_count;
+} fuzzy_maximum_result_t;
+
+
+/*
+ * Find every sampled position having the maximum aggregated
+ * Mamdani output height.
+ */
+static fuzzy_maximum_result_t fuzzy_rules_maximum_result(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+){
+    fuzzy_maximum_result_t result;
+
+    float value;
+    float height;
+
+    result.height =
+        LEVEL_LO;
+
+    result.smallest_position =
+        lower;
+
+    result.largest_position =
+        lower;
+
+    result.position_sum = 0.0f;
+
+    result.position_count = 0u;
+
+    for (
+        value = lower;
+        value <= upper;
+        value += step
+    ) {
+        height =
+            fuzzy_rules_aggregated_height(
+                rules,
+                value,
+                implication_method,
+                aggregation_method
+            );
+
+        if (
+            result.position_count == 0u ||
+            height > result.height
+        ) {
+            result.height =
+                height;
+
+            result.smallest_position =
+                value;
+
+            result.largest_position =
+                value;
+
+            result.position_sum =
+                value;
+
+            result.position_count =
+                1u;
+        }
+        else if (
+            height ==
+            result.height
+        ) {
+            result.largest_position =
+                value;
+
+            result.position_sum +=
+                value;
+
+            result.position_count++;
+        }
+    }
+
+    return result;
+}
+
+
+/*
+ * Center of gravity.
  *
- * The aggregated output is evaluated once at every sampled
- * output value.
+ * Operates on the final aggregated Mamdani output.
+ */
+float fuzzy_rules_defuzzify_cog(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+)
+{
+    float weighted_sum;
+    float height_sum;
+    float value;
+    float height;
+
+    weighted_sum =
+        0.0f;
+
+    height_sum =
+        0.0f;
+
+    for (
+        value = lower;
+        value <= upper;
+        value += step
+    ) {
+        height =
+            fuzzy_rules_aggregated_height(
+                rules,
+                value,
+                implication_method,
+                aggregation_method
+            );
+
+        weighted_sum +=
+            value *
+            height;
+
+        height_sum +=
+            height;
+    }
+
+    if (height_sum <= LEVEL_LO) {
+        return 0.0f;
+    }
+
+    return weighted_sum /
+        height_sum;
+}
+
+
+/*
+ * Bisector of area.
  *
- * During the same pass, the function collects:
+ * The first pass calculates the complete aggregated area.
+ * The second pass finds the sampled output position where
+ * half of that area has been accumulated.
+ */
+float fuzzy_rules_defuzzify_boa(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+)
+{
+    float total_area;
+    float half_area;
+    float accumulated_area;
+    float value;
+
+    total_area =
+        0.0f;
+
+    for (
+        value = lower;
+        value <= upper;
+        value += step
+    ) {
+        total_area +=
+            fuzzy_rules_aggregated_height(
+                rules,
+                value,
+                implication_method,
+                aggregation_method
+            );
+    }
+
+    if (total_area <= LEVEL_LO) {
+        return 0.0f;
+    }
+
+    half_area =
+        total_area /
+        2.0f;
+
+    accumulated_area =
+        0.0f;
+
+    for (
+        value = lower;
+        value <= upper;
+        value += step
+    ) {
+        accumulated_area +=
+            fuzzy_rules_aggregated_height(
+                rules,
+                value,
+                implication_method,
+                aggregation_method
+            );
+
+        if (
+            accumulated_area >=
+            half_area
+        ) {
+            return value;
+        }
+    }
+
+    return upper;
+}
+
+
+/*
+ * Center of sums.
  *
- * - Weighted height sum for COG
- * - Total height for COG
- * - Maximum aggregated height
- * - Smallest maximum position for SOM
- * - Largest maximum position for LOM
- * - Sum and count of maximum positions for MOM
+ * Every implied rule output is accumulated independently.
+ * Overlapping rule outputs are therefore counted once for
+ * every rule contributing to the overlap.
+ *
+ * Aggregation is intentionally not used.
+ */
+float fuzzy_rules_defuzzify_cos(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method
+)
+{
+    float weighted_sum;
+    float height_sum;
+    float value;
+    float output_membership;
+    float implied_height;
+    size_t index;
+
+    weighted_sum =
+        0.0f;
+
+    height_sum =
+        0.0f;
+
+    for (
+        value = lower;
+        value <= upper;
+        value += step
+    ) {
+        for (
+            index = 0u;
+            index < rules->count;
+            index++
+        ) {
+            output_membership =
+                fuzzy_clamp(
+                    rules->rules[index]
+                        .output_function(value)
+                );
+
+            implied_height =
+                fuzzy_implication(
+                    implication_method,
+                    rules->rules[index].value,
+                    output_membership
+                );
+
+            weighted_sum +=
+                value *
+                implied_height;
+
+            height_sum +=
+                implied_height;
+        }
+    }
+
+    if (height_sum <= LEVEL_LO) {
+        return 0.0f;
+    }
+
+    return weighted_sum /
+        height_sum;
+}
+
+
+/*
+ * Mean of maximum.
+ */
+float fuzzy_rules_defuzzify_mom(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+)
+{
+    fuzzy_maximum_result_t result;
+
+    result =
+        fuzzy_rules_maximum_result(
+            rules,
+            lower,
+            upper,
+            step,
+            implication_method,
+            aggregation_method
+        );
+
+    if (
+        result.position_count == 0u ||
+        result.height <= LEVEL_LO
+    ) {
+        return 0.0f;
+    }
+
+    return result.position_sum /
+        (float)result.position_count;
+}
+
+
+/*
+ * Smallest of maximum.
+ */
+float fuzzy_rules_defuzzify_som(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+)
+{
+    fuzzy_maximum_result_t result;
+
+    result =
+        fuzzy_rules_maximum_result(
+            rules,
+            lower,
+            upper,
+            step,
+            implication_method,
+            aggregation_method
+        );
+
+    if (
+        result.position_count == 0u ||
+        result.height <= LEVEL_LO
+    ) {
+        return 0.0f;
+    }
+
+    return result.smallest_position;
+}
+
+
+/*
+ * Largest of maximum.
+ */
+float fuzzy_rules_defuzzify_lom(
+    const fuzzy_rules_t *rules,
+    float lower,
+    float upper,
+    float step,
+    fuzzy_implication_method_t implication_method,
+    fuzzy_aggregation_method_t aggregation_method
+)
+{
+    fuzzy_maximum_result_t result;
+
+    result =
+        fuzzy_rules_maximum_result(
+            rules,
+            lower,
+            upper,
+            step,
+            implication_method,
+            aggregation_method
+        );
+
+    if (
+        result.position_count == 0u ||
+        result.height <= LEVEL_LO
+    ) {
+        return 0.0f;
+    }
+
+    return result.largest_position;
+}
+
+
+/*
+ * Select and call one low-level defuzzification function.
  */
 float fuzzy_rules_defuzzify_method(
     const fuzzy_rules_t *rules,
@@ -2200,20 +2689,6 @@ float fuzzy_rules_defuzzify_method(
     fuzzy_aggregation_method_t aggregation_method
 )
 {
-    float weighted_sum = 0.0f;
-    float height_sum = 0.0f;
-    float maximum_height = LEVEL_LO;
-    float maximum_position_sum = 0.0f;
-    float smallest_maximum = lower;
-    float largest_maximum = lower;
-    float value;
-    float aggregated_height;
-    float output_membership;
-    float implied_height;
-    size_t maximum_count = 0u;
-    size_t index;
-    bool maximum_found = false;
-
     if (
         rules == NULL ||
         rules->count == 0u ||
@@ -2223,92 +2698,76 @@ float fuzzy_rules_defuzzify_method(
         return 0.0f;
     }
 
-    for (
-        value = lower;
-        value <= upper;
-        value += step
-    ) {
-        aggregated_height = LEVEL_LO;
-
-        for (
-            index = 0u;
-            index < rules->count;
-            index++
-        ) {
-            output_membership = fuzzy_clamp(
-                rules->rules[index].output_function(value)
-            );
-
-            implied_height = fuzzy_implication(
-                implication_method,
-                rules->rules[index].value,
-                output_membership
-            );
-
-            aggregated_height = fuzzy_aggregation(
-                aggregation_method,
-                aggregated_height,
-                implied_height
-            );
-        }
-
-        aggregated_height = fuzzy_clamp(
-            aggregated_height
-        );
-
-        weighted_sum +=
-            value *
-            aggregated_height;
-
-        height_sum +=
-            aggregated_height;
-
-        if (
-            !maximum_found ||
-            aggregated_height > maximum_height
-        ) {
-            maximum_height = aggregated_height;
-            smallest_maximum = value;
-            largest_maximum = value;
-            maximum_position_sum = value;
-            maximum_count = 1u;
-            maximum_found = true;
-        }
-        else if (aggregated_height == maximum_height) {
-            largest_maximum = value;
-            maximum_position_sum += value;
-            maximum_count++;
-        }
-    }
-
-    if (
-        !maximum_found ||
-        maximum_height <= LEVEL_LO ||
-        height_sum <= LEVEL_LO
-    ) {
-        return 0.0f;
-    }
-
     switch (defuzz_method) {
         case FUZZY_DEFUZZ_COG:
-            return weighted_sum /
-                   height_sum;
+            return fuzzy_rules_defuzzify_cog(
+                rules,
+                lower,
+                upper,
+                step,
+                implication_method,
+                aggregation_method
+            );
+
+        case FUZZY_DEFUZZ_BOA:
+            return fuzzy_rules_defuzzify_boa(
+                rules,
+                lower,
+                upper,
+                step,
+                implication_method,
+                aggregation_method
+            );
+
+        case FUZZY_DEFUZZ_COS:
+            return fuzzy_rules_defuzzify_cos(
+                rules,
+                lower,
+                upper,
+                step,
+                implication_method
+            );
 
         case FUZZY_DEFUZZ_MOM:
-            return maximum_position_sum /
-                   (float)maximum_count;
+            return fuzzy_rules_defuzzify_mom(
+                rules,
+                lower,
+                upper,
+                step,
+                implication_method,
+                aggregation_method
+            );
 
         case FUZZY_DEFUZZ_SOM:
-            return smallest_maximum;
+            return fuzzy_rules_defuzzify_som(
+                rules,
+                lower,
+                upper,
+                step,
+                implication_method,
+                aggregation_method
+            );
 
         case FUZZY_DEFUZZ_LOM:
-            return largest_maximum;
+            return fuzzy_rules_defuzzify_lom(
+                rules,
+                lower,
+                upper,
+                step,
+                implication_method,
+                aggregation_method
+            );
 
         default:
             return 0.0f;
     }
 }
 
+
+/*
+ * Standard Mamdani wrapper using minimum implication and
+ * maximum aggregation.
+ */
 float fuzzy_rules_defuzzify(
     const fuzzy_rules_t *rules,
     float lower,
@@ -2328,6 +2787,7 @@ float fuzzy_rules_defuzzify(
     );
 }
 
+
 /*
  * Existing COG compatibility wrapper.
  */
@@ -2338,15 +2798,15 @@ float fuzzy_rules_cog(
     float step
 )
 {
-    return fuzzy_rules_defuzzify(
+    return fuzzy_rules_defuzzify_cog(
         rules,
         lower,
         upper,
         step,
-        FUZZY_DEFUZZ_COG
+        FUZZY_IMPLICATION_MIN,
+        FUZZY_AGGREGATION_MAX
     );
 }
-
 
 #ifndef FUZZY_8051
 
