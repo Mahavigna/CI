@@ -26,44 +26,113 @@ typedef struct FuzzyHedges {
 } hedges_t;
 
 #else
+/* ==========================================================
+ * Minimal compiler and CRT declarations
+ *
+ * Supported:
+ *
+ * - GCC
+ * - Clang
+ * - MinGW
+ * - MSVC
+ * - clang-cl
+ *
+ * This declares the APIs without including the standard
+ * library headers. The platform C runtime still provides
+ * the linked implementations.
+ * ========================================================== */
 
-//Libs Minimal API calls
-typedef __SIZE_TYPE__ size_t;
-typedef _Bool bool;
+#if defined(_MSC_VER)
 
-#define true  1
-#define false 0
-#define NULL  ((void *)0)
+    #if defined(_WIN64)
+        typedef unsigned __int64 size_t;
+    #else
+        typedef unsigned int size_t;
+    #endif
 
-typedef struct _IO_FILE FILE;
+    typedef unsigned char bool;
 
-extern FILE *stderr;
+    #define true  1
+    #define false 0
+    #define NULL  ((void *)0)
 
-extern int printf(const char *, ...);
-extern int fprintf(FILE *, const char *, ...);
-extern int snprintf(char *, size_t, const char *, ...);
-extern int scanf(const char *, ...);
+    typedef struct _iobuf FILE;
 
-extern FILE *fopen(const char *, const char *);
-extern int fclose(FILE *);
-extern int ferror(FILE *);
-extern int fputc(int, FILE *);
-extern int fputs(const char *, FILE *);
+    #define FUZZY_CDECL __cdecl
 
-extern void *malloc(size_t);
-extern void *calloc(size_t, size_t);
-extern void free(void *);
+    extern FILE *FUZZY_CDECL __acrt_iob_func(unsigned int);
 
-extern float powf(float, float);
-extern float expf(float);
-extern float fabsf(float);
-extern float ceilf(float);
+    #define stderr (__acrt_iob_func(2))
 
-extern int rand(void);
-extern void srand(unsigned int);
+    #ifndef RAND_MAX
+        #define RAND_MAX 32767
+    #endif
 
-#define RAND_MAX 2147483647
-//Test for minimal libc, since linker does it automatically, but we need to declare it for the compiler
+#else
+
+    typedef __SIZE_TYPE__ size_t;
+    typedef _Bool bool;
+
+    #define true  1
+    #define false 0
+    #define NULL  ((void *)0)
+
+    typedef struct _IO_FILE FILE;
+
+    #define FUZZY_CDECL
+
+    extern FILE *stderr;
+
+    #ifndef RAND_MAX
+        #define RAND_MAX 2147483647
+    #endif
+
+#endif
+
+
+/* ==========================================================
+ * Formatted input and output
+ * ========================================================== */
+
+extern int FUZZY_CDECL printf(const char *,...);
+extern int FUZZY_CDECL fprintf(FILE *,const char *,...);
+extern int FUZZY_CDECL snprintf(char *,size_t,const char *,...);
+extern int FUZZY_CDECL scanf(const char *,...);
+
+/* ==========================================================
+ * File operations
+ * ========================================================== */
+
+extern FILE *FUZZY_CDECL fopen(const char *,const char *);
+extern int FUZZY_CDECL fclose(FILE *);
+extern int FUZZY_CDECL ferror(FILE *);
+extern int FUZZY_CDECL fputc(int,FILE *);
+extern int FUZZY_CDECL fputs(const char *,FILE *);
+
+/* ==========================================================
+ * Dynamic memory
+ * ========================================================== */
+
+extern void *FUZZY_CDECL malloc(size_t);
+extern void *FUZZY_CDECL calloc(size_t,size_t);
+extern void FUZZY_CDECL free(void *);
+
+/* ==========================================================
+ * Mathematics
+ * ========================================================== */
+
+extern float FUZZY_CDECL powf(float,float);
+extern float FUZZY_CDECL expf(float);
+extern float FUZZY_CDECL fabsf(float);
+extern float FUZZY_CDECL ceilf(float);
+
+/* ==========================================================
+ * Pseudorandom numbers
+ * ========================================================== */
+
+extern int FUZZY_CDECL rand(void);
+extern void FUZZY_CDECL srand(unsigned int);
+//Compiler Compatibilty for MSVC and Clang-CL
 
 #define FUZZY_MAX_RULES 32u
 
