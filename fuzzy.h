@@ -2294,31 +2294,34 @@ typedef struct FuzzyMaximumResult {
  * Find every sampled position having the maximum aggregated
  * Mamdani output height.
  */
-static fuzzy_maximum_result_t fuzzy_rules_maximum_result(
+
+static void fuzzy_rules_maximum_result(
+    fuzzy_maximum_result_t *result,
     const fuzzy_rules_t *rules,
     float lower,
     float upper,
     float step,
     fuzzy_implication_method_t implication_method,
     fuzzy_aggregation_method_t aggregation_method
-){
-    fuzzy_maximum_result_t result;
-
+)
+{
     float value;
     float height;
 
-    result.height =
+    result->height =
         LEVEL_LO;
 
-    result.smallest_position =
+    result->smallest_position =
         lower;
 
-    result.largest_position =
+    result->largest_position =
         lower;
 
-    result.position_sum = 0.0f;
+    result->position_sum =
+        0.0f;
 
-    result.position_count = 0u;
+    result->position_count =
+        0u;
 
     for (
         value = lower;
@@ -2334,43 +2337,40 @@ static fuzzy_maximum_result_t fuzzy_rules_maximum_result(
             );
 
         if (
-            result.position_count == 0u ||
-            height > result.height
+            result->position_count == 0u ||
+            height > result->height
         ) {
-            result.height =
+            result->height =
                 height;
 
-            result.smallest_position =
+            result->smallest_position =
                 value;
 
-            result.largest_position =
+            result->largest_position =
                 value;
 
-            result.position_sum =
+            result->position_sum =
                 value;
 
-            result.position_count =
+            result->position_count =
                 1u;
         }
         else if (
             height ==
-            result.height
+            result->height
         ) {
-            result.largest_position =
+            result->largest_position =
                 value;
 
-            result.position_sum +=
+            result->position_sum +=
                 value;
 
-            result.position_count++;
+            result->position_count++;
         }
     }
-
-    return result;
 }
 
-
-/*
+ /*
  * Center of gravity.
  *
  * Operates on the final aggregated Mamdani output.
@@ -2584,15 +2584,15 @@ float fuzzy_rules_defuzzify_mom(
 {
     fuzzy_maximum_result_t result;
 
-    result =
-        fuzzy_rules_maximum_result(
-            rules,
-            lower,
-            upper,
-            step,
-            implication_method,
-            aggregation_method
-        );
+    fuzzy_rules_maximum_result(
+        &result,
+        rules,
+        lower,
+        upper,
+        step,
+        implication_method,
+        aggregation_method
+    );
 
     if (
         result.position_count == 0u ||
@@ -2620,15 +2620,15 @@ float fuzzy_rules_defuzzify_som(
 {
     fuzzy_maximum_result_t result;
 
-    result =
-        fuzzy_rules_maximum_result(
-            rules,
-            lower,
-            upper,
-            step,
-            implication_method,
-            aggregation_method
-        );
+    fuzzy_rules_maximum_result(
+        &result,
+        rules,
+        lower,
+        upper,
+        step,
+        implication_method,
+        aggregation_method
+    );
 
     if (
         result.position_count == 0u ||
@@ -2655,15 +2655,15 @@ float fuzzy_rules_defuzzify_lom(
 {
     fuzzy_maximum_result_t result;
 
-    result =
-        fuzzy_rules_maximum_result(
-            rules,
-            lower,
-            upper,
-            step,
-            implication_method,
-            aggregation_method
-        );
+    fuzzy_rules_maximum_result(
+        &result,
+        rules,
+        lower,
+        upper,
+        step,
+        implication_method,
+        aggregation_method
+    );
 
     if (
         result.position_count == 0u ||
