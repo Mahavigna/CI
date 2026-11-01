@@ -2,11 +2,13 @@
 
 A lightweight, single-header fuzzy-logic library written in C.
 
-`fuzzy.h` provides type-1 membership functions, configurable linguistic hedges, multiple fuzzy AND/OR methods, Mamdani and Sugeno inference helpers, static rule storage, sampled defuzzification, N-dimensional scattered-point membership interpolation, native SVG plotting, CSV-backed multidimensional sweeps, interactive higher-dimensional slices, and a reduced 8051/8052 firmware path.
+`fuzzy.h` provides type-1 membership functions, configurable linguistic hedges, multiple fuzzy AND/OR methods, Mamdani and Sugeno inference helpers, static rule storage, sampled defuzzification, directly callable defuzzification functions, N-dimensional scattered-point membership interpolation, native SVG plotting, CSV-backed multidimensional sweeps, interactive higher-dimensional slices, experimental desktop OpenCL GPU sweeps, and a reduced 8051/8052 firmware path.
 
-The desktop engine and SVG generator require no Python environment, MATLAB toolbox, plotting framework, or external runtime. PNG and PDF conversion are optional conveniences provided through `rsvg-convert`.
+The Mamdani engine supports sampled Center of Gravity (COG), Bisector of Area (BOA), Center of Sums (COS), Mean of Maximum (MOM), Smallest of Maximum (SOM), and Largest of Maximum (LOM). Every method is available through the configurable wrapper and through a directly callable low-level function.
 
-The implementation remains readable, editable, and contained in one header. The build workflow lives directly in the `Makefile`; there is no repository-owned build-script dispatcher.
+The ordinary desktop engine and SVG generator require no Python environment, MATLAB toolbox, plotting framework, or external runtime. PNG and PDF conversion are optional conveniences provided through `rsvg-convert`. OpenCL is optional and is linked only for the experimental GPU demonstration.
+
+The implementation remains readable, editable, and contained primarily in one header. The build workflow lives directly in the `Makefile`; there is no repository-owned build-script dispatcher. The separate `setup_opencl.sh` utility exists only to install and verify the optional, hardware-specific Intel OpenCL environment.
 
 > Built partly to learn fuzzy logic, partly to explore AI-assisted low-level development, and partly to annoy Python users.
 
@@ -25,6 +27,8 @@ The implementation remains readable, editable, and contained in one header. The 
 - [Mamdani rule API](#mamdani-rule-api)
 - [Defuzzification methods](#defuzzification-methods)
 - [Desktop visualization](#desktop-visualization)
+- [Experimental OpenCL GPU support](#experimental-opencl-gpu-support)
+- [Intel OpenCL setup](#intel-opencl-setup)
 - [Included applications](#included-applications)
 - [Build system](#build-system)
 - [Quick start](#quick-start)
@@ -33,10 +37,12 @@ The implementation remains readable, editable, and contained in one header. The 
 - [8051 and 8052 support](#8051-and-8052-support)
 - [8051 firmware verification](#8051-firmware-verification)
 - [Optional PNG and PDF conversion](#optional-png-and-pdf-conversion)
+- [Opening generated plots](#opening-generated-plots)
 - [Project status](#project-status)
 - [Safety and limitations](#safety-and-limitations)
 - [Planned work](#planned-work)
 - [AI-assisted development](#ai-assisted-development)
+- [Joke](#joke)
 - [Contributing](#contributing)
 - [License](#license)
 - [Philosophy](#philosophy)
@@ -49,24 +55,30 @@ This project takes the opposite approach:
 
 - Plain C
 - One implementation header
-- No Python environment
+- Reduced desktop library includes
+- No Python environment for the core library
 - No MATLAB toolbox
-- No package manager for the core library
+- No package manager for the core CPU library
 - No external plotting library for native SVG generation
 - Direct access to every calculation
 - User-defined C functions for membership functions and Sugeno consequents
 - Static Mamdani rule storage
+- Directly callable defuzzification methods
 - Desktop simulation and embedded experimentation
 - A reduced 8051/8052 build path
-- A Makefile-owned workflow with no separate build script
+- Optional experimental OpenCL acceleration for desktop sweeps
+- A Makefile-owned workflow with no separate build dispatcher
 
-The objective is not to replace mature numerical-computing platforms. The objective is to make fuzzy-logic execution small, inspectable, modifiable, and easy to integrate into an ordinary C project.
+The objective is not to replace mature numerical-computing platforms, GPU frameworks, or machine-learning systems. The objective is to make fuzzy-logic execution small, inspectable, modifiable, and easy to integrate into an ordinary C project.
+
+Users who already use CUDA, SYCL, Vulkan compute, established machine-learning frameworks, or another GPU workflow can continue using those systems. The experimental OpenCL support is a starting point for users who want an inspectable GPU path without first adopting a larger framework.
 
 ## Current features
 
 ### Core fuzzy engine
 
 - Single-header implementation
+- Reduced desktop library includes through minimal required declarations in `fuzzy.h`
 - Membership clamping to `[0, 1]`
 - Fuzzy NOT
 - Count-free, variadic AND and OR macros
@@ -77,11 +89,15 @@ The objective is not to replace mature numerical-computing platforms. The object
 - Sugeno weighted-sum inference
 - Zero-order Sugeno through constant consequents
 - First-order and arbitrary-order Sugeno through user-defined C consequent functions
-- COG, MOM, SOM, and LOM sampled defuzzification
+- COG, BOA, COS, MOM, SOM, and LOM sampled defuzzification
+- Directly callable functions for every supported defuzzification method
+- Configurable method-selection wrapper
+- Independently selectable implication and aggregation methods
 - N-dimensional scattered-point membership interpolation
 - N-dimensional interpolation sweeps and per-dimension membership slices
 - Floating-point desktop hedges
 - Integer-power 8051 hedges
+- Experimental desktop OpenCL sweep execution
 
 ### Membership functions
 
@@ -131,14 +147,30 @@ The `FUZZY_8051` profile keeps the smaller ramp, triangle, and trapezoid path an
 - Continuous interpolation between precomputed higher-dimensional slices
 - N-dimensional sampled-membership heatmaps
 - Automatic one-dimensional membership slices for every interpolation dimension
+- GPU-computed values rendered through the same CSV and SVG sweep path
 - Optional SVG-to-PNG conversion
 - Optional SVG-to-PDF conversion
+
+### Experimental GPU support
+
+- Compile-time `FUZZY_OPENCL` feature switch
+- Desktop-only OpenCL 1.2 path
+- N-dimensional Cartesian input generation inside `fuzzy.h`
+- Generic flattened GPU input-buffer contract
+- GPU context, queue, program, kernel, buffer, execution, and cleanup abstraction
+- Runtime kernel compilation with build-log reporting
+- `FUZZY_GPU_KERNEL_HEADER` reusable OpenCL membership primitives
+- `FUZZY_GPU_SWEEP(...)` user-facing sweep wrapper
+- GPU-generated CSV and SVG output
+- `braking_gpu_demo.c` test harness
+- `setup_opencl.sh` for the tested Intel HD Graphics 620 environment
+- Makefile build, run, conversion, dependency-check, and cleanup targets
 
 ### Embedded support
 
 - `FUZZY_8051` reduced backend
 - Static rule storage
-- No plotting, heap allocation, CSV generation, or file I/O in firmware builds
+- No plotting, heap allocation, CSV generation, OpenCL, or file I/O in firmware builds
 - Integer hedge powers
 - Ramp, triangle, and trapezoid membership support
 - Direct `fuzzy_ramp()` use for small controllers
@@ -159,18 +191,26 @@ The `FUZZY_8051` profile keeps the smaller ramp, triangle, and trapezoid path an
 ├── greenhouse.c
 ├── demo_all.c
 ├── braking.c
+├── braking_gpu_demo.c
 ├── controller_8051.c
+├── sugeno_demo.c
+├── setup_opencl.sh
 ├── Makefile
-├── svg/
+├── strength/
 ├── greenhouse/
 ├── demo-all/
+├── braking_gpu/
+├── sugeno/
 └── sim-8051/
     ├── desktop/
-    ├── embedded/
-    └── test_8051_host.c
+    └── embedded/
 ```
 
-`braking.c` is the compact-syntax example. It demonstrates that the short adapters remain ordinary C and still compile through the reduced 8051 path.
+`braking.c` is the compact-syntax CPU example. It demonstrates ordinary C rule definitions, all supported sampled defuzzification methods, direct low-level defuzzification calls, and CPU response sweeps.
+
+`braking_gpu_demo.c` is the experimental desktop OpenCL harness. The application supplies the controller-specific kernel function while `fuzzy.h` owns Cartesian input generation, OpenCL setup, execution, readback, CSV output, SVG rendering, and cleanup.
+
+`setup_opencl.sh` installs and validates the tested Intel OpenCL environment. It is not the repository build system and is not required by ordinary CPU or embedded builds.
 
 The shared embedded examples can be compiled in two modes:
 
@@ -202,6 +242,41 @@ Other translation units should include the header normally:
 ```
 
 `FUZZY_IMPLEMENTATION` must be defined in only one translation unit per executable.
+
+### Reduced desktop includes
+
+The desktop branch declares the small set of C runtime functions and types that the implementation uses instead of requiring every application to include a large collection of standard headers before `fuzzy.h`.
+
+The header still links against the ordinary C library and math library. Reduced includes do not mean that libc or libm have been reimplemented; the declarations are kept in the header so the public setup stays compact.
+
+Typical CPU build:
+
+```sh
+gcc -O3 -Wall -Wextra -Wpedantic -std=c11 application.c -o application -lm
+```
+
+### OpenCL desktop setup
+
+The optional OpenCL path is enabled with `FUZZY_OPENCL`:
+
+```c
+#define FUZZY_OPENCL
+#define FUZZY_IMPLEMENTATION
+#include "fuzzy.h"
+```
+
+The Makefile may define `FUZZY_OPENCL` instead:
+
+```sh
+gcc -O3 -Wall -Wextra -Wpedantic -std=c11 \
+    -DFUZZY_OPENCL \
+    braking_gpu_demo.c \
+    -o braking-gpu \
+    -lOpenCL \
+    -lm
+```
+
+OpenCL support is desktop-only. Do not define `FUZZY_OPENCL` for an SDCC or `FUZZY_8051` firmware build.
 
 ### 8051/8052 setup
 
@@ -238,8 +313,8 @@ The library includes optional adapters that reduce boilerplate without introduci
 #define BAND(...) fuzzy_and_method(FUZZY_LOGIC_BOUNDED, __VA_ARGS__)
 #define BOR(...)  fuzzy_or_method(FUZZY_LOGIC_BOUNDED, __VA_ARGS__)
 
-#define RULE(name, activation, output) \
-    FUZZY_RULE_ADD_NAMED(rules, name, activation, output)
+#define RULE(rule_var, name, activation, output) \
+    FUZZY_RULE_ADD_NAMED(&(rule_var), name, activation, output)
 
 #define OPERATOR(name, operation, method) \
     static float name(float x) { return operation(method, x, 0.5f); }
@@ -258,30 +333,29 @@ The library includes optional adapters that reduce boilerplate without introduci
 Example:
 
 ```c
-FUZZY_VAR(speed_fast, FUZZY_SHAPE_RAMP, hedges.none, 40.0f, 80.0f, true)
+FUZZY_VAR(
+    speed_fast,
+    FUZZY_SHAPE_RAMP,
+    1.0f,
+    40.0f,
+    80.0f,
+    true
+)
 
 RULE(
+    rules,
     "Hard braking",
-    SAND(speed_fast(speed), obstacle_near(distance)),
+    SAND(
+        speed_fast(speed),
+        obstacle_near(distance)
+    ),
     brake_hard
 );
 ```
 
 `braking.c` demonstrates this compressed style as a complete application rather than as isolated macro snippets. The macros expand into the same array-based engine and remain compatible with the intended 8051 build profile when the selected membership functions and features are available in that profile.
 
-Build and run the desktop form:
-
-```sh
-make run-braking
-```
-
-Build the embedded form through the repository's 8051 target:
-
-```sh
-make braking-8051
-```
-
-If the local Makefile uses a different target name, run `make help` for the exact braking and embedded targets.
+GPU usage remains explicit because an arbitrary C controller function cannot be automatically converted into OpenCL C source by the C preprocessor. The host-side OpenCL commands are hidden by `fuzzy.h`, while the application supplies the controller-specific kernel function.
 
 ## Membership functions
 
@@ -357,6 +431,32 @@ The current `FUZZY_8051` branch supports:
 
 The desktop-only SMF, ZMF, Pi, Gaussian, Gaussian2, bell, sigmoid, difference-of-sigmoids, and product-of-sigmoids dispatcher cases return zero in the reduced embedded build.
 
+### OpenCL kernel membership primitives
+
+When `FUZZY_OPENCL` is enabled, `FUZZY_GPU_KERNEL_HEADER` supplies compact OpenCL C implementations of:
+
+```text
+fuzzy_ramp()
+fuzzy_triangle()
+fuzzy_trapezoid()
+```
+
+The primitives are concatenated into the user-provided kernel source:
+
+```c
+static const char *controller_gpu_kernel(void)
+{
+    return
+        FUZZY_GPU_KERNEL_HEADER
+
+        "__kernel void controller(...) {\n"
+        "    /* controller-specific kernel */\n"
+        "}\n";
+}
+```
+
+This avoids repeating the basic membership implementations in every GPU demonstration while keeping the controller-specific inference logic explicit.
+
 ## N-dimensional sampled-membership interpolation
 
 A sampled point stores a coordinate vector, its dimension count, and a membership value:
@@ -388,9 +488,24 @@ FUZZY_INTERPOLATION_SWEEP(
     "demo-all/sampled_interpolation",
     "Sampled Membership Interpolation",
     sampled_membership_points,
-    FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 20.0f),
-    FUZZY_SWEEP_DIMENSION("Humidity", 0.0f, 100.0f, 20.0f),
-    FUZZY_SWEEP_DIMENSION("Pressure", 0.0f, 200.0f, 10.0f)
+    FUZZY_SWEEP_DIMENSION(
+        "Temperature",
+        0.0f,
+        100.0f,
+        20.0f
+    ),
+    FUZZY_SWEEP_DIMENSION(
+        "Humidity",
+        0.0f,
+        100.0f,
+        20.0f
+    ),
+    FUZZY_SWEEP_DIMENSION(
+        "Pressure",
+        0.0f,
+        200.0f,
+        10.0f
+    )
 );
 ```
 
@@ -401,9 +516,24 @@ FUZZY_INTERPOLATION_SLICES(
     "demo-all/sampled_membership_slice",
     "Sampled Membership",
     sampled_membership_points,
-    FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 0.5f),
-    FUZZY_SWEEP_DIMENSION("Humidity", 0.0f, 100.0f, 0.5f),
-    FUZZY_SWEEP_DIMENSION("Pressure", 0.0f, 200.0f, 1.0f)
+    FUZZY_SWEEP_DIMENSION(
+        "Temperature",
+        0.0f,
+        100.0f,
+        0.5f
+    ),
+    FUZZY_SWEEP_DIMENSION(
+        "Humidity",
+        0.0f,
+        100.0f,
+        0.5f
+    ),
+    FUZZY_SWEEP_DIMENSION(
+        "Pressure",
+        0.0f,
+        200.0f,
+        1.0f
+    )
 );
 ```
 
@@ -555,9 +685,26 @@ Use the evaluated result directly:
 
 ```c
 return fuzzy_sugeno_weighted_average(
-    rule_idle, response_idle(temperature, load, vibration),
-    rule_cooling, response_cooling(temperature, load, vibration),
-    rule_protection, response_protection(temperature, load, vibration)
+    rule_idle,
+    response_idle(
+        temperature,
+        load,
+        vibration
+    ),
+
+    rule_cooling,
+    response_cooling(
+        temperature,
+        load,
+        vibration
+    ),
+
+    rule_protection,
+    response_protection(
+        temperature,
+        load,
+        vibration
+    )
 );
 ```
 
@@ -578,9 +725,25 @@ The inference path clamps memberships and activations where required. A dedicate
 Multiple outputs are composed from ordinary controller functions:
 
 ```c
-outputs.fan_speed = calculate_fan_speed(temperature, load, vibration);
-outputs.valve_position = calculate_valve_position(temperature, pressure);
-outputs.alarm_level = calculate_alarm_level(temperature, vibration, pressure);
+outputs.fan_speed =
+    calculate_fan_speed(
+        temperature,
+        load,
+        vibration
+    );
+
+outputs.valve_position =
+    calculate_valve_position(
+        temperature,
+        pressure
+    );
+
+outputs.alarm_level =
+    calculate_alarm_level(
+        temperature,
+        vibration,
+        pressure
+    );
 ```
 
 Shared fuzzified values can be calculated once and reused by each output path. A large multi-output object model is not required for runtime inference.
@@ -591,7 +754,7 @@ Create a static rule collection:
 
 ```c
 fuzzy_rules_t rules;
-fuzzy_rules_create(&rules);
+rules.count = 0u;
 ```
 
 Add a rule using the output function name automatically:
@@ -615,10 +778,11 @@ FUZZY_RULE_ADD_NAMED(
 );
 ```
 
-Or use the compressed adapter when the local rule container is named `rules`:
+Or use the compressed adapter:
 
 ```c
 RULE(
+    rules,
     "High temperature produces fast fan",
     activation,
     fan_fast
@@ -631,13 +795,13 @@ Print rules on desktop:
 fuzzy_rules_print(&rules);
 ```
 
-Reset the container after use:
+The rule array is stored directly inside `fuzzy_rules_t`. Resetting the container only requires:
 
 ```c
-fuzzy_rules_free(&rules);
+rules.count = 0u;
 ```
 
-`fuzzy_rules_free()` does not release heap memory. It resets the count because the rule array is stored directly inside `fuzzy_rules_t`.
+There is no rule-container heap allocation to release.
 
 ## Defuzzification methods
 
@@ -657,12 +821,155 @@ Available methods:
 
 ```text
 FUZZY_DEFUZZ_COG    sampled center of gravity
+FUZZY_DEFUZZ_BOA    sampled bisector of area
+FUZZY_DEFUZZ_COS    sampled center of sums
 FUZZY_DEFUZZ_MOM    mean of sampled maximum positions
 FUZZY_DEFUZZ_SOM    smallest sampled maximum position
 FUZZY_DEFUZZ_LOM    largest sampled maximum position
 ```
 
-Select implication and aggregation independently:
+### Center of Gravity
+
+COG first produces the final aggregated Mamdani output and then calculates its sampled balance point:
+
+```text
+sum(output_position * aggregated_height)
+----------------------------------------
+        sum(aggregated_height)
+```
+
+COG uses the final aggregated output. With maximum aggregation, overlapping implied rule outputs are counted once through the strongest contribution at each sampled output position.
+
+### Bisector of Area
+
+BOA finds the sampled output position where accumulated aggregated area first reaches half of the complete aggregated area:
+
+```text
+accumulated_area >= total_area / 2
+```
+
+BOA is not COG calculated over half of the shape. It finds the vertical cutting position that divides the final aggregated fuzzy area into equal left and right portions.
+
+The implementation performs two passes:
+
+1. Sum the complete sampled aggregated area.
+2. Walk from the lower bound toward the upper bound until the accumulated area reaches half of the total.
+
+### Center of Sums
+
+COS calculates a centroid while accumulating every implied rule output independently:
+
+```text
+sum(rule_output_position * implied_rule_height)
+------------------------------------------------
+        sum(implied_rule_height)
+```
+
+COS intentionally does not max-aggregate the implied rule outputs before calculating the centroid. If several rules support the same output region, the overlap is counted once for each contributing rule.
+
+This differs from ordinary max-aggregated COG:
+
+```text
+COG    strongest implied contribution at each position
+COS    sum of every rule contribution at each position
+```
+
+### Mean, Smallest, and Largest of Maximum
+
+MOM, SOM, and LOM share the sampled maximum-position search:
+
+```text
+MOM    arithmetic mean of all sampled maximum positions
+SOM    smallest sampled maximum position
+LOM    largest sampled maximum position
+```
+
+### Directly callable defuzzification functions
+
+Every method has a direct public function.
+
+COG:
+
+```c
+float cog = fuzzy_rules_defuzzify_cog(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX
+);
+```
+
+BOA:
+
+```c
+float boa = fuzzy_rules_defuzzify_boa(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX
+);
+```
+
+COS:
+
+```c
+float cos = fuzzy_rules_defuzzify_cos(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_IMPLICATION_MIN
+);
+```
+
+COS has no aggregation-method argument because aggregation is intentionally not used.
+
+MOM:
+
+```c
+float mom = fuzzy_rules_defuzzify_mom(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX
+);
+```
+
+SOM:
+
+```c
+float som = fuzzy_rules_defuzzify_som(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX
+);
+```
+
+LOM:
+
+```c
+float lom = fuzzy_rules_defuzzify_lom(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX
+);
+```
+
+### Configurable wrapper
+
+Select defuzzification, implication, and aggregation independently:
 
 ```c
 float output = fuzzy_rules_defuzzify_method(
@@ -673,6 +980,18 @@ float output = fuzzy_rules_defuzzify_method(
     FUZZY_DEFUZZ_COG,
     FUZZY_IMPLICATION_PRODUCT,
     FUZZY_AGGREGATION_ALGEBRAIC
+);
+```
+
+The simpler wrapper uses minimum implication and maximum aggregation:
+
+```c
+float output = fuzzy_rules_defuzzify(
+    &rules,
+    0.0f,
+    100.0f,
+    1.0f,
+    FUZZY_DEFUZZ_BOA
 );
 ```
 
@@ -687,7 +1006,7 @@ float output = fuzzy_rules_cog(
 );
 ```
 
-The `step` controls sampling resolution. A smaller step evaluates more points and usually gives a finer approximation at increased execution cost.
+The `step` controls sampling resolution. A smaller step evaluates more output positions and usually gives a finer approximation at increased execution cost.
 
 ## Desktop visualization
 
@@ -695,12 +1014,18 @@ The `step` controls sampling resolution. A smaller step evaluates more points an
 
 ```c
 PLOT(
-    "svg/strength",
+    "strength/strength",
     "Paint Strength Membership Functions",
     100.0f,
     1.0f,
-    SERIES(strength_little, "#ef4444"),
-    SERIES(strength_fair, "#22c55e")
+    SERIES(
+        strength_little,
+        "#ef4444"
+    ),
+    SERIES(
+        strength_fair,
+        "#22c55e"
+    )
 );
 ```
 
@@ -718,7 +1043,7 @@ float cog = fuzzy_rules_cog(
 
 fuzzy_rules_plot_cog(
     &rules,
-    "svg/selected_cog",
+    "strength/selected_cog",
     "Selected Mamdani Output",
     cog,
     0.0f,
@@ -726,6 +1051,8 @@ fuzzy_rules_plot_cog(
     1.0f
 );
 ```
+
+The current selected-output plot helper is specifically named and labelled for COG. BOA, COS, MOM, SOM, and LOM can be calculated and swept, but should not be passed into a plot that is labelled as COG unless the label and helper are extended.
 
 ### N-dimensional controller sweeps
 
@@ -735,14 +1062,260 @@ return FUZZY_COG_SWEEP(
     "Greenhouse Watering-Time COG Sweep",
     evaluate_time_sweep,
     0.1f,
-    FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 30.0f, 1.0f),
-    FUZZY_SWEEP_DIMENSION("Humidity", 0.0f, 30.0f, 1.0f)
+    FUZZY_SWEEP_DIMENSION(
+        "Temperature",
+        0.0f,
+        30.0f,
+        1.0f
+    ),
+    FUZZY_SWEEP_DIMENSION(
+        "Humidity",
+        0.0f,
+        30.0f,
+        1.0f
+    )
 );
 ```
 
 A sweep writes CSV and SVG from the same calculated values. The CSV is not reopened or parsed, and the controller is not reevaluated for the SVG.
 
 Higher-dimensional SVG heatmaps use the first two dimensions as visible axes. Remaining dimensions receive interactive sliders, with continuous interpolation between precomputed samples.
+
+Although the compatibility macro remains named `FUZZY_COG_SWEEP`, the evaluator controls the returned value. An evaluator can therefore return BOA, COS, MOM, SOM, or LOM to create comparison surfaces, provided that the output title and value label accurately identify the method.
+
+## Experimental OpenCL GPU support
+
+The optional OpenCL path accelerates large Cartesian controller sweeps. Each GPU work item evaluates one complete input combination and writes one crisp output. `fuzzy.h` then writes the returned values through the same CSV and SVG sweep renderer used by CPU-generated results.
+
+### User-facing GPU sweep
+
+```c
+bool sweep_success = FUZZY_GPU_SWEEP(
+    "braking_gpu/gpu_sweep",
+    "GPU Braking Controller",
+    "COG",
+    braking_gpu_kernel,
+    "braking_sweep",
+    0.25f,
+    FUZZY_SWEEP_DIMENSION(
+        "Speed",
+        0.0f,
+        100.0f,
+        1.0f
+    ),
+    FUZZY_SWEEP_DIMENSION(
+        "Distance",
+        0.0f,
+        100.0f,
+        1.0f
+    )
+);
+```
+
+The application does not directly manage:
+
+```text
+cl_context
+cl_command_queue
+cl_program
+cl_kernel
+cl_mem
+clCreateBuffer()
+clSetKernelArg()
+clEnqueueNDRangeKernel()
+clEnqueueReadBuffer()
+clReleaseMemObject()
+```
+
+`fuzzy.h` handles:
+
+- N-dimensional Cartesian input generation
+- Flattened input-array construction
+- OpenCL platform selection
+- GPU device selection
+- Context creation
+- Command-queue creation
+- Program creation
+- Runtime kernel compilation
+- Kernel build-log reporting
+- Input and output buffer creation
+- Kernel argument binding
+- Kernel execution
+- GPU synchronization
+- Output readback
+- CSV generation
+- SVG generation
+- OpenCL cleanup
+- Host-memory cleanup
+
+### Kernel contract
+
+The GPU sweep harness expects the kernel interface:
+
+```c
+__kernel void controller(
+    __global const float *inputs,
+    __global float *outputs,
+    const uint point_count,
+    const uint dimension_count,
+    const float defuzz_step
+)
+```
+
+Inputs are flattened by point:
+
+```text
+point 0: input 0, input 1, ... input N
+point 1: input 0, input 1, ... input N
+point 2: input 0, input 1, ... input N
+```
+
+The controller-specific kernel obtains one point with:
+
+```c
+uint id = get_global_id(0);
+uint base = id * dimension_count;
+
+float input_0 = inputs[base];
+float input_1 = inputs[base + 1u];
+```
+
+### Controller-specific kernel function
+
+The application still supplies the controller-specific OpenCL C source because the C preprocessor cannot inspect an arbitrary CPU function and translate that function into a GPU kernel.
+
+```c
+static const char *braking_gpu_kernel(void)
+{
+    return
+        FUZZY_GPU_KERNEL_HEADER
+
+        "__kernel void braking_sweep(\n"
+        "    __global const float *inputs,\n"
+        "    __global float *outputs,\n"
+        "    const uint point_count,\n"
+        "    const uint dimension_count,\n"
+        "    const float cog_step)\n"
+        "{\n"
+        "    const uint id=get_global_id(0);\n"
+        "    if(id>=point_count)return;\n"
+        "    const uint base=id*dimension_count;\n"
+        "    const float speed=inputs[base];\n"
+        "    const float distance=inputs[base+1u];\n"
+        "    /* controller-specific fuzzification, rules, and COG */\n"
+        "}\n";
+}
+```
+
+`FUZZY_GPU_KERNEL_HEADER` supplies reusable OpenCL implementations of ramp, triangle, and trapezoid membership functions.
+
+### Experimental scope and AI-assisted development intent
+
+The OpenCL path is deliberately experimental. The purpose is to explore an inspectable GPU execution model that fits the project's AI-assisted development theme, especially while GPU-oriented AI and machine-learning workflows are becoming common.
+
+The feature is not intended to replace established machine-learning stacks or claim that OpenCL is the best interface for every GPU. Users who already have a CUDA, SYCL, Vulkan compute, vendor framework, or ML workflow can use that approach directly.
+
+For users who do not already have a GPU framework, the current OpenCL harness is a starting point:
+
+```text
+CPU fuzzy controller
+    -> equivalent explicit OpenCL kernel
+    -> N-dimensional GPU batch execution
+    -> CSV output
+    -> native SVG visualization
+```
+
+The implementation keeps the mechanism visible rather than generating a hidden graph or requiring a large external runtime.
+
+### Desktop-only limitation
+
+OpenCL support is desktop-only. It is not compiled into:
+
+- `FUZZY_8051`
+- SDCC MCS-51 builds
+- AT89S52 firmware
+- Embedded simulation profiles that use the reduced backend
+
+The embedded path continues to use ordinary CPU inference.
+
+### Tested Intel environment
+
+The currently tested OpenCL route is specifically:
+
+```text
+GPU:         Intel HD Graphics 620
+Device:      Intel(R) Graphics [0x5916]
+Runtime:     Intel OpenCL Legacy 24.35
+API:         OpenCL 1.2
+Environment: Ubuntu / WSL2
+```
+
+The Intel runtime used here is a legacy runtime. The setup is hardware-specific and should not be presented as a universal OpenCL installation process.
+
+Other Intel GPUs, AMD GPUs, NVIDIA GPUs, Mesa ICDs, native Linux installations, native Windows installations, and different WSL configurations may require different runtimes, packages, kernel interfaces, or device selection.
+
+## Intel OpenCL setup
+
+`setup_opencl.sh` installs and verifies the OpenCL environment used by `braking_gpu_demo.c` on the tested Intel HD Graphics 620 system.
+
+The script performs:
+
+1. Linux distribution and kernel checks.
+2. WSL detection information.
+3. `/dev/dxg` and DRM render-node checks.
+4. Removal of `mesa-opencl-icd` for the tested configuration.
+5. Package-list update.
+6. Installation of the Intel legacy runtime and development tools.
+7. Intel ICD-file verification.
+8. `clinfo` platform and device inspection.
+9. Exact detection of `Intel(R) Graphics [0x5916]`.
+10. Generation of a standalone OpenCL vector-addition test.
+11. Test compilation with `-lOpenCL`.
+12. Kernel execution and numerical verification.
+
+Run:
+
+```sh
+chmod +x setup_opencl.sh
+./setup_opencl.sh
+```
+
+The installed packages are:
+
+```text
+intel-opencl-icd-legacy
+ocl-icd-opencl-dev
+clinfo
+build-essential
+```
+
+The script expects the Intel legacy ICD file:
+
+```text
+/etc/OpenCL/vendors/intel_legacy1.icd
+```
+
+The script then generates:
+
+```text
+gpu_test.c
+gpu_test
+```
+
+and verifies a 1024-element GPU vector addition.
+
+### Important setup warning
+
+`setup_opencl.sh`:
+
+- Uses `sudo`
+- Uses `apt-get`
+- Removes `mesa-opencl-icd` when installed
+- Installs an Intel legacy OpenCL runtime
+- Checks for one specific Intel device identifier
+- Was written for Ubuntu or WSL2
+
+Review the script before running it on another GPU or distribution. Users with another working OpenCL ICD should not blindly replace that environment with the Intel-specific setup.
 
 ## Included applications
 
@@ -770,6 +1343,23 @@ make run-greenhouse
 make run-demo
 ```
 
+### Complex Sugeno fan controller
+
+`sugeno_demo.c` demonstrates:
+
+- User-defined first-order Sugeno consequents
+- Temperature, load, and vibration inputs
+- Weighted-average inference
+- Desktop verification
+- Membership plots
+- Three-dimensional response sweeps
+- Shared desktop and AT89S52 source structure
+
+```sh
+make run-sugeno
+make embedded-sugeno
+```
+
 ### Compressed braking controller
 
 `braking.c` demonstrates the compact adapters in a complete controller:
@@ -779,15 +1369,39 @@ make run-demo
 - `RULE(...)`
 - `SERIES(...)`
 - `PLOT(...)`
-- Shared desktop and embedded source structure
-- Reduced 8051 compilation
+- COG, BOA, COS, MOM, SOM, and LOM
+- Direct low-level defuzzification calls
+- Defuzzification comparison output
+- Separate response sweeps for different methods or scenarios
+
+The braking example is also useful for comparing the semantics of the six sampled methods on one rule base.
+
+### Experimental GPU braking controller
+
+`braking_gpu_demo.c` is the OpenCL test harness and demonstration application.
+
+The application contains:
+
+- The original CPU membership functions
+- A CPU braking controller for selected-point verification
+- A controller-specific OpenCL kernel function
+- `FUZZY_GPU_KERNEL_HEADER`
+- A single `FUZZY_GPU_SWEEP(...)` call
+- Membership SVG generation
+- GPU-generated CSV and heatmap output
+
+The application does not contain the low-level OpenCL setup and buffer-management commands. Those commands are wrapped by the optional `fuzzy.h` GPU implementation.
 
 ```sh
-make run-braking
-make braking-8051
+./setup_opencl.sh
+make run-gpu
 ```
 
-Use `make help` if the local Makefile exposes the braking firmware through a combined embedded target rather than `braking-8051`.
+Generated files are written to:
+
+```text
+braking_gpu/
+```
 
 ### Shared desktop and 8051 controller
 
@@ -803,7 +1417,7 @@ make embedded
 
 ## Build system
 
-The build workflow is implemented directly in the `Makefile`. There is no separate Bash build script.
+The main build workflow is implemented directly in the `Makefile`. `setup_opencl.sh` is an optional environment-setup utility, not a replacement build dispatcher.
 
 The Makefile performs:
 
@@ -811,6 +1425,13 @@ The Makefile performs:
 - Optional `mold` detection
 - GCC desktop builds
 - Desktop example execution
+- OpenCL GPU build with `-DFUZZY_OPENCL`
+- OpenCL linking with `-lOpenCL`
+- `make run-gpu`
+- OpenCL header and loader checks
+- GPU output-directory creation
+- GPU SVG-to-PNG and SVG-to-PDF conversion targets
+- GPU executable and generated-output cleanup
 - SDCC firmware compilation
 - Intel HEX packing
 - uCsim command discovery
@@ -819,7 +1440,9 @@ The Makefile performs:
 - Dependency checking and apt-based installation
 - Desktop and embedded cleanup
 
-Make recipes still use normal POSIX shell commands such as `mkdir`, `rm`, `find`, loops, and conditionals. This is standard Make recipe execution and does not require a repository-owned `.sh` script.
+OpenCL is linked only into `braking-gpu`. Ordinary CPU applications and embedded firmware do not depend on OpenCL.
+
+Make recipes still use normal POSIX shell commands such as `mkdir`, `rm`, `find`, loops, and conditionals. This is standard Make recipe execution and does not require a repository-owned build-script dispatcher.
 
 ## Quick start
 
@@ -829,17 +1452,28 @@ Make recipes still use normal POSIX shell commands such as `mkdir`, `rm`, `find`
 make check-dependencies
 ```
 
-### Install dependencies on Debian, Ubuntu, or WSL
+### Install ordinary dependencies on Debian, Ubuntu, or WSL
 
 ```sh
 make install-dependencies
 ```
+
+### Configure the tested Intel OpenCL environment
+
+```sh
+chmod +x setup_opencl.sh
+./setup_opencl.sh
+```
+
+This step is optional and required only for the tested Intel GPU path.
 
 ### Build everything
 
 ```sh
 make
 ```
+
+If the OpenCL development files are unavailable, build individual CPU and embedded targets instead of the GPU-inclusive desktop group.
 
 ### Build only desktop programs
 
@@ -851,6 +1485,12 @@ make desktop
 
 ```sh
 make embedded
+```
+
+### Run the GPU demonstration
+
+```sh
+make run-gpu
 ```
 
 ### Show command help
@@ -866,18 +1506,16 @@ make
     Build all desktop programs and embedded firmware.
 
 make desktop
-    Build all desktop executables.
+    Build all desktop executables, including braking-gpu.
 
 make embedded
+    Build Mamdani and Sugeno SDCC firmware.
+
 make build-8051
-    Build the SDCC MCS-51 firmware and pack Intel HEX output.
+    Build the Mamdani SDCC MCS-51 firmware and pack Intel HEX output.
 
-make test
-    Run the FUZZY_8051 host test and build the firmware.
-
-make test-8051
-    Compile and run the desktop host test for the FUZZY_8051 branch.
-    Also inspect preprocessed output for forbidden desktop-only calls.
+make build-sugeno-8051
+    Build the Sugeno SDCC MCS-51 firmware and pack Intel HEX output.
 
 make run-strength
     Build and run the paint-strength example.
@@ -888,47 +1526,61 @@ make run-greenhouse
 make run-demo
     Build and run the complete API demonstration.
 
-make run-braking
-    Build and run the compressed-syntax braking example.
+make run-sugeno
+    Build and run the desktop Sugeno controller demonstration.
 
-make braking-8051
-    Build the compressed braking example for the 8051 target when
-    exposed as a dedicated Make target.
+make run-gpu
+    Build braking_gpu_demo.c with FUZZY_OPENCL and run the OpenCL sweep.
 
 make run-sim-8051
     Build controller_8051.c with -DSIMULATION and run it from
     sim-8051/desktop/.
 
+make embedded-mamdani
+    Build controller_8051.c as AT89S52 firmware.
+
+make embedded-sugeno
+    Build sugeno_demo.c as AT89S52 firmware.
+
 make simulate-8051
-    Build the firmware and load its IHX image into uCsim.
+    Build the Mamdani firmware and load its IHX image into uCsim.
+
+make simulate-sugeno
+    Build the Sugeno firmware and load its IHX image into uCsim.
 
 make debug-8051
-    Prepare the source and compatibility simulator name, then launch SDCDB.
+    Prepare source and simulator compatibility paths, then launch SDCDB.
 
 make check-dependencies
-    Report required and optional tools.
+    Report required tools, OpenCL headers and loader, and optional tools.
 
 make install-dependencies
-    Install apt-based build, conversion, and simulation dependencies.
+    Install apt-based build, conversion, simulation, and OpenCL
+    development dependencies.
 
 make png
 make pdf
     Convert all generated SVG groups.
 
+make png-gpu
+make pdf-gpu
+    Convert braking_gpu SVG output.
+
 make clean
     Remove generated desktop and embedded artifacts.
 
 make clean-desktop
-    Remove desktop executables, tests, SVG, PNG, PDF, and CSV output.
+    Remove desktop executables and generated SVG, PNG, PDF, and CSV output,
+    including braking-gpu and braking_gpu/ output.
 
 make clean-embedded
-    Remove generated files from sim-8051/embedded/.
+    Remove generated Mamdani and Sugeno firmware artifacts.
 ```
 
 ## Output directories
 
 ```text
-svg/
+strength/
     Paint-strength SVG, CSV, PNG, and PDF output.
 
 greenhouse/
@@ -937,11 +1589,17 @@ greenhouse/
 demo-all/
     Complete API demonstration output.
 
+sugeno/
+    Sugeno desktop plots, response sweeps, and embedded output.
+
+braking_gpu/
+    Experimental OpenCL braking-controller CSV, SVG, PNG, and PDF output.
+
 sim-8051/desktop/
     Desktop controller CSV, SVG, PNG, and PDF output.
 
 sim-8051/embedded/
-    SDCC firmware and analysis output.
+    SDCC Mamdani firmware and analysis output.
 ```
 
 Typical embedded files include:
@@ -958,13 +1616,15 @@ controller_8051.rst
 controller_8051.sym
 ```
 
+The Sugeno embedded directory similarly contains files based on `sugeno_8051`.
+
 SDCC's MCS-51 backend produces Intel HEX firmware rather than a conventional desktop executable.
 
 ## 8051 and 8052 support
 
-The embedded path uses `FUZZY_8051`, excludes desktop I/O and plotting, and retains the reduced fuzzy-logic runtime.
+The embedded path uses `FUZZY_8051`, excludes desktop I/O, plotting, heap allocation, CSV generation, and OpenCL, and retains the reduced fuzzy-logic runtime.
 
-The current firmware command is equivalent to:
+The current Mamdani firmware command is equivalent to:
 
 ```sh
 sdcc -mmcs51 \
@@ -992,6 +1652,7 @@ A floating-point controller can exceed the code-size restriction of the free Kei
 - uCsim is the recommended firmware execution path.
 - SDCDB remains available for experimentation but may be unreliable with modern package layouts.
 - EdSim51 is useful for smaller port tests but may not accurately accommodate a float-heavy stack profile.
+- OpenCL is unrelated to the embedded path and is not available on the AT89S52 target.
 
 ## 8051 firmware verification
 
@@ -1064,9 +1725,18 @@ Generate plots and convert them:
 make run-strength
 make run-greenhouse
 make run-demo
+make run-sugeno
+make run-gpu
 make run-sim-8051
 make png
 make pdf
+```
+
+Convert only GPU output:
+
+```sh
+make png-gpu
+make pdf-gpu
 ```
 
 Converted files are stored beside their source SVG files.
@@ -1079,6 +1749,12 @@ From WSL:
 
 ```sh
 explorer.exe "$(wslpath -w "$PWD/demo-all/sampled_interpolation.svg")"
+```
+
+Open the GPU heatmap from WSL:
+
+```sh
+explorer.exe "$(wslpath -w "$PWD/braking_gpu/gpu_sweep.svg")"
 ```
 
 Use PNG conversion targets when the preferred native image viewer does not display SVG files.
@@ -1096,7 +1772,9 @@ The following paths are functional:
 - Zero-order, first-order, and arbitrary user-defined Sugeno consequents
 - Sugeno weighted average and weighted sum
 - Static Mamdani rules
-- COG, MOM, SOM, and LOM defuzzification
+- COG, BOA, COS, MOM, SOM, and LOM defuzzification
+- Direct low-level defuzzification functions
+- General configurable defuzzification wrapper
 - Native SVG plotting
 - N-dimensional sampled-membership interpolation
 - N-dimensional controller and interpolation sweeps
@@ -1104,10 +1782,15 @@ The following paths are functional:
 - Automatic per-dimension interpolation slice plots
 - Shared desktop and embedded controller source
 - Compressed syntax in `braking.c`
+- Complex Sugeno controller in `sugeno_demo.c`
+- Experimental OpenCL harness in `fuzzy.h`
+- OpenCL braking demonstration in `braking_gpu_demo.c`
+- Intel setup and verification in `setup_opencl.sh`
+- GPU-computed CSV and SVG sweep output
 - SDCC IHX and HEX generation
 - uCsim port-level verification
 
-The API remains experimental and may change as the project develops.
+The API remains experimental and may change as the project develops. The OpenCL path is more experimental than the ordinary CPU and embedded paths and is currently verified only on the documented Intel environment.
 
 ## Safety and limitations
 
@@ -1122,6 +1805,9 @@ Important limitations:
 - Rule capacity is fixed at compile time.
 - Mamdani defuzzification is a sampled numerical approximation.
 - Defuzzification bounds must cover the complete output universe.
+- A smaller defuzzification step increases work and memory pressure in large sweeps.
+- BOA returns the first sampled position where accumulated area reaches half of the total.
+- COS counts overlapping implied outputs once for every contributing rule.
 - Exact floating-point equality is used when collecting sampled maxima.
 - N-dimensional sweep memory grows with the product of every dimension's sample count.
 - Higher-dimensional SVGs embed calculated output data and JavaScript.
@@ -1129,17 +1815,28 @@ Important limitations:
 - Dimensions with very different physical scales can dominate interpolation distance unless the application normalizes them or chooses points carefully.
 - Interpolation slices hold non-varying dimensions at their midpoint.
 - Plotting writes directly to files and is not hardened against every malformed input.
+- The selected-output plot helper is currently COG-specific.
+- The OpenCL path requires a controller-specific kernel implementation.
+- The C preprocessor cannot automatically convert an arbitrary CPU controller function into OpenCL C.
+- OpenCL kernels compile at runtime and can fail because of device-specific compiler behavior.
+- CPU and GPU floating-point results can differ slightly because of compiler, device, and operation-order differences.
+- The GPU implementation currently selects an OpenCL GPU device and does not provide a mature cross-vendor device-selection policy.
+- The tested GPU path uses OpenCL 1.2 and the Intel legacy runtime.
+- `setup_opencl.sh` is specific to Intel HD Graphics 620 on the documented Ubuntu or WSL2 environment.
+- The setup script removes `mesa-opencl-icd` in the tested configuration and should be reviewed before use elsewhere.
+- OpenCL support is desktop-only and is excluded from `FUZZY_8051`.
 - The 8051 backend intentionally excludes several desktop membership shapes.
 - Floating-point 8051 firmware is code-heavy, stack-heavy, and slow compared with a fixed-point implementation.
 - `--stack-loc` is deprecated by current SDCC versions.
 - SDCDB behavior varies across distributions.
 - The embedded examples have not undergone timing certification, hardware-in-the-loop validation, long-duration stack analysis, security auditing, or formal verification.
+- The GPU experiment has not undergone cross-vendor validation, long-duration load testing, or production driver qualification.
 
 Use the project for learning, experiments, assignments, prototypes, and controlled systems where the code can be reviewed and tested.
 
 ## Planned work
 
-The project intentionally keeps parsing, model storage, and heavy data tooling outside the core inference path unless a feature can remain small and inspectable.
+The project intentionally keeps parsing, model storage, heavy data tooling, and mandatory GPU frameworks outside the core inference path unless a feature can remain small and inspectable.
 
 ### Core numerical work
 
@@ -1149,9 +1846,26 @@ The project intentionally keeps parsing, model storage, and heavy data tooling o
 - Generic batch evaluation over arbitrary input rows
 - Reference numerical tests against established implementations
 - Desktop-versus-8051 fixed-vector regression tests
+- CPU-versus-GPU fixed-vector regression tests
 - Better tolerance handling for sampled maxima
 - Optional normalized-distance interpolation
 - Compile-time feature selection
+- Additional defuzzification plot labelling
+
+### GPU work
+
+- More portable OpenCL platform and device selection
+- Optional CPU-device fallback through OpenCL
+- Explicit kernel timing through OpenCL profiling events
+- GPU build and execution diagnostics
+- CPU/GPU error reports in the demo harness
+- Additional membership primitives in `FUZZY_GPU_KERNEL_HEADER`
+- More defuzzification methods in example kernels
+- Vendor testing beyond the Intel legacy implementation
+- Optional support for other GPU backends without making them core dependencies
+- Generated kernel experiments only if generation remains inspectable
+
+The OpenCL work is exploratory. Users already working in established ML or GPU environments can map the same fuzzy calculations into their own preferred runtime.
 
 ### Data-driven fuzzy tools
 
@@ -1193,6 +1907,8 @@ CSV, JSON, or FIS model
 - Automated regression reports
 - Batch dataset plots
 - Cluster and generated-rule visualization
+- Direct BOA, COS, MOM, SOM, and LOM selected-output plot labels
+- GPU execution summaries inside generated reports
 
 ### Embedded work
 
@@ -1225,7 +1941,20 @@ This project was built with AI-assisted iteration, debugging, API refactoring, d
 
 The point is not to hide that fact. The project is also an experiment in whether AI-assisted development can contribute to low-level, inspectable software instead of only generating scripts around large frameworks.
 
-Every generated or suggested component remains ordinary C or Make code that can be read, tested, modified, profiled, and replaced.
+The experimental OpenCL path extends that question into GPU execution. GPU computation is common in AI and machine-learning systems, but this project keeps the path explicit:
+
+```text
+ordinary C host code
+ordinary OpenCL C kernel source
+explicit membership calculations
+explicit rule activations
+explicit sampled defuzzification
+native CSV and SVG output
+```
+
+The GPU extension is a starting point for users who want to explore accelerated fuzzy sweeps without first adopting a large ML framework. Users already comfortable with machine-learning frameworks, CUDA, SYCL, Vulkan compute, or vendor-specific tooling should use whichever approach fits their environment.
+
+Every generated or suggested component remains ordinary C, OpenCL C, shell, or Make code that can be read, tested, modified, profiled, and replaced.
 
 ## Joke
 
@@ -1237,20 +1966,23 @@ Thanks for trying it out, and support the noble cause of screwing with Python us
 
 ## Contributing
 
-Issues, bug reports, test cases, fixes, documentation improvements, embedded ports, simulator notes, and alternative implementations are welcome.
+Issues, bug reports, test cases, fixes, documentation improvements, embedded ports, simulator notes, OpenCL notes, and alternative implementations are welcome.
 
 Before submitting a change:
 
 1. Run `make`.
 2. Run the included desktop examples.
 3. Run the compressed `braking.c` example.
-4. Confirm that expected SVG and CSV files are generated.
-5. Run `make test-8051`.
-6. Build the firmware with `make embedded`.
-7. Confirm that `braking.c` still compiles through the intended 8051 path.
-8. Review generated `.mem`, `.map`, and `.lst` reports.
-9. Run the IHX image through `make simulate-8051` when modifying the embedded path.
-10. Clearly describe API, numerical, stack, memory, or firmware-behavior changes.
+4. Confirm that COG, BOA, COS, MOM, SOM, and LOM produce expected values.
+5. Confirm that expected SVG and CSV files are generated.
+6. Run the desktop Sugeno example.
+7. Build the firmware with `make embedded`.
+8. Confirm that shared controller sources still compile through the intended 8051 path.
+9. Review generated `.mem`, `.map`, and `.lst` reports.
+10. Run the IHX image through `make simulate-8051` when modifying the embedded path.
+11. When modifying OpenCL support, run `setup_opencl.sh` on the tested Intel environment.
+12. Run `make run-gpu` and compare representative GPU values against the CPU controller.
+13. Clearly describe API, numerical, stack, memory, firmware, GPU-kernel, runtime, and driver assumptions.
 
 ## License
 
@@ -1269,6 +2001,14 @@ Sometimes the complete desktop fuzzy system can be:
 #include "fuzzy.h"
 ```
 
+Sometimes the experimental GPU-enabled desktop system can be:
+
+```c
+#define FUZZY_OPENCL
+#define FUZZY_IMPLEMENTATION
+#include "fuzzy.h"
+```
+
 And sometimes the embedded system can be:
 
 ```c
@@ -1277,6 +2017,6 @@ And sometimes the embedded system can be:
 #include "fuzzy.h"
 ```
 
-No Python environment. No MATLAB toolbox. No plotting framework. No repository-owned Bash build script.
+No Python environment. No MATLAB toolbox. No plotting framework for the ordinary CPU path. No mandatory machine-learning runtime.
 
-Just C, Make, numerical output, native SVG graphs on desktop, and inspectable firmware artifacts for constrained targets.
+Just C, Make, inspectable numerical output, native SVG graphs on desktop, optional experimental OpenCL acceleration for the tested Intel environment, and inspectable firmware artifacts for constrained targets.
