@@ -49,7 +49,7 @@ typedef unsigned char bool;
 
 #else
 
-typedef _Bool bool;
+// typedef _Bool bool;
 
 #endif
 
