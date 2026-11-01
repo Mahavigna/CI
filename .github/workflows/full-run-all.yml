@@ -2,46 +2,68 @@ name: Fuzzy Desktop CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
+
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
   simulate-desktop:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Install Desktop Toolchains
-      # Only installs what is needed for the desktop build
-      run: sudo apt-get update && sudo apt-get install -y gcc make
+      - name: Install Desktop Toolchains
+        run: |
+          sudo apt-get update
 
-    - name: Compile Desktop Simulations
-      # Leverages the 'desktop' target from your existing Makefile
-      run: make desktop
+          sudo apt-get install -y \
+            gcc \
+            make \
+            ocl-icd-opencl-dev \
+            opencl-headers
 
-    - name: Execute Non-Interactive Sweeps
-      run: |
-        make run-demo
-        make run-sugeno
-        make run-sim-8051
+      - name: Check Desktop Dependencies
+        run: make check-dependencies
 
-    - name: Execute Interactive Programs (with mock inputs)
-      # The 'echo -e' command pipes sequential simulated inputs to scanf/gets 
-      # \n acts as the 'Enter' key. Adjust the numbers to match your expected prompts.
-      run: |
-        echo -e "45\n80" | make run-strength
-        echo -e "28\n65\n5" | make run-greenhouse
+      - name: Compile Desktop Simulations
+        run: make desktop
 
-    - name: Upload Plot Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: fuzzy-desktop-artifacts
-        path: |
-          strength/
-          greenhouse/
-          demo-all/
-          sugeno/
-          sim-8051/
+      - name: Execute Non-Interactive Sweeps
+        run: |
+          make run-demo
+          make run-sugeno
+          make run-sim-8051
+
+      - name: Execute Interactive Programs with Mock Inputs
+        run: |
+          printf "45\n80\n" | make run-strength
+          printf "28\n65\n5\n" | make run-greenhouse
+
+      - name: Report Experimental GPU Build
+        run: |
+          echo "The OpenCL GPU application was compiled by make desktop."
+          echo "GPU execution is intentionally skipped in GitHub-hosted CI."
+          echo "The tested runtime requires:"
+          echo "  Intel HD Graphics 620"
+          echo "  Intel(R) Graphics [0x5916]"
+          echo "  Intel OpenCL Legacy runtime 24.35"
+          echo "  OpenCL 1.2"
+          echo "Run setup_opencl.sh and make run-gpu on the tested local system."
+
+      - name: Upload Plot Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzzy-desktop-artifacts
+          if-no-files-found: warn
+          path: |
+            strength/
+            greenhouse/
+            demo-all/
+            sugeno/
+            sim-8051/desktop/
+            braking_gpu/
