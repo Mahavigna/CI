@@ -15,9 +15,9 @@ FUZZY_VAR(brake_force_high,   FUZZY_SHAPE_RAMP,      1.0f, 60.0f, 75.0f, true)
 
 static float brake(float speed, float distance, const char *plot)
 {
-    fuzzy_rules_t rules;
+    fuzzy_rules_t system;
 
-    rules.count = 0;
+    system.count = 0;
 
     RULE("Low OR Far -> Low",       SOR(speed_low(speed), distance_far(distance)), brake_force_low);
     RULE("Low AND Medium -> Low",   SAND(speed_low(speed), distance_medium(distance)), brake_force_low);
@@ -31,14 +31,25 @@ static float brake(float speed, float distance, const char *plot)
     RULE("High AND Medium -> High", SAND(speed_high(speed), distance_medium(distance)), brake_force_high);
     RULE("High AND Close -> High", SAND(speed_high(speed), distance_close(distance)), brake_force_high);
 
-    fuzzy_rules_print(&rules);
-    float force = fuzzy_rules_defuzzify(&rules, 0.0f, 100.0f, 1.0f, FUZZY_DEFUZZ_COG);
-    fuzzy_rules_plot_cog(&rules, plot, "Brake Force COG", force, 0.0f, 100.0f, 1.0f);
+    if (plot)  fuzzy_rules_print(&system);
+    float force = fuzzy_rules_defuzzify(&system, 0.0f, 100.0f, 1.0f, FUZZY_DEFUZZ_COG);
+    fuzzy_rules_plot_cog(&system, plot, "Brake Force COG", force, 0.0f, 100.0f, 1.0f);
     return force;
 }
 
+SWEEP_EVALUATOR(brake_sweep_evaluator, brake, inputs[0], inputs[1], NULL)
+
 int main(void)
 {
+
+    FUZZY_COG_SWEEP(
+        "braking/_braking_process_sweep",
+        "Speed, Distance vs Brake Force Output",
+        brake_sweep_evaluator,
+        0.1f,
+        FUZZY_SWEEP_DIMENSION("Speed", 0.0f, 100.0f, 1.0f),
+        FUZZY_SWEEP_DIMENSION("Distance", 0.0f, 100.0f, 1.0f),);
+
     PLOT("braking/speed", "Speed Membership Functions", 100.0f, 1.0f,
         SERIES(speed_low, "#3b82f6"),
         SERIES(speed_medium, "#22c55e"),

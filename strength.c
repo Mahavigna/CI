@@ -22,53 +22,17 @@ static float paint_strength(
     fuzzy_rules_t rules;
     rules.count = 0;
 
-    RULE(
-        "Strength: Little",
-        SAND(
-            mixture_content_small(mixture),
-            temperature_low(temperature)
-        ),
-        strength_little
-    );
+    RULE("Strength: Little",SAND(    mixture_content_small(mixture),    temperature_low(temperature)),strength_little);
 
-    RULE(
-        "Strength: Fair",
-        SAND(
-            mixture_content_huge(mixture),
-            temperature_medium(temperature)
-        ),
-        strength_fair
-    );
+    RULE("Strength: Fair",SAND(    mixture_content_huge(mixture),    temperature_medium(temperature)),strength_fair);
 
-    RULE(
-        "Strength: Massive",
-        SOR(
-            mixture_content_huge(mixture),
-            temperature_high(temperature)
-        ),
-        strength_massive
-    );
+    RULE("Strength: Massive",SOR(    mixture_content_huge(mixture),    temperature_high(temperature)),strength_massive);
 
-    float result = fuzzy_rules_defuzzify(
-        &rules,
-        30.0f,
-        100.0f,
-        step,
-        FUZZY_DEFUZZ_COG
-    );
+    float result = fuzzy_rules_defuzzify(&rules,30.0f,100.0f,step,FUZZY_DEFUZZ_COG);
 
     if (plot) {
         fuzzy_rules_print(&rules);
-
-        fuzzy_rules_plot_cog(
-            &rules,
-            plot,
-            "Paint Strength COG Defuzzification",
-            result,
-            30.0f,
-            100.0f,
-            step
-        );
+        fuzzy_rules_plot_cog(    &rules,    plot,    "Paint Strength COG Defuzzification",    result,    30.0f,    100.0f,    step);
     }
 
     return result;
@@ -88,11 +52,7 @@ int main(void)
     float mixture;
     float temperature;
 
-    PLOT(
-        "strength/mixture_content",
-        "Mixture Content Membership Functions",
-        100.0f,
-        1.0f,
+    PLOT("strength/mixture_content","Mixture Content Membership Functions",100.0f,1.0f,
         SERIES(mixture_content_small, "#ef4444"),
         SERIES(mixture_content_huge, "#3b82f6")
     );

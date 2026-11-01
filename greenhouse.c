@@ -24,7 +24,7 @@ static float watering(float temperature, float humidity, float step, const char 
 
     float result = fuzzy_rules_defuzzify(&rules, 0.0f, 60.0f, step, FUZZY_DEFUZZ_COG);
 
-    fuzzy_rules_print(&rules);
+    if (plot)  fuzzy_rules_print(&rules);
     fuzzy_rules_plot_cog(&rules, plot, "Center of Gravity Defuzzification", result, 0.0f, 60.0f, step);
 
     return result;

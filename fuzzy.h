@@ -27,11 +27,38 @@ typedef struct FuzzyHedges {
 
 #else
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+//Libs Minimal API calls
+typedef __SIZE_TYPE__ size_t;
+typedef _Bool bool;
+
+#define true  1
+#define false 0
+#define NULL  ((void *)0)
+
+typedef struct _IO_FILE FILE;
+
+extern FILE *stderr;
+
+extern int printf(const char *, ...);
+extern int fprintf(FILE *, const char *, ...);
+extern int snprintf(char *, size_t, const char *, ...);
+extern int scanf(const char *, ...);
+
+extern FILE *fopen(const char *, const char *);
+extern int fclose(FILE *);
+extern int ferror(FILE *);
+extern int fputc(int, FILE *);
+extern int fputs(const char *, FILE *);
+
+extern void *malloc(size_t);
+extern void *calloc(size_t, size_t);
+extern void free(void *);
+
+extern float powf(float, float);
+extern float expf(float);
+extern float fabsf(float);
+extern float ceilf(float);
+//Test for minimal libc, since linker does it automatically, but we need to declare it for the compiler
 
 #define FUZZY_MAX_RULES 32u
 
@@ -556,7 +583,7 @@ float fuzzy_function_array(
 #define BAND(...) fuzzy_and_method(FUZZY_LOGIC_BOUNDED, __VA_ARGS__)
 #define BOR(...)  fuzzy_or_method(FUZZY_LOGIC_BOUNDED, __VA_ARGS__)
 
-#define RULE(name, activation, output) FUZZY_RULE_ADD_NAMED(&rules, name, activation, output)
+#define RULE(rule_var, name, activation, output) FUZZY_RULE_ADD_NAMED(&(rule_var), name, activation, output)
 #define OPERATOR(name, operation, method) static float name(float x) { return operation(method, x, 0.5f); }
 
 //Temp Test
