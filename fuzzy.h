@@ -975,7 +975,6 @@ typedef struct FuzzyInterpolationSweep {
         }                                             \
     )
 
-
 #ifdef FUZZY_OPENCL
 
 #ifndef CL_TARGET_OPENCL_VERSION
@@ -984,39 +983,34 @@ typedef struct FuzzyInterpolationSweep {
 
 #include <CL/cl.h>
 
-typedef enum FuzzyGpuShape {
-    FUZZY_GPU_RAMP,
-    FUZZY_GPU_TRIANGLE,
-    FUZZY_GPU_TRAPEZOID,
-    FUZZY_GPU_SMF,
-    FUZZY_GPU_ZMF,
-    FUZZY_GPU_GAUSSIAN,
-    FUZZY_GPU_GAUSSIAN2,
-    FUZZY_GPU_BELL,
-    FUZZY_GPU_SIGMOID,
-    FUZZY_GPU_DSIGMOID,
-    FUZZY_GPU_PSIGMOID,
-    FUZZY_GPU_PIMF,
-    FUZZY_GPU_PIECEWISE
-} fuzzy_gpu_shape_t;
-
-typedef enum FuzzyGpuOperation {
-    FUZZY_GPU_AND,
-    FUZZY_GPU_OR
-} fuzzy_gpu_operation_t;
+typedef enum FuzzyGpuOperator {
+    FUZZY_OPERATOR_AND = 0,
+    FUZZY_OPERATOR_OR
+} fuzzy_gpu_operator_t;
 
 typedef struct FuzzyGpuVariable {
     cl_uint input;
     cl_uint shape;
-    float parameters[4];
+    cl_float hedge;
+    cl_float parameters[4];
 } fuzzy_gpu_variable_t;
 
 typedef struct FuzzyGpuRule {
     cl_uint left;
     cl_uint right;
-    cl_uint operation;
+    cl_uint operator;
     cl_uint output;
 } fuzzy_gpu_rule_t;
+
+_Static_assert(
+    sizeof(fuzzy_gpu_variable_t) == 28u,
+    "fuzzy_gpu_variable_t does not match the OpenCL ABI"
+);
+
+_Static_assert(
+    sizeof(fuzzy_gpu_rule_t) == 16u,
+    "fuzzy_gpu_rule_t does not match the OpenCL ABI"
+);
 
 typedef struct FuzzyGpuController {
     const fuzzy_gpu_variable_t *variables;
@@ -1027,6 +1021,11 @@ typedef struct FuzzyGpuController {
 
     const fuzzy_gpu_rule_t *rules;
     size_t rule_count;
+
+    fuzzy_logic_method_t logic_method;
+    fuzzy_implication_method_t implication_method;
+    fuzzy_aggregation_method_t aggregation_method;
+    fuzzy_defuzz_method_t defuzz_method;
 
     float output_minimum;
     float output_maximum;
@@ -1045,40 +1044,100 @@ typedef struct FuzzyGpuSweep {
     float defuzz_step;
 } fuzzy_gpu_sweep_t;
 
-#define FUZZY_GPU_VARIABLE(input_arg, shape_arg, ...) { .input = (input_arg), .shape = (shape_arg), .parameters = { __VA_ARGS__ } }
-#define FUZZY_GPU_OUTPUT(shape_arg, ...) { .input = 0u, .shape = (shape_arg), .parameters = { __VA_ARGS__ } }
-#define FUZZY_GPU_RULE(left_arg, operation_arg, right_arg, output_arg) { .left = (left_arg), .right = (right_arg), .operation = (operation_arg), .output = (output_arg) }
+#define FUZZY_GPU_VARIABLE(input_arg, shape_arg, hedge_arg, ...) \
+    { \
+        .input = (cl_uint)(input_arg), \
+        .shape = (cl_uint)(shape_arg), \
+        .hedge = (cl_float)(hedge_arg), \
+        .parameters = { __VA_ARGS__ } \
+    }
 
-#define FUZZY_GPU_CONTROLLER(name, variables_arg, outputs_arg, rules_arg, minimum_arg, maximum_arg) static const fuzzy_gpu_controller_t name = { .variables = (variables_arg), .variable_count = sizeof(variables_arg) / sizeof((variables_arg)[0]), .outputs = (outputs_arg), .output_count = sizeof(outputs_arg) / sizeof((outputs_arg)[0]), .rules = (rules_arg), .rule_count = sizeof(rules_arg) / sizeof((rules_arg)[0]), .output_minimum = (minimum_arg), .output_maximum = (maximum_arg) }
+#define FUZZY_GPU_OUTPUT(shape_arg, hedge_arg, ...) \
+    { \
+        .input = 0u, \
+        .shape = (cl_uint)(shape_arg), \
+        .hedge = (cl_float)(hedge_arg), \
+        .parameters = { __VA_ARGS__ } \
+    }
 
-#define FUZZY_GPU_SWEEP(filename_arg, title_arg, value_name_arg, controller_arg, defuzz_step_arg, ...) fuzzy_gpu_sweep(&(const fuzzy_gpu_sweep_t) { .filename = (filename_arg), .title = (title_arg), .value_name = (value_name_arg), .controller = &(controller_arg), .dimensions = (const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }) / sizeof(fuzzy_sweep_dimension_t), .defuzz_step = (defuzz_step_arg) })
+#define FUZZY_GPU_RULE_INDEXED(left_arg, operator_arg, right_arg, output_arg) \
+    { \
+        .left = (cl_uint)(left_arg), \
+        .right = (cl_uint)(right_arg), \
+        .operator = (cl_uint)(operator_arg), \
+        .output = (cl_uint)(output_arg) \
+    }
 
-#define FUZZY_GPU_INTERPOLATION_SWEEP(                  \
-    filename_arg,                                      \
-    title_arg,                                         \
-    points_arg,                                        \
-    ...                                                \
-)                                                      \
-    fuzzy_gpu_interpolation_sweep(                     \
-        &(const fuzzy_interpolation_sweep_t) {         \
-            .filename = (filename_arg),                \
-            .title = (title_arg),                      \
-            .dimensions =                             \
-                (const fuzzy_sweep_dimension_t[]) {    \
-                    __VA_ARGS__                        \
-                },                                     \
-            .dimension_count =                        \
-                sizeof(                               \
-                    (const fuzzy_sweep_dimension_t[]) {\
-                        __VA_ARGS__                    \
-                    }                                  \
-                ) / sizeof(fuzzy_sweep_dimension_t),   \
-            .points = (points_arg),                    \
-            .point_count =                            \
-                sizeof(points_arg) /                  \
-                sizeof((points_arg)[0])                \
-        }                                              \
+#define FUZZY_GPU_RULE(left_name, operator_arg, right_name, output_name) \
+    FUZZY_GPU_RULE_INDEXED( \
+        left_name##_gpu_id, \
+        operator_arg, \
+        right_name##_gpu_id, \
+        output_name##_gpu_id \
     )
+
+#define FUZZY_GPU_CONTROLLER(name, variables_arg, outputs_arg, rules_arg, logic_arg, implication_arg, aggregation_arg, defuzz_arg, minimum_arg, maximum_arg) \
+    static const fuzzy_gpu_controller_t name = { \
+        .variables = (variables_arg), \
+        .variable_count = sizeof(variables_arg) / sizeof((variables_arg)[0]), \
+        .outputs = (outputs_arg), \
+        .output_count = sizeof(outputs_arg) / sizeof((outputs_arg)[0]), \
+        .rules = (rules_arg), \
+        .rule_count = sizeof(rules_arg) / sizeof((rules_arg)[0]), \
+        .logic_method = (logic_arg), \
+        .implication_method = (implication_arg), \
+        .aggregation_method = (aggregation_arg), \
+        .defuzz_method = (defuzz_arg), \
+        .output_minimum = (minimum_arg), \
+        .output_maximum = (maximum_arg) \
+    }
+
+#define FUZZY_GPU_RULES(name, variables_arg, outputs_arg, logic_arg, implication_arg, aggregation_arg, defuzz_arg, minimum_arg, maximum_arg, ...) \
+    static const fuzzy_gpu_rule_t name##_rules[] = { __VA_ARGS__ }; \
+    static const fuzzy_gpu_controller_t name = { \
+        .variables = (variables_arg), \
+        .variable_count = sizeof(variables_arg) / sizeof((variables_arg)[0]), \
+        .outputs = (outputs_arg), \
+        .output_count = sizeof(outputs_arg) / sizeof((outputs_arg)[0]), \
+        .rules = name##_rules, \
+        .rule_count = sizeof(name##_rules) / sizeof(name##_rules[0]), \
+        .logic_method = (logic_arg), \
+        .implication_method = (implication_arg), \
+        .aggregation_method = (aggregation_arg), \
+        .defuzz_method = (defuzz_arg), \
+        .output_minimum = (minimum_arg), \
+        .output_maximum = (maximum_arg) \
+    }
+
+#define FUZZY_GPU_SWEEP(filename_arg, title_arg, value_name_arg, controller_arg, defuzz_step_arg, ...) \
+    fuzzy_gpu_sweep( \
+        &(const fuzzy_gpu_sweep_t) { \
+            .filename = (filename_arg), \
+            .title = (title_arg), \
+            .value_name = (value_name_arg), \
+            .controller = &(controller_arg), \
+            .dimensions = (const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }, \
+            .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }) / sizeof(fuzzy_sweep_dimension_t), \
+            .defuzz_step = (defuzz_step_arg) \
+        } \
+    )
+
+
+#define FUZZY_GPU_INTERPOLATION_SWEEP(filename_arg, title_arg, points_arg, ...) \
+    fuzzy_gpu_interpolation_sweep( \
+        &(const fuzzy_interpolation_sweep_t) { \
+            .filename = (filename_arg), \
+            .title = (title_arg), \
+            .dimensions = (const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }, \
+            .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]) { __VA_ARGS__ }) / sizeof(fuzzy_sweep_dimension_t), \
+            .points = (points_arg), \
+            .point_count = sizeof(points_arg) / sizeof((points_arg)[0]) \
+        } \
+    )
+
+bool fuzzy_gpu_sweep(const fuzzy_gpu_sweep_t *sweep);
+
+bool fuzzy_gpu_interpolation_sweep(const fuzzy_interpolation_sweep_t *sweep);
 
 #endif /* FUZZY_OPENCL */
 
@@ -4933,24 +4992,39 @@ static const char *fuzzy_gpu_interpolation_kernel_source =
     "}\n";
 
 static const char *fuzzy_gpu_kernel_source =
-    "typedef struct{uint input;uint shape;float parameters[4];}fuzzy_gpu_variable_t;\n"
-    "typedef struct{uint left;uint right;uint operation;uint output;}fuzzy_gpu_rule_t;\n"
+    "typedef struct {\n"
+    "    uint input;\n"
+    "    uint shape;\n"
+    "    float hedge;\n"
+    "    float parameters[4];\n"
+    "} fuzzy_gpu_variable_t;\n"
 
-    "float fuzzy_gpu_membership(uint shape,float value,float4 p)\n"
+    "typedef struct {\n"
+    "    uint left;\n"
+    "    uint right;\n"
+    "    uint operator;\n"
+    "    uint output;\n"
+    "} fuzzy_gpu_rule_t;\n"
+
+    "float fuzzy_gpu_shape(uint shape,float value,float4 p)\n"
     "{\n"
     "    switch(shape){\n"
 
     "        case 0u:{\n"
-    "            float a=p.x,b=p.y;\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const int rising=p.z!=0.0f;\n"
     "            if(a>=b)return 0.0f;\n"
-    "            if(value<=a)return p.z!=0.0f?0.0f:1.0f;\n"
-    "            if(value>=b)return p.z!=0.0f?1.0f:0.0f;\n"
-    "            float t=(value-a)/(b-a);\n"
-    "            return p.z!=0.0f?t:1.0f-t;\n"
+    "            if(value<=a)return rising?0.0f:1.0f;\n"
+    "            if(value>=b)return rising?1.0f:0.0f;\n"
+    "            const float t=(value-a)/(b-a);\n"
+    "            return rising?t:1.0f-t;\n"
     "        }\n"
 
     "        case 1u:{\n"
-    "            float a=p.x,b=p.y,c=p.z;\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const float c=p.z;\n"
     "            if(a>=b||b>=c||value<=a||value>=c)return 0.0f;\n"
     "            if(value==b)return 1.0f;\n"
     "            if(value<b)return(value-a)/(b-a);\n"
@@ -4958,7 +5032,10 @@ static const char *fuzzy_gpu_kernel_source =
     "        }\n"
 
     "        case 2u:{\n"
-    "            float a=p.x,b=p.y,c=p.z,d=p.w;\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const float c=p.z;\n"
+    "            const float d=p.w;\n"
     "            if(a>=b||b>c||c>=d||value<=a||value>=d)return 0.0f;\n"
     "            if(value>=b&&value<=c)return 1.0f;\n"
     "            if(value<b)return(value-a)/(b-a);\n"
@@ -4966,96 +5043,114 @@ static const char *fuzzy_gpu_kernel_source =
     "        }\n"
 
     "        case 3u:{\n"
-    "            float a=p.x,b=p.y;\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const float middle=(a+b)*0.5f;\n"
+    "            float ratio;\n"
     "            if(a>=b||value<=a)return 0.0f;\n"
     "            if(value>=b)return 1.0f;\n"
-    "            float m=(a+b)*0.5f;\n"
-    "            float n;\n"
-    "            if(value<=m){\n"
-    "                n=(value-a)/(b-a);\n"
-    "                return 2.0f*n*n;\n"
+    "            if(value<=middle){\n"
+    "                ratio=(value-a)/(b-a);\n"
+    "                return 2.0f*ratio*ratio;\n"
     "            }\n"
-    "            n=(b-value)/(b-a);\n"
-    "            return 1.0f-2.0f*n*n;\n"
+    "            ratio=(b-value)/(b-a);\n"
+    "            return 1.0f-2.0f*ratio*ratio;\n"
     "        }\n"
 
     "        case 4u:{\n"
-    "            float a=p.x,b=p.y;\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const float middle=(a+b)*0.5f;\n"
+    "            float ratio;\n"
     "            if(a>=b||value>=b)return 0.0f;\n"
     "            if(value<=a)return 1.0f;\n"
-    "            float m=(a+b)*0.5f;\n"
-    "            float n;\n"
-    "            if(value<=m){\n"
-    "                n=(value-a)/(b-a);\n"
-    "                return 1.0f-2.0f*n*n;\n"
+    "            if(value<=middle){\n"
+    "                ratio=(value-a)/(b-a);\n"
+    "                return 1.0f-2.0f*ratio*ratio;\n"
     "            }\n"
-    "            n=(b-value)/(b-a);\n"
-    "            return 2.0f*n*n;\n"
+    "            ratio=(b-value)/(b-a);\n"
+    "            return 2.0f*ratio*ratio;\n"
     "        }\n"
 
     "        case 5u:{\n"
-    "            if(p.y<=0.0f)return 0.0f;\n"
-    "            float difference=value-p.x;\n"
-    "            return exp(-(difference*difference)/(2.0f*p.y*p.y));\n"
+    "            const float mean=p.x;\n"
+    "            const float deviation=p.y;\n"
+    "            if(deviation<=0.0f)return 0.0f;\n"
+    "            const float difference=value-mean;\n"
+    "            return exp(-(difference*difference)/(2.0f*deviation*deviation));\n"
     "        }\n"
 
     "        case 6u:{\n"
-    "            if(p.y<=0.0f||p.w<=0.0f||p.x>p.z)return 0.0f;\n"
-    "            if(value<p.x){\n"
-    "                float difference=value-p.x;\n"
-    "                return exp(-(difference*difference)/(2.0f*p.y*p.y));\n"
-    "            }\n"
-    "            if(value<=p.z)return 1.0f;\n"
-    "            float difference=value-p.z;\n"
-    "            return exp(-(difference*difference)/(2.0f*p.w*p.w));\n"
+    "            const float width=p.x;\n"
+    "            const float slope=p.y;\n"
+    "            const float centre=p.z;\n"
+    "            if(width==0.0f)return 0.0f;\n"
+    "            const float normalized=fabs((value-centre)/(width*0.5f));\n"
+    "            return 1.0f/(1.0f+pow(normalized,2.0f*slope));\n"
     "        }\n"
 
-    "        case 7u:{\n"
-    "            if(p.x==0.0f)return 0.0f;\n"
-    "            float normalized=fabs((value-p.z)/(p.x*0.5f));\n"
-    "            return 1.0f/(1.0f+pow(normalized,2.0f*p.y));\n"
-    "        }\n"
-
-    "        case 8u:\n"
+    "        case 7u:\n"
     "            return 1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
 
+    "        case 8u:{\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const float c=p.z;\n"
+    "            const float d=p.w;\n"
+    "            float middle;\n"
+    "            float ratio;\n"
+    "            if(a>=b||b>c||c>=d||value<=a||value>=d)return 0.0f;\n"
+    "            if(value>=b&&value<=c)return 1.0f;\n"
+    "            if(value<b){\n"
+    "                middle=(a+b)*0.5f;\n"
+    "                if(value<=middle){\n"
+    "                    ratio=(value-a)/(b-a);\n"
+    "                    return 2.0f*ratio*ratio;\n"
+    "                }\n"
+    "                ratio=(b-value)/(b-a);\n"
+    "                return 1.0f-2.0f*ratio*ratio;\n"
+    "            }\n"
+    "            middle=(c+d)*0.5f;\n"
+    "            if(value<=middle){\n"
+    "                ratio=(value-c)/(d-c);\n"
+    "                return 1.0f-2.0f*ratio*ratio;\n"
+    "            }\n"
+    "            ratio=(d-value)/(d-c);\n"
+    "            return 2.0f*ratio*ratio;\n"
+    "        }\n"
+
     "        case 9u:{\n"
-    "            float first=1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
-    "            float second=1.0f/(1.0f+exp(-p.z*(value-p.w)));\n"
+    "            const float first=1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
+    "            const float second=1.0f/(1.0f+exp(-p.z*(value-p.w)));\n"
     "            return first-second;\n"
     "        }\n"
 
     "        case 10u:{\n"
-    "            float first=1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
-    "            float second=1.0f/(1.0f+exp(-p.z*(value-p.w)));\n"
+    "            const float first=1.0f/(1.0f+exp(-p.x*(value-p.y)));\n"
+    "            const float second=1.0f/(1.0f+exp(-p.z*(value-p.w)));\n"
     "            return first*second;\n"
     "        }\n"
 
     "        case 11u:{\n"
-    "            float a=p.x,b=p.y,c=p.z,d=p.w;\n"
-    "            if(a>=b||b>c||c>=d||value<=a||value>=d)return 0.0f;\n"
-    "            if(value>=b&&value<=c)return 1.0f;\n"
-    "            float m,n;\n"
-    "            if(value<b){\n"
-    "                m=(a+b)*0.5f;\n"
-    "                if(value<=m){\n"
-    "                    n=(value-a)/(b-a);\n"
-    "                    return 2.0f*n*n;\n"
-    "                }\n"
-    "                n=(b-value)/(b-a);\n"
-    "                return 1.0f-2.0f*n*n;\n"
+    "            const float mean1=p.x;\n"
+    "            const float deviation1=p.y;\n"
+    "            const float mean2=p.z;\n"
+    "            const float deviation2=p.w;\n"
+    "            float difference;\n"
+    "            if(deviation1<=0.0f||deviation2<=0.0f||mean1>mean2)return 0.0f;\n"
+    "            if(value<mean1){\n"
+    "                difference=value-mean1;\n"
+    "                return exp(-(difference*difference)/(2.0f*deviation1*deviation1));\n"
     "            }\n"
-    "            m=(c+d)*0.5f;\n"
-    "            if(value<=m){\n"
-    "                n=(value-c)/(d-c);\n"
-    "                return 1.0f-2.0f*n*n;\n"
-    "            }\n"
-    "            n=(d-value)/(d-c);\n"
-    "            return 2.0f*n*n;\n"
+    "            if(value<=mean2)return 1.0f;\n"
+    "            difference=value-mean2;\n"
+    "            return exp(-(difference*difference)/(2.0f*deviation2*deviation2));\n"
     "        }\n"
 
     "        case 12u:{\n"
-    "            float a=p.x,b=p.y,c=p.z;\n"
+    "            const float a=p.x;\n"
+    "            const float b=p.y;\n"
+    "            const float c=p.z;\n"
     "            if(a>=b||b>=c||value<=a||value>=c)return 0.0f;\n"
     "            if(value<=b)return(value-a)/(b-a);\n"
     "            return(c-value)/(c-b);\n"
@@ -5063,6 +5158,53 @@ static const char *fuzzy_gpu_kernel_source =
 
     "        default:\n"
     "            return 0.0f;\n"
+    "    }\n"
+    "}\n"
+
+    "float fuzzy_gpu_membership(fuzzy_gpu_variable_t variable,float value)\n"
+    "{\n"
+    "    const float membership=fuzzy_gpu_shape(\n"
+    "        variable.shape,\n"
+    "        value,\n"
+    "        vload4(0,variable.parameters)\n"
+    "    );\n"
+    "    const float hedge=variable.hedge>0.0f\n"
+    "        ? variable.hedge\n"
+    "        : 1.0f;\n"
+    "    return pow(clamp(membership,0.0f,1.0f),hedge);\n"
+    "}\n"
+
+    "float fuzzy_gpu_and(uint method,float left,float right)\n"
+    "{\n"
+    "    switch(method){\n"
+    "        case 1u:return left*right;\n"
+    "        case 2u:return fmax(0.0f,left+right-1.0f);\n"
+    "        default:return fmin(left,right);\n"
+    "    }\n"
+    "}\n"
+
+    "float fuzzy_gpu_or(uint method,float left,float right)\n"
+    "{\n"
+    "    switch(method){\n"
+    "        case 1u:return left+right-left*right;\n"
+    "        case 2u:return fmin(1.0f,left+right);\n"
+    "        default:return fmax(left,right);\n"
+    "    }\n"
+    "}\n"
+
+    "float fuzzy_gpu_implication(uint method,float activation,float membership)\n"
+    "{\n"
+    "    return method==1u\n"
+    "        ? activation*membership\n"
+    "        : fmin(activation,membership);\n"
+    "}\n"
+
+    "float fuzzy_gpu_aggregation(uint method,float aggregate,float implied)\n"
+    "{\n"
+    "    switch(method){\n"
+    "        case 1u:return aggregate+implied-aggregate*implied;\n"
+    "        case 2u:return fmin(1.0f,aggregate+implied);\n"
+    "        default:return fmax(aggregate,implied);\n"
     "    }\n"
     "}\n"
 
@@ -5077,72 +5219,207 @@ static const char *fuzzy_gpu_kernel_source =
     "    const uint variable_count,\n"
     "    const uint output_count,\n"
     "    const uint rule_count,\n"
-    "    const float cog_step,\n"
+    "    const float defuzz_step,\n"
     "    const float output_minimum,\n"
-    "    const float output_maximum)\n"
+    "    const float output_maximum,\n"
+    "    const uint logic_method,\n"
+    "    const uint implication_method,\n"
+    "    const uint aggregation_method,\n"
+    "    const uint defuzz_method)\n"
     "{\n"
     "    const uint id=get_global_id(0);\n"
     "    if(id>=point_count)return;\n"
-    "\n"
+
     "    const uint base=id*dimension_count;\n"
-    "\n"
     "    float memberships[32];\n"
     "    float activations[32];\n"
-    "\n"
-    "    for(uint i=0u;i<variable_count;i++){\n"
-    "        const fuzzy_gpu_variable_t variable=variables[i];\n"
-    "        memberships[i]=fuzzy_gpu_membership(\n"
-    "            variable.shape,\n"
-    "            inputs[base+variable.input],\n"
-    "            vload4(0,variable.parameters)\n"
+
+    "    for(uint index=0u;index<variable_count;index++){\n"
+    "        const fuzzy_gpu_variable_t variable=variables[index];\n"
+    "        memberships[index]=fuzzy_gpu_membership(\n"
+    "            variable,\n"
+    "            inputs[base+variable.input]\n"
     "        );\n"
     "    }\n"
-    "\n"
-    "    for(uint i=0u;i<rule_count;i++){\n"
-    "        const fuzzy_gpu_rule_t rule=rules[i];\n"
+
+    "    for(uint index=0u;index<rule_count;index++){\n"
+    "        const fuzzy_gpu_rule_t rule=rules[index];\n"
     "        const float left=memberships[rule.left];\n"
     "        const float right=memberships[rule.right];\n"
-    "        activations[i]=rule.operation==0u\n"
-    "            ? fmin(left,right)\n"
-    "            : fmax(left,right);\n"
+    "        activations[index]=rule.operator==0u\n"
+    "            ? fuzzy_gpu_and(logic_method,left,right)\n"
+    "            : fuzzy_gpu_or(logic_method,left,right);\n"
     "    }\n"
-    "\n"
+
+    "    if(id==0u||id==point_count/2u||id==point_count-1u){\n"
+    "        printf(\"GPU point %u inputs:\",id);\n"
+    "        for(uint dimension=0u;dimension<dimension_count;dimension++){\n"
+    "            printf(\" %.6f\",inputs[base+dimension]);\n"
+    "        }\n"
+    "        printf(\"\\n\");\n"
+    "        printf(\"GPU point %u memberships:\",id);\n"
+    "        for(uint index=0u;index<variable_count;index++){\n"
+    "            printf(\" %.6f\",memberships[index]);\n"
+    "        }\n"
+    "        printf(\"\\n\");\n"
+    "        printf(\"GPU point %u activations:\",id);\n"
+    "        for(uint index=0u;index<rule_count;index++){\n"
+    "            printf(\" %.6f\",activations[index]);\n"
+    "        }\n"
+    "        printf(\"\\n\");\n"
+    "    }\n"
     "    float weighted_sum=0.0f;\n"
-    "    float height_sum=0.0f;\n"
-    "\n"
-    "    for(\n"
-    "        float value=output_minimum;\n"
-    "        value<=output_maximum;\n"
-    "        value+=cog_step\n"
-    "    ){\n"
-    "        float aggregated=0.0f;\n"
-    "\n"
-    "        for(uint i=0u;i<rule_count;i++){\n"
-    "            const uint output=rules[i].output;\n"
+    "    float membership_sum=0.0f;\n"
+    "    float area_sum=0.0f;\n"
+    "    float previous_aggregate=0.0f;\n"
+    "    float previous_value=output_minimum;\n"
+    "    float maximum_membership=-1.0f;\n"
+    "    float maximum_sum=0.0f;\n"
+    "    uint maximum_count=0u;\n"
+    "    float smallest_maximum=output_minimum;\n"
+    "    float largest_maximum=output_minimum;\n"
+
+    "const uint sample_count=(uint)ceil(\n"
+"    (output_maximum-output_minimum)/defuzz_step\n"
+");\n"
+
+"for(uint sample=0u;sample<=sample_count;sample++){\n"
+"    const float value=fmin(\n"
+"        output_minimum+(float)sample*defuzz_step,\n"
+"        output_maximum\n"
+"    );\n"
+    "        float aggregate=0.0f;\n"
+
+    "        for(uint index=0u;index<rule_count;index++){\n"
+    "            const uint output=rules[index].output;\n"
     "            if(output>=output_count)continue;\n"
-    "\n"
-    "            const fuzzy_gpu_variable_t variable=\n"
-    "                output_variables[output];\n"
-    "\n"
-    "            const float membership=fuzzy_gpu_membership(\n"
-    "                variable.shape,\n"
-    "                value,\n"
-    "                vload4(0,variable.parameters)\n"
+
+    "            const float output_membership=fuzzy_gpu_membership(\n"
+    "                output_variables[output],\n"
+    "                value\n"
     "            );\n"
-    "\n"
-    "            aggregated=fmax(\n"
-    "                aggregated,\n"
-    "                fmin(activations[i],membership)\n"
+
+    "            const float implied=fuzzy_gpu_implication(\n"
+    "                implication_method,\n"
+    "                activations[index],\n"
+    "                output_membership\n"
+    "            );\n"
+
+    "            aggregate=fuzzy_gpu_aggregation(\n"
+    "                aggregation_method,\n"
+    "                aggregate,\n"
+    "                implied\n"
     "            );\n"
     "        }\n"
-    "\n"
-    "        weighted_sum+=value*aggregated;\n"
-    "        height_sum+=aggregated;\n"
+
+    "        weighted_sum+=value*aggregate;\n"
+    "        membership_sum+=aggregate;\n"
+
+    "        if(value>output_minimum){\n"
+    "            area_sum+=(previous_aggregate+aggregate)*0.5f*defuzz_step;\n"
+    "        }\n"
+
+    "        if(aggregate>maximum_membership){\n"
+    "            maximum_membership=aggregate;\n"
+    "            maximum_sum=value;\n"
+    "            maximum_count=1u;\n"
+    "            smallest_maximum=value;\n"
+    "            largest_maximum=value;\n"
+    "        }else if(aggregate==maximum_membership){\n"
+    "            maximum_sum+=value;\n"
+    "            maximum_count++;\n"
+    "            largest_maximum=value;\n"
+    "        }\n"
+
+    "        previous_aggregate=aggregate;\n"
+    "        previous_value=value;\n"
     "    }\n"
-    "\n"
-    "    results[id]=height_sum>0.0f\n"
-    "        ? weighted_sum/height_sum\n"
+
+    "    if(defuzz_method==3u){\n"
+    "        results[id]=maximum_count>0u\n"
+    "            ? maximum_sum/(float)maximum_count\n"
+    "            : 0.0f;\n"
+    "        return;\n"
+    "    }\n"
+
+    "    if(defuzz_method==4u){\n"
+    "        results[id]=smallest_maximum;\n"
+    "        return;\n"
+    "    }\n"
+
+    "    if(defuzz_method==5u){\n"
+    "        results[id]=largest_maximum;\n"
+    "        return;\n"
+    "    }\n"
+
+    "    if(defuzz_method==1u){\n"
+    "        const float target_area=area_sum*0.5f;\n"
+    "        float accumulated_area=0.0f;\n"
+    "        float previous=0.0f;\n"
+    "        float previous_x=output_minimum;\n"
+
+    "        const uint sample_count=(uint)ceil(\n"
+    "            (output_maximum-output_minimum)/defuzz_step\n"
+    "        );\n"
+
+    "        for(uint sample=0u;sample<=sample_count;sample++){\n"
+    "            const float value=fmin(\n"
+    "                output_minimum+(float)sample*defuzz_step,\n"
+    "                output_maximum\n"
+    "            );\n"
+    "            float aggregate=0.0f;\n"
+
+    "            for(uint index=0u;index<rule_count;index++){\n"
+    "                const uint output=rules[index].output;\n"
+    "                if(output>=output_count)continue;\n"
+
+    "                const float output_membership=fuzzy_gpu_membership(\n"
+    "                    output_variables[output],\n"
+    "                    value\n"
+    "                );\n"
+
+    "                const float implied=fuzzy_gpu_implication(\n"
+    "                    implication_method,\n"
+    "                    activations[index],\n"
+    "                    output_membership\n"
+    "                );\n"
+
+    "                aggregate=fuzzy_gpu_aggregation(\n"
+    "                    aggregation_method,\n"
+    "                    aggregate,\n"
+    "                    implied\n"
+    "                );\n"
+    "            }\n"
+
+    "            if(value>output_minimum){\n"
+    "                const float segment=(previous+aggregate)*0.5f*defuzz_step;\n"
+    "                if(accumulated_area+segment>=target_area){\n"
+    "                    results[id]=(previous_x+value)*0.5f;\n"
+    "                    return;\n"
+    "                }\n"
+    "                accumulated_area+=segment;\n"
+    "            }\n"
+
+    "            previous=aggregate;\n"
+    "            previous_x=value;\n"
+    "        }\n"
+
+    "        results[id]=output_maximum;\n"
+    "        return;\n"
+    "    }\n"
+
+    "    results[id]=membership_sum>0.0f\n"
+    "        ? weighted_sum/membership_sum\n"
     "        : 0.0f;\n"
+    "    if(id==0u||id==point_count/2u||id==point_count-1u){\n"
+    "        printf(\n"
+    "            \"GPU point %u weighted_sum=%.9f membership_sum=%.9f result=%.9f\\n\",\n"
+    "            id,\n"
+    "            weighted_sum,\n"
+    "            membership_sum,\n"
+    "            results[id]\n"
+    "        );\n"
+    "    }\n"
     "}\n";
 
 static bool fuzzy_gpu_harness_begin(
@@ -5539,6 +5816,16 @@ static bool fuzzy_gpu_harness_run(
             sizeof(controller->output_maximum),
             &controller->output_maximum
         );
+    
+    cl_uint gpu_logic_method = (cl_uint)controller->logic_method;
+    cl_uint gpu_implication_method = (cl_uint)controller->implication_method;
+    cl_uint gpu_aggregation_method = (cl_uint)controller->aggregation_method;
+    cl_uint gpu_defuzz_method = (cl_uint)controller->defuzz_method;
+
+    error |= clSetKernelArg(gpu->kernel, 13, sizeof(gpu_logic_method), &gpu_logic_method);
+    error |= clSetKernelArg(gpu->kernel, 14, sizeof(gpu_implication_method), &gpu_implication_method);
+    error |= clSetKernelArg(gpu->kernel, 15, sizeof(gpu_aggregation_method), &gpu_aggregation_method);
+    error |= clSetKernelArg(gpu->kernel, 16, sizeof(gpu_defuzz_method), &gpu_defuzz_method);
 
     if (error == CL_SUCCESS) {
         global_size =
@@ -6280,6 +6567,133 @@ bool fuzzy_gpu_sweep(const fuzzy_gpu_sweep_t *sweep)
                 dimension_count,
                 sweep->defuzz_step
             );
+
+        if (success) {
+            float minimum_output =
+                outputs[0];
+
+            float maximum_output =
+                outputs[0];
+
+            size_t different_output_count =
+                0u;
+
+            for (
+                point = 1u;
+                point < total_points;
+                point++
+            ) {
+                if (
+                    outputs[point] <
+                    minimum_output
+                ) {
+                    minimum_output =
+                        outputs[point];
+                }
+
+                if (
+                    outputs[point] >
+                    maximum_output
+                ) {
+                    maximum_output =
+                        outputs[point];
+                }
+
+                if (
+                    outputs[point] !=
+                    outputs[0]
+                ) {
+                    different_output_count++;
+                }
+            }
+
+            printf(
+                "\nGPU sweep diagnostics:\n"
+                "  Dimensions:            %zu\n"
+                "  Total points:          %zu\n"
+                "  Variable ABI size:     %zu\n"
+                "  Rule ABI size:         %zu\n"
+                "  First output:          %.9g\n"
+                "  Middle output:         %.9g\n"
+                "  Last output:           %.9g\n"
+                "  Minimum output:        %.9g\n"
+                "  Maximum output:        %.9g\n"
+                "  Outputs unlike first:  %zu\n",
+                dimension_count,
+                total_points,
+                sizeof(fuzzy_gpu_variable_t),
+                sizeof(fuzzy_gpu_rule_t),
+                outputs[0],
+                outputs[total_points / 2u],
+                outputs[total_points - 1u],
+                minimum_output,
+                maximum_output,
+                different_output_count
+            );
+
+            printf(
+                "  First inputs:"
+            );
+
+            for (
+                dimension = 0u;
+                dimension < dimension_count;
+                dimension++
+            ) {
+                printf(
+                    " %.9g",
+                    inputs[dimension]
+                );
+            }
+
+            printf(
+                "\n  Middle inputs:"
+            );
+
+            for (
+                dimension = 0u;
+                dimension < dimension_count;
+                dimension++
+            ) {
+                printf(
+                    " %.9g",
+                    inputs[
+                        (
+                            total_points /
+                            2u
+                        ) *
+                        dimension_count +
+                        dimension
+                    ]
+                );
+            }
+
+            printf(
+                "\n  Last inputs:"
+            );
+
+            for (
+                dimension = 0u;
+                dimension < dimension_count;
+                dimension++
+            ) {
+                printf(
+                    " %.9g",
+                    inputs[
+                        (
+                            total_points -
+                            1u
+                        ) *
+                        dimension_count +
+                        dimension
+                    ]
+                );
+            }
+
+            printf(
+                "\n\n"
+            );
+        }
 
         fuzzy_gpu_harness_end(
             &gpu

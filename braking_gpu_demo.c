@@ -220,64 +220,94 @@ static float stress_controller(
     return result;
 }
 
+enum {
+    speed_ramp_gpu_id,
+    speed_triangle_gpu_id,
+    speed_trapezoid_gpu_id,
+    speed_smf_gpu_id,
+    speed_zmf_gpu_id,
+    speed_gaussian_gpu_id,
+    distance_bell_gpu_id,
+    distance_sigmoid_gpu_id,
+    distance_pimf_gpu_id,
+    distance_dsigmoid_gpu_id,
+    distance_psigmoid_gpu_id,
+    distance_gaussian2_gpu_id,
+    distance_piecewise_gpu_id
+};
+
 static const fuzzy_gpu_variable_t stress_variables[] = {
-    
-    FUZZY_GPU_VARIABLE(0, FUZZY_GPU_RAMP, 20.0f, 80.0f, 1.0f),
-    FUZZY_GPU_VARIABLE(0, FUZZY_GPU_TRIANGLE, 10.0f, 50.0f, 90.0f),
-    FUZZY_GPU_VARIABLE(0, FUZZY_GPU_TRAPEZOID, 10.0f, 30.0f, 70.0f, 90.0f),
-    FUZZY_GPU_VARIABLE(0, FUZZY_GPU_SMF, 20.0f, 80.0f),
-    FUZZY_GPU_VARIABLE(0, FUZZY_GPU_ZMF, 20.0f, 80.0f),
-    FUZZY_GPU_VARIABLE(0, FUZZY_GPU_GAUSSIAN, 50.0f, 15.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_BELL, 40.0f, 2.0f, 50.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_SIGMOID, 0.15f, 50.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_PIMF, 10.0f, 30.0f, 70.0f, 90.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_DSIGMOID, 0.15f, 30.0f, 0.15f, 70.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_PSIGMOID, 0.15f, 30.0f, -0.15f, 70.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_GAUSSIAN2, 30.0f, 10.0f, 70.0f, 10.0f),
-    FUZZY_GPU_VARIABLE(1, FUZZY_GPU_PIECEWISE, 0.0f, 50.0f, 100.0f)
+    FUZZY_GPU_VARIABLE(0, FUZZY_SHAPE_RAMP, 1.0f, 20.0f, 80.0f, 1.0f),
+    FUZZY_GPU_VARIABLE(0, FUZZY_SHAPE_TRIANGLE, 1.0f, 10.0f, 50.0f, 90.0f),
+    FUZZY_GPU_VARIABLE(0, FUZZY_SHAPE_TRAPEZOID, 1.0f, 10.0f, 30.0f, 70.0f, 90.0f),
+    FUZZY_GPU_VARIABLE(0, FUZZY_SHAPE_SMF, 1.0f, 20.0f, 80.0f),
+    FUZZY_GPU_VARIABLE(0, FUZZY_SHAPE_ZMF, 1.0f, 20.0f, 80.0f),
+    FUZZY_GPU_VARIABLE(0, FUZZY_SHAPE_GAUSSIAN, 1.0f, 50.0f, 15.0f),
+
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_BELL, 1.0f, 40.0f, 2.0f, 50.0f),
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_SIGMOID, 1.0f, 0.15f, 50.0f),
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_PIMF, 1.0f, 10.0f, 30.0f, 70.0f, 90.0f),
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_DSIGMOID, 1.0f, 0.15f, 30.0f, 0.15f, 70.0f),
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_PSIGMOID, 1.0f, 0.15f, 30.0f, -0.15f, 70.0f),
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_GAUSSIAN2, 1.0f, 30.0f, 10.0f, 70.0f, 10.0f),
+    FUZZY_GPU_VARIABLE(1, FUZZY_SHAPE_PIECEWISE, 1.0f, 0.0f, 50.0f, 100.0f)
+};
+
+enum {
+    output_ramp_gpu_id,
+    output_triangle_gpu_id,
+    output_trapezoid_gpu_id,
+    output_smf_gpu_id,
+    output_zmf_gpu_id,
+    output_gaussian_gpu_id,
+    output_bell_gpu_id,
+    output_sigmoid_gpu_id,
+    output_pimf_gpu_id,
+    output_dsigmoid_gpu_id,
+    output_psigmoid_gpu_id,
+    output_gaussian2_gpu_id,
+    output_piecewise_gpu_id
 };
 
 static const fuzzy_gpu_variable_t stress_outputs[] = {
-
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_RAMP,10.0f,35.0f,0.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_TRIANGLE,5.0f,25.0f,45.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_TRAPEZOID,15.0f,30.0f,50.0f,65.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_SMF,25.0f,75.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_ZMF,25.0f,75.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_GAUSSIAN,50.0f,12.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_BELL,35.0f,2.0f,50.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_SIGMOID,0.15f,50.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_PIMF,10.0f,30.0f,70.0f,90.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_DSIGMOID,0.15f,30.0f,0.15f,70.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_PSIGMOID,0.15f,30.0f,-0.15f,70.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_GAUSSIAN2,30.0f,10.0f,70.0f,10.0f),
-    FUZZY_GPU_OUTPUT(FUZZY_GPU_PIECEWISE,0.0f,50.0f,100.0f)
-
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_RAMP, 1.0f, 10.0f, 35.0f, 0.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_TRIANGLE, 1.0f, 5.0f, 25.0f, 45.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_TRAPEZOID, 1.0f, 15.0f, 30.0f, 50.0f, 65.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_SMF, 1.0f, 25.0f, 75.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_ZMF, 1.0f, 25.0f, 75.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_GAUSSIAN, 1.0f, 50.0f, 12.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_BELL, 1.0f, 35.0f, 2.0f, 50.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_SIGMOID, 1.0f, 0.15f, 50.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_PIMF, 1.0f, 10.0f, 30.0f, 70.0f, 90.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_DSIGMOID, 1.0f, 0.15f, 30.0f, 0.15f, 70.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_PSIGMOID, 1.0f, 0.15f, 30.0f, -0.15f, 70.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_GAUSSIAN2, 1.0f, 30.0f, 10.0f, 70.0f, 10.0f),
+    FUZZY_GPU_OUTPUT(FUZZY_SHAPE_PIECEWISE, 1.0f, 0.0f, 50.0f, 100.0f)
 };
 
-static const fuzzy_gpu_rule_t stress_rules[] = {
-    FUZZY_GPU_RULE(0, FUZZY_GPU_OR, 6, 0),
-    FUZZY_GPU_RULE(1, FUZZY_GPU_AND, 7, 1),
-    FUZZY_GPU_RULE(2, FUZZY_GPU_OR, 8, 2),
-    FUZZY_GPU_RULE(3, FUZZY_GPU_AND, 9, 3),
-    FUZZY_GPU_RULE(4, FUZZY_GPU_OR, 10, 4),
-    FUZZY_GPU_RULE(5, FUZZY_GPU_AND, 11, 5),
-    FUZZY_GPU_RULE(0, FUZZY_GPU_AND, 12, 6),
-    FUZZY_GPU_RULE(1, FUZZY_GPU_OR, 6, 7),
-    FUZZY_GPU_RULE(2, FUZZY_GPU_AND, 7, 8),
-    FUZZY_GPU_RULE(3, FUZZY_GPU_OR, 8, 9),
-    FUZZY_GPU_RULE(4, FUZZY_GPU_AND, 10, 10),
-    FUZZY_GPU_RULE(5, FUZZY_GPU_OR, 11, 11),
-    FUZZY_GPU_RULE(12, FUZZY_GPU_AND, 1, 12)
-};
-
-FUZZY_GPU_CONTROLLER(
+FUZZY_GPU_RULES(
     stress_controller_gpu,
     stress_variables,
     stress_outputs,
-    stress_rules,
+    FUZZY_LOGIC_STANDARD,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX,
+    FUZZY_DEFUZZ_COG,
     0.0f,
-    100.0f
+    100.0f,
+    FUZZY_GPU_RULE(speed_ramp, FUZZY_OPERATOR_OR, distance_bell, output_ramp),
+    FUZZY_GPU_RULE(speed_triangle, FUZZY_OPERATOR_AND, distance_sigmoid, output_triangle),
+    FUZZY_GPU_RULE(speed_trapezoid, FUZZY_OPERATOR_OR, distance_pimf, output_trapezoid),
+    FUZZY_GPU_RULE(speed_smf, FUZZY_OPERATOR_AND, distance_dsigmoid, output_smf),
+    FUZZY_GPU_RULE(speed_zmf, FUZZY_OPERATOR_OR, distance_psigmoid, output_zmf),
+    FUZZY_GPU_RULE(speed_gaussian, FUZZY_OPERATOR_AND, distance_gaussian2, output_gaussian),
+    FUZZY_GPU_RULE(speed_ramp, FUZZY_OPERATOR_AND, distance_piecewise, output_bell),
+    FUZZY_GPU_RULE(speed_triangle, FUZZY_OPERATOR_OR, distance_bell, output_sigmoid),
+    FUZZY_GPU_RULE(speed_trapezoid, FUZZY_OPERATOR_AND, distance_sigmoid, output_pimf),
+    FUZZY_GPU_RULE(speed_smf, FUZZY_OPERATOR_OR, distance_pimf, output_dsigmoid),
+    FUZZY_GPU_RULE(speed_zmf, FUZZY_OPERATOR_AND, distance_psigmoid, output_psigmoid),
+    FUZZY_GPU_RULE(speed_gaussian, FUZZY_OPERATOR_OR, distance_gaussian2, output_gaussian2),
+    FUZZY_GPU_RULE(distance_piecewise, FUZZY_OPERATOR_AND, speed_triangle, output_piecewise)
 );
 
 int main(void)
@@ -299,8 +329,7 @@ int main(void)
         GRID_SIZE,
         (size_t)GRID_SIZE *
         (size_t)GRID_SIZE,
-        sizeof(stress_rules) /
-        sizeof(stress_rules[0]),
+        stress_controller_gpu.rule_count,
         sizeof(stress_variables) /
         sizeof(stress_variables[0]),
         sizeof(stress_outputs) /

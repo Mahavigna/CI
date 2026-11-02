@@ -179,28 +179,143 @@ static random_fuzzy_parameters_t parameters;
  * consumed directly by the generic OpenCL backend in fuzzy.h.
  * ========================================================== */
 
-static fuzzy_gpu_variable_t process_gpu_variables[15];
+/* ==========================================================
+ * GPU controller storage
+ * ========================================================== */
+
+static fuzzy_gpu_variable_t process_gpu_variables[19];
 static fuzzy_gpu_variable_t process_gpu_outputs[5];
 
-static const fuzzy_gpu_rule_t process_gpu_rules[] = {
-    FUZZY_GPU_RULE(0,  FUZZY_GPU_AND, 4,  0),
-    FUZZY_GPU_RULE(1,  FUZZY_GPU_AND, 10, 1),
-    FUZZY_GPU_RULE(5,  FUZZY_GPU_OR,  7,  2),
-    FUZZY_GPU_RULE(2,  FUZZY_GPU_AND, 8,  3),
-    FUZZY_GPU_RULE(11, FUZZY_GPU_OR,  8,  3),
-    FUZZY_GPU_RULE(2,  FUZZY_GPU_AND, 11, 4),
-    FUZZY_GPU_RULE(8,  FUZZY_GPU_OR,  12, 4),
-    FUZZY_GPU_RULE(1,  FUZZY_GPU_AND, 5,  3),
-    FUZZY_GPU_RULE(0,  FUZZY_GPU_OR,  3,  1),
-    FUZZY_GPU_RULE(11, FUZZY_GPU_AND, 12, 4),
-    FUZZY_GPU_RULE(6,  FUZZY_GPU_AND, 14, 0)
+/*
+ * These identifiers must follow the exact order used when
+ * process_gpu_variables[] is populated.
+ */
+enum {
+    temperature_low_gpu_id,
+    temperature_medium_gpu_id,
+    temperature_high_gpu_id,
+
+    humidity_low_gpu_id,
+    humidity_medium_gpu_id,
+    humidity_high_gpu_id,
+
+    vibration_low_gpu_id,
+    vibration_medium_gpu_id,
+    vibration_high_gpu_id,
+
+    pressure_low_gpu_id,
+    pressure_normal_gpu_id,
+    pressure_high_gpu_id,
+
+    quality_poor_gpu_id,
+    quality_average_gpu_id,
+    quality_good_gpu_id,
+
+    temperature_high_very_gpu_id,
+    humidity_high_somewhat_gpu_id,
+    pressure_high_extremely_gpu_id,
+    quality_good_slightly_gpu_id
 };
 
+/*
+ * These identifiers must follow the exact order used when
+ * process_gpu_outputs[] is populated.
+ */
+enum {
+    response_minimal_gpu_id,
+    response_low_gpu_id,
+    response_moderate_gpu_id,
+    response_high_gpu_id,
+    response_critical_gpu_id
+};
+
+static const fuzzy_gpu_rule_t process_gpu_rules[] = {
+    FUZZY_GPU_RULE(
+        temperature_low,
+        FUZZY_OPERATOR_AND,
+        humidity_medium,
+        response_minimal
+    ),
+
+    FUZZY_GPU_RULE(
+        temperature_medium,
+        FUZZY_OPERATOR_AND,
+        pressure_normal,
+        response_low
+    ),
+
+    FUZZY_GPU_RULE(
+        humidity_high,
+        FUZZY_OPERATOR_OR,
+        vibration_medium,
+        response_moderate
+    ),
+
+    FUZZY_GPU_RULE(
+        temperature_high,
+        FUZZY_OPERATOR_AND,
+        vibration_high,
+        response_high
+    ),
+
+    FUZZY_GPU_RULE(
+        pressure_high,
+        FUZZY_OPERATOR_OR,
+        vibration_high,
+        response_high
+    ),
+
+    FUZZY_GPU_RULE(
+        temperature_high_very,
+        FUZZY_OPERATOR_AND,
+        pressure_high,
+        response_critical
+    ),
+
+    FUZZY_GPU_RULE(
+        humidity_high_somewhat,
+        FUZZY_OPERATOR_OR,
+        pressure_high_extremely,
+        response_critical
+    ),
+
+    FUZZY_GPU_RULE(
+        temperature_medium,
+        FUZZY_OPERATOR_AND,
+        quality_good_slightly,
+        response_high
+    ),
+
+    FUZZY_GPU_RULE(
+        temperature_low,
+        FUZZY_OPERATOR_OR,
+        humidity_low,
+        response_low
+    ),
+
+    FUZZY_GPU_RULE(
+        pressure_high,
+        FUZZY_OPERATOR_AND,
+        quality_poor,
+        response_critical
+    ),
+
+    FUZZY_GPU_RULE(
+        vibration_low,
+        FUZZY_OPERATOR_AND,
+        quality_good,
+        response_minimal
+    )
+};
 FUZZY_GPU_CONTROLLER(
     process_gpu,
     process_gpu_variables,
     process_gpu_outputs,
     process_gpu_rules,
+    FUZZY_LOGIC_STANDARD,
+    FUZZY_IMPLICATION_MIN,
+    FUZZY_AGGREGATION_MAX,
+    FUZZY_DEFUZZ_COG,
     RESPONSE_LOWER,
     RESPONSE_UPPER
 );
@@ -343,27 +458,218 @@ static void randomize_membership_parameters(void)
 
 static void initialize_process_gpu_controller(void)
 {
-    process_gpu_variables[0]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(0, FUZZY_GPU_ZMF, parameters.temperature_low[0], parameters.temperature_low[1]);
-    process_gpu_variables[1]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(0, FUZZY_GPU_GAUSSIAN, parameters.temperature_medium[0], parameters.temperature_medium[1]);
-    process_gpu_variables[2]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(0, FUZZY_GPU_SMF, parameters.temperature_high[0], parameters.temperature_high[1]);
-    process_gpu_variables[3]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(1, FUZZY_GPU_RAMP, parameters.humidity_low[0], parameters.humidity_low[1], 0.0f);
-    process_gpu_variables[4]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(1, FUZZY_GPU_TRAPEZOID, parameters.humidity_medium[0], parameters.humidity_medium[1], parameters.humidity_medium[2], parameters.humidity_medium[3]);
-    process_gpu_variables[5]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(1, FUZZY_GPU_SIGMOID, parameters.humidity_high[0], parameters.humidity_high[1]);
-    process_gpu_variables[6]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(2, FUZZY_GPU_ZMF, parameters.vibration_low[0], parameters.vibration_low[1]);
-    process_gpu_variables[7]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(2, FUZZY_GPU_BELL, parameters.vibration_medium[0], parameters.vibration_medium[1], parameters.vibration_medium[2]);
-    process_gpu_variables[8]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(2, FUZZY_GPU_SMF, parameters.vibration_high[0], parameters.vibration_high[1]);
-    process_gpu_variables[9]  = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(3, FUZZY_GPU_RAMP, parameters.pressure_low[0], parameters.pressure_low[1], 0.0f);
-    process_gpu_variables[10] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(3, FUZZY_GPU_TRIANGLE, parameters.pressure_normal[0], parameters.pressure_normal[1], parameters.pressure_normal[2]);
-    process_gpu_variables[11] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(3, FUZZY_GPU_SIGMOID, parameters.pressure_high[0], parameters.pressure_high[1]);
-    process_gpu_variables[12] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(4, FUZZY_GPU_ZMF, parameters.quality_poor[0], parameters.quality_poor[1]);
-    process_gpu_variables[13] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(4, FUZZY_GPU_GAUSSIAN, parameters.quality_average[0], parameters.quality_average[1]);
-    process_gpu_variables[14] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(4, FUZZY_GPU_SMF, parameters.quality_good[0], parameters.quality_good[1]);
+    process_gpu_variables[0] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        0,
+        FUZZY_SHAPE_ZMF,
+        hedges.none,
+        parameters.temperature_low[0],
+        parameters.temperature_low[1]
+    );
 
-    process_gpu_outputs[0] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(FUZZY_GPU_ZMF, parameters.response_minimal[0], parameters.response_minimal[1]);
-    process_gpu_outputs[1] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(FUZZY_GPU_TRIANGLE, parameters.response_low[0], parameters.response_low[1], parameters.response_low[2]);
-    process_gpu_outputs[2] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(FUZZY_GPU_TRAPEZOID, parameters.response_moderate[0], parameters.response_moderate[1], parameters.response_moderate[2], parameters.response_moderate[3]);
-    process_gpu_outputs[3] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(FUZZY_GPU_TRIANGLE, parameters.response_high[0], parameters.response_high[1], parameters.response_high[2]);
-    process_gpu_outputs[4] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(FUZZY_GPU_SMF, parameters.response_critical[0], parameters.response_critical[1]);
+    process_gpu_variables[1] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        0,
+        FUZZY_SHAPE_GAUSSIAN,
+        hedges.none,
+        parameters.temperature_medium[0],
+        parameters.temperature_medium[1]
+    );
+
+    process_gpu_variables[2] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        0,
+        FUZZY_SHAPE_SMF,
+        hedges.none,
+        parameters.temperature_high[0],
+        parameters.temperature_high[1]
+    );
+
+    process_gpu_variables[3] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        1,
+        FUZZY_SHAPE_RAMP,
+        hedges.none,
+        parameters.humidity_low[0],
+        parameters.humidity_low[1],
+        0.0f
+    );
+
+    process_gpu_variables[4] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        1,
+        FUZZY_SHAPE_TRAPEZOID,
+        hedges.none,
+        parameters.humidity_medium[0],
+        parameters.humidity_medium[1],
+        parameters.humidity_medium[2],
+        parameters.humidity_medium[3]
+    );
+
+    process_gpu_variables[5] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        1,
+        FUZZY_SHAPE_SIGMOID,
+        hedges.none,
+        parameters.humidity_high[0],
+        parameters.humidity_high[1]
+    );
+
+    process_gpu_variables[6] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        2,
+        FUZZY_SHAPE_ZMF,
+        hedges.none,
+        parameters.vibration_low[0],
+        parameters.vibration_low[1]
+    );
+
+    process_gpu_variables[7] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        2,
+        FUZZY_SHAPE_BELL,
+        hedges.none,
+        parameters.vibration_medium[0],
+        parameters.vibration_medium[1],
+        parameters.vibration_medium[2]
+    );
+
+    process_gpu_variables[8] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        2,
+        FUZZY_SHAPE_SMF,
+        hedges.none,
+        parameters.vibration_high[0],
+        parameters.vibration_high[1]
+    );
+
+    process_gpu_variables[9] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        3,
+        FUZZY_SHAPE_RAMP,
+        hedges.none,
+        parameters.pressure_low[0],
+        parameters.pressure_low[1],
+        0.0f
+    );
+
+    process_gpu_variables[10] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        3,
+        FUZZY_SHAPE_TRIANGLE,
+        hedges.none,
+        parameters.pressure_normal[0],
+        parameters.pressure_normal[1],
+        parameters.pressure_normal[2]
+    );
+
+    process_gpu_variables[11] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        3,
+        FUZZY_SHAPE_SIGMOID,
+        hedges.none,
+        parameters.pressure_high[0],
+        parameters.pressure_high[1]
+    );
+
+    process_gpu_variables[12] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        4,
+        FUZZY_SHAPE_ZMF,
+        hedges.none,
+        parameters.quality_poor[0],
+        parameters.quality_poor[1]
+    );
+
+    process_gpu_variables[13] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        4,
+        FUZZY_SHAPE_GAUSSIAN,
+        hedges.none,
+        parameters.quality_average[0],
+        parameters.quality_average[1]
+    );
+
+    process_gpu_variables[14] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        4,
+        FUZZY_SHAPE_SMF,
+        hedges.none,
+        parameters.quality_good[0],
+        parameters.quality_good[1]
+    );
+
+    process_gpu_variables[15] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        0,
+        FUZZY_SHAPE_SMF,
+        hedges.very,
+        parameters.temperature_high[0],
+        parameters.temperature_high[1]
+    );
+
+    process_gpu_variables[16] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        2,
+        FUZZY_SHAPE_SMF,
+        hedges.extremely,
+        parameters.vibration_high[0],
+        parameters.vibration_high[1]
+    );
+
+    process_gpu_variables[17] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        4,
+        FUZZY_SHAPE_ZMF,
+        hedges.very,
+        parameters.quality_poor[0],
+        parameters.quality_poor[1]
+    );
+
+    process_gpu_variables[18] = (fuzzy_gpu_variable_t)FUZZY_GPU_VARIABLE(
+        1,
+        FUZZY_SHAPE_SIGMOID,
+        hedges.somewhat,
+        parameters.humidity_high[0],
+        parameters.humidity_high[1]
+    );
+
+    process_gpu_outputs[0] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(
+        FUZZY_SHAPE_ZMF,
+        hedges.none,
+        parameters.response_minimal[0],
+        parameters.response_minimal[1]
+    );
+
+    process_gpu_outputs[1] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(
+        FUZZY_SHAPE_TRIANGLE,
+        hedges.none,
+        parameters.response_low[0],
+        parameters.response_low[1],
+        parameters.response_low[2]
+    );
+
+    process_gpu_outputs[2] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(
+        FUZZY_SHAPE_TRAPEZOID,
+        hedges.none,
+        parameters.response_moderate[0],
+        parameters.response_moderate[1],
+        parameters.response_moderate[2],
+        parameters.response_moderate[3]
+    );
+
+    process_gpu_outputs[3] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(
+        FUZZY_SHAPE_TRIANGLE,
+        hedges.none,
+        parameters.response_high[0],
+        parameters.response_high[1],
+        parameters.response_high[2]
+    );
+
+    process_gpu_outputs[4] = (fuzzy_gpu_variable_t)FUZZY_GPU_OUTPUT(
+        FUZZY_SHAPE_SMF,
+        hedges.none,
+        parameters.response_critical[0],
+        parameters.response_critical[1]
+    );
+}
+
+static void print_process_gpu_hedges(void)
+{
+    printf(
+        "\nGPU linguistic hedge configuration\n"
+        "==================================\n"
+        "Variable 15: very temperature high      exponent %.2f\n"
+        "Variable 16: extremely vibration high  exponent %.2f\n"
+        "Variable 17: very material quality poor exponent %.2f\n"
+        "Variable 18: somewhat humidity high    exponent %.2f\n",
+        process_gpu_variables[15].hedge,
+        process_gpu_variables[16].hedge,
+        process_gpu_variables[17].hedge,
+        process_gpu_variables[18].hedge
+    );
 }
 
 /* ==========================================================
@@ -1548,6 +1854,7 @@ int main(void)
     printf("\nfuzzy.h Complete API Demonstration\n");
     printf("==================================\n");
 
+    print_process_gpu_hedges();
     print_random_not_rule();
     plot_all_membership_functions();
     plot_sampled_membership_sweep();
