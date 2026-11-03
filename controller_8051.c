@@ -36,27 +36,11 @@ static float calculate_fan_speed(float temperature)
 {
     rules.count = 0u;
 
-    RULE(
-        rules,
-        "Low temperature produces slow fan",
-        temperature_low(temperature),
-        fan_slow
-    );
+    RULE(rules, "Low temperature produces slow fan", temperature_low(temperature), fan_slow);
 
-    RULE(
-        rules,
-        "High temperature produces fast fan",
-        temperature_high(temperature),
-        fan_fast
-    );
+    RULE(rules, "High temperature produces fast fan", temperature_high(temperature), fan_fast);
 
-    return fuzzy_rules_defuzzify(
-        &rules,
-        0.0f,
-        100.0f,
-        10.0f,
-        FUZZY_DEFUZZ_MOM
-    );
+    return fuzzy_rules_defuzzify(&rules, 0.0f, 100.0f, 10.0f, FUZZY_DEFUZZ_BOA);
 }
 
 static unsigned char fan_speed_to_pwm(float fan_speed)
