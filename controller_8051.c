@@ -1,382 +1,123 @@
-#ifdef SIMULATION
+#define FUZZY_MAX_RULES 2u
+#define FUZZY_MAX_VALUES 3u
 
+#ifdef SIMULATION
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
-
 #else
-
 #ifdef __SDCC
 #include <8052.h>
 #else
 #include <REG51.H>
 #endif
-
 #define FUZZY_8051
-#define FUZZY_MAX_RULES 2u
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
+#endif
 
-#endif /* SIMULATION */
-
-
-/* ==========================================================
- * Values retained for inspection
- * ========================================================== */
+static fuzzy_rules_t rules;
 
 volatile unsigned char test_temperature = 0u;
 volatile unsigned char test_pwm = 0u;
 volatile float test_fan_speed = 0.0f;
 
-
-/* ==========================================================
- * Hedge exponents
- * ========================================================== */
-
 #ifdef SIMULATION
-
-static const hedges_t hedges = {
-    .none      = 1.0f,
-    .very      = 2.0f,
-    .extremely = 3.0f,
-    .somewhat  = 0.5f,
-    .slightly  = 0.75f
-};
-
+#define HEDGE_NONE 1.0f
 #else
+#define HEDGE_NONE 1u
+#endif
 
-static const hedges_t hedges = {
-    1u,
-    2u,
-    3u
-};
-
-#endif /* SIMULATION */
-
-
-/* ==========================================================
- * Temperature membership functions
- * ========================================================== */
-
-static float temperature_low(
-    float value
-)
-{
-    return fuzzy_ramp(
-        20.0f,
-        40.0f,
-        value,
-        false,
-        hedges.none
-    );
-}
-
-
-static float temperature_high(
-    float value
-)
-{
-    return fuzzy_ramp(
-        30.0f,
-        60.0f,
-        value,
-        true,
-        hedges.none
-    );
-}
-
-
-/* ==========================================================
- * Fan-output membership functions
- * ========================================================== */
-
-static float fan_slow(
-    float value
-)
-{
-    return fuzzy_ramp(
-        20.0f,
-        50.0f,
-        value,
-        false,
-        hedges.none
-    );
-}
-
-
-static float fan_fast(
-    float value
-)
-{
-    return fuzzy_ramp(
-        40.0f,
-        80.0f,
-        value,
-        true,
-        hedges.none
-    );
-}
-
-
-/* ==========================================================
- * Fuzzy fan controller
- * ========================================================== */
+FUZZY_VAR(temperature_low,  FUZZY_SHAPE_RAMP, HEDGE_NONE, 20.0f, 40.0f, false)
+FUZZY_VAR(temperature_high, FUZZY_SHAPE_RAMP, HEDGE_NONE, 30.0f, 60.0f, true)
+FUZZY_VAR(fan_slow,         FUZZY_SHAPE_RAMP, HEDGE_NONE, 20.0f, 50.0f, false)
+FUZZY_VAR(fan_fast,         FUZZY_SHAPE_RAMP, HEDGE_NONE, 40.0f, 80.0f, true)
 
 static float calculate_fan_speed(float temperature)
 {
-#ifdef SIMULATION
-
-    fuzzy_rules_t rules;
-    float result;
-
     rules.count = 0u;
 
-    if (!FUZZY_RULE_ADD(
-        &rules,
+    RULE(
+        rules,
+        "Low temperature produces slow fan",
         temperature_low(temperature),
         fan_slow
-    )) {
-        return 0.0f;
-    }
+    );
 
-    if (!FUZZY_RULE_ADD(
-        &rules,
+    RULE(
+        rules,
+        "High temperature produces fast fan",
         temperature_high(temperature),
         fan_fast
-    )) {
-        return 0.0f;
-    }
+    );
 
-    result =
-        fuzzy_rules_defuzzify(
-            &rules,
-            0.0f,
-            100.0f,
-            10.0f,
-            FUZZY_DEFUZZ_MOM
-        );
-
-    rules.count = 0u;
-
-    return result;
-
-#else
-
-    float low_activation;
-    float high_activation;
-    float value;
-    float slow_membership;
-    float fast_membership;
-    float slow_implied;
-    float fast_implied;
-    float height;
-    float maximum;
-    float position_sum;
-    unsigned char position_count;
-
-    low_activation =
-        temperature_low(temperature);
-
-    high_activation =
-        temperature_high(temperature);
-
-    maximum = 0.0f;
-    position_sum = 0.0f;
-    position_count = 0u;
-
-    for (
-        value = 0.0f;
-        value <= 100.0f;
-        value += 10.0f
-    ) {
-        slow_membership =
-            fan_slow(value);
-
-        fast_membership =
-            fan_fast(value);
-
-        slow_implied =
-            low_activation < slow_membership
-                ? low_activation
-                : slow_membership;
-
-        fast_implied =
-            high_activation < fast_membership
-                ? high_activation
-                : fast_membership;
-
-        height =
-            slow_implied > fast_implied
-                ? slow_implied
-                : fast_implied;
-
-        if (
-            position_count == 0u ||
-            height > maximum
-        ) {
-            maximum = height;
-            position_sum = value;
-            position_count = 1u;
-        }
-        else if (height == maximum) {
-            position_sum += value;
-            position_count++;
-        }
-    }
-
-    if (
-        position_count == 0u ||
-        maximum <= 0.0f
-    ) {
-        return 0.0f;
-    }
-
-    return position_sum /
-        (float)position_count;
-
-#endif
-}
-
- /* ==========================================================
- * Convert fuzzy output to PWM percentage
- * ========================================================== */
-
-static unsigned char fan_speed_to_pwm(
-    float fan_speed
-)
-{
-    if (fan_speed <= 0.0f) {
-        return 0u;
-    }
-
-    if (fan_speed >= 100.0f) {
-        return 100u;
-    }
-
-    return (unsigned char)(
-        fan_speed + 0.5f
+    return fuzzy_rules_defuzzify(
+        &rules,
+        0.0f,
+        100.0f,
+        10.0f,
+        FUZZY_DEFUZZ_MOM
     );
 }
 
+static unsigned char fan_speed_to_pwm(float fan_speed)
+{
+    if (fan_speed <= 0.0f)
+        return 0u;
 
-/* ==========================================================
- * Program entry point
- *
- * P2 = temperature input from simulator switches
- * P1 = fuzzy fan-speed/PWM output
- * P0 = execution status
- *
- * P0 = 0x55 while calculating
- * P0 = 0xAA when output is ready
- * P0 = 0xF0 when P2 input is above 100
- * ========================================================== */
+    if (fan_speed >= 100.0f)
+        return 100u;
+
+    return (unsigned char)(fan_speed + 0.5f);
+}
+
+static void update_controller(unsigned char temperature)
+{
+    test_temperature = temperature;
+    test_fan_speed = calculate_fan_speed((float)test_temperature);
+    test_pwm = fan_speed_to_pwm(test_fan_speed);
+}
 
 #ifndef SIMULATION
 
 void main(void)
 {
-    /*
-     * Fixed verification input:
-     *
-     * 42 decimal = 0x2A
-     */
-    test_temperature =
-        42u;
-
-    /*
-     * Calculation started.
-     */
-    P0 =
-        0x55u;
-
-    P1 =
-        0x00u;
-
-    /*
-    * Release P2 for external input, then read it.
-    */
-    // P2 = 0xFFu;
-    test_temperature = P2;
-
-    test_fan_speed =
-        calculate_fan_speed(
-            (float)test_temperature
-        );
-
-    test_pwm =
-        fan_speed_to_pwm(
-            test_fan_speed
-        );
-
-    /*
-     * Final visible result.
-     */
-    P1 =
-        test_pwm;
-
-    /*
-     * Calculation completed.
-     */
-    P0 =
-        0xAAu;
+    P0 = 0x00u;
+    P1 = 0x00u;
 
     for (;;) {
-        ;
+        P0 = 0x55u;
+
+        test_temperature = P2;
+
+        if (test_temperature > 100u) {
+            P1 = 0x00u;
+            P0 = 0xF0u;
+            continue;
+        }
+
+        P0 = 0x60u;
+        update_controller(test_temperature);
+        P0 = 0x70u;
+        P1 = test_pwm;
+        P0 = 0xAAu;
     }
 }
 
 #else
 
-
-/* ==========================================================
- * Desktop sweep adapter
- *
- * The third argument is supplied by the generic sweep API.
- * The Mamdani controller uses the fixed 10-unit COG step
- * inside calculate_fan_speed().
- * ========================================================== */
-
-static float evaluate_fan_sweep(
-    const float inputs[],
-    size_t input_count,
-    float unused_step
+SWEEP_EVALUATOR(
+    evaluate_fan_sweep,
+    calculate_fan_speed,
+    inputs[0]
 )
+
+int main(void)
 {
-    (void)unused_step;
-
-    if (
-        inputs == NULL ||
-        input_count != 1u
-    ) {
-        return 0.0f;
-    }
-
-    return calculate_fan_speed(
-        inputs[0]
-    );
-}
-
-
-/* ==========================================================
- * Desktop verification
- * ========================================================== */
-
-static void print_verification(void)
-{
-    test_temperature =
-        42u;
-
-    test_fan_speed =
-        calculate_fan_speed(
-            (float)test_temperature
-        );
-
-    test_pwm =
-        fan_speed_to_pwm(
-            test_fan_speed
-        );
+    update_controller(42u);
 
     printf(
-        "\nMamdani 8052 verification\n"
+        "\n"
+        "Mamdani 8052 verification\n"
         "=========================\n"
         "Temperature:     %u\n"
         "Low activation:  %.5f\n"
@@ -387,155 +128,50 @@ static void print_verification(void)
         "P1:              0x%02X\n"
         "P2:              0x%02X\n",
         (unsigned int)test_temperature,
-        temperature_low(
-            (float)test_temperature
-        ),
-        temperature_high(
-            (float)test_temperature
-        ),
+        temperature_low((float)test_temperature),
+        temperature_high((float)test_temperature),
         test_fan_speed,
         (unsigned int)test_pwm,
         (unsigned int)test_pwm,
         (unsigned int)test_temperature
     );
-}
 
+    printf("\nSelected-input rule activations:\n");
+    fuzzy_rules_print(&rules);
 
-/* ==========================================================
- * Selected Mamdani COG plot
- * ========================================================== */
-
-static bool plot_selected_cog(
-    float temperature
-)
-{
-    fuzzy_rules_t rules;
-    float result;
-    bool success;
-
-    rules.count = 0 ;
-
-    if (!FUZZY_RULE_ADD_NAMED(
+    fuzzy_rules_plot_cog(
         &rules,
-        "Low temperature produces slow fan",
-        temperature_low(
-            temperature
-        ),
-        fan_slow
-    )) {
-        rules.count = 0;
-
-        return false;
-    }
-
-    if (!FUZZY_RULE_ADD_NAMED(
-        &rules,
-        "High temperature produces fast fan",
-        temperature_high(
-            temperature
-        ),
-        fan_fast
-    )) {
-        rules.count = 0;
-
-        return false;
-    }
-
-    printf(
-        "\nSelected-input rule activations:\n"
+        "mamdani_selected_output",
+        "Mamdani 8052 Fan Controller: Selected MOM Output",
+        test_fan_speed,
+        0.0f,
+        100.0f,
+        10.0f
     );
 
-    fuzzy_rules_print(
-        &rules
-    );
-
-    result =
-        fuzzy_rules_cog(
-            &rules,
-            0.0f,
-            100.0f,
-            10.0f
-        );
-
-    success =
-        fuzzy_rules_plot_cog(
-            &rules,
-            "mamdani_selected_cog",
-            "Mamdani 8052 Fan Controller: Selected COG",
-            result,
-            0.0f,
-            100.0f,
-            10.0f
-        );
-
-        rules.count = 0 ;
-
-    return success;
-}
-
-
-/* ==========================================================
- * Membership-function plots
- * ========================================================== */
-
-static bool plot_memberships(void)
-{
-    if (!FUZZY_PLOT(
+    PLOT(
         "mamdani_temperature",
         "Temperature Membership Functions",
-        0.0f,
         100.0f,
         1.0f,
+        SERIES(temperature_low,  "#3b82f6"),
+        SERIES(temperature_high, "#ef4444")
+    );
 
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Temperature low",
-            "#3b82f6",
-            temperature_low
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Temperature high",
-            "#ef4444",
-            temperature_high
-        )
-    )) {
-        return false;
-    }
-
-    return FUZZY_PLOT(
+    PLOT(
         "mamdani_fan",
         "Fan Output Membership Functions",
-        0.0f,
         100.0f,
         1.0f,
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Fan slow",
-            "#22c55e",
-            fan_slow
-        ),
-
-        FUZZY_PLOT_FUNCTION_NAMED(
-            "Fan fast",
-            "#a855f7",
-            fan_fast
-        )
+        SERIES(fan_slow, "#22c55e"),
+        SERIES(fan_fast, "#a855f7")
     );
-}
 
-
-/* ==========================================================
- * Temperature-to-fan sweep
- * ========================================================== */
-
-static bool plot_controller_sweep(void)
-{
-    return FUZZY_COG_SWEEP(
+    FUZZY_COG_SWEEP(
         "mamdani_8052_sweep",
         "Mamdani 8052 Fan Controller",
         evaluate_fan_sweep,
         10.0f,
-
         FUZZY_SWEEP_DIMENSION(
             "Temperature",
             0.0f,
@@ -543,48 +179,13 @@ static bool plot_controller_sweep(void)
             1.0f
         )
     );
-}
-
-
-/* ==========================================================
- * Desktop entry point
- * ========================================================== */
-
-int main(void)
-{
-    print_verification();
-
-    if (!plot_memberships()) {
-        fprintf(stderr, 
-            "Failed to generate membership plots.\n"
-        );
-
-        return 1;
-    }
-
-    if (!plot_selected_cog(
-        42.0f
-    )) {
-        fprintf(stderr, 
-            "Failed to generate selected COG plot.\n"
-        );
-
-        return 1;
-    }
-
-    if (!plot_controller_sweep()) {
-        fprintf(stderr, 
-            "Failed to generate Mamdani response sweep.\n"
-        );
-
-        return 1;
-    }
 
     printf(
-        "\nGenerated:\n"
+        "\n"
+        "Generated:\n"
         "  mamdani_temperature.svg\n"
         "  mamdani_fan.svg\n"
-        "  mamdani_selected_cog.svg\n"
+        "  mamdani_selected_output.svg\n"
         "  mamdani_8052_sweep.csv\n"
         "  mamdani_8052_sweep.svg\n"
     );
@@ -592,4 +193,4 @@ int main(void)
     return 0;
 }
 
-#endif /* SIMULATION */
+#endif

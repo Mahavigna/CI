@@ -398,8 +398,8 @@ embedded-mamdani build-8051: \
 	    -mmcs51 \
 	    --model-small \
 	    --opt-code-size \
+		--stack-auto \
 	    --debug \
-	    --stack-auto \
 	    --iram-size 256 \
 	    -I../.. \
 	    -o $(MAMDANI_EMBEDDED_BASENAME).ihx \

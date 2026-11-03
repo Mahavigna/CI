@@ -1,6 +1,71 @@
 #ifndef FUZZY_H
 #define FUZZY_H
 
+#ifdef FUZZY_8051
+
+#include <stddef.h>
+typedef unsigned char bool;
+typedef unsigned char uint8_t;
+#define false 0u
+#define true 1u
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+#ifndef FUZZY_MAX_RULES
+#define FUZZY_MAX_RULES 16u
+#endif
+#ifndef FUZZY_MAX_VALUES
+#define FUZZY_MAX_VALUES 16u
+#endif
+#define LEVEL_HI 1.0f
+#define LEVEL_LO 0.0f
+
+typedef uint8_t fuzzy_hedge_t;
+typedef enum FuzzyLogicMethod { FUZZY_LOGIC_STANDARD = 0, FUZZY_LOGIC_ALGEBRAIC, FUZZY_LOGIC_BOUNDED } fuzzy_logic_method_t;
+typedef enum FuzzyImplicationMethod { FUZZY_IMPLICATION_MIN = 0, FUZZY_IMPLICATION_PRODUCT } fuzzy_implication_method_t;
+typedef enum FuzzyAggregationMethod { FUZZY_AGGREGATION_MAX = 0, FUZZY_AGGREGATION_ALGEBRAIC, FUZZY_AGGREGATION_BOUNDED } fuzzy_aggregation_method_t;
+typedef enum FuzzyShape { FUZZY_SHAPE_RAMP = 0, FUZZY_SHAPE_TRIANGLE, FUZZY_SHAPE_TRAPEZOID, FUZZY_SHAPE_SMF, FUZZY_SHAPE_ZMF, FUZZY_SHAPE_GAUSSIAN, FUZZY_SHAPE_BELL, FUZZY_SHAPE_SIGMOID, FUZZY_SHAPE_PIMF, FUZZY_SHAPE_DSIGMOID, FUZZY_SHAPE_PSIGMOID, FUZZY_SHAPE_GAUSSIAN2, FUZZY_SHAPE_PIECEWISE } fuzzy_shape_t;
+typedef enum FuzzyDefuzzMethod { FUZZY_DEFUZZ_COG = 0, FUZZY_DEFUZZ_BOA, FUZZY_DEFUZZ_COS, FUZZY_DEFUZZ_MOM, FUZZY_DEFUZZ_SOM, FUZZY_DEFUZZ_LOM } fuzzy_defuzz_method_t;
+
+typedef struct FuzzyVariable8051 { uint8_t shape; fuzzy_hedge_t hedge; float parameters[4]; } fuzzy_variable_8051_t;
+typedef struct FuzzyRule { float value; const fuzzy_variable_8051_t *output; } fuzzy_rule_t;
+typedef struct FuzzyRules { fuzzy_rule_t rules[FUZZY_MAX_RULES]; uint8_t count; } fuzzy_rules_t;
+
+static float fuzzy_8051_eval(const fuzzy_variable_8051_t *variable, float value);
+float fuzzy_not(float membership);
+float fuzzy_ramp(float lower_boundary, float upper_boundary, float value, bool ramp_up, fuzzy_hedge_t hedge);
+float fuzzy_triangle(float a, float b, float c, float value, fuzzy_hedge_t hedge);
+float fuzzy_trapezoid(float a, float b, float c, float d, float value, fuzzy_hedge_t hedge);
+bool fuzzy_rules_add_8051(fuzzy_rules_t *rules, float value, const fuzzy_variable_8051_t *output);
+float fuzzy_rules_defuzzify(const fuzzy_rules_t *rules, float lower, float upper, float step, fuzzy_defuzz_method_t method);
+float fuzzy_rules_cog(const fuzzy_rules_t *rules, float lower, float upper, float step);
+
+#define FUZZY_8051_VAR_SELECT_I(shape) FUZZY_8051_VAR_##shape
+#define FUZZY_8051_VAR_SELECT(shape) FUZZY_8051_VAR_SELECT_I(shape)
+#define FUZZY_VAR(name, shape, hedge, ...) FUZZY_8051_VAR_SELECT(shape)(name, hedge, __VA_ARGS__)
+#define FUZZY_8051_VAR_FUZZY_SHAPE_RAMP(name, hedge, a, b, up) static const fuzzy_variable_8051_t name##_fuzzy_variable = { FUZZY_SHAPE_RAMP, (fuzzy_hedge_t)(hedge), { (float)(a), (float)(b), (float)(up), 0.0f } }; static float name(float x) { return fuzzy_8051_eval(&name##_fuzzy_variable, x); }
+#define FUZZY_8051_VAR_FUZZY_SHAPE_TRIANGLE(name, hedge, a, b, c) static const fuzzy_variable_8051_t name##_fuzzy_variable = { FUZZY_SHAPE_TRIANGLE, (fuzzy_hedge_t)(hedge), { (float)(a), (float)(b), (float)(c), 0.0f } }; static float name(float x) { return fuzzy_8051_eval(&name##_fuzzy_variable, x); }
+#define FUZZY_8051_VAR_FUZZY_SHAPE_TRAPEZOID(name, hedge, a, b, c, d) static const fuzzy_variable_8051_t name##_fuzzy_variable = { FUZZY_SHAPE_TRAPEZOID, (fuzzy_hedge_t)(hedge), { (float)(a), (float)(b), (float)(c), (float)(d) } }; static float name(float x) { return fuzzy_8051_eval(&name##_fuzzy_variable, x); }
+#define RULE(rule_var, name, activation, output) fuzzy_rules_add_8051(&(rule_var), (activation), &output##_fuzzy_variable)
+#define FUZZY_RULE_ADD(rules, value, output) fuzzy_rules_add_8051((rules), (value), &output##_fuzzy_variable)
+#define FUZZY_RULE_ADD_NAMED(rules, name, value, output) fuzzy_rules_add_8051((rules), (value), &output##_fuzzy_variable)
+
+#ifdef FUZZY_IMPLEMENTATION
+static float fuzzy_8051_clamp(float value) { if (value < 0.0f) return 0.0f; if (value > 1.0f) return 1.0f; return value; }
+static float fuzzy_8051_hedge(float value, fuzzy_hedge_t hedge) { float result; value = fuzzy_8051_clamp(value); if (hedge == 0u) hedge = 1u; result = 1.0f; while (hedge != 0u) { result *= value; --hedge; } return fuzzy_8051_clamp(result); }
+float fuzzy_not(float membership) { return 1.0f - fuzzy_8051_clamp(membership); }
+float fuzzy_ramp(float a, float b, float x, bool up, fuzzy_hedge_t hedge) { float result; if (a >= b) return 0.0f; if (x <= a) result = up ? 0.0f : 1.0f; else if (x >= b) result = up ? 1.0f : 0.0f; else { result = (x - a) / (b - a); if (!up) result = 1.0f - result; } return fuzzy_8051_hedge(result, hedge); }
+float fuzzy_triangle(float a, float b, float c, float x, fuzzy_hedge_t hedge) { float result; if (a >= b || b >= c || x <= a || x >= c) result = 0.0f; else if (x == b) result = 1.0f; else if (x < b) result = (x - a) / (b - a); else result = (c - x) / (c - b); return fuzzy_8051_hedge(result, hedge); }
+float fuzzy_trapezoid(float a, float b, float c, float d, float x, fuzzy_hedge_t hedge) { float result; if (a >= b || b > c || c >= d || x <= a || x >= d) result = 0.0f; else if (x >= b && x <= c) result = 1.0f; else if (x < b) result = (x - a) / (b - a); else result = (d - x) / (d - c); return fuzzy_8051_hedge(result, hedge); }
+static float fuzzy_8051_eval(const fuzzy_variable_8051_t *v, float x) { if (v->shape == FUZZY_SHAPE_RAMP) return fuzzy_ramp(v->parameters[0], v->parameters[1], x, v->parameters[2] != 0.0f, v->hedge); if (v->shape == FUZZY_SHAPE_TRIANGLE) return fuzzy_triangle(v->parameters[0], v->parameters[1], v->parameters[2], x, v->hedge); if (v->shape == FUZZY_SHAPE_TRAPEZOID) return fuzzy_trapezoid(v->parameters[0], v->parameters[1], v->parameters[2], v->parameters[3], x, v->hedge); return 0.0f; }
+bool fuzzy_rules_add_8051(fuzzy_rules_t *rules, float value, const fuzzy_variable_8051_t *output) { uint8_t index; if (rules->count >= FUZZY_MAX_RULES) return false; index = rules->count; rules->rules[index].value = fuzzy_8051_clamp(value); rules->rules[index].output = output; rules->count = index + 1u; return true; }
+static float fuzzy_8051_height(const fuzzy_rules_t *rules, float x) { uint8_t i; float aggregate; float membership; float implied; aggregate = 0.0f; for (i = 0u; i < rules->count; ++i) { membership = fuzzy_8051_eval(rules->rules[i].output, x); implied = rules->rules[i].value < membership ? rules->rules[i].value : membership; if (implied > aggregate) aggregate = implied; } return aggregate; }
+float fuzzy_rules_defuzzify(const fuzzy_rules_t *rules, float lower, float upper, float step, fuzzy_defuzz_method_t method) { float x; float h; float weighted; float sum; float maximum; float maximum_sum; float smallest; float largest; unsigned int maximum_count; if (rules->count == 0u || lower > upper || step <= 0.0f) return 0.0f; weighted = 0.0f; sum = 0.0f; maximum = -1.0f; maximum_sum = 0.0f; maximum_count = 0u; smallest = lower; largest = lower; for (x = lower; x <= upper; x += step) { h = fuzzy_8051_height(rules, x); weighted += x * h; sum += h; if (h > maximum) { maximum = h; maximum_sum = x; maximum_count = 1u; smallest = x; largest = x; } else if (h == maximum) { maximum_sum += x; ++maximum_count; largest = x; } } if (method == FUZZY_DEFUZZ_MOM) return maximum > 0.0f ? maximum_sum / (float)maximum_count : 0.0f; if (method == FUZZY_DEFUZZ_SOM) return maximum > 0.0f ? smallest : 0.0f; if (method == FUZZY_DEFUZZ_LOM) return maximum > 0.0f ? largest : 0.0f; return sum > 0.0f ? weighted / sum : 0.0f; }
+float fuzzy_rules_cog(const fuzzy_rules_t *rules, float lower, float upper, float step) { return fuzzy_rules_defuzzify(rules, lower, upper, step, FUZZY_DEFUZZ_COG); }
+#endif
+
+#else
+
 #include <stddef.h>
 
 /* ==========================================================
@@ -199,7 +264,9 @@ extern void FUZZY_CDECL srand(unsigned int);
  * Desktop configuration
  * ========================================================== */
 
+#ifndef FUZZY_MAX_RULES
 #define FUZZY_MAX_RULES 32u
+#endif
 
 typedef float fuzzy_hedge_t;
 
@@ -232,7 +299,9 @@ float fuzzy_interpolate_membership_array(const float *inputs, size_t dimension_c
 #define LEVEL_HI 1.0f
 #define LEVEL_LO 0.0f
 
+#ifndef FUZZY_MAX_VALUES
 #define FUZZY_MAX_VALUES 16u
+#endif
 
 #ifndef FUZZY_8051
 
@@ -738,12 +807,9 @@ float fuzzy_function_array(
     }
 
 
-#ifndef FUZZY_8051
+/*FUZZY VARIABLE NAMING AND SHAPE SET WITH PY-STYLE SYNTAX*/        
+#define FUZZY_VAR(name, shape, hedge, ...) static float name(float x) { return fuzzy_function(shape, x, hedge, __VA_ARGS__); }
 
-    /*FUZZY VARIABLE NAMING AND SHAPE SET WITH PY-STYLE SYNTAX*/        
-    #define FUZZY_VAR(name, shape, hedge, ...) static float name(float x) { return fuzzy_function(shape, x, hedge, __VA_ARGS__); }
-
-#endif
 
 bool fuzzy_rules_add(
     fuzzy_rules_t *rules,
@@ -1222,7 +1288,7 @@ bool fuzzy_gpu_interpolation_sweep(
 
 #endif /* FUZZY_8051 */
 
-#endif /* FUZZY_H */
+
 
 
 /*
@@ -7388,3 +7454,5 @@ bool fuzzy_interpolation_sweep(
 
 #endif /* FUZZY_8051 */
 #endif /* FUZZY_IMPLEMENTATION */
+#endif /* FUZZY_8051 compact backend / desktop original */
+#endif /* FUZZY_H */
