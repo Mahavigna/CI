@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ "master" ]
 
-# 1. WORKFLOW CONCURRENCY:
-# If you push a new commit while an old one is still building, cancel the old one.
+# If a new commit is pushed while an older workflow is still running,
+# cancel the older workflow.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,43 +16,170 @@ jobs:
   build-and-simulate:
     runs-on: ubuntu-latest
 
+    env:
+      FUZZY_NEURON_EPOCHS: 20
+      FUZZY_NEURON_BATCH_SIZE: 1024
+      FUZZY_NEURON_LEARNING_RATE: 0.01
+      FUZZY_NEURON_REPORT_INTERVAL: 5
+      FUZZY_NEURON_TEMPERATURE: 50
+      FUZZY_NEURON_LOAD: 50
+      FUZZY_NEURON_VIBRATION: 5
+      FUZZY_NEURON_TEST_DATASET: sugeno/sugeno_complex_sweep.csv
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Install All Toolchains (GCC, SDCC, ucsim, rsvg-convert)
-      run: make install-dependencies
+      - name: Install All Toolchains
+        run: |
+          make install-dependencies
+          sudo apt-get install -y pocl-opencl-icd
 
-    - name: Compile Desktop Simulations and 8051 Firmware
-      # 2. COMPILER CONCURRENCY:
-      # -j$(nproc) automatically detects the number of CPU cores on the GitHub runner
-      # and spins up parallel threads to compile all your binaries at the exact same time.
-      run: make -j$(nproc) all
+      - name: Verify Installed Dependencies
+        run: |
+          make check-dependencies
+          gcc --version
+          make --version
+          sdcc --version
+          packihx --version
+          clinfo
 
-    - name: Execute Automated Desktop Sweeps
-      run: |
-        make run-demo
-        make run-sugeno
-        make run-sim-8051
+      - name: Verify OpenCL Platform and Device
+        run: |
+          clinfo --list
+          clinfo | grep -E "Platform Name|Platform Vendor|Device Name|Device Type|Device Available|Compiler Available|OpenCL C Version"
 
-    - name: Execute Interactive Simulations (Mocked Inputs)
-      run: |
-        echo -e "45\n80" | make run-strength
-        echo -e "28\n65\n5" | make run-greenhouse
+      - name: Compile Desktop Simulations and 8051 Firmware
+        run: make -j"$(nproc)" all
 
-    - name: Convert SVGs to PNG and PDF
-      # Process images on all CPU cores simultaneously
-      run: |
-        make -j$(nproc) png
-        make -j$(nproc) pdf
+      - name: Verify Build Outputs
+        run: |
+          test -x strength-app
+          test -x greenhouse-app
+          test -x braking-app
+          test -x braking-gpu
+          test -x fuzzy-demo
+          test -x sugeno-app
+          test -x demo-all-gpu
+          test -x sim-8051-app
+          test -x fuzzy-neuron
+          test -f fuzzy_model_rules.so
+          test -f fuzzy_neuron_kernels.cl
+          test -f sim-8051/embedded/controller_8051.ihx
+          test -f sim-8051/embedded/controller_8051.hex
+          test -f sugeno/embedded/sugeno_8051.ihx
+          test -f sugeno/embedded/sugeno_8051.hex
 
-    - name: Upload Complete Project Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: fuzzy-complete-build
-        path: |
-          strength/
-          greenhouse/
-          demo-all/
-          sugeno/
-          sim-8051/
+      - name: Execute Automated CPU Desktop Sweeps
+        run: |
+          make run-demo
+          make run-sugeno
+          make run-sim-8051
+
+      - name: Execute Interactive Simulations With Mocked Inputs
+        run: |
+          printf '45\n80\n' | make run-strength
+          printf '28\n65\n5\n' | make run-greenhouse
+
+      - name: Execute CPU Braking Demonstration
+        run: make run-braking
+
+      - name: Execute OpenCL GPU Braking Demonstration
+        run: make run-braking-gpu
+
+      - name: Execute Complete OpenCL GPU Demonstration
+        run: make run-gpu
+
+      - name: Verify Generated Sugeno Training Dataset
+        run: |
+          test -f sugeno/sugeno_complex_sweep.csv
+          test -s sugeno/sugeno_complex_sweep.csv
+          head -n 5 sugeno/sugeno_complex_sweep.csv
+          wc -l sugeno/sugeno_complex_sweep.csv
+
+      - name: Train Fuzzy-Neuron Model With OpenCL
+        run: |
+          make train-fuzzy-neuron \
+            FUZZY_NEURON_EPOCHS="${FUZZY_NEURON_EPOCHS}" \
+            FUZZY_NEURON_BATCH_SIZE="${FUZZY_NEURON_BATCH_SIZE}" \
+            FUZZY_NEURON_LEARNING_RATE="${FUZZY_NEURON_LEARNING_RATE}" \
+            FUZZY_NEURON_REPORT_INTERVAL="${FUZZY_NEURON_REPORT_INTERVAL}"
+
+      - name: Verify Fuzzy-Neuron Model and Plots
+        run: |
+          test -d fuzzy-neuron-output
+          test -f fuzzy-neuron-output/fuzzy_neuron_model.csv
+          test -s fuzzy-neuron-output/fuzzy_neuron_model.csv
+          test -f fuzzy-neuron-output/fuzzy_neuron_temperature_memberships.svg
+          test -f fuzzy-neuron-output/fuzzy_neuron_load_memberships.svg
+          test -f fuzzy-neuron-output/fuzzy_neuron_vibration_memberships.svg
+          test -f fuzzy-neuron-output/fuzzy_neuron_learned_surface.svg
+          test -f fuzzy-neuron-output/fuzzy_neuron_learned_surface.csv
+          head -n 5 fuzzy-neuron-output/fuzzy_neuron_model.csv
+          wc -l fuzzy-neuron-output/fuzzy_neuron_learned_surface.csv
+
+      - name: Test One Fuzzy-Neuron Input
+        run: |
+          make test-fuzzy-neuron \
+            FUZZY_NEURON_TEMPERATURE="${FUZZY_NEURON_TEMPERATURE}" \
+            FUZZY_NEURON_LOAD="${FUZZY_NEURON_LOAD}" \
+            FUZZY_NEURON_VIBRATION="${FUZZY_NEURON_VIBRATION}"
+
+      - name: Test Fuzzy-Neuron Against CSV Dataset
+        run: |
+          make test-fuzzy-neuron-csv \
+            FUZZY_NEURON_TEST_DATASET="${FUZZY_NEURON_TEST_DATASET}"
+
+      - name: Compare Fuzzy-Neuron Against Original Dataset
+        run: make compare-fuzzy-neuron
+
+      - name: Verify Fuzzy-Neuron Prediction Reports
+        run: |
+          test -f fuzzy-neuron-output/fuzzy_neuron_test_predictions.csv
+          test -s fuzzy-neuron-output/fuzzy_neuron_test_predictions.csv
+          test -f fuzzy-neuron-output/fuzzy_neuron_original_predictions.csv
+          test -s fuzzy-neuron-output/fuzzy_neuron_original_predictions.csv
+          head -n 5 fuzzy-neuron-output/fuzzy_neuron_test_predictions.csv
+          head -n 5 fuzzy-neuron-output/fuzzy_neuron_original_predictions.csv
+          wc -l fuzzy-neuron-output/fuzzy_neuron_test_predictions.csv
+          wc -l fuzzy-neuron-output/fuzzy_neuron_original_predictions.csv
+
+      - name: Convert SVGs to PNG
+        run: make -j"$(nproc)" png
+
+      - name: Convert SVGs to PDF
+        run: make -j"$(nproc)" pdf
+
+      - name: List Generated Artifacts
+        if: always()
+        run: |
+          find strength greenhouse braking braking_gpu demo-all sugeno demo-gpu sim-8051 fuzzy-neuron-output -maxdepth 3 -type f -print 2>/dev/null | sort || true
+
+      - name: Upload Complete Project Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzzy-complete-build
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            strength/
+            greenhouse/
+            braking/
+            braking_gpu/
+            demo-all/
+            sugeno/
+            demo-gpu/
+            sim-8051/
+            fuzzy-neuron-output/
+            strength-app
+            greenhouse-app
+            braking-app
+            braking-gpu
+            fuzzy-demo
+            sugeno-app
+            demo-all-gpu
+            sim-8051-app
+            fuzzy-neuron
+            fuzzy_model_rules.so
+            fuzzy_neuron_kernels.cl
