@@ -51,8 +51,39 @@ jobs:
           make check-dependencies
           gcc --version
           make --version
+          ldd --version
           clinfo --list
           clinfo | grep -E "Platform Name|Platform Vendor|Device Name|Device Type|Device Available|Compiler Available|OpenCL C Version"
+
+      - name: Clean Desktop Build
+        run: |
+          make clean-desktop
+          make clean-fuzzy-neuron
+
+          rm -f \
+            strength-app \
+            greenhouse-app \
+            braking-app \
+            braking-gpu \
+            fuzzy-demo \
+            sugeno-app \
+            demo-all-gpu \
+            sim-8051-app \
+            fuzzy-neuron \
+            fuzzy_model_rules.so
+
+      - name: Verify Prebuilt Binaries Were Removed
+        run: |
+          test ! -e strength-app
+          test ! -e greenhouse-app
+          test ! -e braking-app
+          test ! -e braking-gpu
+          test ! -e fuzzy-demo
+          test ! -e sugeno-app
+          test ! -e demo-all-gpu
+          test ! -e sim-8051-app
+          test ! -e fuzzy-neuron
+          test ! -e fuzzy_model_rules.so
 
       - name: Compile Desktop Simulations
         run: make -j"$(nproc)" desktop
@@ -70,6 +101,38 @@ jobs:
           test -x fuzzy-neuron
           test -f fuzzy_model_rules.so
           test -f fuzzy_neuron_kernels.cl
+
+      - name: Verify Runner-Linked Desktop Binaries
+        run: |
+          file strength-app
+          ldd strength-app
+
+          file greenhouse-app
+          ldd greenhouse-app
+
+          file braking-app
+          ldd braking-app
+
+          file braking-gpu
+          ldd braking-gpu
+
+          file fuzzy-demo
+          ldd fuzzy-demo
+
+          file sugeno-app
+          ldd sugeno-app
+
+          file demo-all-gpu
+          ldd demo-all-gpu
+
+          file sim-8051-app
+          ldd sim-8051-app
+
+          file fuzzy-neuron
+          ldd fuzzy-neuron
+
+          file fuzzy_model_rules.so
+          ldd fuzzy_model_rules.so
 
       - name: Execute Non-Interactive CPU Sweeps
         run: |
