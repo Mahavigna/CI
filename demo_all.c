@@ -713,7 +713,7 @@ static float evaluate_process_response(float temperature, float humidity, float 
 
     build_process_rules(&rules, temperature, humidity, vibration, pressure, quality, method);
 
-    float result = fuzzy_rules_defuzzify(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COG);
+    float result = fuzzy_rules_defuzzify(&rules, RESPONSE_LOWER, RESPONSE_UPPER, cog_step, FUZZY_DEFUZZ_COS);
     
     return result;
 }

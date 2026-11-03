@@ -12,6 +12,7 @@
 #endif
 
 #define FUZZY_8051
+#define FUZZY_MAX_RULES 2u
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
 
@@ -122,34 +123,120 @@ static float fan_fast(
 
 static float calculate_fan_speed(float temperature)
 {
+#ifdef SIMULATION
+
     fuzzy_rules_t rules;
     float result;
 
-    //Init rules
-    rules.count = 0;
+    rules.count = 0u;
 
+    if (!FUZZY_RULE_ADD(
+        &rules,
+        temperature_low(temperature),
+        fan_slow
+    )) {
+        return 0.0f;
+    }
 
-    if (!FUZZY_RULE_ADD(&rules, temperature_low(temperature), fan_slow)) return 0.0f;
-
-    if (!FUZZY_RULE_ADD(&rules, temperature_high(temperature), fan_fast)) return 0.0f;
+    if (!FUZZY_RULE_ADD(
+        &rules,
+        temperature_high(temperature),
+        fan_fast
+    )) {
+        return 0.0f;
+    }
 
     result =
         fuzzy_rules_defuzzify(
-        &rules,
-        0.0f,
-        100.0f,
-        10.0f,
-        FUZZY_DEFUZZ_MOM
-    );
+            &rules,
+            0.0f,
+            100.0f,
+            10.0f,
+            FUZZY_DEFUZZ_MOM
+        );
 
-    //reset rules
-    rules.count = 0;
+    rules.count = 0u;
 
     return result;
+
+#else
+
+    float low_activation;
+    float high_activation;
+    float value;
+    float slow_membership;
+    float fast_membership;
+    float slow_implied;
+    float fast_implied;
+    float height;
+    float maximum;
+    float position_sum;
+    unsigned char position_count;
+
+    low_activation =
+        temperature_low(temperature);
+
+    high_activation =
+        temperature_high(temperature);
+
+    maximum = 0.0f;
+    position_sum = 0.0f;
+    position_count = 0u;
+
+    for (
+        value = 0.0f;
+        value <= 100.0f;
+        value += 10.0f
+    ) {
+        slow_membership =
+            fan_slow(value);
+
+        fast_membership =
+            fan_fast(value);
+
+        slow_implied =
+            low_activation < slow_membership
+                ? low_activation
+                : slow_membership;
+
+        fast_implied =
+            high_activation < fast_membership
+                ? high_activation
+                : fast_membership;
+
+        height =
+            slow_implied > fast_implied
+                ? slow_implied
+                : fast_implied;
+
+        if (
+            position_count == 0u ||
+            height > maximum
+        ) {
+            maximum = height;
+            position_sum = value;
+            position_count = 1u;
+        }
+        else if (height == maximum) {
+            position_sum += value;
+            position_count++;
+        }
+    }
+
+    if (
+        position_count == 0u ||
+        maximum <= 0.0f
+    ) {
+        return 0.0f;
+    }
+
+    return position_sum /
+        (float)position_count;
+
+#endif
 }
 
-
-/* ==========================================================
+ /* ==========================================================
  * Convert fuzzy output to PWM percentage
  * ========================================================== */
 

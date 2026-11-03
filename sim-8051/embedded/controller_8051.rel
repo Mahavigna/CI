@@ -1,6 +1,6 @@
 ;!FILE controller_8051.asm
 XH3
-H 1C areas 22B6 global symbols
+H 1C areas 2466 global symbols
 M controller_8051
 O -mmcs51 --model-small
 S ___fssub Ref000000
@@ -241,8 +241,8 @@ S G$ES$0_0$0 Def0000AC
 S G$P2_7$0_0$0 Def0000A7
 S _RI Def000098
 S _INT0 Def0000B2
-S ___uchar2fs Ref000000
 S ___fs2uchar Ref000000
+S ___uchar2fs Ref000000
 S __gptrget Ref000000
 S G$PX1$0_0$0 Def0000BA
 S G$P3_7$0_0$0 Def0000B7
@@ -341,19 +341,24 @@ A GSINIT3 size 0 flags 20 addr 0
 A GSINIT4 size 0 flags 20 addr 0
 A GSINIT5 size 0 flags 20 addr 0
 A GSINIT size F flags 20 addr 0
-S C$controller_8051.c$25$2_0$161 Def000000
 S A$controller_8051$570 Def000006
-S C$controller_8051.c$26$2_0$161 Def000003
 S A$controller_8051$571 Def000007
-S C$controller_8051.c$27$2_0$161 Def000006
 S A$controller_8051$572 Def000009
 S A$controller_8051$573 Def00000B
 S A$controller_8051$564 Def000000
 S A$controller_8051$574 Def00000D
+S C$controller_8051.c$26$2_0$166 Def000000
 S A$controller_8051$567 Def000003
+S C$controller_8051.c$27$2_0$166 Def000003
+S C$controller_8051.c$28$2_0$166 Def000006
 A GSFINAL size 3 flags 20 addr 0
 S A$controller_8051$576 Def000000
-A CSEG size 33D0 flags 20 addr 0
+A CSEG size 3643 flags 20 addr 0
+S A$controller_8051$10678 Def0035F7
+S A$controller_8051$10669 Def0035E5
+S A$controller_8051$10597 Def00356D
+S A$controller_8051$10489 Def0034DA
+S A$controller_8051$10399 Def003452
 S A$controller_8051$6000 Def001C96
 S A$controller_8051$5010 Def00178C
 S A$controller_8051$5001 Def001781
@@ -403,7 +408,9 @@ S A$controller_8051$1032 Def0001F9
 S A$controller_8051$1023 Def0001EF
 S A$controller_8051$1014 Def0001DE
 S A$controller_8051$1005 Def0001CE
-S C$controller_8051.c$110$1_0$153 Def00314A
+S C$controller_8051.c$103$1_0$151 Def00313C
+S C$fuzzy.h$291$1_0$3 Def00002C
+S A$controller_8051$10679 Def0035F8
 S A$controller_8051$7000 Def002239
 S A$controller_8051$6100 Def001D2A
 S A$controller_8051$6010 Def001CA4
@@ -470,9 +477,8 @@ S A$controller_8051$1033 Def0001FA
 S A$controller_8051$1024 Def0001F0
 S A$controller_8051$1015 Def0001E0
 S A$controller_8051$1006 Def0001CF
-S C$controller_8051.c$220$1_0$161 Def0033B6
-S C$controller_8051.c$211$1_0$161 Def00339F
-S C$controller_8051.c$202$1_0$161 Def003399
+S C$controller_8051.c$111$1_0$153 Def00314A
+S C$fuzzy.h$292$1_0$3 Def000032
 S _fuzzy_rules_defuzzify_boa Def00229B
 S A$controller_8051$7100 Def0022B0
 S A$controller_8051$7010 Def00224D
@@ -575,6 +581,7 @@ S A$controller_8051$1034 Def0001FD
 S A$controller_8051$1025 Def0001F2
 S A$controller_8051$1016 Def0001E2
 S A$controller_8051$1007 Def0001D2
+S C$controller_8051.c$230$2_0$160 Def00351F
 S XG$fuzzy_ramp$0$0 Def000C71
 S A$controller_8051$9000 Def002D02
 S A$controller_8051$8100 Def00282E
@@ -718,8 +725,6 @@ S A$controller_8051$1017 Def0001E4
 S A$controller_8051$1008 Def0001D3
 S Fcontroller_8051$fuzzy_implication$0$0 Def00181A
 S XG$fuzzy_and_array$0$0 Def00040A
-S C$fuzzy.h$283$2_0$4 Def000023
-S C$fuzzy.h$277$0_0$3 Def000000
 S A$controller_8051$9100 Def002D95
 S A$controller_8051$9010 Def002D0F
 S A$controller_8051$9001 Def002D03
@@ -911,14 +916,10 @@ S A$controller_8051$1036 Def0001FE
 S A$controller_8051$1027 Def0001F5
 S A$controller_8051$1018 Def0001E7
 S A$controller_8051$1009 Def0001D4
-S C$controller_8051.c$205$1_0$161 Def00339C
-S C$controller_8051.c$114$1_0$153 Def003144
-S C$controller_8051.c$105$1_0$153 Def00313D
+S C$controller_8051.c$220$1_0$155 Def003416
 S G$fuzzy_rules_defuzzify_method$0$0 Def002BED
 S XFcontroller_8051$fuzzy_apply_hedge$0$0 Def00016B
-S C$fuzzy.h$284$2_0$4 Def00001E
-S C$fuzzy.h$282$3_0$5 Def000000
-S _main Def003396
+S _main Def003609
 S A$controller_8051$9110 Def002DA4
 S A$controller_8051$9101 Def002D96
 S A$controller_8051$9020 Def002D21
@@ -1155,10 +1156,14 @@ S A$controller_8051$1046 Def00020B
 S A$controller_8051$1037 Def0001FF
 S A$controller_8051$1028 Def0001F6
 S A$controller_8051$1019 Def0001E8
-S C$controller_8051.c$233$1_0$161 Def0033CA
+S C$controller_8051.c$221$1_0$155 Def003443
+S C$controller_8051.c$115$1_0$153 Def003144
+S C$controller_8051.c$106$1_0$153 Def00313D
 S Fcontroller_8051$fan_fast$0$0 Def00313D
 S XG$fuzzy_rules_add$0$0 Def001819
 S XG$fuzzy_sugeno_weighted_sum_array$0$0 Def000A34
+S C$fuzzy.h$285$2_0$4 Def000023
+S C$fuzzy.h$279$0_0$3 Def000000
 S A$controller_8051$9300 Def002EB3
 S A$controller_8051$9210 Def002E30
 S A$controller_8051$9120 Def002DB3
@@ -1453,9 +1458,12 @@ S A$controller_8051$1056 Def000219
 S A$controller_8051$1047 Def00020C
 S A$controller_8051$1038 Def000202
 S A$controller_8051$1029 Def0001F7
-S C$controller_8051.c$132$1_0$155 Def0031A4
-S C$controller_8051.c$123$1_0$155 Def003183
-S C$controller_8051.c$116$1_0$153 Def003182
+S C$controller_8051.c$251$1_0$162 Def0035A2
+S C$controller_8051.c$222$1_0$155 Def003459
+S C$controller_8051.c$204$1_0$155 Def0032C0
+S C$controller_8051.c$200$3_0$157 Def0032A0
+S C$fuzzy.h$286$2_0$4 Def00001E
+S C$fuzzy.h$284$3_0$5 Def000000
 S A$controller_8051$9400 Def002F42
 S A$controller_8051$9310 Def002EC0
 S A$controller_8051$9301 Def002EB4
@@ -1797,8 +1805,11 @@ S A$controller_8051$1066 Def000225
 S A$controller_8051$1057 Def00021A
 S A$controller_8051$1048 Def00020D
 S A$controller_8051$1039 Def000203
-S C$controller_8051.c$216$2_0$161 Def0033A2
-S C$fuzzy.h$289$1_0$3 Def00002C
+S C$controller_8051.c$320$1_0$166 Def00363D
+S C$controller_8051.c$243$1_0$162 Def003567
+S C$controller_8051.c$210$3_0$157 Def003386
+S C$controller_8051.c$124$1_0$155 Def003183
+S C$controller_8051.c$117$1_0$153 Def003182
 S A$controller_8051$9500 Def002FB6
 S A$controller_8051$9410 Def002F51
 S A$controller_8051$9401 Def002F43
@@ -2184,12 +2195,10 @@ S A$controller_8051$1094 Def000244
 S A$controller_8051$1085 Def00023B
 S A$controller_8051$1067 Def000226
 S A$controller_8051$1049 Def000210
-S C$controller_8051.c$227$1_0$161 Def0033C7
-S C$controller_8051.c$134$1_0$155 Def00321F
+S C$controller_8051.c$215$1_0$155 Def0033B1
 S XFcontroller_8051$temperature_high$0$0 Def0030F7
 S G$fuzzy_rules_defuzzify_cos$0$0 Def002581
 S XFcontroller_8051$fuzzy_rules_maximum_result$0$0 Def002087
-S C$fuzzy.h$286$3_0$5 Def000004
 S _fuzzy_rules_defuzzify_cog Def002088
 S A$controller_8051$9600 Def003034
 S A$controller_8051$9510 Def002FC5
@@ -2611,7 +2620,9 @@ S A$controller_8051$1149 Def000299
 S A$controller_8051$1095 Def000245
 S A$controller_8051$1086 Def00023C
 S A$controller_8051$1068 Def000227
-S C$controller_8051.c$160$1_0$157 Def0032FB
+S C$controller_8051.c$303$2_0$166 Def003615
+S C$controller_8051.c$234$1_0$155 Def003527
+S C$controller_8051.c$180$1_0$155 Def0031BC
 S _fuzzy_rules_cog Def003000
 S A$controller_8051$9610 Def003042
 S A$controller_8051$9601 Def003035
@@ -3082,8 +3093,12 @@ S A$controller_8051$1159 Def0002A2
 S A$controller_8051$1096 Def000246
 S A$controller_8051$1087 Def00023D
 S A$controller_8051$1069 Def000228
-S C$controller_8051.c$170$1_0$157 Def003369
+S C$controller_8051.c$314$1_0$166 Def00363A
+S C$controller_8051.c$252$2_0$164 Def0035D7
+S C$controller_8051.c$190$1_0$155 Def003484
+S C$controller_8051.c$213$3_0$157 Def0033AE
 S XFcontroller_8051$fuzzy_aggregation$0$0 Def001AE0
+S C$fuzzy.h$288$3_0$5 Def000004
 S A$controller_8051$9800 Def003133
 S A$controller_8051$9710 Def0030B7
 S A$controller_8051$9620 Def003052
@@ -3591,14 +3606,15 @@ S A$controller_8051$1169 Def0002B2
 S A$controller_8051$1097 Def000248
 S A$controller_8051$1088 Def00023E
 S A$controller_8051$1079 Def000232
-S C$controller_8051.c$238$2_0$161 Def0033CF
-S C$controller_8051.c$171$1_0$157 Def003395
-S C$controller_8051.c$146$1_0$155 Def0032E2
+S C$controller_8051.c$247$1_0$162 Def00356E
+S C$controller_8051.c$227$1_0$155 Def0034ED
+S C$controller_8051.c$209$1_0$155 Def00333B
+S C$controller_8051.c$205$3_0$157 Def00331F
+S C$controller_8051.c$182$1_0$155 Def0031D6
 S G$fuzzy_rules_defuzzify_lom$0$0 Def002B04
 S XG$fuzzy_sugeno_weighted_average_array$0$0 Def0008CD
 S G$fuzzy_not$0$0 Def0000B0
 S Fcontroller_8051$fuzzy_values_initialize$0$0 Def000000
-S A$controller_8051$9900 Def0031A1
 S A$controller_8051$9801 Def003135
 S A$controller_8051$9720 Def0030C0
 S A$controller_8051$9630 Def003066
@@ -4127,15 +4143,15 @@ S A$controller_8051$1188 Def0002D0
 S A$controller_8051$1179 Def0002C1
 S A$controller_8051$1098 Def000249
 S A$controller_8051$1089 Def00023F
-S C$controller_8051.c$161$2_0$158 Def00332A
-S C$controller_8051.c$138$1_0$155 Def00329D
-S C$controller_8051.c$129$1_0$155 Def003196
-S C$fuzzy.h$3002$2_0$140 Def002C92
+S C$controller_8051.c$307$1_0$166 Def003629
+S C$controller_8051.c$257$1_0$162 Def0035DC
+S C$controller_8051.c$237$1_0$155 Def003566
+S C$controller_8051.c$183$1_0$155 Def0031E3
+S C$fuzzy.h$3010$2_0$141 Def002CC6
 S G$fuzzy_rules_defuzzify_mom$0$0 Def0028E4
-S C$fuzzy.h$2700$1_0$110 Def0020A6
 S G$fuzzy_trapezoid$0$0 Def000F7E
-S A$controller_8051$9910 Def0031AD
-S A$controller_8051$9901 Def0031A3
+S A$controller_8051$9910 Def0031A7
+S A$controller_8051$9901 Def003195
 S A$controller_8051$9802 Def003137
 S A$controller_8051$9730 Def0030D3
 S A$controller_8051$9721 Def0030C2
@@ -4673,13 +4689,17 @@ S A$controller_8051$1279 Def000344
 S A$controller_8051$1198 Def0002DE
 S A$controller_8051$1189 Def0002D2
 S A$controller_8051$1099 Def00024A
-S C$controller_8051.c$196$1_0$161 Def003396
-S C$controller_8051.c$164$1_0$157 Def00332F
-S XFcontroller_8051$calculate_fan_speed$0$0 Def0032F3
-S C$controller_8051.c$148$1_0$155 Def0032E7
+S C$controller_8051.c$325$2_0$166 Def003642
+S C$controller_8051.c$258$1_0$162 Def003608
+S XFcontroller_8051$calculate_fan_speed$0$0 Def003566
+S C$controller_8051.c$229$1_0$155 Def0034F0
+S C$controller_8051.c$184$1_0$155 Def0031F0
+S C$fuzzy.h$3020$2_0$141 Def002D3E
 S XG$fuzzy_rules_defuzzify_boa$0$0 Def002580
-S A$controller_8051$9920 Def0031BE
-S A$controller_8051$9911 Def0031AF
+S C$fuzzy.h$2540$1_0$100 Def001AE1
+S A$controller_8051$9920 Def0031B6
+S A$controller_8051$9911 Def0031A9
+S A$controller_8051$9902 Def003197
 S A$controller_8051$9830 Def003148
 S A$controller_8051$9803 Def003139
 S A$controller_8051$9740 Def0030E9
@@ -5198,13 +5218,14 @@ S A$controller_8051$1397 Def0003EB
 S A$controller_8051$1298 Def000360
 S A$controller_8051$1289 Def000352
 S A$controller_8051$1199 Def0002E0
-S C$controller_8051.c$188$1_0$161 Def003396
-S C$controller_8051.c$156$1_0$157 Def0032F4
-S C$controller_8051.c$149$1_0$155 Def0032F3
-S C$fuzzy.h$2720$1_0$110 Def002185
-S A$controller_8051$9930 Def0031CE
-S A$controller_8051$9921 Def0031C0
-S A$controller_8051$9912 Def0031B0
+S C$controller_8051.c$248$2_0$163 Def00359D
+S C$fuzzy.h$3030$2_0$141 Def002DB6
+S C$fuzzy.h$3004$2_0$140 Def002C92
+S C$fuzzy.h$2702$1_0$110 Def0020A6
+S A$controller_8051$9930 Def0031C6
+S A$controller_8051$9921 Def0031B8
+S A$controller_8051$9912 Def0031AA
+S A$controller_8051$9903 Def003199
 S A$controller_8051$9840 Def003156
 S A$controller_8051$9831 Def003149
 S A$controller_8051$9822 Def00313D
@@ -5675,13 +5696,18 @@ S A$controller_8051$1479 Def000434
 S A$controller_8051$1398 Def0003EE
 S A$controller_8051$1389 Def0003E3
 S A$controller_8051$1299 Def000362
-S C$fuzzy.h$2551$1_0$100 Def001AF2
+S C$controller_8051.c$292$1_0$166 Def00360F
+S C$controller_8051.c$283$1_0$166 Def003609
+S C$controller_8051.c$216$4_0$158 Def0033EA
+S C$controller_8051.c$177$1_0$155 Def003195
+S C$fuzzy.h$3100$1_0$145 Def003000
+S C$fuzzy.h$2730$1_0$110 Def00225B
 S XFcontroller_8051$fuzzy_clamp$0$0 Def0000AF
-S A$controller_8051$9940 Def0031E2
-S A$controller_8051$9931 Def0031D0
-S A$controller_8051$9922 Def0031C1
-S A$controller_8051$9913 Def0031B1
-S A$controller_8051$9904 Def0031A4
+S A$controller_8051$9940 Def0031D5
+S A$controller_8051$9931 Def0031C7
+S A$controller_8051$9922 Def0031BA
+S A$controller_8051$9913 Def0031AC
+S A$controller_8051$9904 Def00319B
 S A$controller_8051$9850 Def00316B
 S A$controller_8051$9841 Def003158
 S A$controller_8051$9823 Def00313F
@@ -6108,17 +6134,19 @@ S A$controller_8051$1588 Def0004C7
 S A$controller_8051$1579 Def0004BC
 S A$controller_8051$1489 Def00043F
 S A$controller_8051$1399 Def0003EF
-S XG$main$0$0 Def0033CF
-S C$fuzzy.h$2704$1_0$110 Def0020CB
-S C$fuzzy.h$2602$1_0$104 Def001C8A
+S XG$main$0$0 Def003642
+S C$controller_8051.c$275$1_0$166 Def003609
+S C$controller_8051.c$217$4_0$158 Def0033FA
+S C$controller_8051.c$192$3_0$157 Def0031FE
+S C$fuzzy.h$2731$1_0$110 Def00229A
+S C$fuzzy.h$2722$1_0$110 Def002185
+S C$fuzzy.h$2620$1_0$104 Def001CC4
 S G$fuzzy_triangle$0$0 Def000C72
 S _fuzzy_rules_defuzzify_method Def002BED
-S A$controller_8051$9950 Def0031EF
-S A$controller_8051$9941 Def0031E3
-S A$controller_8051$9932 Def0031D2
-S A$controller_8051$9923 Def0031C3
-S A$controller_8051$9914 Def0031B3
-S A$controller_8051$9905 Def0031A6
+S A$controller_8051$9950 Def0031DF
+S A$controller_8051$9932 Def0031C9
+S A$controller_8051$9914 Def0031AD
+S A$controller_8051$9905 Def00319C
 S A$controller_8051$9860 Def00317F
 S A$controller_8051$9851 Def00316E
 S A$controller_8051$9842 Def003159
@@ -6497,20 +6525,16 @@ S A$controller_8051$1688 Def000555
 S A$controller_8051$1679 Def000544
 S A$controller_8051$1589 Def0004C8
 S A$controller_8051$700 Def000065
-S C$controller_8051.c$165$2_0$159 Def003364
-S C$fuzzy.h$3006$2_0$141 Def002CC6
-S C$fuzzy.h$2910$1_0$130 Def002A1A
-S C$fuzzy.h$2723$1_0$110 Def002228
-S C$fuzzy.h$2703$2_0$111 Def0020B3
-S C$fuzzy.h$2621$1_0$104 Def001CF8
-S C$fuzzy.h$2580$1_0$100 Def001C72
-S A$controller_8051$9960 Def003202
-S A$controller_8051$9951 Def0031F0
-S A$controller_8051$9942 Def0031E4
-S A$controller_8051$9933 Def0031D4
-S A$controller_8051$9924 Def0031C4
-S A$controller_8051$9915 Def0031B5
-S A$controller_8051$9906 Def0031A7
+S C$controller_8051.c$188$1_0$155 Def003493
+S C$controller_8051.c$218$4_0$158 Def003412
+S C$fuzzy.h$3000$1_0$139 Def002C04
+S C$fuzzy.h$2910$1_0$130 Def0029C2
+S C$fuzzy.h$2553$1_0$100 Def001AF2
+S A$controller_8051$9960 Def0031E9
+S A$controller_8051$9951 Def0031E0
+S A$controller_8051$9933 Def0031CB
+S A$controller_8051$9915 Def0031AF
+S A$controller_8051$9906 Def00319E
 S A$controller_8051$9861 Def003181
 S A$controller_8051$9852 Def003170
 S A$controller_8051$9843 Def00315B
@@ -6846,19 +6870,21 @@ S A$controller_8051$710 Def000072
 S A$controller_8051$701 Def000066
 S A$controller_8051$620 Def000008
 S A$controller_8051$611 Def000000
-S C$fuzzy.h$3016$2_0$141 Def002D3E
-S C$fuzzy.h$3001$1_0$139 Def002C5B
+S C$controller_8051.c$187$2_0$156 Def0031F1
+S C$fuzzy.h$3001$1_0$139 Def002C1E
 S G$fuzzy_rules_defuzzify_som$0$0 Def002A1B
-S C$fuzzy.h$2902$1_0$130 Def00296C
-S C$fuzzy.h$2706$1_0$110 Def0021C1
-S A$controller_8051$9970 Def003216
-S A$controller_8051$9961 Def003204
-S A$controller_8051$9952 Def0031F2
-S A$controller_8051$9943 Def0031E6
-S A$controller_8051$9934 Def0031D6
-S A$controller_8051$9925 Def0031C6
-S A$controller_8051$9916 Def0031B8
-S A$controller_8051$9907 Def0031A9
+S C$fuzzy.h$2911$1_0$130 Def0029D9
+S C$fuzzy.h$2800$4_0$121 Def00251C
+S C$fuzzy.h$2711$3_0$112 Def002102
+S C$fuzzy.h$2706$1_0$110 Def0020CB
+S C$fuzzy.h$2604$1_0$104 Def001C8A
+S A$controller_8051$9961 Def0031EA
+S A$controller_8051$9952 Def0031E1
+S A$controller_8051$9943 Def0031D6
+S A$controller_8051$9934 Def0031CC
+S A$controller_8051$9925 Def0031BC
+S A$controller_8051$9916 Def0031B0
+S A$controller_8051$9907 Def0031A0
 S A$controller_8051$9853 Def003172
 S A$controller_8051$9844 Def00315D
 S A$controller_8051$9835 Def00314C
@@ -7146,24 +7172,23 @@ S A$controller_8051$702 Def000068
 S A$controller_8051$630 Def000013
 S A$controller_8051$621 Def000009
 S A$controller_8051$612 Def000002
-S C$fuzzy.h$3113$1_0$145 Def00306B
-S C$fuzzy.h$3035$2_0$141 Def002E26
-S C$fuzzy.h$3026$2_0$141 Def002DB6
+S C$controller_8051.c$199$1_0$155 Def003251
+S C$controller_8051.c$195$3_0$157 Def00321B
 S C$fuzzy.h$3008$2_0$141 Def002CC6
-S C$fuzzy.h$2903$1_0$130 Def002979
-S C$fuzzy.h$2582$1_0$100 Def001C89
-S C$fuzzy.h$2560$3_0$102 Def001B5E
-S C$fuzzy.h$2555$1_0$100 Def001B38
-S A$controller_8051$9980 Def003224
-S A$controller_8051$9971 Def003219
-S A$controller_8051$9962 Def003207
-S A$controller_8051$9953 Def0031F4
-S A$controller_8051$9944 Def0031E7
-S A$controller_8051$9935 Def0031D8
-S A$controller_8051$9926 Def0031C7
-S A$controller_8051$9917 Def0031B9
-S A$controller_8051$9908 Def0031AA
-S A$controller_8051$9890 Def003194
+S C$fuzzy.h$2912$1_0$130 Def002A1A
+S C$fuzzy.h$2725$1_0$110 Def002228
+S C$fuzzy.h$2705$2_0$111 Def0020B3
+S C$fuzzy.h$2623$1_0$104 Def001CF8
+S C$fuzzy.h$2582$1_0$100 Def001C72
+S A$controller_8051$9980 Def0031FB
+S A$controller_8051$9962 Def0031EB
+S A$controller_8051$9953 Def0031E2
+S A$controller_8051$9944 Def0031D8
+S A$controller_8051$9935 Def0031CE
+S A$controller_8051$9926 Def0031BE
+S A$controller_8051$9917 Def0031B2
+S A$controller_8051$9908 Def0031A2
+S A$controller_8051$9890 Def003183
 S A$controller_8051$9854 Def003174
 S A$controller_8051$9845 Def00315F
 S A$controller_8051$9836 Def00314E
@@ -7402,30 +7427,22 @@ S A$controller_8051$703 Def00006B
 S A$controller_8051$640 Def00001F
 S A$controller_8051$631 Def000015
 S A$controller_8051$622 Def00000A
-S C$fuzzy.h$3045$2_0$141 Def002E9E
 S C$fuzzy.h$3018$2_0$141 Def002D3E
-S C$fuzzy.h$2802$1_0$115 Def00256C
+S C$fuzzy.h$3003$1_0$139 Def002C5B
+S C$fuzzy.h$2904$1_0$130 Def00296C
 S XG$fuzzy_rules_defuzzify_cog$0$0 Def00229A
-S C$fuzzy.h$2717$1_0$110 Def00214A
-S C$fuzzy.h$2632$2_0$104 Def001D9A
-S C$fuzzy.h$2631$2_0$105 Def001D82
-S C$fuzzy.h$2624$1_0$104 Def001D30
-S C$fuzzy.h$2615$1_0$104 Def001C9A
-S C$fuzzy.h$2556$1_0$100 Def001C57
-S C$fuzzy.h$2561$3_0$102 Def001B89
-S C$fuzzy.h$2538$1_0$100 Def001AE1
+S C$fuzzy.h$2708$1_0$110 Def0021C1
 S _fuzzy_rules_defuzzify_cos Def002581
-S A$controller_8051$9990 Def003235
-S A$controller_8051$9981 Def003226
-S A$controller_8051$9972 Def00321A
-S A$controller_8051$9963 Def003209
-S A$controller_8051$9954 Def0031F6
-S A$controller_8051$9945 Def0031E8
-S A$controller_8051$9936 Def0031DA
-S A$controller_8051$9927 Def0031C8
-S A$controller_8051$9918 Def0031BB
-S A$controller_8051$9909 Def0031AC
-S A$controller_8051$9882 Def003183
+S A$controller_8051$9990 Def003205
+S A$controller_8051$9981 Def0031FC
+S A$controller_8051$9972 Def0031F1
+S A$controller_8051$9963 Def0031EC
+S A$controller_8051$9945 Def0031DA
+S A$controller_8051$9936 Def0031CF
+S A$controller_8051$9927 Def0031C0
+S A$controller_8051$9918 Def0031B3
+S A$controller_8051$9909 Def0031A4
+S A$controller_8051$9891 Def003185
 S A$controller_8051$9855 Def003175
 S A$controller_8051$9846 Def003161
 S A$controller_8051$9837 Def003150
@@ -7609,24 +7626,26 @@ S A$controller_8051$650 Def00002A
 S A$controller_8051$641 Def000022
 S A$controller_8051$632 Def000016
 S A$controller_8051$623 Def00000B
+S C$controller_8051.c$298$1_0$166 Def003612
+S C$controller_8051.c$289$1_0$166 Def00360C
 S XG$fuzzy_rules_cog$0$0 Def00306B
-S C$fuzzy.h$3106$1_0$145 Def00300B
-S C$fuzzy.h$3055$2_0$141 Def002F13
+S C$fuzzy.h$3115$1_0$145 Def00306B
 S C$fuzzy.h$3037$2_0$141 Def002E26
 S C$fuzzy.h$3028$2_0$141 Def002DB6
-S C$fuzzy.h$2840$1_0$123 Def002826
-S C$fuzzy.h$2831$1_0$123 Def002592
-S C$fuzzy.h$2803$1_0$115 Def002580
-S A$controller_8051$9991 Def003236
-S A$controller_8051$9982 Def003227
-S A$controller_8051$9973 Def00321C
-S A$controller_8051$9964 Def00320B
-S A$controller_8051$9955 Def0031F8
-S A$controller_8051$9946 Def0031EA
-S A$controller_8051$9937 Def0031DC
-S A$controller_8051$9928 Def0031CA
-S A$controller_8051$9919 Def0031BD
-S A$controller_8051$9883 Def003185
+S C$fuzzy.h$2905$1_0$130 Def002979
+S C$fuzzy.h$2840$1_0$123 Def0025E4
+S C$fuzzy.h$2584$1_0$100 Def001C89
+S C$fuzzy.h$2562$3_0$102 Def001B5E
+S C$fuzzy.h$2557$1_0$100 Def001B38
+S A$controller_8051$9991 Def003206
+S A$controller_8051$9982 Def0031FD
+S A$controller_8051$9973 Def0031F3
+S A$controller_8051$9964 Def0031ED
+S A$controller_8051$9946 Def0031DB
+S A$controller_8051$9937 Def0031D1
+S A$controller_8051$9928 Def0031C2
+S A$controller_8051$9919 Def0031B4
+S A$controller_8051$9892 Def003188
 S A$controller_8051$9856 Def003177
 S A$controller_8051$9847 Def003163
 S A$controller_8051$9838 Def003152
@@ -7769,24 +7788,26 @@ S A$controller_8051$714 Def00007A
 S A$controller_8051$705 Def00006E
 S A$controller_8051$633 Def000018
 S A$controller_8051$624 Def00000C
-S C$controller_8051.c$91$1_0$151 Def0030F8
-S C$fuzzy.h$3065$2_0$141 Def002F7E
 S C$fuzzy.h$3047$2_0$141 Def002E9E
-S C$fuzzy.h$3005$1_0$139 Def002C9B
-S C$fuzzy.h$2728$1_0$110 Def00225B
-S C$fuzzy.h$2724$2_0$113 Def002253
-S C$fuzzy.h$2682$2_0$110 Def002088
-S C$fuzzy.h$2634$2_0$104 Def002043
-S C$fuzzy.h$2554$3_0$102 Def001AFF
-S A$controller_8051$9992 Def003238
-S A$controller_8051$9983 Def003229
-S A$controller_8051$9965 Def00320D
-S A$controller_8051$9956 Def0031FA
-S A$controller_8051$9947 Def0031EB
-S A$controller_8051$9938 Def0031DE
-S A$controller_8051$9929 Def0031CC
-S A$controller_8051$9893 Def003196
-S A$controller_8051$9884 Def003188
+S C$fuzzy.h$2930$1_0$133 Def002A2C
+S C$fuzzy.h$2850$1_0$123 Def002658
+S C$fuzzy.h$2804$1_0$115 Def00256C
+S C$fuzzy.h$2741$1_0$115 Def00229B
+S C$fuzzy.h$2719$1_0$110 Def00214A
+S C$fuzzy.h$2634$2_0$104 Def001D9A
+S C$fuzzy.h$2633$2_0$105 Def001D82
+S C$fuzzy.h$2626$1_0$104 Def001D30
+S C$fuzzy.h$2617$1_0$104 Def001C9A
+S C$fuzzy.h$2558$1_0$100 Def001C57
+S C$fuzzy.h$2563$3_0$102 Def001B89
+S A$controller_8051$9992 Def003208
+S A$controller_8051$9974 Def0031F5
+S A$controller_8051$9965 Def0031EE
+S A$controller_8051$9956 Def0031E3
+S A$controller_8051$9947 Def0031DC
+S A$controller_8051$9938 Def0031D2
+S A$controller_8051$9929 Def0031C3
+S A$controller_8051$9893 Def00318A
 S A$controller_8051$9866 Def003182
 S A$controller_8051$9857 Def003179
 S A$controller_8051$9848 Def003165
@@ -7889,29 +7910,26 @@ S A$controller_8051$715 Def00007C
 S A$controller_8051$634 Def000019
 S A$controller_8051$625 Def00000D
 S A$controller_8051$616 Def000004
-S C$fuzzy.h$3092$1_0$143 Def002FFF
-S C$fuzzy.h$3066$2_0$141 Def002F80
-S C$fuzzy.h$3057$2_0$141 Def002F15
-S C$fuzzy.h$2905$2_0$131 Def0029BA
-S C$fuzzy.h$2880$1_0$130 Def0028E4
-S C$fuzzy.h$2842$1_0$123 Def002627
-S C$fuzzy.h$2815$1_0$123 Def002581
-S C$fuzzy.h$2760$1_0$115 Def00234F
-S C$fuzzy.h$2729$1_0$110 Def00229A
-S C$fuzzy.h$2627$1_0$104 Def001D5D
-S C$fuzzy.h$2618$1_0$104 Def001CC4
-S C$fuzzy.h$2573$3_0$102 Def001C1B
+S C$controller_8051.c$92$1_0$151 Def0030F8
+S C$controller_8051.c$60$1_0$147 Def00306C
+S C$fuzzy.h$3108$1_0$145 Def00300B
+S C$fuzzy.h$3057$2_0$141 Def002F13
+S C$fuzzy.h$3039$2_0$141 Def002E26
+S C$fuzzy.h$2940$1_0$133 Def002AA3
+S C$fuzzy.h$2842$1_0$123 Def002826
+S C$fuzzy.h$2833$1_0$123 Def002592
+S C$fuzzy.h$2805$1_0$115 Def002580
+S C$fuzzy.h$2760$1_0$115 Def0022D1
 S Fcontroller_8051$fuzzy_rules_aggregated_height$0$0 Def001AE1
 S _fuzzy_rules_defuzzify_lom Def002B04
 S _fuzzy_not Def0000B0
-S A$controller_8051$9993 Def00323A
-S A$controller_8051$9984 Def00322A
-S A$controller_8051$9966 Def00320F
-S A$controller_8051$9957 Def0031FC
-S A$controller_8051$9948 Def0031EC
-S A$controller_8051$9939 Def0031E0
-S A$controller_8051$9894 Def003198
-S A$controller_8051$9885 Def00318A
+S A$controller_8051$9993 Def003209
+S A$controller_8051$9975 Def0031F6
+S A$controller_8051$9966 Def0031EF
+S A$controller_8051$9957 Def0031E5
+S A$controller_8051$9948 Def0031DD
+S A$controller_8051$9939 Def0031D4
+S A$controller_8051$9894 Def00318C
 S A$controller_8051$9858 Def00317B
 S A$controller_8051$9849 Def003168
 S A$controller_8051$9795 Def00312A
@@ -7987,23 +8005,24 @@ S A$controller_8051$653 Def00002C
 S A$controller_8051$635 Def00001B
 S A$controller_8051$626 Def00000E
 S A$controller_8051$617 Def000005
-S C$controller_8051.c$70$1_0$147 Def0030B0
-S C$fuzzy.h$3084$1_0$143 Def002F97
-S C$fuzzy.h$3075$1_0$143 Def002F8C
-S C$fuzzy.h$2908$1_0$130 Def0029C2
-S C$fuzzy.h$2861$1_0$123 Def002752
-S C$fuzzy.h$2834$1_0$123 Def00259F
-S C$fuzzy.h$2770$1_0$115 Def0023B6
-S C$fuzzy.h$2645$2_0$104 Def001E33
+S C$fuzzy.h$3070$1_0$139 Def002F8B
+S C$fuzzy.h$3067$2_0$141 Def002F7E
+S C$fuzzy.h$3049$2_0$141 Def002E9E
+S C$fuzzy.h$3007$1_0$139 Def002C9B
+S C$fuzzy.h$2941$1_0$133 Def002AB0
+S C$fuzzy.h$2870$1_0$123 Def002871
+S C$fuzzy.h$2790$3_0$120 Def002479
+S C$fuzzy.h$2726$2_0$113 Def002253
+S C$fuzzy.h$2684$2_0$110 Def002088
+S C$fuzzy.h$2636$2_0$104 Def002043
+S C$fuzzy.h$2556$3_0$102 Def001AFF
 S _fuzzy_rules_defuzzify_mom Def0028E4
 S _fuzzy_trapezoid Def000F7E
-S A$controller_8051$9994 Def00323B
-S A$controller_8051$9985 Def00322C
-S A$controller_8051$9967 Def003211
-S A$controller_8051$9958 Def0031FE
-S A$controller_8051$9949 Def0031EE
-S A$controller_8051$9895 Def00319A
-S A$controller_8051$9886 Def00318C
+S A$controller_8051$9994 Def00320B
+S A$controller_8051$9976 Def0031F7
+S A$controller_8051$9958 Def0031E7
+S A$controller_8051$9949 Def0031DE
+S A$controller_8051$9895 Def00318E
 S A$controller_8051$9859 Def00317D
 S A$controller_8051$9796 Def00312C
 S A$controller_8051$9787 Def003118
@@ -8066,20 +8085,23 @@ S A$controller_8051$645 Def000023
 S A$controller_8051$636 Def00001C
 S A$controller_8051$627 Def00000F
 S A$controller_8051$618 Def000006
-S C$fuzzy.h$2909$1_0$130 Def0029D9
-S C$fuzzy.h$2844$1_0$123 Def0027D7
-S C$fuzzy.h$2709$3_0$112 Def002102
-S C$fuzzy.h$2664$2_0$104 Def001F37
-S C$fuzzy.h$2650$4_0$107 Def001EA7
-S C$fuzzy.h$2566$3_0$102 Def001BE8
+S C$controller_8051.c$71$1_0$147 Def0030B0
+S C$fuzzy.h$3094$1_0$143 Def002FFF
+S C$fuzzy.h$3068$2_0$141 Def002F80
+S C$fuzzy.h$3059$2_0$141 Def002F15
+S C$fuzzy.h$2907$2_0$131 Def0029BA
+S C$fuzzy.h$2882$1_0$130 Def0028E4
+S C$fuzzy.h$2844$1_0$123 Def002627
+S C$fuzzy.h$2817$1_0$123 Def002581
+S C$fuzzy.h$2762$1_0$115 Def00234F
+S C$fuzzy.h$2629$1_0$104 Def001D5D
+S C$fuzzy.h$2575$3_0$102 Def001C1B
 S G$fuzzy_or_array$0$0 Def00040B
-S A$controller_8051$9995 Def00323D
-S A$controller_8051$9986 Def00322D
-S A$controller_8051$9977 Def00321F
-S A$controller_8051$9968 Def003213
-S A$controller_8051$9959 Def003200
-S A$controller_8051$9896 Def00319B
-S A$controller_8051$9887 Def00318E
+S A$controller_8051$9995 Def00320C
+S A$controller_8051$9986 Def0031FE
+S A$controller_8051$9977 Def0031F8
+S A$controller_8051$9959 Def0031E8
+S A$controller_8051$9896 Def00318F
 S A$controller_8051$9797 Def00312E
 S A$controller_8051$9788 Def00311A
 S A$controller_8051$9779 Def003108
@@ -8129,18 +8151,18 @@ S A$controller_8051$673 Def000035
 S A$controller_8051$646 Def000024
 S A$controller_8051$628 Def000010
 S A$controller_8051$619 Def000007
-S C$fuzzy.h$2941$2_0$134 Def002AE0
-S C$fuzzy.h$2916$1_0$133 Def002A1B
-S C$fuzzy.h$2892$1_0$130 Def0028F5
-S C$fuzzy.h$2754$1_0$115 Def0022AC
-S C$fuzzy.h$2644$3_0$106 Def001E1B
-S C$fuzzy.h$2567$3_0$102 Def001BB5
-S A$controller_8051$9996 Def00323E
-S A$controller_8051$9987 Def00322E
-S A$controller_8051$9978 Def003221
-S A$controller_8051$9969 Def003214
-S A$controller_8051$9897 Def00319D
-S A$controller_8051$9888 Def003190
+S C$fuzzy.h$3086$1_0$143 Def002F97
+S C$fuzzy.h$3077$1_0$143 Def002F8C
+S C$fuzzy.h$2863$1_0$123 Def002752
+S C$fuzzy.h$2836$1_0$123 Def00259F
+S C$fuzzy.h$2781$1_0$115 Def0023F5
+S C$fuzzy.h$2772$1_0$115 Def0023B6
+S C$fuzzy.h$2647$2_0$104 Def001E33
+S A$controller_8051$9996 Def00320D
+S A$controller_8051$9987 Def003200
+S A$controller_8051$9978 Def0031F9
+S A$controller_8051$9969 Def0031F0
+S A$controller_8051$9897 Def003191
 S A$controller_8051$9798 Def00312F
 S A$controller_8051$9789 Def00311C
 S A$controller_8051$8997 Def002CFC
@@ -8174,19 +8196,16 @@ S A$controller_8051$683 Def000043
 S A$controller_8051$674 Def000037
 S A$controller_8051$647 Def000025
 S A$controller_8051$629 Def000012
-S C$controller_8051.c$96$1_0$151 Def003105
-S C$controller_8051.c$64$1_0$147 Def003079
-S C$fuzzy.h$2944$1_0$133 Def002AE8
-S C$fuzzy.h$2873$1_0$123 Def0028A4
-S C$fuzzy.h$2864$1_0$123 Def00279B
-S C$fuzzy.h$2697$1_0$110 Def002099
-S C$fuzzy.h$2675$2_0$104 Def002087
+S C$fuzzy.h$2846$1_0$123 Def0027D7
+S C$fuzzy.h$2666$2_0$104 Def001F37
+S C$fuzzy.h$2661$4_0$107 Def001F1D
+S C$fuzzy.h$2652$4_0$107 Def001EA7
+S C$fuzzy.h$2568$3_0$102 Def001BE8
 S XFcontroller_8051$fuzzy_implication$0$0 Def00192C
-S A$controller_8051$9997 Def003240
-S A$controller_8051$9988 Def003230
-S A$controller_8051$9979 Def003223
-S A$controller_8051$9898 Def00319E
-S A$controller_8051$9889 Def003192
+S A$controller_8051$9997 Def00320F
+S A$controller_8051$9988 Def003202
+S A$controller_8051$9979 Def0031FA
+S A$controller_8051$9898 Def003193
 S A$controller_8051$9799 Def003131
 S A$controller_8051$8998 Def002CFE
 S A$controller_8051$8989 Def002CF2
@@ -8217,19 +8236,19 @@ S A$controller_8051$684 Def000045
 S A$controller_8051$675 Def000039
 S A$controller_8051$648 Def000027
 S A$controller_8051$639 Def00001E
+S C$controller_8051.c$97$1_0$151 Def003105
 S Fcontroller_8051$fan_slow$0$0 Def0030F8
+S C$controller_8051.c$65$1_0$147 Def003079
 S XG$fuzzy_rules_defuzzify_method$0$0 Def002F8B
-S C$fuzzy.h$2951$1_0$136 Def002B04
-S C$fuzzy.h$2945$1_0$133 Def002B03
-S C$fuzzy.h$2874$1_0$123 Def0028E3
-S C$fuzzy.h$2838$1_0$123 Def0025E4
-S C$fuzzy.h$2783$1_0$115 Def002442
-S C$fuzzy.h$2653$4_0$107 Def001ECD
-S C$fuzzy.h$2637$3_0$106 Def001DD1
+S C$fuzzy.h$2943$2_0$134 Def002AE0
+S C$fuzzy.h$2918$1_0$133 Def002A1B
+S C$fuzzy.h$2894$1_0$130 Def0028F5
+S C$fuzzy.h$2756$1_0$115 Def0022AC
+S C$fuzzy.h$2646$3_0$106 Def001E1B
+S C$fuzzy.h$2569$3_0$102 Def001BB5
 S _fuzzy_triangle Def000C72
-S A$controller_8051$9998 Def003241
-S A$controller_8051$9989 Def003232
-S A$controller_8051$9899 Def0031A0
+S A$controller_8051$9998 Def003212
+S A$controller_8051$9989 Def003203
 S A$controller_8051$8999 Def002D00
 S A$controller_8051$991 Def0001BA
 S A$controller_8051$982 Def0001AF
@@ -8251,16 +8270,15 @@ S A$controller_8051$739 Def0000AA
 S A$controller_8051$694 Def000059
 S A$controller_8051$685 Def000047
 S A$controller_8051$649 Def000028
-S Fcontroller_8051$fan_speed_to_pwm$0$0 Def0032F4
+S Fcontroller_8051$fan_speed_to_pwm$0$0 Def003567
 S XFcontroller_8051$fan_fast$0$0 Def003182
-S C$controller_8051.c$82$1_0$149 Def0030B8
-S C$controller_8051.c$73$1_0$149 Def0030B1
-S C$fuzzy.h$2928$1_0$133 Def002A2C
-S C$fuzzy.h$2848$1_0$123 Def002658
-S C$fuzzy.h$2837$2_0$124 Def0025AC
-S C$fuzzy.h$2771$2_0$118 Def0023E1
-S C$fuzzy.h$2739$1_0$115 Def00229B
-S A$controller_8051$9999 Def003243
+S C$fuzzy.h$2946$1_0$133 Def002AE8
+S C$fuzzy.h$2875$1_0$123 Def0028A4
+S C$fuzzy.h$2866$1_0$123 Def00279B
+S C$fuzzy.h$2699$1_0$110 Def002099
+S C$fuzzy.h$2677$2_0$104 Def002087
+S C$fuzzy.h$2671$4_0$108 Def001FA7
+S A$controller_8051$9999 Def003214
 S A$controller_8051$992 Def0001BB
 S A$controller_8051$983 Def0001B1
 S A$controller_8051$974 Def0001A4
@@ -8280,17 +8298,15 @@ S A$controller_8051$767 Def0000BA
 S A$controller_8051$695 Def00005B
 S A$controller_8051$686 Def000049
 S A$controller_8051$659 Def000032
-S C$fuzzy.h$3067$1_0$139 Def002F86
-S C$fuzzy.h$2980$1_0$136 Def002BEC
-S C$fuzzy.h$2938$1_0$133 Def002AA3
-S C$fuzzy.h$2843$4_0$126 Def002639
-S C$fuzzy.h$2785$1_0$115 Def00252D
-S C$fuzzy.h$2776$1_0$115 Def0023EA
-S C$fuzzy.h$2763$3_0$117 Def002308
-S C$fuzzy.h$2758$1_0$115 Def0022D1
-S C$fuzzy.h$2672$4_0$108 Def002012
+S C$controller_8051.c$83$1_0$149 Def0030B8
+S C$controller_8051.c$74$1_0$149 Def0030B1
+S C$fuzzy.h$2953$1_0$136 Def002B04
+S C$fuzzy.h$2947$1_0$133 Def002B03
+S C$fuzzy.h$2876$1_0$123 Def0028E3
+S C$fuzzy.h$2785$1_0$115 Def002442
+S C$fuzzy.h$2655$4_0$107 Def001ECD
+S C$fuzzy.h$2639$3_0$106 Def001DD1
 S G$fuzzy_function_array$0$0 Def001315
-S C$fuzzy.h$1304$1_1$31 Def00016B
 S _fuzzy_rules_defuzzify_som Def002A1B
 S A$controller_8051$993 Def0001BC
 S A$controller_8051$984 Def0001B2
@@ -8305,18 +8321,11 @@ S A$controller_8051$768 Def0000BC
 S A$controller_8051$696 Def00005D
 S A$controller_8051$687 Def00004B
 S A$controller_8051$678 Def00003A
-S C$controller_8051.c$84$1_0$149 Def0030F7
-S C$controller_8051.c$68$1_0$147 Def003073
-S C$controller_8051.c$59$1_0$147 Def00306C
-S C$fuzzy.h$3098$1_0$145 Def003000
-S C$fuzzy.h$3068$1_0$139 Def002F8B
-S C$fuzzy.h$2963$1_0$136 Def002B15
-S C$fuzzy.h$2939$1_0$133 Def002AB0
-S C$fuzzy.h$2868$1_0$123 Def002871
-S C$fuzzy.h$2788$3_0$120 Def002479
-S C$fuzzy.h$2757$2_0$116 Def0022B9
-S C$fuzzy.h$2656$4_0$107 Def001EF5
-S C$fuzzy.h$2647$4_0$107 Def001E7F
+S C$fuzzy.h$2981$1_0$136 Def002BD1
+S C$fuzzy.h$2871$2_0$128 Def00289C
+S C$fuzzy.h$2851$5_0$127 Def002689
+S C$fuzzy.h$2839$2_0$124 Def0025AC
+S C$fuzzy.h$2773$2_0$118 Def0023E1
 S A$controller_8051$994 Def0001BD
 S A$controller_8051$985 Def0001B4
 S A$controller_8051$976 Def0001A8
@@ -8330,10 +8339,18 @@ S A$controller_8051$769 Def0000BE
 S A$controller_8051$697 Def00005F
 S A$controller_8051$688 Def00004D
 S A$controller_8051$679 Def00003C
-S C$fuzzy.h$2973$1_0$136 Def002B8C
+S C$controller_8051.c$85$1_0$149 Def0030F7
+S C$controller_8051.c$69$1_0$147 Def003073
+S C$fuzzy.h$3069$1_0$139 Def002F86
+S C$fuzzy.h$2982$1_0$136 Def002BEC
 S XG$fuzzy_rules_defuzzify_cos$0$0 Def0028E3
-S C$fuzzy.h$2782$2_0$119 Def00242A
-S C$fuzzy.h$1500$1_0$54 Def0006E6
+S C$fuzzy.h$2845$4_0$126 Def002639
+S C$fuzzy.h$2787$1_0$115 Def00252D
+S C$fuzzy.h$2778$1_0$115 Def0023EA
+S C$fuzzy.h$2765$3_0$117 Def002308
+S C$fuzzy.h$2674$4_0$108 Def002012
+S C$fuzzy.h$1306$1_1$31 Def00016B
+S C$fuzzy.h$1271$1_0$31 Def0000F4
 S A$controller_8051$995 Def0001BE
 S A$controller_8051$986 Def0001B5
 S A$controller_8051$977 Def0001AA
@@ -8344,15 +8361,14 @@ S A$controller_8051$869 Def000138
 S A$controller_8051$779 Def0000D4
 S A$controller_8051$698 Def000061
 S A$controller_8051$689 Def00004F
-S C$fuzzy.h$2974$1_0$136 Def002B99
-S C$fuzzy.h$2797$1_0$115 Def0024C0
-S C$fuzzy.h$2779$1_0$115 Def0023F5
-S C$fuzzy.h$2666$4_0$108 Def001F7F
-S C$fuzzy.h$1510$1_0$54 Def00070B
-S C$fuzzy.h$1501$1_0$54 Def0006EE
-S C$fuzzy.h$1330$1_0$36 Def000182
-S C$fuzzy.h$1263$1_0$31 Def0000E2
-S C$fuzzy.h$1240$1_0$27 Def00003A
+S C$fuzzy.h$2965$1_0$136 Def002B15
+S C$fuzzy.h$2759$2_0$116 Def0022B9
+S C$fuzzy.h$2658$4_0$107 Def001EF5
+S C$fuzzy.h$2649$4_0$107 Def001E7F
+S C$fuzzy.h$1501$1_0$54 Def0006DC
+S C$fuzzy.h$1351$3_0$40 Def0001F9
+S C$fuzzy.h$1320$1_1$36 Def00016C
+S C$fuzzy.h$1240$1_0$27 Def000033
 S A$controller_8051$996 Def0001BF
 S A$controller_8051$987 Def0001B6
 S A$controller_8051$969 Def00019F
@@ -8360,495 +8376,883 @@ S A$controller_8051$897 Def000160
 S A$controller_8051$888 Def000155
 S A$controller_8051$879 Def000144
 S A$controller_8051$699 Def000063
-S C$controller_8051.c$78$1_0$149 Def0030BE
 S Fcontroller_8051$temperature_low$0$0 Def00306C
-S C$fuzzy.h$2854$5_0$127 Def00270A
-S C$fuzzy.h$2798$4_0$121 Def00251C
-S C$fuzzy.h$2659$4_0$107 Def001F1D
-S C$fuzzy.h$2220$1_0$83 Def001315
-S C$fuzzy.h$1550$1_0$60 Def0008CE
-S C$fuzzy.h$1281$1_1$31 Def000122
+S C$fuzzy.h$2975$1_0$136 Def002B8C
+S C$fuzzy.h$2784$2_0$119 Def00242A
+S C$fuzzy.h$1710$1_0$71 Def000E3D
+S C$fuzzy.h$1701$1_0$71 Def000D46
+S C$fuzzy.h$1502$1_0$54 Def0006E6
+S C$fuzzy.h$1331$1_0$36 Def000178
 S A$controller_8051$997 Def0001C1
 S A$controller_8051$988 Def0001B7
 S A$controller_8051$898 Def000162
 S A$controller_8051$889 Def000157
+S C$controller_8051.c$79$1_0$149 Def0030BE
 S XG$fuzzy_rules_defuzzify_lom$0$0 Def002BEC
-S C$fuzzy.h$2855$5_0$127 Def0026D7
-S C$fuzzy.h$2412$1_0$90 Def0016B6
-S C$fuzzy.h$2410$1_0$83 Def0016B5
-S C$fuzzy.h$1720$1_0$71 Def000F7D
-S C$fuzzy.h$1702$1_0$71 Def000D98
-S C$fuzzy.h$1700$2_0$72 Def000D8A
-S C$fuzzy.h$1431$1_0$45 Def00044A
-S C$fuzzy.h$1422$1_0$45 Def000434
-S C$fuzzy.h$1404$1_0$45 Def00040B
-S C$fuzzy.h$1282$1_1$31 Def00012C
+S C$fuzzy.h$2976$1_0$136 Def002B99
+S C$fuzzy.h$2799$1_0$115 Def0024C0
+S C$fuzzy.h$2668$4_0$108 Def001F7F
+S C$fuzzy.h$2430$1_0$90 Def0016DA
+S C$fuzzy.h$2230$1_0$83 Def001321
+S C$fuzzy.h$1600$1_0$65 Def000A35
+S C$fuzzy.h$1530$1_0$54 Def0007B7
+S C$fuzzy.h$1512$1_0$54 Def00070B
+S C$fuzzy.h$1503$1_0$54 Def0006EE
+S C$fuzzy.h$1420$2_0$46 Def00042B
+S C$fuzzy.h$1341$1_0$36 Def00019F
+S C$fuzzy.h$1332$1_0$36 Def000182
+S C$fuzzy.h$1290$1_1$32 Def00015C
+S C$fuzzy.h$1265$1_0$31 Def0000E2
 S XG$fuzzy_not$0$0 Def0000E1
-S C$fuzzy.h$1242$1_0$27 Def000070
+S C$fuzzy.h$1242$1_0$27 Def00003A
 S XFcontroller_8051$fuzzy_values_initialize$0$0 Def000032
 S A$controller_8051$998 Def0001C2
 S A$controller_8051$989 Def0001B8
 S A$controller_8051$899 Def000163
 S G$fuzzy_rules_defuzzify$0$0 Def002F8C
 S XG$fuzzy_rules_defuzzify_mom$0$0 Def002A1A
-S C$fuzzy.h$2669$4_0$108 Def001FA7
-S C$fuzzy.h$2422$1_0$90 Def0016C6
+S C$fuzzy.h$2856$5_0$127 Def00270A
+S C$fuzzy.h$2440$1_0$90 Def001758
+S C$fuzzy.h$2411$1_0$83 Def0016B0
+S C$fuzzy.h$2222$1_0$83 Def001315
 S XG$fuzzy_trapezoid$0$0 Def001314
-S C$fuzzy.h$1712$1_0$71 Def000EB4
-S C$fuzzy.h$1570$1_0$60 Def0008F7
-S C$fuzzy.h$1540$1_0$54 Def0008CD
-S C$fuzzy.h$1531$1_0$54 Def0007EA
-S C$fuzzy.h$1513$1_0$54 Def000718
-S C$fuzzy.h$1451$4_0$50 Def00058B
-S C$fuzzy.h$1441$1_0$45 Def0004D4
-S C$fuzzy.h$1423$1_0$45 Def000437
-S C$fuzzy.h$1370$4_0$41 Def000340
-S C$fuzzy.h$1360$1_0$36 Def0002A2
-S C$fuzzy.h$1250$1_0$29 Def0000B0
+S C$fuzzy.h$1552$1_0$60 Def0008CE
+S C$fuzzy.h$1460$4_0$50 Def00062E
+S C$fuzzy.h$1451$4_0$50 Def000588
+S C$fuzzy.h$1361$4_0$41 Def0002A2
+S C$fuzzy.h$1360$1_0$36 Def00028C
+S C$fuzzy.h$1283$1_1$31 Def000122
+S C$fuzzy.h$1280$2_1$33 Def00011B
 S A$controller_8051$999 Def0001C4
-S C$fuzzy.h$2976$2_0$137 Def002BC9
-S C$fuzzy.h$2500$1_0$94 Def001927
-S C$fuzzy.h$2441$1_0$90 Def0017BB
-S C$fuzzy.h$2423$1_0$90 Def0016CA
-S C$fuzzy.h$2232$1_0$83 Def001334
-S C$fuzzy.h$1713$1_0$71 Def000EC8
-S C$fuzzy.h$1562$1_0$60 Def0008DC
-S C$fuzzy.h$1503$2_0$55 Def0006F5
-S C$fuzzy.h$1460$1_0$45 Def000630
-S C$fuzzy.h$1415$1_0$45 Def000417
-S C$fuzzy.h$1340$2_0$38 Def0001A4
-S C$fuzzy.h$1332$2_0$37 Def00018C
-S C$fuzzy.h$1284$1_1$31 Def000140
-S C$fuzzy.h$1274$2_0$32 Def00010B
-S C$fuzzy.h$1244$1_0$27 Def0000A8
+S C$fuzzy.h$2857$5_0$127 Def0026D7
+S C$fuzzy.h$2441$1_0$90 Def001782
+S C$fuzzy.h$2414$1_0$90 Def0016B6
+S C$fuzzy.h$2412$1_0$83 Def0016B5
+S C$fuzzy.h$1722$1_0$71 Def000F7D
+S C$fuzzy.h$1704$1_0$71 Def000D98
+S C$fuzzy.h$1702$2_0$72 Def000D8A
+S C$fuzzy.h$1611$1_0$65 Def000A47
+S C$fuzzy.h$1541$1_0$54 Def00088E
+S C$fuzzy.h$1470$4_0$50 Def00069F
+S C$fuzzy.h$1433$1_0$45 Def00044A
+S C$fuzzy.h$1424$1_0$45 Def000434
+S C$fuzzy.h$1406$1_0$45 Def00040B
+S C$fuzzy.h$1370$1_0$36 Def000311
+S C$fuzzy.h$1284$1_1$31 Def00012C
+S C$fuzzy.h$1244$1_0$27 Def000070
 S _fuzzy_or_array Def00040B
-S C$fuzzy.h$2979$1_0$136 Def002BD1
-S C$fuzzy.h$2869$2_0$128 Def00289C
-S C$fuzzy.h$2849$5_0$127 Def002689
-S C$fuzzy.h$2501$1_0$94 Def00192C
-S C$fuzzy.h$1705$1_0$71 Def000DE9
-S C$fuzzy.h$1610$2_0$66 Def000A83
-S C$fuzzy.h$1563$1_0$60 Def0008E6
-S C$fuzzy.h$1425$1_0$45 Def00043C
-S C$fuzzy.h$1416$1_0$45 Def000421
-S C$fuzzy.h$1383$3_0$40 Def0003E3
+S C$fuzzy.h$2424$1_0$90 Def0016C6
+S C$fuzzy.h$2410$2_0$85 Def0016AA
+S C$fuzzy.h$2231$2_0$84 Def00132B
+S C$fuzzy.h$1714$1_0$71 Def000EB4
+S C$fuzzy.h$1630$1_0$65 Def000B8E
+S C$fuzzy.h$1621$1_0$65 Def000B01
+S C$fuzzy.h$1590$1_0$60 Def0009AA
+S C$fuzzy.h$1581$1_0$60 Def00090E
+S C$fuzzy.h$1572$1_0$60 Def0008F7
+S C$fuzzy.h$1542$1_0$54 Def0008CD
+S C$fuzzy.h$1533$1_0$54 Def0007EA
+S C$fuzzy.h$1515$1_0$54 Def000718
+S C$fuzzy.h$1453$4_0$50 Def00058B
+S C$fuzzy.h$1443$1_0$45 Def0004D4
+S C$fuzzy.h$1425$1_0$45 Def000437
 S C$fuzzy.h$1381$4_0$41 Def0003DB
-S C$fuzzy.h$1363$4_0$41 Def0002F6
-S C$fuzzy.h$1361$5_0$42 Def0002DE
+S C$fuzzy.h$1372$4_0$41 Def000340
+S C$fuzzy.h$1362$1_0$36 Def0002A2
 S C$fuzzy.h$1252$1_0$29 Def0000B0
-S C$fuzzy.h$1245$1_0$27 Def0000AF
-S C$fuzzy.h$2986$1_0$139 Def002BED
-S C$fuzzy.h$2402$2_0$85 Def0016A0
-S C$fuzzy.h$2240$2_0$85 Def0013B8
-S C$fuzzy.h$1703$2_0$73 Def000DD9
-S C$fuzzy.h$1640$1_0$65 Def000C71
-S C$fuzzy.h$1631$1_0$65 Def000BDA
-S C$fuzzy.h$1613$1_0$65 Def000A8C
-S C$fuzzy.h$1591$1_0$60 Def000A22
-S C$fuzzy.h$1573$1_0$60 Def000902
-S C$fuzzy.h$1564$1_0$60 Def0008EA
-S C$fuzzy.h$1534$1_0$54 Def00085B
-S C$fuzzy.h$1516$1_0$54 Def000825
-S C$fuzzy.h$1507$1_0$54 Def0006FE
-S C$fuzzy.h$1462$1_0$45 Def00063A
-S C$fuzzy.h$1445$4_0$50 Def00053C
-S C$fuzzy.h$1444$1_0$45 Def000521
-S C$fuzzy.h$1382$4_0$41 Def0003DD
-S C$fuzzy.h$1350$2_0$39 Def00021C
-S C$fuzzy.h$1345$1_0$36 Def0001AD
-S C$fuzzy.h$1336$1_0$36 Def000197
-S C$fuzzy.h$1269$1_0$31 Def0000F4
-S C$fuzzy.h$1253$1_0$29 Def0000E1
-S C$fuzzy.h$2444$1_0$90 Def0017E0
-S C$fuzzy.h$2435$1_0$90 Def00170F
-S C$fuzzy.h$2403$2_0$85 Def0016A2
+S C$fuzzy.h$2978$2_0$137 Def002BC9
+S C$fuzzy.h$2502$1_0$94 Def001927
+S C$fuzzy.h$2500$2_0$95 Def00191F
+S C$fuzzy.h$2443$1_0$90 Def0017BB
+S C$fuzzy.h$2431$2_0$92 Def001709
+S C$fuzzy.h$2425$1_0$90 Def0016CA
+S C$fuzzy.h$2234$1_0$83 Def001334
+S C$fuzzy.h$1715$1_0$71 Def000EC8
+S C$fuzzy.h$1564$1_0$60 Def0008DC
+S C$fuzzy.h$1505$2_0$55 Def0006F5
+S C$fuzzy.h$1462$1_0$45 Def000630
+S C$fuzzy.h$1417$1_0$45 Def000417
+S C$fuzzy.h$1342$2_0$38 Def0001A4
+S C$fuzzy.h$1334$2_0$37 Def00018C
+S C$fuzzy.h$1286$1_1$31 Def000140
+S C$fuzzy.h$1276$2_0$32 Def00010B
+S C$fuzzy.h$1246$1_0$27 Def0000A8
+S C$fuzzy.h$2503$1_0$94 Def00192C
+S C$fuzzy.h$2501$2_0$95 Def001921
+S C$fuzzy.h$2241$2_0$85 Def0013E7
 S XG$fuzzy_triangle$0$0 Def000F7D
-S C$fuzzy.h$1707$1_0$71 Def000E2D
-S C$fuzzy.h$1592$1_0$60 Def000A34
-S C$fuzzy.h$1514$2_0$56 Def00071A
-S C$fuzzy.h$1454$1_0$45 Def00058B
-S C$fuzzy.h$1351$2_0$39 Def0003E5
-S C$fuzzy.h$1373$1_0$36 Def000340
-S C$fuzzy.h$1365$4_0$41 Def0002F9
-S C$fuzzy.h$1355$1_0$36 Def000232
-S C$fuzzy.h$1349$3_0$40 Def0001F9
-S C$fuzzy.h$1337$1_0$36 Def00019A
-S C$fuzzy.h$1318$1_1$36 Def00016C
-S C$fuzzy.h$1277$1_1$32 Def000113
-S C$fuzzy.h$1238$1_0$27 Def000033
-S C$fuzzy.h$2997$1_0$139 Def002BFD
-S C$fuzzy.h$2510$1_0$97 Def001954
-S C$fuzzy.h$2425$2_0$91 Def0016D4
-S C$fuzzy.h$2260$2_0$85 Def00155E
-S C$fuzzy.h$2242$2_0$85 Def001379
-S C$fuzzy.h$2233$2_0$85 Def001362
-S C$fuzzy.h$1717$1_0$71 Def000F50
-S C$fuzzy.h$1708$1_0$71 Def000E3D
-S C$fuzzy.h$1633$1_0$65 Def000C11
-S C$fuzzy.h$1473$1_0$45 Def0006B5
-S C$fuzzy.h$1465$4_0$50 Def00069D
-S C$fuzzy.h$1455$1_0$45 Def00059F
-S C$fuzzy.h$1446$1_0$45 Def00053C
-S C$fuzzy.h$1329$1_0$36 Def000178
-S C$fuzzy.h$2998$1_0$139 Def002C04
+S C$fuzzy.h$1707$1_0$71 Def000DE9
+S C$fuzzy.h$1612$2_0$66 Def000A83
+S C$fuzzy.h$1565$1_0$60 Def0008E6
+S C$fuzzy.h$1521$3_0$57 Def000728
+S C$fuzzy.h$1427$1_0$45 Def00043C
+S C$fuzzy.h$1418$1_0$45 Def000421
+S C$fuzzy.h$1391$1_0$36 Def00040A
+S C$fuzzy.h$1385$3_0$40 Def0003E3
+S C$fuzzy.h$1383$4_0$41 Def0003DB
+S C$fuzzy.h$1365$4_0$41 Def0002F6
+S C$fuzzy.h$1363$5_0$42 Def0002DE
+S C$fuzzy.h$1254$1_0$29 Def0000B0
+S C$fuzzy.h$1247$1_0$27 Def0000AF
+S C$fuzzy.h$2988$1_0$139 Def002BED
+S C$fuzzy.h$2404$2_0$85 Def0016A0
+S C$fuzzy.h$2242$2_0$85 Def0013B8
+S C$fuzzy.h$1705$2_0$73 Def000DD9
+S C$fuzzy.h$1642$1_0$65 Def000C71
+S C$fuzzy.h$1633$1_0$65 Def000BDA
+S C$fuzzy.h$1615$1_0$65 Def000A8C
+S C$fuzzy.h$1593$1_0$60 Def000A22
+S C$fuzzy.h$1575$1_0$60 Def000902
+S C$fuzzy.h$1566$1_0$60 Def0008EA
+S C$fuzzy.h$1536$1_0$54 Def00085B
+S C$fuzzy.h$1518$1_0$54 Def000825
+S C$fuzzy.h$1509$1_0$54 Def0006FE
+S C$fuzzy.h$1464$1_0$45 Def00063A
+S C$fuzzy.h$1447$4_0$50 Def00053C
+S C$fuzzy.h$1446$1_0$45 Def000521
+S C$fuzzy.h$1384$4_0$41 Def0003DD
+S C$fuzzy.h$1352$2_0$39 Def00021C
+S C$fuzzy.h$1347$1_0$36 Def0001AD
+S C$fuzzy.h$1338$1_0$36 Def000197
+S C$fuzzy.h$1255$1_0$29 Def0000E1
 S XG$fuzzy_rules_defuzzify_som$0$0 Def002B03
-S C$fuzzy.h$2520$1_0$97 Def001A05
-S C$fuzzy.h$2446$1_0$90 Def001811
-S C$fuzzy.h$2428$1_0$90 Def0016DA
-S C$fuzzy.h$2252$2_0$85 Def0014D5
-S C$fuzzy.h$2234$2_0$85 Def001362
-S C$fuzzy.h$2228$1_0$83 Def001321
-S C$fuzzy.h$1621$2_0$68 Def000B45
+S C$fuzzy.h$2511$1_0$97 Def001939
+S C$fuzzy.h$2446$1_0$90 Def0017E0
+S C$fuzzy.h$2437$1_0$90 Def00170F
+S C$fuzzy.h$2405$2_0$85 Def0016A2
+S C$fuzzy.h$2270$2_0$85 Def001575
+S C$fuzzy.h$2261$2_0$85 Def00155E
+S C$fuzzy.h$1709$1_0$71 Def000E2D
 S G$fuzzy_ramp$0$0 Def000A35
-S C$fuzzy.h$1576$1_0$60 Def0009E9
-S C$fuzzy.h$1528$1_0$54 Def0007B7
-S C$fuzzy.h$1523$3_0$57 Def00077C
-S C$fuzzy.h$1463$5_0$52 Def00068E
-S C$fuzzy.h$1456$1_0$45 Def000602
-S C$fuzzy.h$1426$2_0$47 Def000441
-S C$fuzzy.h$1418$2_0$46 Def00042B
-S C$fuzzy.h$1339$1_0$36 Def00019F
-S C$fuzzy.h$1288$1_1$32 Def00015C
+S C$fuzzy.h$1594$1_0$60 Def000A34
+S C$fuzzy.h$1516$2_0$56 Def00071A
+S C$fuzzy.h$1456$1_0$45 Def00058B
+S C$fuzzy.h$1353$2_0$39 Def0003E5
+S C$fuzzy.h$1375$1_0$36 Def000340
+S C$fuzzy.h$1367$4_0$41 Def0002F9
+S C$fuzzy.h$1357$1_0$36 Def000232
+S C$fuzzy.h$1339$1_0$36 Def00019A
+S C$fuzzy.h$1279$1_1$32 Def000113
 S _fuzzy_function_array Def001315
-S A$controller_8051$10000 Def003244
-S C$fuzzy.h$2999$1_0$139 Def002C1E
-S C$fuzzy.h$2521$1_0$97 Def001A1F
-S C$fuzzy.h$2512$1_0$97 Def001985
-S C$fuzzy.h$2503$1_0$97 Def00192D
-S C$fuzzy.h$2447$1_0$90 Def001819
-S C$fuzzy.h$2438$1_0$90 Def001758
-S C$fuzzy.h$2409$1_0$83 Def0016B0
-S C$fuzzy.h$2253$2_0$85 Def0014A4
-S C$fuzzy.h$1722$1_0$77 Def000F7E
-S C$fuzzy.h$1622$2_0$68 Def000B4D
-S C$fuzzy.h$1574$2_0$62 Def000904
-S C$fuzzy.h$1566$2_0$61 Def0008EE
-S C$fuzzy.h$1475$1_0$45 Def0006CC
+S A$controller_8051$10000 Def003216
+S C$fuzzy.h$2999$1_0$139 Def002BFD
+S C$fuzzy.h$2512$1_0$97 Def001954
+S C$fuzzy.h$2427$2_0$91 Def0016D4
+S C$fuzzy.h$2262$2_0$85 Def00155E
+S C$fuzzy.h$2250$3_0$87 Def00146C
+S C$fuzzy.h$2244$2_0$85 Def001379
+S C$fuzzy.h$2235$2_0$85 Def001362
+S C$fuzzy.h$1719$1_0$71 Def000F50
+S C$fuzzy.h$1635$1_0$65 Def000C11
+S C$fuzzy.h$1475$1_0$45 Def0006B5
 S C$fuzzy.h$1467$4_0$50 Def00069D
-S C$fuzzy.h$1458$4_0$50 Def00062E
-S C$fuzzy.h$1449$4_0$50 Def000588
-S C$fuzzy.h$1447$5_0$51 Def000578
-S C$fuzzy.h$1376$1_0$36 Def000384
-S C$fuzzy.h$1367$1_0$36 Def0002F9
-S C$fuzzy.h$1359$4_0$41 Def0002A2
-S C$fuzzy.h$1358$1_0$36 Def00028C
+S C$fuzzy.h$1457$1_0$45 Def00059F
+S C$fuzzy.h$1448$1_0$45 Def00053C
 S G$fuzzy_and_array$0$0 Def00016C
-S C$fuzzy.h$1278$2_1$33 Def00011B
-S A$controller_8051$10010 Def003257
-S A$controller_8051$10001 Def003245
-S C$fuzzy.h$2531$1_0$97 Def001ADB
-S C$fuzzy.h$2480$1_0$94 Def00181A
-S C$fuzzy.h$2439$1_0$90 Def001782
-S C$fuzzy.h$2407$2_0$85 Def0016A8
-S C$fuzzy.h$2254$2_0$85 Def001475
-S C$fuzzy.h$1750$1_0$77 Def0011C4
-S C$fuzzy.h$1684$1_0$71 Def000C72
-S C$fuzzy.h$1627$1_0$65 Def000B7E
-S C$fuzzy.h$1623$2_0$68 Def000B5E
-S C$fuzzy.h$1615$2_0$67 Def000AC8
-S C$fuzzy.h$1609$1_0$65 Def000A47
-S C$fuzzy.h$1539$1_0$54 Def00088E
-S C$fuzzy.h$1468$4_0$50 Def00069F
-S C$fuzzy.h$1436$2_0$48 Def0004BE
-S C$fuzzy.h$1368$1_0$36 Def000311
+S A$controller_8051$10100 Def0032AD
+S A$controller_8051$10010 Def003223
+S A$controller_8051$10001 Def003218
+S C$fuzzy.h$2522$1_0$97 Def001A05
+S C$fuzzy.h$2520$2_0$98 Def001A05
+S C$fuzzy.h$2448$1_0$90 Def001811
+S C$fuzzy.h$2254$2_0$85 Def0014D5
+S C$fuzzy.h$2236$2_0$85 Def001362
+S C$fuzzy.h$1750$1_0$77 Def001180
+S C$fuzzy.h$1741$1_0$77 Def001096
+S C$fuzzy.h$1623$2_0$68 Def000B45
+S C$fuzzy.h$1578$1_0$60 Def0009E9
+S C$fuzzy.h$1525$3_0$57 Def00077C
+S C$fuzzy.h$1465$5_0$52 Def00068E
+S C$fuzzy.h$1458$1_0$45 Def000602
+S C$fuzzy.h$1428$2_0$47 Def000441
 S Fcontroller_8051$fuzzy_apply_hedge$0$0 Def0000E2
-S A$controller_8051$10200 Def00337E
-S A$controller_8051$10020 Def003267
-S A$controller_8051$10011 Def003259
-S A$controller_8051$10002 Def003247
-S C$fuzzy.h$2532$1_0$97 Def001AE0
-S C$fuzzy.h$2530$2_0$98 Def001AD5
+S A$controller_8051$10110 Def0032BB
+S A$controller_8051$10101 Def0032AE
+S A$controller_8051$10020 Def003234
+S A$controller_8051$10011 Def003225
+S A$controller_8051$10002 Def003219
+S C$fuzzy.h$2523$1_0$97 Def001A1F
+S C$fuzzy.h$2514$1_0$97 Def001985
+S C$fuzzy.h$2505$1_0$97 Def00192D
+S C$fuzzy.h$2449$1_0$90 Def001819
 S G$fuzzy_rules_add$0$0 Def0016B6
-S C$fuzzy.h$2408$2_0$85 Def0016AA
-S C$fuzzy.h$2246$2_0$85 Def00145E
-S C$fuzzy.h$2235$3_0$86 Def001370
-S C$fuzzy.h$2229$2_0$84 Def00132B
-S C$fuzzy.h$1760$1_0$77 Def0012E7
-S C$fuzzy.h$1751$1_0$77 Def0011D4
-S C$fuzzy.h$1740$2_0$78 Def0010DA
-S C$fuzzy.h$1637$1_0$65 Def000C4A
-S C$fuzzy.h$1632$2_0$69 Def000BFF
-S C$fuzzy.h$1628$1_0$65 Def000B8E
-S C$fuzzy.h$1619$1_0$65 Def000B01
-S C$fuzzy.h$1616$2_0$67 Def000AD0
-S C$fuzzy.h$1588$1_0$60 Def0009AA
-S C$fuzzy.h$1583$3_0$63 Def00096F
-S C$fuzzy.h$1579$1_0$60 Def00090E
+S C$fuzzy.h$2255$2_0$85 Def0014A4
+S C$fuzzy.h$1724$1_0$77 Def000F7E
+S C$fuzzy.h$1624$2_0$68 Def000B4D
+S C$fuzzy.h$1576$2_0$62 Def000904
+S C$fuzzy.h$1568$2_0$61 Def0008EE
 S G$fuzzy_sugeno_weighted_sum_array$0$0 Def0008CE
-S C$fuzzy.h$1535$2_0$58 Def000886
-S C$fuzzy.h$1486$1_0$54 Def0006CD
-S C$fuzzy.h$1437$2_0$48 Def0006A7
-S C$fuzzy.h$1435$3_0$49 Def000496
-S C$fuzzy.h$1387$1_0$36 Def0003F3
-S C$fuzzy.h$1379$4_0$41 Def0003DB
-S A$controller_8051$10210 Def003391
-S A$controller_8051$10201 Def003380
-S A$controller_8051$10120 Def0032F6
-S A$controller_8051$10102 Def0032EE
-S A$controller_8051$10030 Def003277
-S A$controller_8051$10021 Def003268
-S A$controller_8051$10012 Def00325B
-S A$controller_8051$10003 Def003249
-S C$fuzzy.h$2515$1_0$97 Def001998
-S C$fuzzy.h$2513$2_0$98 Def001998
-S C$fuzzy.h$2429$2_0$92 Def001709
-S C$fuzzy.h$2265$2_0$85 Def001606
-S C$fuzzy.h$2261$3_0$88 Def00156C
-S C$fuzzy.h$2247$2_0$85 Def00145E
-S C$fuzzy.h$1743$1_0$77 Def0010E8
-S C$fuzzy.h$1734$1_0$77 Def000F90
-S C$fuzzy.h$1695$1_0$71 Def000C84
-S C$fuzzy.h$1617$2_0$67 Def000ADF
-S C$fuzzy.h$1377$5_0$43 Def0003CE
-S A$controller_8051$10211 Def003392
-S A$controller_8051$10202 Def003382
-S A$controller_8051$10130 Def003305
-S A$controller_8051$10121 Def0032F8
-S A$controller_8051$10103 Def0032F1
-S A$controller_8051$10040 Def00328C
-S A$controller_8051$10031 Def003279
-S A$controller_8051$10022 Def003269
-S A$controller_8051$10013 Def00325D
-S A$controller_8051$10004 Def00324B
+S C$fuzzy.h$1477$1_0$45 Def0006CC
+S C$fuzzy.h$1471$3_0$49 Def0006A5
+S C$fuzzy.h$1469$4_0$50 Def00069D
+S C$fuzzy.h$1449$5_0$51 Def000578
+S C$fuzzy.h$1378$1_0$36 Def000384
+S C$fuzzy.h$1369$1_0$36 Def0002F9
+S A$controller_8051$10300 Def0033CA
+S A$controller_8051$10210 Def003345
+S A$controller_8051$10201 Def003337
+S A$controller_8051$10120 Def0032CA
+S A$controller_8051$10111 Def0032BD
+S A$controller_8051$10030 Def003245
+S A$controller_8051$10021 Def003237
+S A$controller_8051$10012 Def003226
+S C$fuzzy.h$2533$1_0$97 Def001ADB
+S C$fuzzy.h$2531$2_0$98 Def001AD3
+S C$fuzzy.h$2491$1_0$94 Def001872
+S C$fuzzy.h$2482$1_0$94 Def00181A
+S C$fuzzy.h$2409$2_0$85 Def0016A8
+S C$fuzzy.h$2256$2_0$85 Def001475
+S C$fuzzy.h$1752$1_0$77 Def0011C4
+S C$fuzzy.h$1686$1_0$71 Def000C72
+S C$fuzzy.h$1629$1_0$65 Def000B7E
+S C$fuzzy.h$1625$2_0$68 Def000B5E
+S C$fuzzy.h$1617$2_0$67 Def000AC8
+S C$fuzzy.h$1438$2_0$48 Def0004BE
+S A$controller_8051$10400 Def003453
+S A$controller_8051$10310 Def0033DB
+S A$controller_8051$10301 Def0033CB
+S A$controller_8051$10220 Def003357
+S A$controller_8051$10211 Def003347
+S A$controller_8051$10202 Def003339
+S A$controller_8051$10130 Def0032D8
+S A$controller_8051$10121 Def0032CC
+S A$controller_8051$10112 Def0032BE
+S A$controller_8051$10103 Def0032B0
+S A$controller_8051$10040 Def003253
+S A$controller_8051$10031 Def003246
+S A$controller_8051$10022 Def003238
+S A$controller_8051$10013 Def003228
 S XFcontroller_8051$fuzzy_rules_aggregated_height$0$0 Def001C89
-S C$fuzzy.h$2523$2_0$98 Def001A9E
-S C$fuzzy.h$2492$1_0$94 Def00187F
-S C$fuzzy.h$2490$2_0$95 Def00187F
-S C$fuzzy.h$2266$2_0$85 Def0015D5
-S C$fuzzy.h$2239$2_0$85 Def0013E7
-S C$fuzzy.h$1735$1_0$77 Def000FCF
-S C$fuzzy.h$1696$1_0$71 Def000CC3
-S C$fuzzy.h$1519$3_0$57 Def000728
-S C$fuzzy.h$1389$1_0$36 Def00040A
-S A$controller_8051$10230 Def003396
-S A$controller_8051$10203 Def003384
-S A$controller_8051$10140 Def00331A
-S A$controller_8051$10131 Def003307
-S A$controller_8051$10122 Def0032FA
-S A$controller_8051$10041 Def00328E
-S A$controller_8051$10032 Def00327B
-S A$controller_8051$10023 Def00326B
-S A$controller_8051$10014 Def00325F
-S A$controller_8051$10005 Def00324D
+S C$fuzzy.h$2534$1_0$97 Def001AE0
+S C$fuzzy.h$2532$2_0$98 Def001AD5
+S C$fuzzy.h$2248$2_0$85 Def00145E
+S C$fuzzy.h$2237$3_0$86 Def001370
+S C$fuzzy.h$1762$1_0$77 Def0012E7
+S C$fuzzy.h$1753$1_0$77 Def0011D4
+S C$fuzzy.h$1742$2_0$78 Def0010DA
+S C$fuzzy.h$1639$1_0$65 Def000C4A
+S C$fuzzy.h$1634$2_0$69 Def000BFF
+S C$fuzzy.h$1618$2_0$67 Def000AD0
+S C$fuzzy.h$1585$3_0$63 Def00096F
+S C$fuzzy.h$1537$2_0$58 Def000886
+S C$fuzzy.h$1488$1_0$54 Def0006CD
+S C$fuzzy.h$1439$2_0$48 Def0006A7
+S C$fuzzy.h$1437$3_0$49 Def000496
+S C$fuzzy.h$1389$1_0$36 Def0003F3
+S A$controller_8051$10410 Def003460
+S A$controller_8051$10401 Def003455
+S A$controller_8051$10311 Def0033DD
+S A$controller_8051$10302 Def0033CD
+S A$controller_8051$10230 Def003369
+S A$controller_8051$10221 Def003358
+S A$controller_8051$10212 Def003349
+S A$controller_8051$10140 Def0032E8
+S A$controller_8051$10131 Def0032DA
+S A$controller_8051$10122 Def0032CE
+S A$controller_8051$10104 Def0032B2
+S A$controller_8051$10050 Def003266
+S A$controller_8051$10041 Def003255
+S A$controller_8051$10032 Def003247
+S A$controller_8051$10023 Def00323A
+S A$controller_8051$10014 Def003229
+S A$controller_8051$10005 Def00321B
 S Fcontroller_8051$temperature_high$0$0 Def0030B1
 S Fcontroller_8051$fuzzy_rules_maximum_result$0$0 Def001C8A
-S C$fuzzy.h$2267$2_0$85 Def0015A6
-S C$fuzzy.h$1763$1_0$77 Def001314
-S C$fuzzy.h$1745$1_0$77 Def00112C
-S C$fuzzy.h$1736$1_0$77 Def001013
-S C$fuzzy.h$1697$1_0$71 Def000D0A
+S C$fuzzy.h$2517$1_0$97 Def001998
+S C$fuzzy.h$2515$2_0$98 Def001998
+S C$fuzzy.h$2267$2_0$85 Def001606
+S C$fuzzy.h$2263$3_0$88 Def00156C
+S C$fuzzy.h$2249$2_0$85 Def00145E
+S C$fuzzy.h$1745$1_0$77 Def0010E8
+S C$fuzzy.h$1736$1_0$77 Def000F90
+S C$fuzzy.h$1697$1_0$71 Def000C84
+S C$fuzzy.h$1619$2_0$67 Def000ADF
+S C$fuzzy.h$1379$5_0$43 Def0003CE
 S _fuzzy_rules_defuzzify Def002F8C
-S A$controller_8051$10204 Def003385
-S A$controller_8051$10150 Def00332A
-S A$controller_8051$10141 Def00331C
-S A$controller_8051$10132 Def003309
-S A$controller_8051$10060 Def0032AC
-S A$controller_8051$10042 Def003290
-S A$controller_8051$10033 Def00327D
-S A$controller_8051$10024 Def00326C
-S A$controller_8051$10015 Def003260
-S A$controller_8051$10006 Def00324F
-S C$fuzzy.h$2527$1_0$97 Def001AA0
-S C$fuzzy.h$2516$2_0$98 Def0019DD
-S C$fuzzy.h$2509$1_0$97 Def001939
-S C$fuzzy.h$2268$2_0$85 Def001575
-S C$fuzzy.h$2259$2_0$85 Def00155E
-S C$fuzzy.h$1755$1_0$77 Def00124B
-S C$fuzzy.h$1737$1_0$77 Def00105A
-S C$fuzzy.h$1499$1_0$54 Def0006DC
+S A$controller_8051$10600 Def00356E
+S A$controller_8051$10510 Def0034F8
+S A$controller_8051$10501 Def0034ED
+S A$controller_8051$10420 Def003470
+S A$controller_8051$10411 Def003461
+S A$controller_8051$10402 Def003456
+S A$controller_8051$10330 Def0033F8
+S A$controller_8051$10321 Def0033EA
+S A$controller_8051$10312 Def0033DF
+S A$controller_8051$10303 Def0033CE
+S A$controller_8051$10240 Def00337B
+S A$controller_8051$10231 Def00336B
+S A$controller_8051$10222 Def00335A
+S A$controller_8051$10213 Def00334B
+S A$controller_8051$10150 Def0032FA
+S A$controller_8051$10141 Def0032E9
+S A$controller_8051$10132 Def0032DB
+S A$controller_8051$10123 Def0032CF
+S A$controller_8051$10105 Def0032B4
+S A$controller_8051$10060 Def003277
+S A$controller_8051$10051 Def003268
+S A$controller_8051$10042 Def003257
+S A$controller_8051$10033 Def003249
+S A$controller_8051$10024 Def00323C
+S A$controller_8051$10015 Def00322A
+S A$controller_8051$10006 Def00321D
+S C$fuzzy.h$2525$2_0$98 Def001A9E
+S C$fuzzy.h$2494$1_0$94 Def00187F
+S C$fuzzy.h$2492$2_0$95 Def00187F
+S C$fuzzy.h$2268$2_0$85 Def0015D5
+S C$fuzzy.h$1737$1_0$77 Def000FCF
+S C$fuzzy.h$1698$1_0$71 Def000CC3
 S XG$fuzzy_or_array$0$0 Def0006CC
-S A$controller_8051$10205 Def003387
-S A$controller_8051$10160 Def003338
-S A$controller_8051$10151 Def00332D
-S A$controller_8051$10142 Def00331E
-S A$controller_8051$10133 Def00330B
-S A$controller_8051$10106 Def0032F3
-S A$controller_8051$10070 Def0032BF
-S A$controller_8051$10061 Def0032AE
-S A$controller_8051$10052 Def00329D
-S A$controller_8051$10043 Def003292
-S A$controller_8051$10034 Def00327F
-S A$controller_8051$10025 Def00326D
-S A$controller_8051$10016 Def003261
-S A$controller_8051$10007 Def003251
+S A$controller_8051$10610 Def003582
+S A$controller_8051$10601 Def003570
+S A$controller_8051$10520 Def003506
+S A$controller_8051$10511 Def0034FA
+S A$controller_8051$10502 Def0034EE
+S A$controller_8051$10430 Def00347F
+S A$controller_8051$10421 Def003471
+S A$controller_8051$10412 Def003463
+S A$controller_8051$10403 Def003457
+S A$controller_8051$10340 Def003405
+S A$controller_8051$10322 Def0033EC
+S A$controller_8051$10313 Def0033E1
+S A$controller_8051$10304 Def0033D0
+S A$controller_8051$10250 Def003386
+S A$controller_8051$10241 Def00337C
+S A$controller_8051$10232 Def00336D
+S A$controller_8051$10223 Def00335B
+S A$controller_8051$10214 Def00334D
+S A$controller_8051$10205 Def00333B
+S A$controller_8051$10160 Def00330C
+S A$controller_8051$10151 Def0032FC
+S A$controller_8051$10142 Def0032EB
+S A$controller_8051$10133 Def0032DC
+S A$controller_8051$10124 Def0032D0
+S A$controller_8051$10115 Def0032C0
+S A$controller_8051$10106 Def0032B5
+S A$controller_8051$10070 Def00328A
+S A$controller_8051$10061 Def003279
+S A$controller_8051$10052 Def003269
+S A$controller_8051$10043 Def003259
+S A$controller_8051$10034 Def00324B
+S A$controller_8051$10025 Def00323D
+S A$controller_8051$10016 Def00322C
+S A$controller_8051$10007 Def00321F
 S Fcontroller_8051$fuzzy_aggregation$0$0 Def00192D
-S C$fuzzy.h$2493$2_0$95 Def0018C8
-S C$fuzzy.h$2486$1_0$94 Def001826
-S C$fuzzy.h$2248$3_0$87 Def00146C
-S C$fuzzy.h$1756$1_0$77 Def00125F
-S C$fuzzy.h$1699$1_0$71 Def000D46
-S A$controller_8051$10251 Def0033B6
-S A$controller_8051$10242 Def0033A2
-S A$controller_8051$10233 Def003399
-S A$controller_8051$10206 Def003389
-S A$controller_8051$10170 Def00334B
-S A$controller_8051$10161 Def00333A
-S A$controller_8051$10143 Def003320
-S A$controller_8051$10134 Def00330E
-S A$controller_8051$10125 Def0032FB
-S A$controller_8051$10080 Def0032D3
-S A$controller_8051$10071 Def0032C1
-S A$controller_8051$10062 Def0032B0
-S A$controller_8051$10053 Def00329F
-S A$controller_8051$10044 Def003293
-S A$controller_8051$10035 Def003281
-S A$controller_8051$10026 Def00326F
-S A$controller_8051$10017 Def003263
-S A$controller_8051$10008 Def003253
-S C$fuzzy.h$2518$2_0$98 Def001A05
-S C$fuzzy.h$2496$1_0$94 Def0018EF
-S C$fuzzy.h$2487$1_0$94 Def001841
-S C$fuzzy.h$1748$1_0$77 Def001180
-S C$fuzzy.h$1739$1_0$77 Def001096
-S C$fuzzy.h$1598$1_0$65 Def000A35
+S C$fuzzy.h$2269$2_0$85 Def0015A6
+S C$fuzzy.h$1765$1_0$77 Def001314
+S C$fuzzy.h$1747$1_0$77 Def00112C
+S C$fuzzy.h$1738$1_0$77 Def001013
+S C$fuzzy.h$1699$1_0$71 Def000D0A
+S A$controller_8051$10620 Def003597
+S A$controller_8051$10611 Def003584
+S A$controller_8051$10602 Def003572
+S A$controller_8051$10530 Def00351B
+S A$controller_8051$10521 Def003509
+S A$controller_8051$10512 Def0034FB
+S A$controller_8051$10440 Def00348B
+S A$controller_8051$10431 Def003481
+S A$controller_8051$10422 Def003473
+S A$controller_8051$10413 Def003464
+S A$controller_8051$10350 Def00340F
+S A$controller_8051$10341 Def003406
+S A$controller_8051$10323 Def0033EE
+S A$controller_8051$10314 Def0033E3
+S A$controller_8051$10305 Def0033D1
+S A$controller_8051$10260 Def003394
+S A$controller_8051$10251 Def003388
+S A$controller_8051$10242 Def00337E
+S A$controller_8051$10233 Def00336F
+S A$controller_8051$10224 Def00335C
+S A$controller_8051$10215 Def00334F
+S A$controller_8051$10206 Def00333D
+S A$controller_8051$10170 Def003317
+S A$controller_8051$10161 Def00330E
+S A$controller_8051$10152 Def0032FE
+S A$controller_8051$10143 Def0032EC
+S A$controller_8051$10134 Def0032DE
+S A$controller_8051$10125 Def0032D2
+S A$controller_8051$10116 Def0032C2
+S A$controller_8051$10107 Def0032B7
+S A$controller_8051$10080 Def003296
+S A$controller_8051$10071 Def00328B
+S A$controller_8051$10062 Def00327B
+S A$controller_8051$10053 Def00326B
+S A$controller_8051$10044 Def00325B
+S A$controller_8051$10035 Def00324D
+S A$controller_8051$10026 Def00323F
+S A$controller_8051$10017 Def00322E
+S A$controller_8051$10008 Def003220
+S C$fuzzy.h$2529$1_0$97 Def001AA0
+S C$fuzzy.h$2518$2_0$98 Def0019DD
+S C$fuzzy.h$1757$1_0$77 Def00124B
+S C$fuzzy.h$1739$1_0$77 Def00105A
 S G$fuzzy_sugeno_weighted_average_array$0$0 Def0006CD
-S A$controller_8051$10252 Def0033B9
-S A$controller_8051$10243 Def0033A5
-S A$controller_8051$10207 Def00338B
-S A$controller_8051$10180 Def003360
-S A$controller_8051$10171 Def00334E
-S A$controller_8051$10162 Def00333C
-S A$controller_8051$10144 Def003322
-S A$controller_8051$10135 Def00330F
-S A$controller_8051$10126 Def0032FD
-S A$controller_8051$10090 Def0032E2
-S A$controller_8051$10081 Def0032D5
-S A$controller_8051$10072 Def0032C2
-S A$controller_8051$10063 Def0032B2
-S A$controller_8051$10054 Def0032A1
-S A$controller_8051$10045 Def003295
-S A$controller_8051$10036 Def003284
-S A$controller_8051$10027 Def003271
-S A$controller_8051$10018 Def003264
-S A$controller_8051$10009 Def003255
+S A$controller_8051$10720 Def00361E
+S A$controller_8051$10711 Def00360F
+S A$controller_8051$10630 Def0035A2
+S A$controller_8051$10621 Def003599
+S A$controller_8051$10612 Def003587
+S A$controller_8051$10603 Def003574
+S A$controller_8051$10531 Def00351D
+S A$controller_8051$10522 Def00350A
+S A$controller_8051$10513 Def0034FC
+S A$controller_8051$10450 Def00349A
+S A$controller_8051$10441 Def00348D
+S A$controller_8051$10432 Def003483
+S A$controller_8051$10423 Def003474
+S A$controller_8051$10414 Def003466
+S A$controller_8051$10360 Def003416
+S A$controller_8051$10351 Def003410
+S A$controller_8051$10342 Def003407
+S A$controller_8051$10333 Def0033FA
+S A$controller_8051$10324 Def0033EF
+S A$controller_8051$10315 Def0033E5
+S A$controller_8051$10306 Def0033D2
+S A$controller_8051$10261 Def003395
+S A$controller_8051$10252 Def00338A
+S A$controller_8051$10243 Def00337F
+S A$controller_8051$10234 Def003371
+S A$controller_8051$10225 Def00335F
+S A$controller_8051$10216 Def003351
+S A$controller_8051$10207 Def00333F
+S A$controller_8051$10180 Def00331F
+S A$controller_8051$10171 Def003318
+S A$controller_8051$10162 Def00330F
+S A$controller_8051$10153 Def003300
+S A$controller_8051$10144 Def0032ED
+S A$controller_8051$10135 Def0032E0
+S A$controller_8051$10126 Def0032D3
+S A$controller_8051$10117 Def0032C4
+S A$controller_8051$10108 Def0032B8
+S A$controller_8051$10081 Def003297
+S A$controller_8051$10072 Def00328D
+S A$controller_8051$10063 Def00327D
+S A$controller_8051$10054 Def00326C
+S A$controller_8051$10045 Def00325D
+S A$controller_8051$10036 Def00324F
+S A$controller_8051$10027 Def003240
+S A$controller_8051$10018 Def003230
+S A$controller_8051$10009 Def003222
 S XFcontroller_8051$fan_slow$0$0 Def00313C
-S C$fuzzy.h$2495$2_0$95 Def0018ED
-S C$fuzzy.h$1746$2_0$79 Def001170
-S C$fuzzy.h$1469$3_0$49 Def0006A5
-S A$controller_8051$10262 Def0033CA
-S A$controller_8051$10253 Def0033BC
-S A$controller_8051$10244 Def0033A8
-S A$controller_8051$10217 Def003395
-S A$controller_8051$10208 Def00338D
-S A$controller_8051$10190 Def00336A
-S A$controller_8051$10181 Def003362
-S A$controller_8051$10172 Def003350
-S A$controller_8051$10163 Def00333E
-S A$controller_8051$10145 Def003324
-S A$controller_8051$10136 Def003311
-S A$controller_8051$10127 Def0032FF
-S A$controller_8051$10091 Def0032E4
-S A$controller_8051$10082 Def0032D7
-S A$controller_8051$10073 Def0032C4
-S A$controller_8051$10064 Def0032B4
-S A$controller_8051$10055 Def0032A3
-S A$controller_8051$10046 Def003298
-S A$controller_8051$10037 Def003286
-S A$controller_8051$10028 Def003273
-S A$controller_8051$10019 Def003265
-S XFcontroller_8051$fan_speed_to_pwm$0$0 Def003395
+S C$fuzzy.h$2495$2_0$95 Def0018C8
+S C$fuzzy.h$2488$1_0$94 Def001826
+S C$fuzzy.h$1758$1_0$77 Def00125F
+S A$controller_8051$10730 Def003634
+S A$controller_8051$10721 Def003621
+S A$controller_8051$10640 Def0035B5
+S A$controller_8051$10631 Def0035A4
+S A$controller_8051$10622 Def00359B
+S A$controller_8051$10613 Def003589
+S A$controller_8051$10604 Def003576
+S A$controller_8051$10550 Def003537
+S A$controller_8051$10523 Def00350C
+S A$controller_8051$10514 Def0034FE
+S A$controller_8051$10505 Def0034F0
+S A$controller_8051$10460 Def0034AA
+S A$controller_8051$10451 Def00349B
+S A$controller_8051$10442 Def00348F
+S A$controller_8051$10424 Def003476
+S A$controller_8051$10415 Def003467
+S A$controller_8051$10406 Def003459
+S A$controller_8051$10370 Def003425
+S A$controller_8051$10361 Def003418
+S A$controller_8051$10352 Def003411
+S A$controller_8051$10343 Def003408
+S A$controller_8051$10334 Def0033FC
+S A$controller_8051$10325 Def0033F1
+S A$controller_8051$10316 Def0033E7
+S A$controller_8051$10307 Def0033D5
+S A$controller_8051$10280 Def0033AC
+S A$controller_8051$10271 Def00339E
+S A$controller_8051$10262 Def003396
+S A$controller_8051$10253 Def00338B
+S A$controller_8051$10244 Def003381
+S A$controller_8051$10235 Def003372
+S A$controller_8051$10226 Def003361
+S A$controller_8051$10217 Def003352
+S A$controller_8051$10208 Def003341
+S A$controller_8051$10190 Def00332D
+S A$controller_8051$10181 Def003321
+S A$controller_8051$10172 Def003319
+S A$controller_8051$10163 Def003310
+S A$controller_8051$10154 Def003302
+S A$controller_8051$10145 Def0032F0
+S A$controller_8051$10136 Def0032E2
+S A$controller_8051$10127 Def0032D4
+S A$controller_8051$10118 Def0032C6
+S A$controller_8051$10109 Def0032BA
+S A$controller_8051$10082 Def003298
+S A$controller_8051$10073 Def00328F
+S A$controller_8051$10064 Def00327F
+S A$controller_8051$10055 Def00326E
+S A$controller_8051$10046 Def00325F
+S A$controller_8051$10028 Def003242
+S A$controller_8051$10019 Def003232
+S XFcontroller_8051$fan_speed_to_pwm$0$0 Def003608
 S Fcontroller_8051$calculate_fan_speed$0$0 Def003183
 S G$fuzzy_rules_defuzzify_boa$0$0 Def00229B
-S C$fuzzy.h$2529$2_0$98 Def001AD3
-S C$fuzzy.h$2489$1_0$94 Def001872
-S A$controller_8051$10254 Def0033BF
-S A$controller_8051$10245 Def0033AB
-S A$controller_8051$10236 Def00339C
-S A$controller_8051$10209 Def00338F
-S A$controller_8051$10191 Def00336C
-S A$controller_8051$10173 Def003352
-S A$controller_8051$10164 Def003340
-S A$controller_8051$10155 Def00332F
-S A$controller_8051$10146 Def003326
-S A$controller_8051$10137 Def003314
-S A$controller_8051$10128 Def003301
-S A$controller_8051$10119 Def0032F4
-S A$controller_8051$10092 Def0032E5
-S A$controller_8051$10083 Def0032D9
-S A$controller_8051$10074 Def0032C6
-S A$controller_8051$10065 Def0032B5
-S A$controller_8051$10056 Def0032A5
-S A$controller_8051$10047 Def003299
-S A$controller_8051$10038 Def003288
-S A$controller_8051$10029 Def003275
+S C$fuzzy.h$2498$1_0$94 Def0018EF
+S C$fuzzy.h$2489$1_0$94 Def001841
+S A$controller_8051$10731 Def003637
+S A$controller_8051$10722 Def003624
+S A$controller_8051$10650 Def0035C9
+S A$controller_8051$10641 Def0035B7
+S A$controller_8051$10632 Def0035A6
+S A$controller_8051$10614 Def00358B
+S A$controller_8051$10605 Def003578
+S A$controller_8051$10560 Def003548
+S A$controller_8051$10551 Def003539
+S A$controller_8051$10542 Def003527
+S A$controller_8051$10524 Def00350F
+S A$controller_8051$10515 Def0034FF
+S A$controller_8051$10506 Def0034F2
+S A$controller_8051$10470 Def0034B9
+S A$controller_8051$10461 Def0034AB
+S A$controller_8051$10452 Def00349D
+S A$controller_8051$10443 Def003491
+S A$controller_8051$10425 Def003477
+S A$controller_8051$10416 Def003468
+S A$controller_8051$10407 Def00345B
+S A$controller_8051$10380 Def003436
+S A$controller_8051$10371 Def003426
+S A$controller_8051$10362 Def00341A
+S A$controller_8051$10344 Def003409
+S A$controller_8051$10335 Def0033FE
+S A$controller_8051$10326 Def0033F2
+S A$controller_8051$10317 Def0033E8
+S A$controller_8051$10308 Def0033D7
+S A$controller_8051$10290 Def0033B7
+S A$controller_8051$10272 Def0033A0
+S A$controller_8051$10263 Def003397
+S A$controller_8051$10254 Def00338D
+S A$controller_8051$10245 Def003382
+S A$controller_8051$10236 Def003374
+S A$controller_8051$10227 Def003363
+S A$controller_8051$10218 Def003354
+S A$controller_8051$10209 Def003343
+S A$controller_8051$10191 Def00332E
+S A$controller_8051$10182 Def003323
+S A$controller_8051$10173 Def00331A
+S A$controller_8051$10164 Def003311
+S A$controller_8051$10155 Def003303
+S A$controller_8051$10146 Def0032F2
+S A$controller_8051$10137 Def0032E3
+S A$controller_8051$10128 Def0032D6
+S A$controller_8051$10119 Def0032C8
+S A$controller_8051$10092 Def0032A0
+S A$controller_8051$10083 Def003299
+S A$controller_8051$10074 Def003290
+S A$controller_8051$10065 Def003281
+S A$controller_8051$10056 Def00326F
+S A$controller_8051$10047 Def003261
+S A$controller_8051$10029 Def003243
+S C$fuzzy.h$2497$2_0$95 Def0018ED
 S XG$fuzzy_function_array$0$0 Def0016B5
+S C$fuzzy.h$1748$2_0$79 Def001170
 S _fuzzy_ramp Def000A35
-S A$controller_8051$10264 Def0033CD
-S A$controller_8051$10255 Def0033C1
-S A$controller_8051$10246 Def0033AE
-S A$controller_8051$10192 Def00336E
-S A$controller_8051$10174 Def003354
-S A$controller_8051$10165 Def003342
-S A$controller_8051$10156 Def003331
-S A$controller_8051$10147 Def003328
-S A$controller_8051$10138 Def003316
-S A$controller_8051$10129 Def003303
-S A$controller_8051$10084 Def0032DA
-S A$controller_8051$10075 Def0032C8
-S A$controller_8051$10066 Def0032B7
-S A$controller_8051$10057 Def0032A7
-S A$controller_8051$10048 Def00329B
-S A$controller_8051$10039 Def00328A
-S C$fuzzy.h$2498$2_0$95 Def00191F
+S A$controller_8051$10723 Def003627
+S A$controller_8051$10714 Def003612
+S A$controller_8051$10705 Def003609
+S A$controller_8051$10660 Def0035DA
+S A$controller_8051$10651 Def0035CB
+S A$controller_8051$10642 Def0035B9
+S A$controller_8051$10633 Def0035A8
+S A$controller_8051$10615 Def00358D
+S A$controller_8051$10606 Def00357A
+S A$controller_8051$10570 Def00355A
+S A$controller_8051$10561 Def003549
+S A$controller_8051$10552 Def00353B
+S A$controller_8051$10543 Def003529
+S A$controller_8051$10525 Def003511
+S A$controller_8051$10516 Def003500
+S A$controller_8051$10507 Def0034F4
+S A$controller_8051$10480 Def0034C8
+S A$controller_8051$10471 Def0034BB
+S A$controller_8051$10462 Def0034AD
+S A$controller_8051$10453 Def00349E
+S A$controller_8051$10426 Def003479
+S A$controller_8051$10417 Def00346B
+S A$controller_8051$10408 Def00345D
+S A$controller_8051$10390 Def003445
+S A$controller_8051$10381 Def003438
+S A$controller_8051$10372 Def003428
+S A$controller_8051$10363 Def00341C
+S A$controller_8051$10345 Def00340A
+S A$controller_8051$10336 Def0033FF
+S A$controller_8051$10327 Def0033F4
+S A$controller_8051$10309 Def0033D9
+S A$controller_8051$10291 Def0033B9
+S A$controller_8051$10273 Def0033A2
+S A$controller_8051$10264 Def003398
+S A$controller_8051$10255 Def00338F
+S A$controller_8051$10246 Def003384
+S A$controller_8051$10237 Def003376
+S A$controller_8051$10228 Def003365
+S A$controller_8051$10219 Def003355
+S A$controller_8051$10192 Def00332F
+S A$controller_8051$10183 Def003324
+S A$controller_8051$10174 Def00331B
+S A$controller_8051$10165 Def003312
+S A$controller_8051$10156 Def003305
+S A$controller_8051$10147 Def0032F4
+S A$controller_8051$10138 Def0032E5
+S A$controller_8051$10129 Def0032D7
+S A$controller_8051$10093 Def0032A2
+S A$controller_8051$10084 Def00329A
+S A$controller_8051$10075 Def003291
+S A$controller_8051$10066 Def003283
+S A$controller_8051$10057 Def003270
+S A$controller_8051$10048 Def003263
+S A$controller_8051$10039 Def003251
 S Fcontroller_8051$fuzzy_clamp$0$0 Def000033
 S _fuzzy_and_array Def00016C
-S A$controller_8051$10256 Def0033C4
-S A$controller_8051$10247 Def0033B1
-S A$controller_8051$10193 Def003370
-S A$controller_8051$10184 Def003364
-S A$controller_8051$10175 Def003356
-S A$controller_8051$10166 Def003344
-S A$controller_8051$10157 Def003333
-S A$controller_8051$10139 Def003318
-S A$controller_8051$10085 Def0032DC
-S A$controller_8051$10076 Def0032CA
-S A$controller_8051$10067 Def0032B9
-S A$controller_8051$10058 Def0032A8
-S Fcontroller_8051$__str_0$0_0$0 Def0033D0
-S G$main$0$0 Def003396
-S C$fuzzy.h$2499$2_0$95 Def001921
-S A$controller_8051$10248 Def0033B4
-S A$controller_8051$10239 Def00339F
-S A$controller_8051$10194 Def003372
-S A$controller_8051$10185 Def003367
-S A$controller_8051$10176 Def003358
-S A$controller_8051$10167 Def003346
-S A$controller_8051$10158 Def003335
-S A$controller_8051$10095 Def0032E7
-S A$controller_8051$10086 Def0032DE
-S A$controller_8051$10077 Def0032CC
-S A$controller_8051$10068 Def0032BB
-S A$controller_8051$10059 Def0032AA
-S Fcontroller_8051$__str_1$0_0$0 Def0033D0
+S A$controller_8051$10670 Def0035E7
+S A$controller_8051$10652 Def0035CD
+S A$controller_8051$10643 Def0035BB
+S A$controller_8051$10634 Def0035AA
+S A$controller_8051$10625 Def00359D
+S A$controller_8051$10616 Def00358F
+S A$controller_8051$10607 Def00357C
+S A$controller_8051$10571 Def00355C
+S A$controller_8051$10562 Def00354A
+S A$controller_8051$10553 Def00353D
+S A$controller_8051$10544 Def00352C
+S A$controller_8051$10535 Def00351F
+S A$controller_8051$10526 Def003513
+S A$controller_8051$10517 Def003502
+S A$controller_8051$10508 Def0034F6
+S A$controller_8051$10490 Def0034DC
+S A$controller_8051$10481 Def0034C9
+S A$controller_8051$10472 Def0034BD
+S A$controller_8051$10463 Def0034AE
+S A$controller_8051$10454 Def0034A0
+S A$controller_8051$10436 Def003484
+S A$controller_8051$10427 Def00347A
+S A$controller_8051$10418 Def00346C
+S A$controller_8051$10409 Def00345E
+S A$controller_8051$10391 Def003447
+S A$controller_8051$10382 Def00343A
+S A$controller_8051$10373 Def003429
+S A$controller_8051$10364 Def00341D
+S A$controller_8051$10355 Def003412
+S A$controller_8051$10346 Def00340B
+S A$controller_8051$10337 Def003401
+S A$controller_8051$10328 Def0033F5
+S A$controller_8051$10292 Def0033BB
+S A$controller_8051$10283 Def0033AE
+S A$controller_8051$10274 Def0033A3
+S A$controller_8051$10265 Def003399
+S A$controller_8051$10256 Def003390
+S A$controller_8051$10238 Def003378
+S A$controller_8051$10229 Def003367
+S A$controller_8051$10193 Def003330
+S A$controller_8051$10184 Def003326
+S A$controller_8051$10175 Def00331C
+S A$controller_8051$10166 Def003313
+S A$controller_8051$10157 Def003307
+S A$controller_8051$10148 Def0032F6
+S A$controller_8051$10139 Def0032E6
+S A$controller_8051$10094 Def0032A4
+S A$controller_8051$10085 Def00329B
+S A$controller_8051$10076 Def003292
+S A$controller_8051$10067 Def003285
+S A$controller_8051$10058 Def003273
+S A$controller_8051$10049 Def003265
+S G$main$0$0 Def003609
+S A$controller_8051$10734 Def00363A
+S A$controller_8051$10680 Def0035FA
+S A$controller_8051$10671 Def0035E9
+S A$controller_8051$10653 Def0035CF
+S A$controller_8051$10644 Def0035BD
+S A$controller_8051$10635 Def0035AB
+S A$controller_8051$10626 Def0035A0
+S A$controller_8051$10617 Def003591
+S A$controller_8051$10608 Def00357E
+S A$controller_8051$10581 Def003566
+S A$controller_8051$10572 Def00355E
+S A$controller_8051$10563 Def00354D
+S A$controller_8051$10554 Def00353F
+S A$controller_8051$10545 Def00352E
+S A$controller_8051$10536 Def003522
+S A$controller_8051$10527 Def003515
+S A$controller_8051$10518 Def003503
+S A$controller_8051$10509 Def0034F7
+S A$controller_8051$10491 Def0034DE
+S A$controller_8051$10482 Def0034CB
+S A$controller_8051$10473 Def0034BF
+S A$controller_8051$10464 Def0034B0
+S A$controller_8051$10455 Def0034A1
+S A$controller_8051$10446 Def003493
+S A$controller_8051$10437 Def003486
+S A$controller_8051$10428 Def00347B
+S A$controller_8051$10419 Def00346E
+S A$controller_8051$10392 Def003449
+S A$controller_8051$10383 Def00343C
+S A$controller_8051$10374 Def00342A
+S A$controller_8051$10365 Def00341E
+S A$controller_8051$10356 Def003414
+S A$controller_8051$10347 Def00340C
+S A$controller_8051$10338 Def003403
+S A$controller_8051$10329 Def0033F7
+S A$controller_8051$10293 Def0033BD
+S A$controller_8051$10284 Def0033AF
+S A$controller_8051$10275 Def0033A5
+S A$controller_8051$10266 Def00339A
+S A$controller_8051$10257 Def003391
+S A$controller_8051$10239 Def003379
+S A$controller_8051$10194 Def003331
+S A$controller_8051$10185 Def003328
+S A$controller_8051$10176 Def00331D
+S A$controller_8051$10167 Def003314
+S A$controller_8051$10158 Def003309
+S A$controller_8051$10149 Def0032F8
+S A$controller_8051$10095 Def0032A5
+S A$controller_8051$10086 Def00329C
+S A$controller_8051$10077 Def003293
+S A$controller_8051$10068 Def003286
+S A$controller_8051$10059 Def003275
 S _fuzzy_rules_add Def0016B6
 S _fuzzy_sugeno_weighted_sum_array Def0008CE
-S A$controller_8051$10195 Def003374
-S A$controller_8051$10177 Def00335A
-S A$controller_8051$10168 Def003348
-S A$controller_8051$10159 Def003337
-S A$controller_8051$10096 Def0032E9
-S A$controller_8051$10087 Def0032E0
-S A$controller_8051$10078 Def0032CE
-S A$controller_8051$10069 Def0032BD
+S A$controller_8051$10744 Def003642
+S A$controller_8051$10726 Def003629
+S A$controller_8051$10717 Def003615
+S A$controller_8051$10708 Def00360C
+S A$controller_8051$10681 Def0035FC
+S A$controller_8051$10672 Def0035EB
+S A$controller_8051$10654 Def0035D1
+S A$controller_8051$10645 Def0035BE
+S A$controller_8051$10636 Def0035AD
+S A$controller_8051$10618 Def003593
+S A$controller_8051$10609 Def003581
+S A$controller_8051$10573 Def003560
+S A$controller_8051$10564 Def00354F
+S A$controller_8051$10555 Def003540
+S A$controller_8051$10546 Def003530
+S A$controller_8051$10537 Def003523
+S A$controller_8051$10528 Def003517
+S A$controller_8051$10519 Def003504
+S A$controller_8051$10492 Def0034E0
+S A$controller_8051$10483 Def0034CC
+S A$controller_8051$10474 Def0034C0
+S A$controller_8051$10465 Def0034B1
+S A$controller_8051$10456 Def0034A2
+S A$controller_8051$10447 Def003495
+S A$controller_8051$10438 Def003487
+S A$controller_8051$10429 Def00347D
+S A$controller_8051$10393 Def00344A
+S A$controller_8051$10384 Def00343E
+S A$controller_8051$10375 Def00342C
+S A$controller_8051$10366 Def003420
+S A$controller_8051$10348 Def00340D
+S A$controller_8051$10339 Def003404
+S A$controller_8051$10294 Def0033BF
+S A$controller_8051$10276 Def0033A6
+S A$controller_8051$10267 Def00339B
+S A$controller_8051$10258 Def003392
+S A$controller_8051$10195 Def003332
+S A$controller_8051$10186 Def003329
+S A$controller_8051$10168 Def003315
+S A$controller_8051$10159 Def00330A
+S A$controller_8051$10096 Def0032A7
+S A$controller_8051$10087 Def00329D
+S A$controller_8051$10078 Def003294
+S A$controller_8051$10069 Def003288
 S XFcontroller_8051$temperature_low$0$0 Def0030B0
-S A$controller_8051$10259 Def0033C7
-S A$controller_8051$10196 Def003376
-S A$controller_8051$10178 Def00335C
-S A$controller_8051$10169 Def00334A
-S A$controller_8051$10097 Def0032EB
-S A$controller_8051$10079 Def0032D0
+S A$controller_8051$10727 Def00362C
+S A$controller_8051$10718 Def003618
+S A$controller_8051$10682 Def0035FE
+S A$controller_8051$10673 Def0035ED
+S A$controller_8051$10664 Def0035DC
+S A$controller_8051$10655 Def0035D3
+S A$controller_8051$10646 Def0035C1
+S A$controller_8051$10637 Def0035AF
+S A$controller_8051$10619 Def003595
+S A$controller_8051$10565 Def003551
+S A$controller_8051$10556 Def003542
+S A$controller_8051$10547 Def003532
+S A$controller_8051$10538 Def003525
+S A$controller_8051$10529 Def003519
+S A$controller_8051$10493 Def0034E2
+S A$controller_8051$10484 Def0034CD
+S A$controller_8051$10475 Def0034C1
+S A$controller_8051$10466 Def0034B3
+S A$controller_8051$10457 Def0034A5
+S A$controller_8051$10448 Def003497
+S A$controller_8051$10439 Def003489
+S A$controller_8051$10394 Def00344B
+S A$controller_8051$10385 Def003440
+S A$controller_8051$10376 Def00342E
+S A$controller_8051$10367 Def003421
+S A$controller_8051$10349 Def00340E
+S A$controller_8051$10295 Def0033C1
+S A$controller_8051$10277 Def0033A8
+S A$controller_8051$10268 Def00339C
+S A$controller_8051$10259 Def003393
+S A$controller_8051$10196 Def003333
+S A$controller_8051$10187 Def00332A
+S A$controller_8051$10169 Def003316
+S A$controller_8051$10097 Def0032A8
+S A$controller_8051$10088 Def00329E
+S A$controller_8051$10079 Def003295
 S A$controller_8051$1000 Def0001C5
-S A$controller_8051$10269 Def0033CF
-S A$controller_8051$10197 Def003378
-S A$controller_8051$10179 Def00335E
-S A$controller_8051$10098 Def0032ED
+S A$controller_8051$10737 Def00363D
+S A$controller_8051$10728 Def00362F
+S A$controller_8051$10719 Def00361B
+S A$controller_8051$10692 Def003608
+S A$controller_8051$10683 Def003600
+S A$controller_8051$10674 Def0035EE
+S A$controller_8051$10665 Def0035DD
+S A$controller_8051$10656 Def0035D5
+S A$controller_8051$10647 Def0035C3
+S A$controller_8051$10638 Def0035B1
+S A$controller_8051$10566 Def003553
+S A$controller_8051$10557 Def003543
+S A$controller_8051$10548 Def003533
+S A$controller_8051$10494 Def0034E4
+S A$controller_8051$10485 Def0034CF
+S A$controller_8051$10476 Def0034C3
+S A$controller_8051$10467 Def0034B4
+S A$controller_8051$10458 Def0034A6
+S A$controller_8051$10449 Def003498
+S A$controller_8051$10395 Def00344D
+S A$controller_8051$10386 Def003441
+S A$controller_8051$10377 Def003430
+S A$controller_8051$10368 Def003422
+S A$controller_8051$10296 Def0033C3
+S A$controller_8051$10287 Def0033B1
+S A$controller_8051$10278 Def0033A9
+S A$controller_8051$10269 Def00339D
+S A$controller_8051$10197 Def003334
+S A$controller_8051$10188 Def00332B
+S A$controller_8051$10098 Def0032AA
 S A$controller_8051$1100 Def00024B
 S A$controller_8051$1010 Def0001D7
 S A$controller_8051$1001 Def0001C7
 S XG$fuzzy_rules_defuzzify$0$0 Def002FFF
 S G$fuzzy_rules_defuzzify_cog$0$0 Def002088
-S A$controller_8051$10198 Def00337A
-S A$controller_8051$10189 Def003369
+S A$controller_8051$10729 Def003632
+S A$controller_8051$10684 Def003602
+S A$controller_8051$10675 Def0035F1
+S A$controller_8051$10666 Def0035DF
+S A$controller_8051$10648 Def0035C5
+S A$controller_8051$10639 Def0035B3
+S A$controller_8051$10594 Def003567
+S A$controller_8051$10567 Def003554
+S A$controller_8051$10558 Def003545
+S A$controller_8051$10549 Def003535
+S A$controller_8051$10495 Def0034E6
+S A$controller_8051$10486 Def0034D2
+S A$controller_8051$10477 Def0034C4
+S A$controller_8051$10468 Def0034B5
+S A$controller_8051$10459 Def0034A8
+S A$controller_8051$10396 Def00344E
+S A$controller_8051$10378 Def003432
+S A$controller_8051$10369 Def003424
+S A$controller_8051$10297 Def0033C5
+S A$controller_8051$10288 Def0033B3
+S A$controller_8051$10279 Def0033AB
+S A$controller_8051$10198 Def003335
+S A$controller_8051$10189 Def00332C
+S A$controller_8051$10099 Def0032AB
 S A$controller_8051$2100 Def000770
 S A$controller_8051$2010 Def000702
 S A$controller_8051$2001 Def0006F5
@@ -8858,9 +9262,25 @@ S A$controller_8051$1101 Def00024C
 S A$controller_8051$1020 Def0001EA
 S A$controller_8051$1011 Def0001D8
 S A$controller_8051$1002 Def0001C8
-S C$controller_8051.c$100$1_0$151 Def0030FF
 S G$fuzzy_rules_cog$0$0 Def003000
-S A$controller_8051$10199 Def00337B
+S A$controller_8051$10739 Def003640
+S A$controller_8051$10685 Def003604
+S A$controller_8051$10676 Def0035F3
+S A$controller_8051$10667 Def0035E1
+S A$controller_8051$10649 Def0035C7
+S A$controller_8051$10595 Def003569
+S A$controller_8051$10577 Def003561
+S A$controller_8051$10568 Def003556
+S A$controller_8051$10559 Def003546
+S A$controller_8051$10496 Def0034E8
+S A$controller_8051$10487 Def0034D5
+S A$controller_8051$10478 Def0034C5
+S A$controller_8051$10469 Def0034B7
+S A$controller_8051$10397 Def00344F
+S A$controller_8051$10379 Def003433
+S A$controller_8051$10298 Def0033C7
+S A$controller_8051$10289 Def0033B5
+S A$controller_8051$10199 Def003336
 S A$controller_8051$4000 Def001228
 S A$controller_8051$3100 Def000CC9
 S A$controller_8051$3010 Def000C58
@@ -8878,6 +9298,20 @@ S A$controller_8051$1102 Def00024D
 S A$controller_8051$1021 Def0001EC
 S A$controller_8051$1012 Def0001D9
 S A$controller_8051$1003 Def0001CA
+S C$controller_8051.c$101$1_0$151 Def0030FF
+S A$controller_8051$10686 Def003605
+S A$controller_8051$10677 Def0035F5
+S A$controller_8051$10668 Def0035E3
+S A$controller_8051$10659 Def0035D7
+S A$controller_8051$10596 Def00356B
+S A$controller_8051$10578 Def003564
+S A$controller_8051$10569 Def003558
+S A$controller_8051$10497 Def0034EA
+S A$controller_8051$10488 Def0034D7
+S A$controller_8051$10479 Def0034C7
+S A$controller_8051$10398 Def003451
+S A$controller_8051$10389 Def003443
+S A$controller_8051$10299 Def0033C8
 S A$controller_8051$5000 Def001780
 S A$controller_8051$4100 Def0012C0
 S A$controller_8051$4010 Def001238
@@ -8910,10 +9344,8 @@ S A$controller_8051$1103 Def00024E
 S A$controller_8051$1022 Def0001ED
 S A$controller_8051$1013 Def0001DC
 S A$controller_8051$1004 Def0001CD
-S C$controller_8051.c$102$1_0$151 Def00313C
-S C$fuzzy.h$290$1_0$3 Def000032
 S _fuzzy_sugeno_weighted_average_array Def0006CD
-A CONST size 15 flags 20 addr 0
+A CONST size 3 flags 20 addr 0
 S Fcontroller_8051$hedges$0_0$0 Def000000
 A XINIT size 0 flags 20 addr 0
 A CABS size 0 flags 28 addr 0
@@ -9005,7 +9437,7 @@ T 00 00 00 02 00 49
 R 00 00 00 17 00 04 00 0F
 T 00 00 49
 R 00 00 00 0F
-T 00 00 49 02 33 96
+T 00 00 49 02 36 09
 R 00 00 00 0F 00 04 00 18
 T 00 00 00
 R 00 00 00 18
@@ -10369,13 +10801,13 @@ T 00 16 D4 75 82 00 02 18 14
 R 00 00 00 18 00 07 00 18
 T 00 16 DA
 R 00 00 00 18
-T 00 16 DA E5 00 00 00 24 09 F8 74 90 2A F6 E4 3B
+T 00 16 DA E5 00 00 00 24 09 F8 74 12 2A F6 E4 3B
 R 00 00 00 18 F1 23 04 00 8D
 T 00 16 E5 08 F6 08 A6 04 E5 00 00 00 24 09 F8 86
 R 00 00 00 18 F1 23 09 00 8D
 T 00 16 F0 82 08 86 83 08 86 F0 12 00 00 FF A3 12
 R 00 00 00 18 02 0B 00 F0
-T 00 16 FD 00 00 FE C3 EF 94 10 EE 94 00 40 06 75
+T 00 16 FD 00 00 FE C3 EF 94 02 EE 94 00 40 06 75
 R 00 00 00 18 02 03 00 F0
 T 00 17 0A 82 00 02 18 14
 R 00 00 00 18 00 06 00 18
@@ -10621,7 +11053,7 @@ T 00 1B 00 00 00 00 08 E5 00 00 00 24 09 F9 E6 F7
 R 00 00 00 18 F1 23 03 00 8D F1 23 08 00 8D
 T 00 1B 09 08 E6 09 F7 08 E6 09 F7 A8 00 00 00 08
 R 00 00 00 18 F1 23 0C 00 8D
-T 00 1B 14 E5 00 00 00 24 04 F9 74 90 26 F7 E4 08
+T 00 1B 14 E5 00 00 00 24 04 F9 74 12 26 F7 E4 08
 R 00 00 00 18 F1 23 04 00 8D
 T 00 1B 1F 36 09 F7 08 E6 09 F7 E5 00 00 00 24 14
 R 00 00 00 18 F1 23 0B 00 8D
@@ -11203,7 +11635,7 @@ T 00 25 C1 E6 09 F7 A8 00 00 00 08 E5 00 00 00 24
 R 00 00 00 18 F1 23 07 00 8D F1 23 0C 00 8D
 T 00 25 CA 04 F9 E6 F7 08 E6 09 F7 08 E6 09 F7 A8
 R 00 00 00 18
-T 00 25 D7 00 00 00 08 74 90 26 FC E4 08 36 FD 08
+T 00 25 D7 00 00 00 08 74 12 26 FC E4 08 36 FD 08
 R 00 00 00 18 F1 23 03 00 8D
 T 00 25 E2 86 06
 R 00 00 00 18
@@ -11541,7 +11973,7 @@ T 00 2C 02 2C 92
 R 00 00 00 18 00 03 00 18
 T 00 2C 04
 R 00 00 00 18
-T 00 2C 04 74 90 2D FA E4 3E FB 8F 04 8A 82 8B 83
+T 00 2C 04 74 12 2D FA E4 3E FB 8F 04 8A 82 8B 83
 R 00 00 00 18
 T 00 2C 11 8C F0 12 00 00 FA A3 12 00 00 4A 60 74
 R 00 00 00 18 02 06 00 F0 02 0B 00 F0
@@ -11841,149 +12273,281 @@ T 00 31 7E 83 8E F0 EF 22
 R 00 00 00 18
 T 00 31 83
 R 00 00 00 18
-T 00 31 83 C0 00 00 00 85 81 00 00 00 C0 82 C0 83
+T 00 31 83 C0 00 00 00 85 81 00 00 00 AF 82 AE 83
 R 00 00 00 18 F1 23 04 00 8D F1 23 09 00 8D
-T 00 31 8C C0 F0 C0 E0 E5 81 24 96 F5 81 E5
+T 00 31 8C AD F0 FC E5 81 24 24 F5 81 8F 82 8E 83
 R 00 00 00 18
-T 00 31 97 00 00 00 24 09 FB 24 90 F9 77 00 09 77
+T 00 31 99 8D F0 EC C0 07 C0 06 C0 05 C0 04 12
+R 00 00 00 18
+T 00 31 A5 30 6C A8 00 00 00 08 A6 82 08 A6 83 08
+R 00 00 00 18 00 03 00 18 F1 23 06 00 8D
+T 00 31 B0 A6 F0 08 F6 D0 04 D0 05 D0 06 D0 07 8F
+R 00 00 00 18
+T 00 31 BD 82 8E 83 8D F0 EC 12 30 B1 C8 E5
+R 00 00 00 18 00 0A 00 18
+T 00 31 C8 00 00 00 24 05 C8 A6 82 08 A6 83 08 A6
 R 00 00 00 18 F1 23 03 00 8D
-T 00 31 A2 00 19 A8 00 00 00 08 86 82 08 86 83 08
+T 00 31 D3 F0 08 F6 E5 00 00 00 24 1D F8 E4 F6 08
+R 00 00 00 18 F1 23 07 00 8D
+T 00 31 DE F6 08 F6 08 F6 E5 00 00 00 24 21 F8 E4
+R 00 00 00 18 F1 23 09 00 8D
+T 00 31 E9 F6 08 F6 08 F6 08 F6 FB E5 00 00 00 24
+R 00 00 00 18 F1 23 0C 00 8D
+T 00 31 F4 09 F8 E4 F6 08 F6 08 F6 08 F6
+R 00 00 00 18
+T 00 31 FE
+R 00 00 00 18
+T 00 31 FE E5 00 00 00 24 09 F8 86 82 08 86 83 08
+R 00 00 00 18 F1 23 04 00 8D
+T 00 32 09 86 F0 08 E6 C0 03 12 30 F8 AF 82 AE 83
+R 00 00 00 18 00 0A 00 18
+T 00 32 16 AD F0 FC D0 03 E5 00 00 00 24 09 F8 86
+R 00 00 00 18 F1 23 09 00 8D
+T 00 32 21 82 08 86 83 08 86 F0 08 E6 C0 07 C0 06
+R 00 00 00 18
+T 00 32 2E C0 05 C0 04 C0 03 12 31 3D C8 E5
+R 00 00 00 18 00 0A 00 18
+T 00 32 39 00 00 00 24 0D C8 A6 82 08 A6 83 08 A6
+R 00 00 00 18 F1 23 03 00 8D
+T 00 32 44 F0 08 F6 D0 03 D0 04 D0 05 D0 06 D0 07
+R 00 00 00 18
+T 00 32 51 C0 07 C0 06 C0 05 C0 04 C0 03 C0 07 C0
+R 00 00 00 18
+T 00 32 5E 06 C0 05 C0 04 A8 00 00 00 08 86 82 08
+R 00 00 00 18 F1 23 09 00 8D
+T 00 32 69 86 83 08 86 F0 08 E6 12 00 00 AA 82 E5
+R 00 00 00 18 02 0B 00 2D
+T 00 32 76 81 24 FC F5 81 D0 03 D0 04 D0 05 D0 06
+R 00 00 00 18
+T 00 32 83 D0 07 EA 60 18 A8 00 00 00 08 E5
+R 00 00 00 18 F1 23 09 00 8D
+T 00 32 8C 00 00 00 24 11 F9 E6 F7 08 E6 09 F7 08
+R 00 00 00 18 F1 23 03 00 8D
+T 00 32 97 E6 09 F7 08 E6 09 F7 80 10
+R 00 00 00 18
+T 00 32 A0
+R 00 00 00 18
+T 00 32 A0 E5 00 00 00 24 11 F8 A6 07 08 A6 06 08
+R 00 00 00 18 F1 23 04 00 8D
+T 00 32 AB A6 05 08 A6 04
+R 00 00 00 18
+T 00 32 B0
+R 00 00 00 18
+T 00 32 B0 E5 00 00 00 24 11 F8 86 07 08 86 06 08
+R 00 00 00 18 F1 23 04 00 8D
+T 00 32 BB 86 05 08 86 04 C0 07 C0 06 C0 05 C0 04
+R 00 00 00 18
+T 00 32 C8 C0 03 E5 00 00 00 24 0D F8 E6 C0 E0 08
 R 00 00 00 18 F1 23 06 00 8D
-T 00 31 AD 86 F0 08 E6 C0 03 C0 01 12 30 6C C8 E5
-R 00 00 00 18 00 0C 00 18
-T 00 31 BA 00 00 00 24 05 C8 A6 82 08 A6 83 08 A6
+T 00 32 D3 E6 C0 E0 08 E6 C0 E0 08 E6 C0 E0 E5
+R 00 00 00 18
+T 00 32 DF 00 00 00 24 05 F8 86 82 08 86 83 08 86
 R 00 00 00 18 F1 23 03 00 8D
-T 00 31 C5 F0 08 F6 D0 01 D0 03 8B 04 7E 00 7F 40
-R 00 00 00 18
-T 00 31 D2 C0 03 C0 01 74 00 30 F8 C0 E0 74
-R 00 00 00 18 F1 01 08 00 18
-T 00 31 DB 00 30 F8 C0 E0 E5 00 00 00 24 05 F8 E6
-R 00 00 00 18 F1 81 03 00 18 F1 23 09 00 8D
-T 00 31 E4 C0 E0 08 E6 C0 E0 08 E6 C0 E0 08 E6 C0
-R 00 00 00 18
-T 00 31 F1 E0 74 00 00 03 C0 E0 74 00 00 03 C0 E0
-R 00 00 00 18 F1 01 05 00 19 F1 81 0B 00 19
-T 00 31 FA 74 80 C0 E0 8C 82 8E 83 8F F0 12 16 B6
-R 00 00 00 18 00 0E 00 18
-T 00 32 07 AF 82 E5 81 24 F7 F5 81 D0 01 D0 03 EF
-R 00 00 00 18
-T 00 32 14 70 09 90 00 00 E4 F5 F0 02 32 EE
-R 00 00 00 18 00 0C 00 18
-T 00 32 1F
-R 00 00 00 18
-T 00 32 1F C0 01 A8 00 00 00 08 86 82 08 86 83 08
-R 00 00 00 18 F1 23 06 00 8D
-T 00 32 2A 86 F0 08 E6 C0 03 C0 01 12 30 B1 C8 E5
-R 00 00 00 18 00 0C 00 18
-T 00 32 37 00 00 00 24 05 C8 A6 82 08 A6 83 08 A6
-R 00 00 00 18 F1 23 03 00 8D
-T 00 32 42 F0 08 F6 D0 01 D0 03 8B 02 7E 00 7F 40
-R 00 00 00 18
-T 00 32 4F C0 03 C0 01 74 00 31 3D C0 E0 74
-R 00 00 00 18 F1 01 08 00 18
-T 00 32 58 00 31 3D C0 E0 E5 00 00 00 24 05 F8 E6
-R 00 00 00 18 F1 81 03 00 18 F1 23 09 00 8D
-T 00 32 61 C0 E0 08 E6 C0 E0 08 E6 C0 E0 08 E6 C0
-R 00 00 00 18
-T 00 32 6E E0 74 00 00 0C C0 E0 74 00 00 0C C0 E0
-R 00 00 00 18 F1 01 05 00 19 F1 81 0B 00 19
-T 00 32 77 74 80 C0 E0 8A 82 8E 83 8F F0 12 16 B6
-R 00 00 00 18 00 0E 00 18
-T 00 32 84 AF 82 E5 81 24 F7 F5 81 D0 01 D0 03 D0
-R 00 00 00 18
-T 00 32 91 01 EF 70 08 90 00 00 E4 F5 F0 80 51
-R 00 00 00 18
-T 00 32 9D
-R 00 00 00 18
-T 00 32 9D 7F 00 7E 40 C0 01 74 03 C0 E0 E4 C0 E0
-R 00 00 00 18
-T 00 32 AA C0 E0 74 20 C0 E0 74 41 C0 E0 E4 C0 E0
-R 00 00 00 18
-T 00 32 B7 C0 E0 74 C8 C0 E0 74 42 C0 E0 E4 C0 E0
-R 00 00 00 18
-T 00 32 C4 C0 E0 C0 E0 C0 E0 8B 82 8F 83 8E F0 12
-R 00 00 00 18
-T 00 32 D1 2F 8C AC 82 AD 83 AE F0 FF E5 81 24 F3
-R 00 00 00 18 00 03 00 18
-T 00 32 DE F5 81 D0 01 77 00 09 77 00 8C 82 8D 83
-R 00 00 00 18
-T 00 32 EB 8E F0 EF
-R 00 00 00 18
-T 00 32 EE
-R 00 00 00 18
-T 00 32 EE 85 00 00 00 81 D0 00 00 00 22
-R 00 00 00 18 F1 23 04 00 8D F1 23 09 00 8D
-T 00 32 F4
-R 00 00 00 18
-T 00 32 F4 AC 82 AD 83 AE F0 FF C0 07 C0 06 C0 05
-R 00 00 00 18
-T 00 33 01 C0 04 C0 04 C0 05 C0 06 C0 07 90 00 00
-R 00 00 00 18
-T 00 33 0E E4 F5 F0 12 00 00 E5 81 24 FC F5 81 D0
+T 00 32 EA F0 08 E6 12 00 00 AA 82 E5 81 24 FC F5
 R 00 00 00 18 02 07 00 2D
-T 00 33 1B 04 D0 05 D0 06 D0 07 E5 82 24 FF 92
+T 00 32 F7 81 D0 03 D0 04 D0 05 D0 06 D0 07 EA 60
 R 00 00 00 18
-T 00 33 27 00 80 00 40 05 75 82 00 80 66
-R 00 00 00 18 F5 29 03 00 05
-T 00 33 2F
+T 00 33 04 1A E5 00 00 00 24 05 F8 E5 00 00 00 24
+R 00 00 00 18 F1 23 05 00 8D F1 23 0C 00 8D
+T 00 33 0D 15 F9 E6 F7 08 E6 09 F7 08 E6 09 F7 08
 R 00 00 00 18
-T 00 33 2F C0 07 C0 06 C0 05 C0 04 E4 C0 E0 C0 E0
+T 00 33 1A E6 09 F7 80 18
 R 00 00 00 18
-T 00 33 3C 74 C8 C0 E0 74 42 C0 E0 8C 82 8D 83 8E
+T 00 33 1F
 R 00 00 00 18
-T 00 33 49 F0 EF 12 00 00 E5 81 24 FC F5 81 D0 04
-R 00 00 00 18 02 06 00 2D
-T 00 33 56 D0 05 D0 06 D0 07 E5 82 24 FF 92
+T 00 33 1F E5 00 00 00 24 0D F8 E5 00 00 00 24 15
+R 00 00 00 18 F1 23 04 00 8D F1 23 0B 00 8D
+T 00 33 28 F9 E6 F7 08 E6 09 F7 08 E6 09 F7 08 E6
 R 00 00 00 18
-T 00 33 61 00 80 00 40 05 75 82 64 80 2C
-R 00 00 00 18 F5 29 03 00 05
-T 00 33 69
+T 00 33 35 09 F7
 R 00 00 00 18
-T 00 33 69 E4 C0 E0 C0 E0 C0 E0 74 3F C0 E0 8C 82
+T 00 33 37
 R 00 00 00 18
-T 00 33 76 8D 83 8E F0 EF 12 00 00 AC 82 AD 83 AE
-R 00 00 00 18 02 09 00 47
-T 00 33 83 F0 FF E5 81 24 FC F5 81 8C 82 8D 83 8E
+T 00 33 37 E5 00 00 00 24 15 C0 07 C0 06 C0 05 C0
+R 00 00 00 18 F1 23 04 00 8D
+T 00 33 42 04 C0 03 C0 07 C0 06 C0 05 C0 04 E5
 R 00 00 00 18
-T 00 33 90 F0 EF 12 00 00
+T 00 33 4E 00 00 00 24 15 F8 86 82 08 86 83 08 86
+R 00 00 00 18 F1 23 03 00 8D
+T 00 33 59 F0 08 E6 12 00 00 AA 82 E5 81 24 FC F5
+R 00 00 00 18 02 07 00 2D
+T 00 33 66 81 D0 03 D0 04 D0 05 D0 06 D0 07 EA 60
+R 00 00 00 18
+T 00 33 73 12 E5 00 00 00 24 19 F8 A6 07 08 A6 06
+R 00 00 00 18 F1 23 05 00 8D
+T 00 33 7E 08 A6 05 08 A6 04 80 18
+R 00 00 00 18
+T 00 33 86
+R 00 00 00 18
+T 00 33 86 E5 00 00 00 24 15 F8 E5 00 00 00 24 19
+R 00 00 00 18 F1 23 04 00 8D F1 23 0B 00 8D
+T 00 33 8F F9 E6 F7 08 E6 09 F7 08 E6 09 F7 08 E6
+R 00 00 00 18
+T 00 33 9C 09 F7
+R 00 00 00 18
+T 00 33 9E
+R 00 00 00 18
+T 00 33 9E E5 00 00 00 24 19 F8 86 02 08 86 05 08
+R 00 00 00 18 F1 23 04 00 8D
+T 00 33 A9 86 06 08 86 07 EB 60 39 C0 07 C0 06 C0
+R 00 00 00 18
+T 00 33 B6 05 C0 03 C0 02 C0 02 C0 05 C0 06 C0 07
+R 00 00 00 18
+T 00 33 C3 E5 00 00 00 24 1D F8 86 82 08 86 83 08
+R 00 00 00 18 F1 23 04 00 8D
+T 00 33 CE 86 F0 08 E6 12 00 00 AC 82 E5 81 24 FC
+R 00 00 00 18 02 08 00 2D
+T 00 33 DB F5 81 D0 02 D0 03 D0 05 D0 06 D0 07 EC
+R 00 00 00 18
+T 00 33 E8 60 2C
+R 00 00 00 18
+T 00 33 EA
+R 00 00 00 18
+T 00 33 EA E5 00 00 00 24 1D F8 A6 02 08 A6 05 08
+R 00 00 00 18 F1 23 04 00 8D
+T 00 33 F5 A6 06 08 A6 07 E5 00 00 00 24 09 F8 E5
+R 00 00 00 18 F1 23 09 00 8D
+T 00 34 00 00 00 00 24 21 F9 E6 F7 08 E6 09 F7 08
+R 00 00 00 18 F1 23 03 00 8D
+T 00 34 0B E6 09 F7 08 E6 09 F7 7B 01 80 6E
+R 00 00 00 18
+T 00 34 16
+R 00 00 00 18
+T 00 34 16 C0 03 E5 00 00 00 24 1D F8 E6 C0 E0 08
+R 00 00 00 18 F1 23 06 00 8D
+T 00 34 21 E6 C0 E0 08 E6 C0 E0 08 E6 C0 E0 8A 82
+R 00 00 00 18
+T 00 34 2E 8D 83 8E F0 EF 12 00 00 AF 82 E5 81 24
+R 00 00 00 18 02 09 00 18
+T 00 34 3B FC F5 81 D0 03 EF 60 41 C0 03 E5
+R 00 00 00 18
+T 00 34 46 00 00 00 24 09 F8 E6 C0 E0 08 E6 C0 E0
+R 00 00 00 18 F1 23 03 00 8D
+T 00 34 51 08 E6 C0 E0 08 E6 C0 E0 E5 00 00 00 24
+R 00 00 00 18 F1 23 0C 00 8D
+T 00 34 5C 21 F8 86 82 08 86 83 08 86 F0 08 E6 12
+R 00 00 00 18
+T 00 34 69 00 00 C8 E5 00 00 00 24 21 C8 A6 82 08
+R 00 00 00 18 02 03 00 47 F1 23 07 00 8D
+T 00 34 74 A6 83 08 A6 F0 08 F6 E5 81 24 FC F5 81
+R 00 00 00 18
+T 00 34 81 D0 03 0B
+R 00 00 00 18
+T 00 34 84
+R 00 00 00 18
+T 00 34 84 C0 03 E4 C0 E0 C0 E0 74 20 C0 E0 74 41
+R 00 00 00 18
+T 00 34 91 C0 E0 E5 00 00 00 24 09 F8 86 82 08 86
+R 00 00 00 18 F1 23 06 00 8D
+T 00 34 9C 83 08 86 F0 08 E6 12 00 00 C8 E5
+R 00 00 00 18 02 0A 00 47
+T 00 34 A7 00 00 00 24 09 C8 A6 82 08 A6 83 08 A6
+R 00 00 00 18 F1 23 03 00 8D
+T 00 34 B2 F0 08 F6 E5 81 24 FC F5 81 E5 00 00 00
+R 00 00 00 18 F1 23 0D 00 8D
+T 00 34 BD 24 09 F8 E6 C0 E0 08 E6 C0 E0 08 E6 C0
+R 00 00 00 18
+T 00 34 CA E0 08 E6 C0 E0 90 00 00 75 F0 C8 74 42
+R 00 00 00 18
+T 00 34 D7 12 00 00 E5 81 24 FC F5 81 D0 03 E5 82
+R 00 00 00 18 02 04 00 2D
+T 00 34 E4 24 FF 92 00 80 00 40 03 02 31 FE
+R 00 00 00 18 F5 29 06 00 05 00 0C 00 18
+T 00 34 ED
+R 00 00 00 18
+T 00 34 ED EB 60 2F C0 03 E5 00 00 00 24 1D F8 E6
+R 00 00 00 18 F1 23 09 00 8D
+T 00 34 F8 C0 E0 08 E6 C0 E0 08 E6 C0 E0 08 E6 C0
+R 00 00 00 18
+T 00 35 05 E0 90 00 00 E4 F5 F0 12 00 00 E5 81 24
+R 00 00 00 18 02 0B 00 2D
+T 00 35 12 FC F5 81 D0 03 E5 82 24 FF 92 00 80 00
+R 00 00 00 18 F5 29 0D 00 05
+T 00 35 1D 40 08
+R 00 00 00 18
+T 00 35 1F
+R 00 00 00 18
+T 00 35 1F 90 00 00 E4 F5 F0 80 3A
+R 00 00 00 18
+T 00 35 27
+R 00 00 00 18
+T 00 35 27 8B 82 12 00 00 AC 82 AD 83 AE F0 FF C0
 R 00 00 00 18 02 06 00 EF
-T 00 33 95
+T 00 35 34 04 C0 05 C0 06 C0 07 E5 00 00 00 24 21
+R 00 00 00 18 F1 23 0B 00 8D
+T 00 35 3F F8 86 82 08 86 83 08 86 F0 08 E6 12
 R 00 00 00 18
-T 00 33 95 22
+T 00 35 4B 00 00 AC 82 AD 83 AE F0 FF E5 81 24 FC
+R 00 00 00 18 02 03 00 E1
+T 00 35 58 F5 81 8C 82 8D 83 8E F0 EF
 R 00 00 00 18
-T 00 33 96
+T 00 35 61
 R 00 00 00 18
-T 00 33 96 75 00 00 40 2A 75 80 55 75 90 00 85 A0
+T 00 35 61 85 00 00 00 81 D0 00 00 00 22
+R 00 00 00 18 F1 23 04 00 8D F1 23 09 00 8D
+T 00 35 67
+R 00 00 00 18
+T 00 35 67 AC 82 AD 83 AE F0 FF C0 07 C0 06 C0 05
+R 00 00 00 18
+T 00 35 74 C0 04 C0 04 C0 05 C0 06 C0 07 90 00 00
+R 00 00 00 18
+T 00 35 81 E4 F5 F0 12 00 00 E5 81 24 FC F5 81 D0
+R 00 00 00 18 02 07 00 2D
+T 00 35 8E 04 D0 05 D0 06 D0 07 E5 82 24 FF 92
+R 00 00 00 18
+T 00 35 9A 00 80 00 40 05 75 82 00 80 66
+R 00 00 00 18 F5 29 03 00 05
+T 00 35 A2
+R 00 00 00 18
+T 00 35 A2 C0 07 C0 06 C0 05 C0 04 E4 C0 E0 C0 E0
+R 00 00 00 18
+T 00 35 AF 74 C8 C0 E0 74 42 C0 E0 8C 82 8D 83 8E
+R 00 00 00 18
+T 00 35 BC F0 EF 12 00 00 E5 81 24 FC F5 81 D0 04
+R 00 00 00 18 02 06 00 2D
+T 00 35 C9 D0 05 D0 06 D0 07 E5 82 24 FF 92
+R 00 00 00 18
+T 00 35 D4 00 80 00 40 05 75 82 64 80 2C
+R 00 00 00 18 F5 29 03 00 05
+T 00 35 DC
+R 00 00 00 18
+T 00 35 DC E4 C0 E0 C0 E0 C0 E0 74 3F C0 E0 8C 82
+R 00 00 00 18
+T 00 35 E9 8D 83 8E F0 EF 12 00 00 AC 82 AD 83 AE
+R 00 00 00 18 02 09 00 47
+T 00 35 F6 F0 FF E5 81 24 FC F5 81 8C 82 8D 83 8E
+R 00 00 00 18
+T 00 36 03 F0 EF 12 00 00
+R 00 00 00 18 02 06 00 EE
+T 00 36 08
+R 00 00 00 18
+T 00 36 08 22
+R 00 00 00 18
+T 00 36 09
+R 00 00 00 18
+T 00 36 09 75 00 00 40 2A 75 80 55 75 90 00 85 A0
 R 00 00 00 18 F1 21 04 00 06
-T 00 33 A1 00 00 40 85 00 00 40 82 12
+T 00 36 14 00 00 40 85 00 00 40 82 12
 R 00 00 00 18 F1 21 03 00 06 F1 21 07 00 06
-T 00 33 A6 00 00 12 31 83 85 82
-R 00 00 00 18 02 03 00 EE 00 06 00 18
-T 00 33 AD 00 00 42 85 83 00 00 43 85 F0
+T 00 36 19 00 00 12 31 83 85 82
+R 00 00 00 18 02 03 00 EF 00 06 00 18
+T 00 36 20 00 00 42 85 83 00 00 43 85 F0
 R 00 00 00 18 F1 21 03 00 06 F1 21 08 00 06
-T 00 33 B3 00 00 44 F5 00 00 45 85
+T 00 36 26 00 00 44 F5 00 00 45 85
 R 00 00 00 18 F1 21 03 00 06 F1 21 07 00 06
-T 00 33 B7 00 00 42 82 85 00 00 43 83 85
+T 00 36 2A 00 00 42 82 85 00 00 43 83 85
 R 00 00 00 18 F1 21 03 00 06 F1 21 08 00 06
-T 00 33 BD 00 00 44 F0 E5 00 00 45 12
+T 00 36 30 00 00 44 F0 E5 00 00 45 12
 R 00 00 00 18 F1 21 03 00 06 F1 21 08 00 06
-T 00 33 C2 32 F4 85 82 00 00 41 85
+T 00 36 35 35 67 85 82 00 00 41 85
 R 00 00 00 18 00 03 00 18 F1 21 07 00 06
-T 00 33 C8 00 00 41 90 75 80 AA
+T 00 36 3B 00 00 41 90 75 80 AA
 R 00 00 00 18 F1 21 03 00 06
-T 00 33 CD
+T 00 36 40
 R 00 00 00 18
-T 00 33 CD 80 FE 22
+T 00 36 40 80 FE 22
 R 00 00 00 18
 T 00 00 00
 R 00 00 00 19
 T 00 00 00 01 02 03
-R 00 00 00 19
-T 00 00 03
-R 00 00 00 19
-T 00 00 03 66 61 6E 5F 73 6C 6F 77 00
-R 00 00 00 19
-T 00 00 0C
-R 00 00 00 19
-T 00 00 0C 66 61 6E 5F 66 61 73 74 00
 R 00 00 00 19

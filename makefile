@@ -401,7 +401,6 @@ embedded-mamdani build-8051: \
 	    --debug \
 	    --stack-auto \
 	    --iram-size 256 \
-	    --stack-loc 0x80 \
 	    -I../.. \
 	    -o $(MAMDANI_EMBEDDED_BASENAME).ihx \
 	    ../../$(MAMDANI_EMBEDDED_SOURCE)

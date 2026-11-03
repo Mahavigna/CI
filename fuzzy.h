@@ -15,7 +15,9 @@ typedef unsigned char uint8_t;
 #define false 0u
 #define true 1u
 
+#ifndef FUZZY_MAX_RULES
 #define FUZZY_MAX_RULES 16u
+#endif
 
 typedef uint8_t fuzzy_hedge_t;
 
