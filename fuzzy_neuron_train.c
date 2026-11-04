@@ -24,21 +24,7 @@
 #define DEFAULT_ORIGINAL_OUTPUT OUTPUT_DIR "/fuzzy_neuron_original_predictions.csv"
 #define FUZZY_MODEL_EXPORT __attribute__((visibility("default")))
 
-typedef struct fuzzy_model_plugin
-{
-    unsigned int abi_version;
-    const char *name;
-    fuzzy_neuron_network_t *(*create)(void);
-    void (*destroy)(fuzzy_neuron_network_t *model);
-} fuzzy_model_plugin_t;
-
-typedef const fuzzy_model_plugin_t *(*fuzzy_model_plugin_entry_fn)(void);
-
-typedef struct loaded_plugin
-{
-    void *library;
-    const fuzzy_model_plugin_t *api;
-} loaded_plugin_t;
+#define LAYERS 50u
 
 FUZZY_VAR(temperature_low, FUZZY_SHAPE_RAMP, 1.0f, 15.0f, 40.0f, false)
 FUZZY_VAR(temperature_high, FUZZY_SHAPE_RAMP, 1.0f, 35.0f, 75.0f, true)
@@ -54,58 +40,32 @@ FUZZY_NEURON_RULE(cooling, SAND(temperature_high(x[0]), load_high(x[1])))
 FUZZY_NEURON_RULE(heavy_load, SAND(load_high(x[1]), 1.0f - vibration_high(x[2])))
 FUZZY_NEURON_RULE(protection, SOR(SAND(temperature_high(x[0]), vibration_high(x[2])), SAND(load_high(x[1]), vibration_high(x[2]))))
 
-static fuzzy_neuron_network_t *plot_model;
+FUZZY_NEURON_MODEL(fuzzy_model, 3u, 1u,
 
-static fuzzy_neuron_network_t *create_fuzzy_model(void)
-{
-    fuzzy_neuron_network_t *model = malloc(sizeof(*model));
-
-    fuzzy_neuron_init(model, 3u, 1u);
     FUZZY_NEURON_BIND((*model), idle);
     FUZZY_NEURON_BIND((*model), economy);
     FUZZY_NEURON_BIND((*model), balanced);
     FUZZY_NEURON_BIND((*model), cooling);
     FUZZY_NEURON_BIND((*model), heavy_load);
     FUZZY_NEURON_BIND((*model), protection);
-    FUZZY_NEURON_LAYER((*model), 10u, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), 10u, FUZZY_NEURON_SIGMOID);
+    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
+    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
+    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
+    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
+    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
+    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
     FUZZY_NEURON_OUTPUT((*model), FUZZY_NEURON_LINEAR);
-    fuzzy_neuron_compile(model);
+)
 
-    return model;
-}
-
-static void destroy_fuzzy_model(fuzzy_neuron_network_t *model)
-{
-    fuzzy_neuron_free(model);
-    free(model);
-}
-
-FUZZY_MODEL_EXPORT const fuzzy_model_plugin_t *fuzzy_model_plugin_entry(void)
-{
-    static const fuzzy_model_plugin_t plugin = {FUZZY_MODEL_PLUGIN_ABI, "temperature-load-vibration", create_fuzzy_model, destroy_fuzzy_model};
-
-    return &plugin;
-}
+FUZZY_NEURON_MODEL_PLUGIN(fuzzy_model, FUZZY_MODEL_PLUGIN_ABI, "temperature-load-vibration", FUZZY_MODEL_EXPORT)
 
 #ifndef FUZZY_MODEL_PLUGIN_ONLY
 
-static loaded_plugin_t load_plugin(void)
-{
-    loaded_plugin_t plugin;
-    fuzzy_model_plugin_entry_fn entry;
+FUZZY_NEURON_HOT_RELOAD(fuzzy_model_plugin, DEFAULT_PLUGIN)
 
-    plugin.library = dlopen(DEFAULT_PLUGIN, RTLD_NOW | RTLD_LOCAL);
-    *(void **)(&entry) = dlsym(plugin.library, "fuzzy_model_plugin_entry");
-    plugin.api = entry();
+static fuzzy_neuron_network_t *plot_model;
 
-    return plugin;
-}
-
-static void unload_plugin(loaded_plugin_t *plugin)
-{
-    dlclose(plugin->library);
-}
+FUZZY_NEURON_SWEEP_EVALUATOR(evaluate_trained_model, plot_model, 1u, 0u, 255.0f)
 
 static fuzzy_neuron_csv_t csv_format(void)
 {
@@ -114,18 +74,6 @@ static fuzzy_neuron_csv_t csv_format(void)
     fuzzy_neuron_csv_t csv = {3u, 1u, true, ',', input_scales, target_scales};
 
     return csv;
-}
-
-static float evaluate_trained_model(const float inputs[], size_t input_count, float step)
-{
-    float output[1];
-
-    (void)input_count;
-    (void)step;
-
-    fuzzy_neuron_predict(plot_model, inputs, output);
-
-    return output[0] * 255.0f;
 }
 
 static void generate_model_plots(fuzzy_neuron_network_t *model)
@@ -145,7 +93,7 @@ static void train_model(void)
 {
     fuzzy_neuron_csv_t csv = csv_format();
     fuzzy_neuron_dataset_t dataset = {0};
-    loaded_plugin_t plugin = load_plugin();
+    fuzzy_neuron_loaded_plugin_t plugin = fuzzy_model_plugin_load();
     fuzzy_neuron_network_t *model = plugin.api->create();
     fuzzy_neuron_train_options_t options;
     unsigned int epochs;
@@ -204,6 +152,13 @@ static void train_model(void)
         exit(EXIT_FAILURE);
     }
 
+    printf("\nTrained network topology\n");
+    printf("Rules: %u\n", (unsigned int)model->rule_count);
+    printf("Layers: %u\n", (unsigned int)model->layer_count);
+    printf("Weights: %u\n", (unsigned int)model->weight_count);
+    printf("Biases: %u\n", (unsigned int)model->bias_count);
+    printf("Activation slots: %u\n", (unsigned int)model->neuron_count);
+
     fuzzy_neuron_model_save_csv(model, DEFAULT_MODEL);
     generate_model_plots(model);
 
@@ -217,12 +172,12 @@ static void train_model(void)
 
     fuzzy_neuron_dataset_free(&dataset);
     plugin.api->destroy(model);
-    unload_plugin(&plugin);
+    fuzzy_model_plugin_unload(&plugin);
 }
 
 static void run_input(void)
 {
-    loaded_plugin_t plugin = load_plugin();
+    fuzzy_neuron_loaded_plugin_t plugin = fuzzy_model_plugin_load();
     fuzzy_neuron_network_t *model = plugin.api->create();
     float input[3];
     float output[1];
@@ -239,14 +194,14 @@ static void run_input(void)
     printf("Scaled output: %.6f\n", output[0] * 255.0f);
 
     plugin.api->destroy(model);
-    unload_plugin(&plugin);
+    fuzzy_model_plugin_unload(&plugin);
 }
 
 static void test_dataset(const char *dataset_path, const char *predictions_path)
 {
     fuzzy_neuron_csv_t csv = csv_format();
     fuzzy_neuron_dataset_t dataset = {0};
-    loaded_plugin_t plugin = load_plugin();
+    fuzzy_neuron_loaded_plugin_t plugin = fuzzy_model_plugin_load();
     fuzzy_neuron_network_t *model = plugin.api->create();
     FILE *predictions;
     double squared_error = 0.0;
@@ -302,7 +257,7 @@ static void test_dataset(const char *dataset_path, const char *predictions_path)
 
     fuzzy_neuron_dataset_free(&dataset);
     plugin.api->destroy(model);
-    unload_plugin(&plugin);
+    fuzzy_model_plugin_unload(&plugin);
 }
 
 static void test_new_dataset(void)

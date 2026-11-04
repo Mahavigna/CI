@@ -2,11 +2,11 @@
 
 A lightweight, single-header fuzzy-logic library written in C.
 
-`fuzzy.h` provides type-1 membership functions, configurable linguistic hedges, multiple fuzzy AND/OR methods, Mamdani and Sugeno inference helpers, static rule storage, sampled defuzzification, directly callable defuzzification functions, N-dimensional scattered-point membership interpolation, native SVG plotting, CSV-backed multidimensional sweeps, interactive higher-dimensional slices, experimental desktop OpenCL GPU sweeps, and a reduced 8051/8052 firmware path.
+`fuzzy.h` provides type-1 membership functions, configurable linguistic hedges, multiple fuzzy AND/OR methods, Mamdani and Sugeno inference helpers, static rule storage, sampled defuzzification, directly callable defuzzification functions, N-dimensional scattered-point membership interpolation, native SVG plotting, CSV-backed multidimensional sweeps, interactive higher-dimensional slices, experimental desktop OpenCL GPU sweeps, GPU-trained fuzzy-neuron surrogates, portable model checkpoints, and a reduced 8051/8052 firmware path.
 
 The Mamdani engine supports sampled Center of Gravity (COG), Bisector of Area (BOA), Center of Sums (COS), Mean of Maximum (MOM), Smallest of Maximum (SOM), and Largest of Maximum (LOM). Every method is available through the configurable wrapper and through a directly callable low-level function.
 
-The ordinary desktop engine and SVG generator require no Python environment, MATLAB toolbox, plotting framework, or external runtime. PNG and PDF conversion are optional conveniences provided through `rsvg-convert`. OpenCL is optional and is linked only for the experimental GPU demonstration.
+The ordinary desktop engine and SVG generator require no Python environment, MATLAB toolbox, plotting framework, or external runtime. PNG and PDF conversion are optional conveniences provided through `rsvg-convert`. OpenCL is optional and is linked only into the experimental GPU demonstrations and fuzzy-neuron trainer.
 
 The implementation remains readable, editable, and contained primarily in one header. The build workflow lives directly in the `Makefile`; there is no repository-owned build-script dispatcher. The separate `setup_opencl.sh` utility exists only to install and verify the optional, hardware-specific Intel OpenCL environment.
 
@@ -28,6 +28,7 @@ The implementation remains readable, editable, and contained primarily in one he
 - [Defuzzification methods](#defuzzification-methods)
 - [Desktop visualization](#desktop-visualization)
 - [Experimental OpenCL GPU support](#experimental-opencl-gpu-support)
+- [Experimental fuzzy-neuron training](#experimental-fuzzy-neuron-training)
 - [Intel OpenCL setup](#intel-opencl-setup)
 - [Included applications](#included-applications)
 - [Build system](#build-system)
@@ -67,6 +68,9 @@ This project takes the opposite approach:
 - Desktop simulation and embedded experimentation
 - A reduced 8051/8052 build path
 - Optional experimental OpenCL acceleration for desktop sweeps
+- Optional OpenCL mini-batch training for fuzzy-feature neural surrogates
+- Portable fuzzy-neuron model checkpoints
+- Runtime-loaded model definitions through `dlopen` and `dlsym`
 - A Makefile-owned workflow with no separate build dispatcher
 
 The objective is not to replace mature numerical-computing platforms, GPU frameworks, or machine-learning systems. The objective is to make fuzzy-logic execution small, inspectable, modifiable, and easy to integrate into an ordinary C project.
@@ -98,6 +102,17 @@ Users who already use CUDA, SYCL, Vulkan compute, established machine-learning f
 - Floating-point desktop hedges
 - Integer-power 8051 hedges
 - Experimental desktop OpenCL sweep execution
+- Experimental fuzzy-rule feature extraction for neural surrogate training
+- Configurable dense fuzzy-neuron layers
+- OpenCL forward propagation and backpropagation
+- Real OpenCL mini-batch gradient updates
+- Runtime epoch, batch-size, learning-rate, and reporting controls
+- Post-epoch MSE evaluation
+- Best-weight and best-bias restoration
+- CSV model checkpoint saving and loading
+- Dynamically loaded fuzzy-model plugins
+- Single-input inference and complete-dataset comparison
+- MSE, RMSE, MAE, maximum-error, and prediction CSV reporting
 
 ### Membership functions
 
@@ -166,6 +181,20 @@ The `FUZZY_8051` profile keeps the smaller ramp, triangle, and trapezoid path an
 - `setup_opencl.sh` for the tested Intel HD Graphics 620 environment
 - Makefile build, run, conversion, dependency-check, and cleanup targets
 
+- Generic OpenCL dense-network forward kernel
+- Generic OpenCL dense-network backward kernel
+- Hidden-layer delta propagation
+- Per-sample weight and bias gradient generation
+- Mini-batch gradient averaging
+- GPU-side weight and bias updates
+- Configurable fuzzy-neuron layer metadata buffers
+- Final partial-batch handling
+- GPU-only training enforcement with no silent CPU fallback
+- Post-epoch fixed-state evaluation
+- Best-parameter checkpoint restoration
+- `fuzzy_neuron_kernels.cl` dense-network kernel backend
+- `fuzzy_neuron_train.c` interactive training and testing CLI
+
 ### Embedded support
 
 - `FUZZY_8051` reduced backend
@@ -190,17 +219,23 @@ The `FUZZY_8051` profile keeps the smaller ramp, triangle, and trapezoid path an
 ├── strength.c
 ├── greenhouse.c
 ├── demo_all.c
+├── demo_all_gpu.c
 ├── braking.c
 ├── braking_gpu_demo.c
 ├── controller_8051.c
 ├── sugeno_demo.c
+├── fuzzy_neuron_train.c
+├── fuzzy_neuron_kernels.cl
 ├── setup_opencl.sh
 ├── Makefile
 ├── strength/
 ├── greenhouse/
 ├── demo-all/
+├── demo-gpu/
+├── braking/
 ├── braking_gpu/
 ├── sugeno/
+├── fuzzy-neuron-output/
 └── sim-8051/
     ├── desktop/
     └── embedded/
@@ -209,6 +244,12 @@ The `FUZZY_8051` profile keeps the smaller ramp, triangle, and trapezoid path an
 `braking.c` is the compact-syntax CPU example. It demonstrates ordinary C rule definitions, all supported sampled defuzzification methods, direct low-level defuzzification calls, and CPU response sweeps.
 
 `braking_gpu_demo.c` is the experimental desktop OpenCL harness. The application supplies the controller-specific kernel function while `fuzzy.h` owns Cartesian input generation, OpenCL setup, execution, readback, CSV output, SVG rendering, and cleanup.
+
+`demo_all_gpu.c` exercises the generic GPU controller descriptors, OpenCL membership and COG sweeps, linguistic hedges, complete membership-shape coverage, and multidimensional GPU-generated SVG output.
+
+`fuzzy_neuron_train.c` provides the experimental interactive fuzzy-neuron workflow. It loads a model definition through a shared-object plugin, trains configurable dense layers from normalized fuzzy-rule activations, saves model checkpoints, tests individual inputs, compares complete datasets, and generates learned response surfaces.
+
+`fuzzy_neuron_kernels.cl` contains the generic OpenCL dense-network kernels used for fuzzy-neuron forward propagation, backpropagation, gradient generation, and mini-batch parameter updates.
 
 `setup_opencl.sh` installs and validates the tested Intel OpenCL environment. It is not the repository build system and is not required by ordinary CPU or embedded builds.
 
@@ -1086,6 +1127,69 @@ Although the compatibility macro remains named `FUZZY_COG_SWEEP`, the evaluator 
 ## Experimental OpenCL GPU support
 
 The optional OpenCL path accelerates large Cartesian controller sweeps. Each GPU work item evaluates one complete input combination and writes one crisp output. `fuzzy.h` then writes the returned values through the same CSV and SVG sweep renderer used by CPU-generated results.
+
+## Experimental fuzzy-neuron training
+
+The experimental fuzzy-neuron path trains a compact neural surrogate from the normalized activations of fixed fuzzy rules.
+
+The current architecture is better described as a **fuzzy-feature neural surrogate** than canonical ANFIS:
+
+```text
+Raw controller inputs
+    -> fixed membership functions
+    -> fixed fuzzy-rule activations
+    -> normalized rule-feature vector
+    -> configurable dense neural layers
+    -> continuous output
+```
+
+```c
+FUZZY_NEURON_RULE(
+    cooling,
+    SAND(
+        temperature_high(x[0]),
+        load_high(x[1])
+    )
+)
+
+FUZZY_NEURON_BIND((*model), idle);
+FUZZY_NEURON_BIND((*model), economy);
+FUZZY_NEURON_BIND((*model), balanced);
+FUZZY_NEURON_BIND((*model), cooling);
+FUZZY_NEURON_BIND((*model), heavy_load);
+FUZZY_NEURON_BIND((*model), protection);
+
+FUZZY_NEURON_LAYER(
+    (*model),
+    10u,
+    FUZZY_NEURON_SIGMOID
+);
+
+FUZZY_NEURON_LAYER(
+    (*model),
+    10u,
+    FUZZY_NEURON_SIGMOID
+);
+
+FUZZY_NEURON_OUTPUT(
+    (*model),
+    FUZZY_NEURON_LINEAR
+);
+
+//Training Network Setup
+fuzzy_neuron_train_options_t options =
+    FUZZY_NEURON_TRAIN_OPTIONS(
+        epochs,
+        batch_size,
+        learning_rate,
+        report_interval
+    );
+
+FUZZY_NEURON_LINEAR
+FUZZY_NEURON_SIGMOID
+FUZZY_NEURON_TANH
+FUZZY_NEURON_RELU
+```
 
 ### User-facing GPU sweep
 

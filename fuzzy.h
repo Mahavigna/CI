@@ -7684,6 +7684,73 @@ typedef struct fuzzy_neuron_network
 #define FUZZY_NEURON_TRAIN_OPTIONS(epoch_count, batch_count, rate, report) \
     ((fuzzy_neuron_train_options_t){(epoch_count), (batch_count), (rate), (report)})
 
+/* ==========================================================
+ * Fuzzy-neuron model and plugin DSL
+ * ========================================================== */
+
+typedef struct fuzzy_neuron_model_plugin
+{
+    unsigned int abi_version;
+    const char *name;
+    fuzzy_neuron_network_t *(*create)(void);
+    void (*destroy)(fuzzy_neuron_network_t *model);
+} fuzzy_neuron_model_plugin_t;
+
+typedef const fuzzy_neuron_model_plugin_t *(*fuzzy_neuron_model_plugin_entry_fn)(void);
+
+typedef struct fuzzy_neuron_loaded_plugin
+{
+    void *library;
+    const fuzzy_neuron_model_plugin_t *api;
+} fuzzy_neuron_loaded_plugin_t;
+
+#define FUZZY_NEURON_MODEL(symbol, input_dimensions, output_dimensions, ...) \
+    static fuzzy_neuron_network_t *symbol##_create(void) \
+    { \
+        fuzzy_neuron_network_t *model = malloc(sizeof(*model)); \
+        fuzzy_neuron_init(model, (input_dimensions), (output_dimensions)); \
+        __VA_ARGS__ \
+        fuzzy_neuron_compile(model); \
+        return model; \
+    } \
+    static void symbol##_destroy(fuzzy_neuron_network_t *model) \
+    { \
+        fuzzy_neuron_free(model); \
+        free(model); \
+    }
+
+#define FUZZY_NEURON_MODEL_PLUGIN(symbol, abi, plugin_name, export_specifier) \
+    export_specifier const fuzzy_neuron_model_plugin_t *fuzzy_model_plugin_entry(void) \
+    { \
+        static const fuzzy_neuron_model_plugin_t plugin = {(abi), (plugin_name), symbol##_create, symbol##_destroy}; \
+        return &plugin; \
+    }
+
+#define FUZZY_NEURON_HOT_RELOAD(symbol, plugin_path) \
+    static fuzzy_neuron_loaded_plugin_t symbol##_load(void) \
+    { \
+        fuzzy_neuron_loaded_plugin_t plugin; \
+        fuzzy_neuron_model_plugin_entry_fn entry; \
+        plugin.library = dlopen((plugin_path), RTLD_NOW | RTLD_LOCAL); \
+        *(void **)(&entry) = dlsym(plugin.library, "fuzzy_model_plugin_entry"); \
+        plugin.api = entry(); \
+        return plugin; \
+    } \
+    static void symbol##_unload(fuzzy_neuron_loaded_plugin_t *plugin) \
+    { \
+        dlclose(plugin->library); \
+    }
+
+#define FUZZY_NEURON_SWEEP_EVALUATOR(name, model_pointer, output_dimensions, output_index, output_scale) \
+    static float name(const float inputs[], size_t input_count, float step) \
+    { \
+        float outputs[(output_dimensions)]; \
+        (void)input_count; \
+        (void)step; \
+        fuzzy_neuron_predict((model_pointer), inputs, outputs); \
+        return outputs[(output_index)] * (output_scale); \
+    }
+
 void fuzzy_neuron_init(
     fuzzy_neuron_network_t *network,
     size_t raw_input_dimensions,
