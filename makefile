@@ -116,9 +116,9 @@ endif
 # ESP32 tools
 # ============================================================
 
-ESP32_CC ?= xtensa-esp-elf-gcc
-ESP32_OBJCOPY ?= xtensa-esp-elf-objcopy
-ESP32_SIZE ?= xtensa-esp-elf-size
+ESP32_CC ?= xtensa-esp32-elf-gcc
+ESP32_OBJCOPY ?= xtensa-esp32-elf-objcopy
+ESP32_SIZE ?= xtensa-esp32-elf-size
 
 ESP32_SOURCE := esp32_demo.c
 ESP32_ROOT := esp32
