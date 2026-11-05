@@ -29,9 +29,19 @@
 #define DEFAULT_ORIGINAL_OUTPUT OUTPUT_DIR "/fuzzy_neuron_original_predictions.csv"
 #define FUZZY_MODEL_EXPORT __attribute__((visibility("default")))
 
-#define LAYERS 100u
+#define FIRST_HIDDEN 64u
+#define SECOND_HIDDEN 64u
+#define THIRD_HIDDEN 32u
 
 #define SCALE 1.0f
+
+
+/* ==========================================================
+ * TERMINAL DIAGNOSTICS AND REGRESSION MONITORING
+ *
+ * This block is harness-only. It does not define the model or
+ * optimizer. It measures and prints training quality.
+ * ========================================================== */
 
 typedef struct fuzzy_neuron_regression_statistics
 {
@@ -63,6 +73,13 @@ typedef struct fuzzy_neuron_regression_statistics
     double constant_mean_rmse;
 } fuzzy_neuron_regression_statistics_t;
 
+/* ==========================================================
+ * FUZZY MODEL AND ANN TOPOLOGY
+ *
+ * This block is user/model specific. It contains membership
+ * functions, fuzzy-neuron rules, ANN topology, and plugin export.
+ * ========================================================== */
+
 FUZZY_VAR(temperature_low, FUZZY_SHAPE_RAMP, 1.0f, 15.0f, 40.0f, false)
 FUZZY_VAR(temperature_high, FUZZY_SHAPE_RAMP, 1.0f, 35.0f, 75.0f, true)
 FUZZY_VAR(load_low, FUZZY_SHAPE_RAMP, 1.0f, 20.0f, 50.0f, false)
@@ -85,7 +102,7 @@ static float fuzzy_neuron_random_uniform(float minimum, float maximum)
     return minimum + (maximum - minimum) * ((float)(fuzzy_neuron_random_state & 0x00ffffffu) / 16777215.0f);
 }
 
-static void fuzzy_neuron_xavier_initialize(fuzzy_neuron_network_t *model)
+static void fuzzy_neuron_activation_initialize(fuzzy_neuron_network_t *model)
 {
     size_t layer;
 
@@ -96,7 +113,8 @@ static void fuzzy_neuron_xavier_initialize(fuzzy_neuron_network_t *model)
         fuzzy_neuron_layer_t *current = &model->layers[layer];
         size_t source_count = layer == 0u ? model->rule_count : model->layers[layer - 1u].count;
         size_t destination_count = current->count;
-        float limit = sqrtf(6.0f / ((float)source_count + (float)destination_count));
+        bool relu = current->activation == FUZZY_NEURON_RELU;
+        float limit = relu ? sqrtf(6.0f / (float)source_count) : sqrtf(6.0f / ((float)source_count + (float)destination_count));
         size_t destination;
         size_t source;
 
@@ -111,7 +129,7 @@ static void fuzzy_neuron_xavier_initialize(fuzzy_neuron_network_t *model)
             }
         }
 
-        printf("Xavier layer %u: %u -> %u, limit %+.9f\n", (unsigned int)layer, (unsigned int)source_count, (unsigned int)destination_count, limit);
+        printf("%s layer %u: %u -> %u, limit %+.9f\n", relu ? "He-uniform" : "Xavier", (unsigned int)layer, (unsigned int)source_count, (unsigned int)destination_count, limit);
     }
 }
 
@@ -235,7 +253,7 @@ static void fuzzy_neuron_print_parameter_changes(const fuzzy_neuron_network_t *m
 static fuzzy_neuron_regression_statistics_t fuzzy_neuron_measure_regression(fuzzy_neuron_network_t *model, const fuzzy_neuron_dataset_t *dataset)
 {
     fuzzy_neuron_regression_statistics_t statistics = {0};
-    float *outputs = malloc(model->output_dimensions * sizeof(*outputs));
+    float *outputs;
     double target_sum = 0.0;
     double prediction_sum = 0.0;
     double target_squared_sum = 0.0;
@@ -245,11 +263,42 @@ static fuzzy_neuron_regression_statistics_t fuzzy_neuron_measure_regression(fuzz
     double squared_error_sum = 0.0;
     double absolute_error_sum = 0.0;
     double maximum_error = 0.0;
-    double sample_count = (double)(dataset->rows * dataset->target_dimensions);
+    double sample_count;
     size_t row;
     size_t output;
 
-    fuzzy_neuron_predict(model, dataset->inputs, outputs);
+    if (
+        model == NULL ||
+        dataset == NULL ||
+        dataset->inputs == NULL ||
+        dataset->targets == NULL ||
+        dataset->rows == 0u ||
+        dataset->input_dimensions == 0u ||
+        dataset->target_dimensions == 0u ||
+        model->output_dimensions == 0u
+    )
+    {
+        fprintf(stderr, "Cannot measure regression: model or dataset is invalid\n");
+        return statistics;
+    }
+
+    outputs = malloc(model->output_dimensions * sizeof(*outputs));
+
+    if (outputs == NULL)
+    {
+        fprintf(stderr, "Cannot measure regression: output allocation failed\n");
+        return statistics;
+    }
+
+    sample_count = (double)(dataset->rows * dataset->target_dimensions);
+
+    if (!fuzzy_neuron_predict(model, dataset->inputs, outputs))
+    {
+        fprintf(stderr, "Cannot measure regression: initial prediction failed\n");
+        free(outputs);
+        return statistics;
+    }
+
     statistics.target_minimum = dataset->targets[0] * SCALE;
     statistics.target_maximum = dataset->targets[0] * SCALE;
     statistics.prediction_minimum = outputs[0] * SCALE;
@@ -360,45 +409,6 @@ static void fuzzy_neuron_print_regression_statistics(const fuzzy_neuron_regressi
     printf("============================================================\n");
 }
 
-static bool fuzzy_neuron_calibrate_output_range(fuzzy_neuron_network_t *model, const fuzzy_neuron_regression_statistics_t *statistics)
-{
-    fuzzy_neuron_layer_t *output_layer;
-    size_t source_count;
-    double calibration_scale;
-    double calibration_offset;
-    size_t source;
-
-    if (model->layer_count < 2u || model->output_dimensions != 1u || statistics->prediction_range <= 1.0e-12)
-    {
-        return false;
-    }
-
-    output_layer = &model->layers[model->layer_count - 1u];
-    source_count = model->layers[model->layer_count - 2u].count;
-    calibration_scale = statistics->target_range / statistics->prediction_range;
-    calibration_offset = statistics->target_minimum - calibration_scale * statistics->prediction_minimum;
-
-    printf("\n============================================================\n");
-    printf("CPU Exact-Range Output Calibration\n");
-    printf("============================================================\n");
-    printf("Scale:                         %+.12f\n", calibration_scale);
-    printf("Offset:                        %+.12f\n", calibration_offset);
-    printf("Target range:                  %.12f\n", statistics->target_range);
-    printf("Prediction range before:       %.12f\n", statistics->prediction_range);
-
-    for (source = 0u; source < source_count; source++)
-    {
-        size_t weight_index = output_layer->weight_offset + source;
-        model->weights[weight_index] = (float)(calibration_scale * model->weights[weight_index]);
-    }
-
-    model->biases[output_layer->bias_offset] = (float)(calibration_scale * model->biases[output_layer->bias_offset] + calibration_offset);
-
-    printf("Calibration folded into final-layer weights and bias\n");
-    printf("============================================================\n");
-    return true;
-}
-
 FUZZY_NEURON_MODEL(fuzzy_model, 3u, 1u,
     FUZZY_NEURON_BIND((*model), idle);
     FUZZY_NEURON_BIND((*model), economy);
@@ -406,16 +416,9 @@ FUZZY_NEURON_MODEL(fuzzy_model, 3u, 1u,
     FUZZY_NEURON_BIND((*model), cooling);
     FUZZY_NEURON_BIND((*model), heavy_load);
     FUZZY_NEURON_BIND((*model), protection);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-    FUZZY_NEURON_LAYER((*model), LAYERS, FUZZY_NEURON_SIGMOID);
-
+    FUZZY_NEURON_LAYER((*model), FIRST_HIDDEN, FUZZY_NEURON_RELU);
+    FUZZY_NEURON_LAYER((*model), SECOND_HIDDEN, FUZZY_NEURON_RELU);
+    FUZZY_NEURON_LAYER((*model), THIRD_HIDDEN, FUZZY_NEURON_RELU);
     FUZZY_NEURON_OUTPUT((*model), FUZZY_NEURON_LINEAR);
 )
 
@@ -445,6 +448,13 @@ static void generate_model_plots(fuzzy_neuron_network_t *model)
     PLOT(OUTPUT_DIR "/fuzzy_neuron_vibration_memberships", "Vibration Membership Functions", 10.0f, 0.1f, SERIES(vibration_low, "#06b6d4"), SERIES(vibration_high, "#a855f7"));
     FUZZY_COG_SWEEP(OUTPUT_DIR "/fuzzy_neuron_learned_surface", "Trained Fuzzy-Neuron Surface", evaluate_trained_model, 1.0f, FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Load", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.5f));
 }
+
+/* ==========================================================
+ * TRAINING AND CLI HARNESS
+ *
+ * This block loads datasets, gathers terminal settings, calls
+ * the public fuzzy.h OpenCL API, saves the model, and runs tests.
+ * ========================================================== */
 
 static void train_model(void)
 {
@@ -482,8 +492,8 @@ static void train_model(void)
     }
     else
     {
-        fuzzy_neuron_xavier_initialize(model);
-        printf("Initialized new model with Xavier initialization\n");
+        fuzzy_neuron_activation_initialize(model);
+        printf("Initialized new model with activation-aware He/Xavier initialization\n");
     }
 
     initial_weights = malloc(model->weight_count * sizeof(*initial_weights));
@@ -517,12 +527,64 @@ static void train_model(void)
     printf("GPU Huber report interval: ");
     scanf("%u", &huber_report_interval);
 
-    mse_options = FUZZY_NEURON_TRAIN_OPTIONS(mse_epochs, mse_batch_size, mse_learning_rate, mse_report_interval);
-    huber_options = FUZZY_NEURON_TRAIN_OPTIONS(huber_epochs, huber_batch_size, huber_learning_rate, huber_report_interval);
+    mse_options = FUZZY_NEURON_TRAIN_OPTIONS_ADAM(mse_epochs, mse_batch_size, mse_learning_rate, mse_report_interval);
+    huber_options = FUZZY_NEURON_TRAIN_OPTIONS_ADAM(huber_epochs, huber_batch_size, huber_learning_rate, huber_report_interval);
     opencl_batch_capacity = mse_batch_size > huber_batch_size ? mse_batch_size : huber_batch_size;
 
-    system("mkdir -p " OUTPUT_DIR);
-    fuzzy_neuron_dataset_load_csv(DEFAULT_TRAIN_DATASET, &csv, &dataset);
+    if (system("mkdir -p " OUTPUT_DIR) != 0)
+    {
+        fprintf(stderr, "Failed to create output directory: %s\n", OUTPUT_DIR);
+        free(initial_weights);
+        free(initial_biases);
+        plugin.api->destroy(model);
+        fuzzy_model_plugin_unload(&plugin);
+        return;
+    }
+
+    if (!fuzzy_neuron_dataset_load_csv(DEFAULT_TRAIN_DATASET, &csv, &dataset))
+    {
+        fprintf(stderr, "Failed to parse training dataset: %s\n", DEFAULT_TRAIN_DATASET);
+        free(initial_weights);
+        free(initial_biases);
+        plugin.api->destroy(model);
+        fuzzy_model_plugin_unload(&plugin);
+        return;
+    }
+
+    if (dataset.inputs == NULL || dataset.targets == NULL || dataset.rows == 0u)
+    {
+        fprintf(stderr, "Training dataset loaded no usable rows: %s\n", DEFAULT_TRAIN_DATASET);
+        fprintf(stderr, "Rows: %u\n", (unsigned int)dataset.rows);
+        fprintf(stderr, "Inputs pointer: %p\n", (void *)dataset.inputs);
+        fprintf(stderr, "Targets pointer: %p\n", (void *)dataset.targets);
+        fuzzy_neuron_dataset_free(&dataset);
+        free(initial_weights);
+        free(initial_biases);
+        plugin.api->destroy(model);
+        fuzzy_model_plugin_unload(&plugin);
+        return;
+    }
+
+    if (dataset.input_dimensions != model->raw_input_dimensions || dataset.target_dimensions != model->output_dimensions)
+    {
+        fprintf(stderr, "Training dataset dimensions do not match the model\n");
+        fprintf(stderr, "Dataset input dimensions: %u\n", (unsigned int)dataset.input_dimensions);
+        fprintf(stderr, "Model input dimensions:   %u\n", (unsigned int)model->raw_input_dimensions);
+        fprintf(stderr, "Dataset target dimensions: %u\n", (unsigned int)dataset.target_dimensions);
+        fprintf(stderr, "Model output dimensions:   %u\n", (unsigned int)model->output_dimensions);
+        fuzzy_neuron_dataset_free(&dataset);
+        free(initial_weights);
+        free(initial_biases);
+        plugin.api->destroy(model);
+        fuzzy_model_plugin_unload(&plugin);
+        return;
+    }
+
+    printf("\nLoaded training dataset\n");
+    printf("Path: %s\n", DEFAULT_TRAIN_DATASET);
+    printf("Rows: %u\n", (unsigned int)dataset.rows);
+    printf("Input dimensions: %u\n", (unsigned int)dataset.input_dimensions);
+    printf("Target dimensions: %u\n", (unsigned int)dataset.target_dimensions);
 
     before_statistics = fuzzy_neuron_measure_regression(model, &dataset);
     fuzzy_neuron_print_regression_statistics(&before_statistics, "Before Training");
@@ -532,7 +594,7 @@ static void train_model(void)
     printf("============================================================\n");
     printf("Stage 1: OpenCL GPU MSE coarse training\n");
     printf("Stage 2: OpenCL GPU Huber refinement\n");
-    printf("Stage 3: CPU exact-range output calibration\n");
+    printf("Stage 3: retain best post-Huber model without calibration\n");
     printf("Dataset samples:              %u\n", (unsigned int)dataset.rows);
     printf("OpenCL batch capacity:        %u\n", opencl_batch_capacity);
     printf("Model output:                 %s\n", DEFAULT_MODEL);
@@ -570,18 +632,12 @@ static void train_model(void)
     after_huber_statistics = fuzzy_neuron_measure_regression(model, &dataset);
     fuzzy_neuron_print_regression_statistics(&after_huber_statistics, "After GPU Huber");
 
-    printf("\n============================================================\n");
-    printf("Stage 3: CPU Exact-Range Calibration\n");
-    printf("============================================================\n");
+    printf("============================================================");
+    printf("Stage 3: Exact-Range Calibration Skipped");
+    printf("============================================================");
+    printf("Post-Huber model retained because exact-range calibration increases MSE, RMSE, and MAE");
 
-    if (!fuzzy_neuron_calibrate_output_range(model, &after_huber_statistics))
-    {
-        fprintf(stderr, "CPU output calibration failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    after_calibration_statistics = fuzzy_neuron_measure_regression(model, &dataset);
-    fuzzy_neuron_print_regression_statistics(&after_calibration_statistics, "After CPU Calibration");
+    after_calibration_statistics = after_huber_statistics;
     fuzzy_neuron_print_layer_statistics(model, "Final Model");
     fuzzy_neuron_print_parameter_changes(model, initial_weights, initial_biases);
 
@@ -591,7 +647,8 @@ static void train_model(void)
     printf("\nTraining pipeline complete\n");
     printf("Stage 1 backend: OpenCL GPU MSE\n");
     printf("Stage 2 backend: OpenCL GPU Huber\n");
-    printf("Stage 3 backend: CPU output-head calibration\n");
+    printf("Stage 3 backend: skipped; post-Huber model retained\n");
+    printf("Final MSE: %.10f\n", after_calibration_statistics.mse);
     printf("Final MAE: %.10f\n", after_calibration_statistics.mae);
     printf("Final RMSE: %.10f\n", after_calibration_statistics.rmse);
     printf("Final range retained: %.6f%%\n", after_calibration_statistics.range_retention * 100.0);

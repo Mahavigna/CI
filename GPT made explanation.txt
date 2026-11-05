@@ -1,0 +1,818 @@
+You already understand the core training loop: calculate prediction, calculate error, backpropagate gradients, and update weights. Adam changes only the final parameter-update rule. MSE or Huber still determines what error is minimized, and backpropagation still calculates the gradients.
+
+1. MSE, backpropagation, SGD, and Adam are different jobs
+
+These concepts fit together as follows:
+
+Inputs
+  |
+Forward propagation
+  |
+Prediction
+  |
+MSE or Huber loss
+  |
+Backpropagation
+  |
+Gradients for every weight and bias
+  |
+SGD or Adam optimizer
+  |
+Updated weights and biases
+
+
+Their responsibilities are:
+
+Component	ResponsibilityMSE	Measures squared prediction error
+Huber	Measures error with reduced sensitivity to large residuals
+Backpropagation	Calculates how each parameter affected the error
+SGD	Updates each parameter directly from the current gradient
+Adam	Updates each parameter using gradient history and squared-gradient history
+OpenCL	Executes the calculations in parallel on the GPU
+
+Adam does not replace MSE, Huber, or backpropagation. Adam replaces this simple update:
+
+parameter -= learning_rate * gradient;
+
+2. Standard SGD update
+
+For parameter θ\theta, such as one weight or bias, ordinary mini-batch SGD is:
+
+θt=θt−1−ηgt\theta_t = \theta_{t-1} - \eta g_t
+
+Where:
+
+θt\theta_t is the updated weight
+η\eta is the learning rate
+gtg_t is the current mini-batch gradient
+tt is the update step
+
+Your original GPU update was approximately:
+
+gradient = gradients[index] / sample_count;
+parameter -= learning_rate * gradient;
+
+
+Every parameter uses the same learning rate.
+
+Example
+
+Suppose:
+
+parameter = 0.50
+learning rate = 0.001
+gradient = 20.0
+
+
+SGD performs:
+
+new parameter = 0.50 - 0.001 * 20
+              = 0.48
+
+
+If the next batch produces a gradient of -18:
+
+new parameter = 0.48 - 0.001 * -18
+              = 0.498
+
+
+The parameter oscillates because SGD reacts directly to every batch.
+
+That resembles the behavior in your earlier run where the full-dataset MSE improved quickly and then steadily worsened.
+
+3. What Adam adds
+
+Adam maintains two additional numbers for every parameter:
+
+First moment mm: a moving average of gradients
+Second moment vv: a moving average of squared gradients
+
+The name Adam comes from Adaptive Moment Estimation.
+
+For every weight and bias, Adam stores:
+
+parameter
+first moment m
+second moment v
+
+
+Your model contains:
+
+6,560 weights
+161 biases
+6,721 total parameters
+
+
+Therefore, Adam adds:
+
+6,721 first-moment floats
+6,721 second-moment floats
+
+
+At four bytes per float:
+
+6,721 x 2 x 4 = 53,768 bytes
+
+
+Only about 52.5 KiB is needed for the Adam state.
+
+4. Adam mathematics
+
+For the current mini-batch gradient gtg_t:
+
+Step A: First moment
+mt=β1mt−1+(1−β1)gtm_t = \beta_1m_{t-1} + (1-\beta_1)g_t
+
+Your code uses:
+
+beta1 = 0.9f;
+
+
+Therefore:
+
+mt=0.9mt−1+0.1gtm_t = 0.9m_{t-1} + 0.1g_t
+
+This is similar to momentum. It smooths the update direction.
+
+If gradients consistently point positive, mm becomes positive. If one batch suddenly produces a negative gradient, the historical positive direction prevents an immediate full reversal.
+
+Step B: Second moment
+vt=β2vt−1+(1−β2)gt2v_t = \beta_2v_{t-1} + (1-\beta_2)g_t^2
+
+Your code uses:
+
+beta2 = 0.999f;
+
+
+Therefore:
+
+vt=0.999vt−1+0.001gt2v_t = 0.999v_{t-1} + 0.001g_t^2
+
+This tracks the recent magnitude of the gradient for that specific parameter.
+
+A parameter with consistently large gradients develops a large vv, reducing its effective update. A parameter with small gradients develops a smaller vv, allowing relatively larger movement.
+
+Step C: Bias correction
+
+Both moment buffers start at zero:
+
+m0 = 0
+v0 = 0
+
+
+During early steps, the moving averages are artificially close to zero. Adam corrects that startup bias:
+
+m^t=mt1−β1t\hat m_t = \frac{m_t}{1-\beta_1^t} v^t=vt1−β2t\hat v_t = \frac{v_t}{1-\beta_2^t}
+Step D: Parameter update
+θt=θt−1−ηm^tv^t+ϵ\theta_t = \theta_{t-1} - \eta \frac{\hat m_t} {\sqrt{\hat v_t}+\epsilon}
+
+Your epsilon is:
+
+epsilon = 1.0e-8f;
+
+
+Epsilon prevents division by zero and limits numerical instability when vv is extremely small.
+
+5. Why your code uses a corrected alpha
+
+Your host code calculates:
+
+cl_float alpha = learning_rate * sqrtf(1.0f - powf(adam_beta2, (float)adam_step)) / (1.0f - powf(adam_beta1, (float)adam_step));
+
+
+This combines the two bias-correction divisions into one corrected learning-rate factor.
+
+Starting with:
+
+θt=θt−1−ηmt/(1−β1t)vt/(1−β2t)+ϵ\theta_t = \theta_{t-1} - \eta \frac{m_t/(1-\beta_1^t)} {\sqrt{v_t/(1-\beta_2^t)}+\epsilon}
+
+Ignoring the extremely small epsilon placement difference, this can be rearranged into:
+
+αt=η1−β2t1−β1t\alpha_t = \eta \frac{\sqrt{1-\beta_2^t}} {1-\beta_1^t}
+
+Then:
+
+θt=θt−1−αtmtvt+ϵ\theta_t = \theta_{t-1} - \alpha_t \frac{m_t} {\sqrt{v_t}+\epsilon}
+
+That is what your implementation performs.
+
+6. Exact mapping from the math to the GPU kernel
+
+Your embedded kernel is condensed:
+
+__kernel void fn_adam_apply(
+    __global float *p,
+    __global const float *g,
+    __global float *m,
+    __global float *v,
+    uint n,
+    uint o,
+    uint batch,
+    float alpha,
+    float b1,
+    float b2,
+    float eps)
+
+
+The arguments mean:
+
+Kernel argument	Meaningp	Weights or biases being updated
+g	Gradients produced by backpropagation
+m	First-moment buffer
+v	Second-moment buffer
+n	Number of parameters in this layer
+o	Parameter offset for this layer
+batch	Number of samples in the current mini-batch
+alpha	Bias-corrected learning rate
+b1	Adam beta1, 0.9
+b2	Adam beta2, 0.999
+eps	Numerical epsilon, 1e-8
+One GPU work-item per parameter
+uint x = get_global_id(0);
+if (x >= n) return;
+
+
+Each OpenCL work-item updates exactly one weight or bias.
+
+If a layer has 4,096 weights, the kernel launches approximately 4,096 work-items.
+
+Find the absolute parameter index
+size_t i = (size_t)o + x;
+
+
+The network stores every layer’s parameters in contiguous global arrays. o is the layer’s starting offset and x is the parameter inside that layer.
+
+Convert summed batch gradient to mean gradient
+float q = g[i] / (float)batch;
+
+
+Mathematically:
+
+q=1B∑s=1Bgsq = \frac{1}{B}\sum_{s=1}^{B}g_s
+
+Where BB is the current batch size.
+
+Your gradient kernels sum contributions across the batch. Adam should operate on the mean batch gradient, so the division happens here.
+
+Update first moment
+float a = fma(1.0f - b1, q, b1 * m[i]);
+
+
+fma(x, y, z) calculates:
+
+xy+zxy+z
+
+So this line means:
+
+a = (1.0f - b1) * q + b1 * m[i];
+
+
+Mathematically:
+
+mt=(1−β1)gt+β1mt−1m_t = (1-\beta_1)g_t+\beta_1m_{t-1}
+
+The order is reversed from the written formula, but addition is commutative.
+
+Update second moment
+float z = fma(1.0f - b2, q * q, b2 * v[i]);
+
+
+Equivalent expanded code:
+
+z = (1.0f - b2) * q * q + b2 * v[i];
+
+
+Mathematically:
+
+vt=(1−β2)gt2+β2vt−1v_t = (1-\beta_2)g_t^2+\beta_2v_{t-1}
+Store the updated history
+m[i] = a;
+v[i] = z;
+
+
+These buffers remain on the GPU for the next mini-batch.
+
+Update parameter
+p[i] -= alpha * a / (sqrt(z) + eps);
+
+
+Mathematically:
+
+θt=θt−1−αtmtvt+ϵ\theta_t = \theta_{t-1} - \alpha_t \frac{m_t}{\sqrt{v_t}+\epsilon}
+
+This is the actual Adam parameter update.
+
+7. Why Adam worked better in your model
+
+Your network contains different kinds of parameters:
+
+early-layer weights receiving fuzzy rule activations;
+deeper ReLU weights;
+output-layer weights;
+biases;
+parameters active in many samples;
+parameters active only in particular fuzzy regions.
+
+Their gradients can have very different scales.
+
+SGD applies:
+
+same learning rate x raw gradient
+
+
+Adam applies approximately:
+
+smoothed direction / recent gradient magnitude
+
+
+This gives each parameter an adaptive effective step size.
+
+For your Sugeno mapping:
+
+some rules fire over large regions;
+some rule combinations occur around boundaries;
+ReLU neurons can be active for only part of the input space;
+the linear output sees much larger direct errors than early hidden layers.
+
+Adam helps prevent the large-gradient parameters from dominating everything while allowing smaller consistent gradients to keep moving.
+
+8. What each Adam buffer stores
+
+Your state structure is:
+
+typedef struct fuzzy_neuron_adam_state
+{
+    cl_program program;
+    cl_kernel weight_kernel;
+    cl_kernel bias_kernel;
+    cl_mem weight_m;
+    cl_mem weight_v;
+    cl_mem bias_m;
+    cl_mem bias_v;
+    fuzzy_neuron_network_t *network;
+    bool ready;
+} fuzzy_neuron_adam_state_t;
+
+OpenCL executable objects
+cl_program program;
+
+
+The OpenCL runtime compiles the embedded kernel text into a program for the selected GPU.
+
+cl_kernel weight_kernel;
+cl_kernel bias_kernel;
+
+
+Both kernel objects refer to the same compiled function:
+
+fn_adam_apply
+
+
+Separate kernel objects allow independent arguments for weights and biases.
+
+Weight history
+cl_mem weight_m;
+cl_mem weight_v;
+
+
+These contain one first moment and one second moment for every weight.
+
+Bias history
+cl_mem bias_m;
+cl_mem bias_v;
+
+
+These contain one first moment and one second moment for every bias.
+
+Ownership
+fuzzy_neuron_network_t *network;
+bool ready;
+
+
+These record which network owns the buffers and whether initialization completed.
+
+9. What fuzzy_neuron_adam_prepare() does
+
+This function creates all GPU resources required by Adam.
+
+Reuse an existing compatible state
+if (fuzzy_neuron_adam.ready && fuzzy_neuron_adam.network == network) return true;
+
+
+If the state already belongs to the same network, no rebuild or reallocation occurs.
+
+Remove an incompatible state
+fuzzy_neuron_adam_release();
+
+
+If a different network is supplied, old kernels and buffers are released first.
+
+Compile the embedded kernel
+fuzzy_neuron_adam.program = clCreateProgramWithSource(...);
+
+
+This sends the kernel string to the OpenCL runtime.
+
+error = clBuildProgram(..., "-cl-std=CL1.2", ...);
+
+
+This compiles the kernel specifically for the selected GPU using OpenCL C 1.2.
+
+Print a compiler log on failure
+clGetProgramBuildInfo(..., CL_PROGRAM_BUILD_LOG, ...);
+
+
+This is why syntax or device-compilation failures can produce a readable OpenCL compiler message.
+
+Create kernel handles
+fuzzy_neuron_adam.weight_kernel = clCreateKernel(..., "fn_adam_apply", ...);
+fuzzy_neuron_adam.bias_kernel = clCreateKernel(..., "fn_adam_apply", ...);
+
+
+Again, these are two handles for the same kernel function.
+
+Allocate moment buffers
+weight_m
+weight_v
+bias_m
+bias_v
+
+
+All use:
+
+CL_MEM_READ_WRITE
+
+
+because each update reads the previous moment and writes the next moment.
+
+10. What fuzzy_neuron_adam_zero() does
+
+Adam must start with:
+
+m0=0m_0 = 0 v0=0v_0 = 0
+
+Your function fills all four device buffers with zero:
+
+clEnqueueFillBuffer(...weight_m...);
+clEnqueueFillBuffer(...weight_v...);
+clEnqueueFillBuffer(...bias_m...);
+clEnqueueFillBuffer(...bias_v...);
+
+
+Then:
+
+clFinish(network->opencl.queue)
+
+
+waits until all four fills are complete before training starts.
+
+This is an intentional synchronization point and occurs only once per training stage.
+
+11. The training sequence for one batch
+
+For every batch, your code performs:
+
+A. Upload rules and targets
+clEnqueueWriteBuffer(...d_rules...);
+clEnqueueWriteBuffer(...d_targets...);
+
+B. Forward propagation
+fuzzy_neuron_opencl_enqueue_forward(network, sample_count)
+
+
+This computes all hidden-layer activations and predictions.
+
+C. Output loss and delta
+output_delta_kernel
+
+
+For MSE:
+
+e=y^−ye = \hat y-y
+
+The output delta for a linear output is essentially:
+
+δ=y^−y\delta = \hat y-y
+
+For Huber, very large errors are limited.
+
+D. Hidden-layer backpropagation
+hidden_delta_gemm_kernel
+
+
+This propagates output error backward through the layers.
+
+E. Increment Adam step
+++adam_step;
+
+
+This increments once per mini-batch, which is correct.
+
+With 54,621 rows and batch size 1024:
+
+ceil(54,621 / 1024) = 54 updates per epoch
+
+
+Therefore:
+
+epoch 1 ends near Adam step 54
+epoch 10 ends near Adam step 540
+epoch 100 ends near Adam step 5,400
+
+F. Calculate gradients
+weight_gradient_gemm_kernel
+bias_gradient_kernel
+
+
+These produce gradients but do not modify the model.
+
+G. Calculate corrected Adam learning rate
+alpha = learning_rate * sqrt(1 - beta2^step) / (1 - beta1^step);
+
+H. Apply Adam to weights
+clEnqueueNDRangeKernel(...weight_kernel...);
+
+I. Apply Adam to biases
+clEnqueueNDRangeKernel(...bias_kernel...);
+
+
+Everything from gradient calculation through parameter update remains on the GPU.
+
+12. MSE and Huber in your two-stage training
+Stage 1: MSE
+
+MSE is:
+
+MSE=1N∑i=1N(y^i−yi)2\text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (\hat y_i-y_i)^2
+
+Large errors are squared, so they receive strong attention.
+
+Example:
+
+Error	Absolute error	Squared error2	2	4
+10	10	100
+30	30	900
+
+This makes MSE effective for coarse learning but sensitive to difficult regions and outliers.
+
+Stage 2: Huber
+
+Huber is quadratic near zero and approximately linear for large errors.
+
+Conceptually:
+
+Lδ(e)={12e2,∣e∣≤δδ(∣e∣−12δ),∣e∣>δL_\delta(e)= \begin{cases} \frac{1}{2}e^2, & |e|\le\delta \\ \delta(|e|-\frac{1}{2}\delta), & |e|>\delta \end{cases}
+
+Your implementation uses:
+
+huber_delta = 10.0f;
+
+
+So errors within the threshold behave approximately like MSE, while larger errors have bounded gradient behavior.
+
+This helps refine the fit without letting a small number of large errors dominate every update.
+
+13. Why moments reset between MSE and Huber
+
+Every call performs:
+
+fuzzy_neuron_adam_zero(network);
+
+
+Therefore:
+
+MSE stage:
+    m = 0
+    v = 0
+    step = 0
+
+Huber stage:
+    m = 0 again
+    v = 0 again
+    step = 0 again
+
+
+The weights are retained between stages, but optimizer history is reset.
+
+That is reasonable because the objective changes from MSE to Huber. Gradient magnitudes and behavior change, so stale MSE moment history might distort the start of Huber refinement.
+
+However, Continue existing model also starts with new Adam moments. The saved CSV contains weights and biases, not optimizer state.
+
+14. Why the code renames the original trainer
+
+This block:
+
+#define fuzzy_neuron_opencl_train fuzzy_neuron_opencl_train_sgd_unused
+#include "fuzzy.h"
+#undef fuzzy_neuron_opencl_train
+
+
+temporarily replaces the function name while the preprocessor reads fuzzy.h.
+
+The original function becomes:
+
+fuzzy_neuron_opencl_train_sgd_unused
+
+
+instead of:
+
+fuzzy_neuron_opencl_train
+
+
+This prevents a duplicate symbol while allowing the experimental file to define:
+
+fuzzy_neuron_opencl_train_adam
+
+
+It is a test-integration technique. It does not change the optimizer mathematics.
+
+15. Why the network was reduced
+
+The old network was approximately:
+
+6 -> 100 -> 100 -> 100 -> ... -> 1
+80,700 weights
+
+
+The current network is:
+
+6 -> 64 -> 64 -> 32 -> 1
+6,560 weights
+
+
+The weight counts are:
+
+6×64=3846\times64=384 64×64=409664\times64=4096 64×32=204864\times32=2048 32×1=3232\times1=32
+
+Total:
+
+384+4096+2048+32=6560384+4096+2048+32=6560
+
+The reduced model:
+
+performs fewer matrix operations;
+needs fewer gradients;
+needs fewer Adam states;
+has fewer kernel work-items;
+is less likely to overcomplicate a six-feature input mapping;
+still has enough piecewise-linear capacity to learn the Sugeno surface.
+16. He and Xavier initialization
+
+Your hidden layers use ReLU, so the initialization uses:
+
+sqrtf(6.0f / source_count)
+
+
+This is a uniform form of He initialization.
+
+For the first layer:
+
+source count = 6
+sqrt(6 / 6) = 1
+
+
+So weights are initialized in approximately:
+
+[-1, +1]
+
+
+For a 64-input ReLU layer:
+
+sqrt(6 / 64) = 0.306186
+
+
+The linear output uses Xavier:
+
+sqrtf(6.0f / (source_count + destination_count))
+
+
+For 32 -> 1:
+
+sqrt(6 / 33) = 0.426401
+
+
+These initializations try to keep activations and gradients from immediately shrinking to zero or exploding.
+
+17. Why your better run still worsened after epoch 10
+
+Adam improves optimization, but it does not guarantee monotonically decreasing full-dataset loss.
+
+Your batches are processed sequentially:
+
+for (batch_start = 0; batch_start < rows; batch_start += batch_size)
+
+
+Every batch updates the model immediately. The dataset is a structured Sugeno sweep, so later batches can move the model away from earlier regions.
+
+The report is full-dataset MSE:
+
+fuzzy_neuron_dataset_mse(network, dataset)
+
+
+Therefore, it can rise even though the latest batches lowered their own local error.
+
+Your best-checkpoint logic correctly preserved:
+
+Epoch 10 MSE 77.8597
+
+
+instead of keeping:
+
+Epoch 100 MSE 118.4861
+
+18. One practical numerical example
+
+Assume one weight has:
+
+current weight = 0.500
+current mean gradient = 4.0
+previous m = 1.0
+previous v = 9.0
+beta1 = 0.9
+beta2 = 0.999
+
+
+First moment:
+
+m=0.9(1.0)+0.1(4.0)=1.3m = 0.9(1.0)+0.1(4.0) =1.3
+
+Second moment:
+
+v=0.999(9.0)+0.001(4.02)v = 0.999(9.0)+0.001(4.0^2) v=8.991+0.016=9.007v = 8.991+0.016 =9.007
+
+Ignoring bias correction for the simple example:
+
+Δθ=0.0011.39.007+10−8\Delta\theta = 0.001 \frac{1.3}{\sqrt{9.007}+10^{-8}} Δθ≈0.0011.33.001\Delta\theta \approx 0.001 \frac{1.3}{3.001} Δθ≈0.000433\Delta\theta \approx0.000433
+
+New weight:
+
+θ=0.500−0.000433=0.499567\theta = 0.500-0.000433 =0.499567
+
+Plain SGD would have used:
+
+0.500−0.001(4.0)=0.4960.500-0.001(4.0)=0.496
+
+Adam makes a smaller update because that parameter has a history of relatively large gradients.
+
+Another parameter with consistently tiny gradients may receive a relatively stronger normalized update.
+
+19. The simplest mental model
+
+Think of SGD as:
+
+Move in the direction of the current batch gradient.
+
+
+Think of Adam as:
+
+Move in the recent consistent direction,
+but reduce movement for parameters whose gradients are repeatedly large,
+and increase relative movement for parameters whose gradients remain small.
+
+
+Or in your fuzzy-neuron context:
+
+MSE or Huber says how wrong the output is.
+
+Backpropagation says which weights caused that error.
+
+Adam decides how aggressively each individual weight should change,
+using the current gradient and its previous gradient history.
+
+20. Exact changes compared with the old implementation
+
+The functional changes are:
+
+The original SGD trainer was renamed at preprocessing time.
+An embedded OpenCL Adam kernel was added.
+Four persistent GPU moment buffers were added.
+The Adam OpenCL program is compiled at runtime.
+Moment buffers are zeroed before each training stage.
+One Adam step is counted per mini-batch.
+Weight and bias gradient kernels remain unchanged.
+Empty/simple SGD apply kernels are no longer used by this trainer.
+Adam bias correction is calculated on the host once per batch.
+Every weight update executes on the GPU.
+Every bias update executes on the GPU.
+MSE and Huber loss calculations remain unchanged.
+Backpropagation remains unchanged.
+Best-checkpoint restoration remains unchanged.
+The architecture changed from 80,700 weights to 6,560 weights.
+ReLU layers use He-uniform initialization.
+The linear output uses Xavier initialization.
+
+The central replacement is:
+
+Old:
+gradient -> SGD apply kernel -> parameter
+
+New:
+gradient
+    -> first moment
+    -> second moment
+    -> bias correction
+    -> adaptive Adam apply kernel
+    -> parameter
+
+
+The successful run demonstrates the effect clearly: the old SGD-like path collapsed near a constant prediction, while GPU Adam learned the major Sugeno surface regions with R = 0.93257 and post-Huber RMSE = 7.67213.
