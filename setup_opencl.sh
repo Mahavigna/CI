@@ -424,7 +424,7 @@ mkdir -p "$ESP_TOOLS"
 # 11. Install Xtensa ESP32 GCC
 # ============================================================
 
-XTENSA_DIR="$ESP_TOOLS/xtensa-esp-elf-$XTENSA_VERSION"
+XTENSA_DIR="$ESP_TOOLS/xtensa-esp-elf"
 
 if [[ ! -x "$XTENSA_DIR/bin/xtensa-esp-elf-gcc" ]]; then
 
@@ -453,7 +453,7 @@ fi
 # 12. Install RISC-V ESP32 GCC
 # ============================================================
 
-RISCV_DIR="$ESP_TOOLS/riscv32-esp-elf-$RISCV_VERSION"
+RISCV_DIR="$ESP_TOOLS/riscv32-esp-elf"
 
 if [[ ! -x "$RISCV_DIR/bin/riscv32-esp-elf-gcc" ]]; then
 
