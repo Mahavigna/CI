@@ -35,34 +35,16 @@ jobs:
             "https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-linux-amd64.tar.gz"
 
           test -s "${ARCHIVE}"
-
-          file "${ARCHIVE"
           ls -lh "${ARCHIVE}"
 
           tar -xzf "${ARCHIVE}" -C "${TOOLCHAIN_ROOT}"
 
-          GCC="$(find "${TOOLCHAIN_ROOT}" \
-            -type f \
-            -name "xtensa-esp32-elf-gcc" \
-            -print -quit)"
+          TOOLCHAIN_BIN="${TOOLCHAIN_ROOT}/xtensa-esp32-elf/bin"
 
-          OBJCOPY="$(find "${TOOLCHAIN_ROOT}" \
-            -type f \
-            -name "xtensa-esp32-elf-objcopy" \
-            -print -quit)"
+          test -x "${TOOLCHAIN_BIN}/xtensa-esp32-elf-gcc"
+          test -x "${TOOLCHAIN_BIN}/xtensa-esp32-elf-objcopy"
+          test -x "${TOOLCHAIN_BIN}/xtensa-esp32-elf-size"
 
-          SIZE="$(find "${TOOLCHAIN_ROOT}" \
-            -type f \
-            -name "xtensa-esp32-elf-size" \
-            -print -quit)"
-
-          test -x "${GCC}"
-          test -x "${OBJCOPY}"
-          test -x "${SIZE}"
-
-          TOOLCHAIN_BIN="$(dirname "${GCC}")"
-
-          echo "ESP32 toolchain: ${TOOLCHAIN_BIN}"
           echo "${TOOLCHAIN_BIN}" >> "${GITHUB_PATH}"
 
       # ============================================================
@@ -88,21 +70,15 @@ jobs:
 
       - name: Check ESP32 configuration
         shell: bash
-        run: |
-          set -eux
-          make check-esp32
+        run: make check-esp32
 
       - name: Build ESP32 demo
         shell: bash
-        run: |
-          set -eux
-          make esp32-build
+        run: make esp32-build
 
       - name: Convert ESP32 ELF to binary
         shell: bash
-        run: |
-          set -eux
-          make esp32-bin
+        run: make esp32-bin
 
       # ============================================================
       # Validate artifacts
