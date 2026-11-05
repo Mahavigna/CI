@@ -113,6 +113,40 @@ endif
 
 
 # ============================================================
+# ESP32 tools
+# ============================================================
+
+ESP32_CC ?= xtensa-esp-elf-gcc
+ESP32_OBJCOPY ?= xtensa-esp-elf-objcopy
+ESP32_SIZE ?= xtensa-esp-elf-size
+
+ESP32_SOURCE := esp32_demo.c
+ESP32_ROOT := esp32
+ESP32_BUILD := $(ESP32_ROOT)/build
+
+ESP32_ELF := $(ESP32_BUILD)/esp32_demo.elf
+ESP32_BIN := $(ESP32_BUILD)/esp32_demo.bin
+
+ESP32_SIM ?= esp-emu
+
+ESP32_CFLAGS := \
+    -O2 \
+    -Wall \
+    -Wextra \
+    -Wpedantic \
+    -ffunction-sections \
+    -fdata-sections \
+    -mlongcalls \
+    -I.
+
+ESP32_LDFLAGS := \
+    -Wl,--gc-sections \
+    -Wl,-Map,$(ESP32_BUILD)/esp32_demo.map
+
+ESP32_LDLIBS := -lm
+
+
+# ============================================================
 # Main targets
 # ============================================================
 
@@ -120,6 +154,12 @@ endif
     all \
     desktop \
     embedded \
+    esp32 \
+    esp32-build \
+    esp32-bin \
+    run-esp32 \
+    check-esp32 \
+    clean-esp32 \
     run-strength \
     run-greenhouse \
     run-braking \
@@ -175,6 +215,7 @@ endif
     clean-embedded-mamdani \
     clean-embedded-sugeno \
     clean-fuzzy-neuron \
+    clean-esp32 \
     help
 
 all: desktop embedded
@@ -208,7 +249,8 @@ $(GPU_OUTPUT) \
 $(MAMDANI_8051_OUTPUT) \
 $(MAMDANI_EMBEDDED_OUTPUT) \
 $(SUGENO_EMBEDDED_OUTPUT) \
-$(FUZZY_NEURON_OUTPUT):
+$(FUZZY_NEURON_OUTPUT) \
+$(ESP32_BUILD):
 	mkdir -p $@
 
 
@@ -303,25 +345,94 @@ $(FUZZY_NEURON_PLUGIN): $(FUZZY_NEURON_SOURCE) fuzzy.h
 	@echo "Output: $(FUZZY_NEURON_PLUGIN)"
 	@echo "============================================================"
 	$(CC_CMD) $(CFLAGS) $(GPU_CFLAGS) -DFUZZY_MODEL_PLUGIN_ONLY -fPIC -shared $(FUZZY_NEURON_SOURCE) $(LDFLAGS) -o $(FUZZY_NEURON_PLUGIN) $(GPU_LDLIBS) $(LDLIBS)
-	@echo "[OK] Built $(FUZZY_NEURON_PLUGIN)"
+	@echo "[OK] Built $(FUZZY_NEURON_PLUGIN)
 
 
 $(FUZZY_NEURON_TARGET): $(FUZZY_NEURON_SOURCE) fuzzy.h $(FUZZY_NEURON_KERNEL)
 	@echo ""
 	@echo "============================================================"
 	@echo "Building fuzzy-neuron training, testing, and comparison CLI"
-	@echo "Source: $(FUZZY_NEURON_SOURCE)"
-	@echo "Output: $(FUZZY_NEURON_TARGET)"
 	@echo "============================================================"
 	$(CC_CMD) $(CFLAGS) $(GPU_CFLAGS) -rdynamic $(FUZZY_NEURON_SOURCE) $(LDFLAGS) -o $(FUZZY_NEURON_TARGET) $(GPU_LDLIBS) -ldl $(LDLIBS)
 	@echo "[OK] Built $(FUZZY_NEURON_TARGET)"
 
 
 # ============================================================
+# ESP32 build
+# ============================================================
+
+$(ESP32_ELF): $(ESP32_SOURCE) fuzzy.h | $(ESP32_BUILD)
+	@echo ""
+	@echo "============================================================"
+	@echo "Building ESP32 demo from $<..."
+	@echo "Compiler: $(ESP32_CC)"
+	@echo "============================================================"
+	$(ESP32_CC) $(ESP32_CFLAGS) $(ESP32_LDFLAGS) $< -o $@ $(ESP32_LDLIBS)
+	@echo "[OK] Built $@"
+	@$(ESP32_SIZE) $@
+
+
+$(ESP32_BIN): $(ESP32_ELF)
+	@echo ""
+	@echo "============================================================"
+	@echo "Converting ESP32 ELF to binary"
+	@echo "============================================================"
+	$(ESP32_OBJCOPY) -O binary $< $@
+	@echo "[OK] Built $@"
+
+
+esp32-build: $(ESP32_ELF)
+
+
+esp32-bin: $(ESP32_BIN)
+
+
+esp32: esp32-bin
+	@echo ""
+	@echo "============================================================"
+	@echo "ESP32 build complete"
+	@echo "============================================================"
+	@echo "Source: $(ESP32_SOURCE)"
+	@echo "ELF:    $(ESP32_ELF)"
+	@echo "BIN:    $(ESP32_BIN)"
+
+
+run-esp32: esp32
+	@echo ""
+	@echo "============================================================"
+	@echo "Running ESP32 firmware"
+	@echo "============================================================"
+	@if ! command -v $(ESP32_SIM) >/dev/null 2>&1; then \
+		echo "Error: $(ESP32_SIM) was not found."; \
+		exit 1; \
+	fi
+	$(ESP32_SIM) $(ESP32_BIN)
+
+
+check-esp32:
+	@echo ""
+	@echo "============================================================"
+	@echo "Checking ESP32 toolchain"
+	@echo "============================================================"
+	@for cmd in $(ESP32_CC) $(ESP32_OBJCOPY) $(ESP32_SIZE); do \
+		if command -v $$cmd >/dev/null 2>&1; then \
+			echo "[OK]       $$cmd"; \
+		else \
+			echo "[MISSING]  $$cmd"; \
+		fi; \
+	done
+	@if command -v $(ESP32_SIM) >/dev/null 2>&1; then \
+		echo "[OK]       $(ESP32_SIM)"; \
+	else \
+		echo "[MISSING]  $(ESP32_SIM)"; \
+	fi
+
+
+# ============================================================
 # Desktop execution
 # ============================================================
 
-run-strength: $(STRENGTH_TARGET) | $(STRENGTH_OUTPUT)
+run-strength: $(STRENGTH_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running paint-strength example"
@@ -329,7 +440,7 @@ run-strength: $(STRENGTH_TARGET) | $(STRENGTH_OUTPUT)
 	./$(STRENGTH_TARGET)
 
 
-run-greenhouse: $(GREENHOUSE_TARGET) | $(GREENHOUSE_OUTPUT)
+run-greenhouse: $(GREENHOUSE_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running greenhouse example"
@@ -337,7 +448,7 @@ run-greenhouse: $(GREENHOUSE_TARGET) | $(GREENHOUSE_OUTPUT)
 	./$(GREENHOUSE_TARGET)
 
 
-run-braking: $(BRAKING_TARGET) | $(BRAKING_OUTPUT)
+run-braking: $(BRAKING_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running CPU braking demonstration"
@@ -345,16 +456,15 @@ run-braking: $(BRAKING_TARGET) | $(BRAKING_OUTPUT)
 	./$(BRAKING_TARGET)
 
 
-run-braking-gpu: $(BRAKING_GPU_TARGET) | $(BRAKING_GPU_OUTPUT)
+run-braking-gpu: $(BRAKING_GPU_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running OpenCL GPU braking demonstration"
-	@echo "GPU/CPU comparison and hedge-extreme tests enabled"
 	@echo "============================================================"
 	./$(BRAKING_GPU_TARGET)
 
 
-run-demo: $(DEMO_TARGET) | $(DEMO_OUTPUT)
+run-demo: $(DEMO_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running complete CPU fuzzy.h demonstration"
@@ -362,7 +472,7 @@ run-demo: $(DEMO_TARGET) | $(DEMO_OUTPUT)
 	./$(DEMO_TARGET)
 
 
-run-sugeno: $(SUGENO_TARGET) | $(SUGENO_OUTPUT)
+run-sugeno: $(SUGENO_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running complex Sugeno controller demonstration"
@@ -370,17 +480,15 @@ run-sugeno: $(SUGENO_TARGET) | $(SUGENO_OUTPUT)
 	cd $(SUGENO_OUTPUT) && ../$(SUGENO_TARGET)
 
 
-run-gpu: $(GPU_TARGET) | $(GPU_OUTPUT)
+run-gpu: $(GPU_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running complete OpenCL fuzzy.h demonstration"
-	@echo "GPU interpolation sweep enabled"
-	@echo "GPU COG sweep enabled"
 	@echo "============================================================"
 	./$(GPU_TARGET)
 
 
-run-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+run-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running interactive fuzzy-neuron CLI"
@@ -388,85 +496,60 @@ run-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON
 	./$(FUZZY_NEURON_TARGET)
 
 
-train-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+train-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
 	@echo "Training fuzzy-neuron model"
-	@echo "Plugin:  $(FUZZY_NEURON_PLUGIN)"
-	@echo "Dataset: $(FUZZY_NEURON_DATASET)"
-	@echo "Model:   $(FUZZY_NEURON_MODEL)"
-	@echo "Kernel:  $(FUZZY_NEURON_KERNEL)"
 	@echo "============================================================"
 	printf '1\n5\n' | ./$(FUZZY_NEURON_TARGET)
 
 
-test-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+test-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
-	@echo "Testing one input with the trained fuzzy-neuron model"
-	@echo "Model:       $(FUZZY_NEURON_MODEL)"
-	@echo "Temperature: $(FUZZY_NEURON_TEMPERATURE)"
-	@echo "Load:        $(FUZZY_NEURON_LOAD)"
-	@echo "Vibration:   $(FUZZY_NEURON_VIBRATION)"
+	@echo "Testing fuzzy-neuron model"
 	@echo "============================================================"
 	printf '2\n$(FUZZY_NEURON_TEMPERATURE) $(FUZZY_NEURON_LOAD) $(FUZZY_NEURON_VIBRATION)\n5\n' | ./$(FUZZY_NEURON_TARGET)
 
 
-test-fuzzy-neuron-csv: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+test-fuzzy-neuron-csv: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
-	@echo "Testing trained fuzzy-neuron model against a new CSV dataset"
-	@echo "Model:       $(FUZZY_NEURON_MODEL)"
-	@echo "Test dataset: $(FUZZY_NEURON_TEST_DATASET)"
-	@echo "Predictions: $(FUZZY_NEURON_TEST_OUTPUT)"
+	@echo "Testing fuzzy-neuron model against CSV"
 	@echo "============================================================"
 	printf '3\n$(FUZZY_NEURON_TEST_DATASET)\n5\n' | ./$(FUZZY_NEURON_TARGET)
 
 
-compare-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+compare-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
-	@echo "Comparing trained fuzzy-neuron model against original dataset"
-	@echo "Model:       $(FUZZY_NEURON_MODEL)"
-	@echo "Dataset:     $(FUZZY_NEURON_DATASET)"
-	@echo "Predictions: $(FUZZY_NEURON_ORIGINAL_OUTPUT)"
+	@echo "Comparing fuzzy-neuron model"
 	@echo "============================================================"
 	printf '4\n5\n' | ./$(FUZZY_NEURON_TARGET)
 
 
-plots-fuzzy-neuron: train-fuzzy-neuron | $(FUZZY_NEURON_OUTPUT)
+plots-fuzzy-neuron: train-fuzzy-neuron
 	@echo ""
-	@echo "============================================================"
-	@echo "Fuzzy-neuron plots"
-	@echo "============================================================"
-	@echo "  $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_temperature_memberships.svg"
-	@echo "  $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_load_memberships.svg"
-	@echo "  $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_vibration_memberships.svg"
-	@echo "  $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_learned_surface.csv"
-	@echo "  $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_learned_surface.svg"
+	@echo "Fuzzy-neuron plots generated under $(FUZZY_NEURON_OUTPUT)"
 
 
-time-fuzzy-neuron-train: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+time-fuzzy-neuron-train: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
-	@echo "Timing OpenCL GPU fuzzy-neuron training"
-	@echo "Epochs:          $(FUZZY_NEURON_EPOCHS)"
-	@echo "Batch size:      $(FUZZY_NEURON_BATCH_SIZE)"
-	@echo "Learning rate:   $(FUZZY_NEURON_LEARNING_RATE)"
-	@echo "Report interval: $(FUZZY_NEURON_REPORT_INTERVAL)"
+	@echo "Timing fuzzy-neuron training"
 	@echo "============================================================"
 	time sh -c "printf '1\n$(FUZZY_NEURON_EPOCHS)\n$(FUZZY_NEURON_BATCH_SIZE)\n$(FUZZY_NEURON_LEARNING_RATE)\n$(FUZZY_NEURON_REPORT_INTERVAL)\n5\n' | ./$(FUZZY_NEURON_TARGET)"
 
 
-time-fuzzy-neuron-test: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN) | $(FUZZY_NEURON_OUTPUT)
+time-fuzzy-neuron-test: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo ""
 	@echo "============================================================"
-	@echo "Timing fuzzy-neuron model loading and inference"
+	@echo "Timing fuzzy-neuron inference"
 	@echo "============================================================"
 	time sh -c "printf '2\n$(FUZZY_NEURON_TEMPERATURE) $(FUZZY_NEURON_LOAD) $(FUZZY_NEURON_VIBRATION)\n5\n' | ./$(FUZZY_NEURON_TARGET)"
 
 
-time-braking: $(BRAKING_TARGET) | $(BRAKING_OUTPUT)
+time-braking: $(BRAKING_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Timing CPU braking demonstration"
@@ -474,7 +557,7 @@ time-braking: $(BRAKING_TARGET) | $(BRAKING_OUTPUT)
 	time ./$(BRAKING_TARGET)
 
 
-time-braking-gpu: $(BRAKING_GPU_TARGET) | $(BRAKING_GPU_OUTPUT)
+time-braking-gpu: $(BRAKING_GPU_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Timing OpenCL GPU braking demonstration"
@@ -482,7 +565,7 @@ time-braking-gpu: $(BRAKING_GPU_TARGET) | $(BRAKING_GPU_OUTPUT)
 	time ./$(BRAKING_GPU_TARGET)
 
 
-time-demo: $(DEMO_TARGET) | $(DEMO_OUTPUT)
+time-demo: $(DEMO_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Timing complete CPU fuzzy.h demonstration"
@@ -490,7 +573,7 @@ time-demo: $(DEMO_TARGET) | $(DEMO_OUTPUT)
 	time ./$(DEMO_TARGET)
 
 
-time-gpu: $(GPU_TARGET) | $(GPU_OUTPUT)
+time-gpu: $(GPU_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Timing complete OpenCL fuzzy.h demonstration"
@@ -498,7 +581,7 @@ time-gpu: $(GPU_TARGET) | $(GPU_OUTPUT)
 	time ./$(GPU_TARGET)
 
 
-run-sim-8051: $(MAMDANI_8051_TARGET) | $(MAMDANI_8051_OUTPUT)
+run-sim-8051: $(MAMDANI_8051_TARGET)
 	@echo ""
 	@echo "============================================================"
 	@echo "Running desktop Mamdani 8051 simulation harness"
@@ -638,34 +721,26 @@ pdf: \
 png-strength:
 	$(call convert_svg,$(STRENGTH_OUTPUT),png)
 
-
 png-greenhouse:
 	$(call convert_svg,$(GREENHOUSE_OUTPUT),png)
-
 
 png-braking:
 	$(call convert_svg,$(BRAKING_OUTPUT),png)
 
-
 png-braking-gpu:
 	$(call convert_svg,$(BRAKING_GPU_OUTPUT),png)
-
 
 png-demo:
 	$(call convert_svg,$(DEMO_OUTPUT),png)
 
-
 png-sugeno:
 	$(call convert_svg,$(SUGENO_OUTPUT),png)
-
 
 png-gpu:
 	$(call convert_svg,$(GPU_OUTPUT),png)
 
-
 png-sim-8051:
 	$(call convert_svg,$(MAMDANI_8051_OUTPUT),png)
-
 
 png-fuzzy-neuron:
 	$(call convert_svg,$(FUZZY_NEURON_OUTPUT),png)
@@ -674,34 +749,26 @@ png-fuzzy-neuron:
 pdf-strength:
 	$(call convert_svg,$(STRENGTH_OUTPUT),pdf)
 
-
 pdf-greenhouse:
 	$(call convert_svg,$(GREENHOUSE_OUTPUT),pdf)
-
 
 pdf-braking:
 	$(call convert_svg,$(BRAKING_OUTPUT),pdf)
 
-
 pdf-braking-gpu:
 	$(call convert_svg,$(BRAKING_GPU_OUTPUT),pdf)
-
 
 pdf-demo:
 	$(call convert_svg,$(DEMO_OUTPUT),pdf)
 
-
 pdf-sugeno:
 	$(call convert_svg,$(SUGENO_OUTPUT),pdf)
-
 
 pdf-gpu:
 	$(call convert_svg,$(GPU_OUTPUT),pdf)
 
-
 pdf-sim-8051:
 	$(call convert_svg,$(MAMDANI_8051_OUTPUT),pdf)
-
 
 pdf-fuzzy-neuron:
 	$(call convert_svg,$(FUZZY_NEURON_OUTPUT),pdf)
@@ -711,7 +778,7 @@ pdf-fuzzy-neuron:
 # Cleanup
 # ============================================================
 
-clean: clean-desktop clean-embedded clean-fuzzy-neuron
+clean: clean-desktop clean-embedded clean-fuzzy-neuron clean-esp32
 
 
 clean-desktop:
@@ -719,9 +786,21 @@ clean-desktop:
 	@echo "============================================================"
 	@echo "Cleaning desktop outputs"
 	@echo "============================================================"
-	rm -f $(STRENGTH_TARGET) $(GREENHOUSE_TARGET) $(BRAKING_TARGET) $(BRAKING_GPU_TARGET) $(DEMO_TARGET) $(SUGENO_TARGET) $(GPU_TARGET) $(MAMDANI_8051_TARGET) $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
-	rm -f $(SIM_8051_ROOT)/test-8051-host $(SIM_8051_ROOT)/test_8051_host.i
-	find $(STRENGTH_OUTPUT) $(GREENHOUSE_OUTPUT) $(BRAKING_OUTPUT) $(BRAKING_GPU_OUTPUT) $(DEMO_OUTPUT) $(SUGENO_OUTPUT) $(GPU_OUTPUT) $(MAMDANI_8051_OUTPUT) $(FUZZY_NEURON_OUTPUT) -maxdepth 1 -type f \( -name '*.svg' -o -name '*.png' -o -name '*.pdf' -o -name '*.csv' \) -delete 2>/dev/null || true
+	rm -f $(STRENGTH_TARGET) \
+	      $(GREENHOUSE_TARGET) \
+	      $(BRAKING_TARGET) \
+	      $(BRAKING_GPU_TARGET) \
+	      $(DEMO_TARGET) \
+	      $(SUGENO_TARGET) \
+	      $(GPU_TARGET) \
+	      $(MAMDANI_8051_TARGET) \
+	      $(FUZZY_NEURON_TARGET) \
+	      $(FUZZY_NEURON_PLUGIN)
+	find $(STRENGTH_OUTPUT) $(GREENHOUSE_OUTPUT) $(BRAKING_OUTPUT) \
+	     $(DEMO_OUTPUT) $(SUGENO_OUTPUT) $(GPU_OUTPUT) \
+	     $(MAMDANI_8051_OUTPUT) $(FUZZY_NEURON_OUTPUT) \
+	     -maxdepth 1 -type f \( -name '*.svg' -o -name '*.png' \
+	     -o -name '*.pdf' -o -name '*.csv' \) -delete 2>/dev/null || true
 	@echo "Desktop outputs removed."
 
 
@@ -757,6 +836,15 @@ clean-embedded-sugeno:
 	@echo "Sugeno embedded outputs removed."
 
 
+clean-esp32:
+	@echo ""
+	@echo "============================================================"
+	@echo "Cleaning ESP32 outputs"
+	@echo "============================================================"
+	rm -rf $(ESP32_BUILD)
+	@echo "ESP32 outputs removed."
+
+
 # ============================================================
 # Dependency checks
 # ============================================================
@@ -773,22 +861,27 @@ check-dependencies:
 			echo "[MISSING]  $$cmd"; \
 		fi; \
 	done
+
 	@if printf '#include <CL/cl.h>\n' | $(CC) -E -x c - >/dev/null 2>&1; then \
 		echo "[OK]       OpenCL headers"; \
 	else \
 		echo "[MISSING]  OpenCL headers"; \
 	fi
+
 	@if ldconfig -p 2>/dev/null | grep -q 'libOpenCL\.so'; then \
 		echo "[OK]       OpenCL library"; \
 	else \
 		echo "[MISSING]  OpenCL library"; \
 	fi
-	@if printf '#include <dlfcn.h>\nint main(void){return 0;}\n' | $(CC) -x c - -ldl -o /tmp/fuzzy-dl-check >/dev/null 2>&1; then \
+
+	@if printf '#include <dlfcn.h>\nint main(void){return 0;}\n' | \
+	    $(CC) -x c - -ldl -o /tmp/fuzzy-dl-check >/dev/null 2>&1; then \
 		echo "[OK]       dlopen/dlsym library"; \
 		rm -f /tmp/fuzzy-dl-check; \
 	else \
 		echo "[MISSING]  dlopen/dlsym library"; \
 	fi
+
 	@echo ""
 	@for cmd in ccache mold rsvg-convert sdcdb clinfo; do \
 		if command -v $$cmd >/dev/null 2>&1; then \
@@ -797,6 +890,10 @@ check-dependencies:
 			echo "[OPTIONAL] $$cmd"; \
 		fi; \
 	done
+
+	@echo ""
+	@echo "ESP32:"
+	@$(MAKE) --no-print-directory check-esp32
 
 
 # ============================================================
@@ -813,7 +910,9 @@ install-dependencies:
 		exit 1; \
 	fi
 	sudo apt-get update
-	sudo apt-get install -y build-essential gcc make ccache mold sdcc librsvg2-bin ocl-icd-opencl-dev opencl-headers clinfo
+	sudo apt-get install -y build-essential gcc make ccache mold sdcc \
+	    librsvg2-bin ocl-icd-opencl-dev opencl-headers clinfo
+
 	@if ! command -v s51 >/dev/null 2>&1; then \
 		if apt-cache show sdcc-ucsim >/dev/null 2>&1; then \
 			sudo apt-get install -y sdcc-ucsim; \
@@ -837,8 +936,25 @@ help:
 	@echo "  make"
 	@echo "  make desktop"
 	@echo "  make embedded"
+	@echo "  make esp32"
+	@echo "  make run-esp32"
+	@echo "  make check-esp32"
 	@echo ""
-	@echo "Desktop examples:"
+	@echo "ESP32:"
+	@echo "  make esp32"
+	@echo "      Build esp32_demo.c."
+	@echo "  make esp32-build"
+	@echo "      Build the ESP32 ELF."
+	@echo "  make esp32-bin"
+	@echo "      Convert ELF to binary."
+	@echo "  make run-esp32"
+	@echo "      Build and run the ESP32 binary."
+	@echo "  make check-esp32"
+	@echo "      Check ESP32 compiler/tools."
+	@echo "  make clean-esp32"
+	@echo "      Remove ESP32 build outputs."
+	@echo ""
+	@echo "Desktop:"
 	@echo "  make run-strength"
 	@echo "  make run-greenhouse"
 	@echo "  make run-braking"
@@ -849,97 +965,24 @@ help:
 	@echo "  make run-fuzzy-neuron"
 	@echo "  make run-sim-8051"
 	@echo ""
-	@echo "Fuzzy-neuron commands:"
-	@echo "  make fuzzy-neuron"
-	@echo "      Build the interactive training, prediction, and dataset-testing CLI."
-	@echo "  make fuzzy_model_rules.so"
-	@echo "      Build the dynamically loaded fuzzy-rule model plugin."
-	@echo "  make run-fuzzy-neuron"
-	@echo "      Open the interactive fuzzy-neuron CLI menu."
-	@echo "  make train-fuzzy-neuron"
-	@echo "      Select menu option 1, train the model, and save outputs under fuzzy-neuron-output."
-	@echo "  make test-fuzzy-neuron"
-	@echo "      Select menu option 2 and test one temperature/load/vibration input."
-	@echo "  make test-fuzzy-neuron-csv FUZZY_NEURON_TEST_DATASET=path.csv"
-	@echo "      Select menu option 3 and test the trained model against a new CSV dataset."
-	@echo "  make compare-fuzzy-neuron"
-	@echo "      Select menu option 4 and test the trained model against the original dataset."
-	@echo "  make plots-fuzzy-neuron"
-	@echo "      Train the model and list generated plots under fuzzy-neuron-output."
-	@echo "  make time-fuzzy-neuron-train"
-	@echo "      Time menu option 1 training."
-	@echo "  make time-fuzzy-neuron-test"
-	@echo "      Time menu option 2 model loading and inference."
-	@echo "  make png-fuzzy-neuron"
-	@echo "      Convert fuzzy-neuron SVG files to PNG."
-	@echo "  make pdf-fuzzy-neuron"
-	@echo "      Convert fuzzy-neuron SVG files to PDF."
-	@echo "  make clean-fuzzy-neuron"
-	@echo "      Remove the fuzzy-neuron CLI, plugin, model, predictions, plots, and output directory."
-	@echo ""
-	@echo "Custom fuzzy-neuron test input:"
-	@echo "  make test-fuzzy-neuron FUZZY_NEURON_TEMPERATURE=60 FUZZY_NEURON_LOAD=75 FUZZY_NEURON_VIBRATION=4"
-	@echo ""
-	@echo "Braking commands:"
-	@echo "  make braking-app"
-	@echo "  make braking-gpu"
-	@echo "  make run-braking"
-	@echo "  make run-braking-gpu"
-	@echo "  make time-braking"
-	@echo "  make time-braking-gpu"
-	@echo "  make png-braking"
-	@echo "  make png-braking-gpu"
-	@echo "  make pdf-braking"
-	@echo "  make pdf-braking-gpu"
-	@echo ""
-	@echo "GPU commands:"
-	@echo "  make demo-all-gpu"
-	@echo "  make run-gpu"
-	@echo "  make time-gpu"
-	@echo "  make png-gpu"
-	@echo "  make pdf-gpu"
-	@echo ""
-	@echo "Mamdani 8051 commands:"
+	@echo "8051:"
 	@echo "  make embedded-mamdani"
-	@echo "  make build-8051"
+	@echo "  make embedded-sugeno"
 	@echo "  make simulate-8051"
+	@echo "  make simulate-sugeno"
 	@echo "  make debug-8051"
 	@echo ""
-	@echo "Sugeno 8051 commands:"
-	@echo "  make embedded-sugeno"
-	@echo "  make build-sugeno-8051"
-	@echo "  make simulate-sugeno"
-	@echo ""
-	@echo "Dependency commands:"
-	@echo "  make check-dependencies"
-	@echo "  make install-dependencies"
-	@echo ""
-	@echo "Image conversion:"
+	@echo "Images:"
 	@echo "  make png"
 	@echo "  make pdf"
-	@echo "  make png-strength"
-	@echo "  make png-greenhouse"
-	@echo "  make png-braking"
-	@echo "  make png-braking-gpu"
-	@echo "  make png-demo"
-	@echo "  make png-sugeno"
-	@echo "  make png-gpu"
-	@echo "  make png-sim-8051"
-	@echo "  make png-fuzzy-neuron"
-	@echo "  make pdf-strength"
-	@echo "  make pdf-greenhouse"
-	@echo "  make pdf-braking"
-	@echo "  make pdf-braking-gpu"
-	@echo "  make pdf-demo"
-	@echo "  make pdf-sugeno"
-	@echo "  make pdf-gpu"
-	@echo "  make pdf-sim-8051"
-	@echo "  make pdf-fuzzy-neuron"
+	@echo ""
+	@echo "Dependencies:"
+	@echo "  make check-dependencies"
+	@echo "  make install-dependencies"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean"
 	@echo "  make clean-desktop"
-	@echo "  make clean-fuzzy-neuron"
 	@echo "  make clean-embedded"
-	@echo "  make clean-embedded-mamdani"
-	@echo "  make clean-embedded-sugeno"
+	@echo "  make clean-fuzzy-neuron"
+	@echo "  make clean-esp32"
