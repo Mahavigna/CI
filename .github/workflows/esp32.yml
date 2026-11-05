@@ -14,6 +14,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ============================================================
+      # Install classic ESP32 Xtensa toolchain
+      # ============================================================
+
       - name: Install ESP32 Xtensa toolchain
         shell: bash
         run: |
@@ -24,13 +28,11 @@ jobs:
 
           mkdir -p "${TOOLCHAIN_ROOT}"
 
-          wget \
-            --fail \
-            --show-progress \
-            --tries=3 \
-            --timeout=30 \
-            "https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2-patch5/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch5-linux-amd64.tar.xz" \
-            -O "${ARCHIVE}"
+          curl -L \
+            --retry 3 \
+            --connect-timeout 30 \
+            -o "${ARCHIVE}" \
+            "https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2-patch5/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch5-linux-amd64.tar.xz"
 
           test -s "${ARCHIVE}"
 
@@ -60,6 +62,10 @@ jobs:
           echo "ESP32 toolchain: ${TOOLCHAIN_BIN}"
           echo "${TOOLCHAIN_BIN}" >> "${GITHUB_PATH}"
 
+      # ============================================================
+      # Verify toolchain
+      # ============================================================
+
       - name: Verify ESP32 toolchain
         shell: bash
         run: |
@@ -73,17 +79,31 @@ jobs:
           xtensa-esp32-elf-objcopy --version
           xtensa-esp32-elf-size --version
 
+      # ============================================================
+      # ESP32 Makefile workflow
+      # ============================================================
+
       - name: Check ESP32 configuration
         shell: bash
-        run: make check-esp32
+        run: |
+          set -eux
+          make check-esp32
 
       - name: Build ESP32 demo
         shell: bash
-        run: make esp32-build
+        run: |
+          set -eux
+          make esp32-build
 
       - name: Convert ESP32 ELF to binary
         shell: bash
-        run: make esp32-bin
+        run: |
+          set -eux
+          make esp32-bin
+
+      # ============================================================
+      # Validate artifacts
+      # ============================================================
 
       - name: Validate ESP32 artifacts
         shell: bash
