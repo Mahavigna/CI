@@ -23,8 +23,8 @@ jobs:
         run: |
           set -eux
 
-          ARCHIVE="${RUNNER_TEMP}/esp32-toolchain.tar.xz"
-          TOOLCHAIN_ROOT="${RUNNER_TEMP}/esp32-toolchain"
+          ARCHIVE="${RUNNER_TEMP}/xtensa-esp32-elf.tar.gz"
+          TOOLCHAIN_ROOT="${RUNNER_TEMP}/esp32"
 
           mkdir -p "${TOOLCHAIN_ROOT}"
 
@@ -32,11 +32,14 @@ jobs:
             --retry 3 \
             --connect-timeout 30 \
             -o "${ARCHIVE}" \
-            "https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2-patch5/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch5-linux-amd64.tar.xz"
+            "https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-linux-amd64.tar.gz"
 
           test -s "${ARCHIVE}"
 
-          tar -xJf "${ARCHIVE}" -C "${TOOLCHAIN_ROOT}"
+          file "${ARCHIVE"
+          ls -lh "${ARCHIVE}"
+
+          tar -xzf "${ARCHIVE}" -C "${TOOLCHAIN_ROOT}"
 
           GCC="$(find "${TOOLCHAIN_ROOT}" \
             -type f \
