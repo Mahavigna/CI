@@ -14,8 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: configure
-      run: ./configure
+    # ============================================================
+    # Desktop build
+    # ============================================================
 
     - name: make
       run: make
@@ -50,7 +51,7 @@ jobs:
         xtensa-esp32-elf-size --version
 
     # ============================================================
-    # Match the compiler names used by the Makefile
+    # Match Makefile compiler names
     # ============================================================
 
     - name: Configure ESP32 compiler aliases
