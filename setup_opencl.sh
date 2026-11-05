@@ -49,7 +49,9 @@ sudo apt-get install -y \
     intel-opencl-icd-legacy \
     ocl-icd-opencl-dev \
     clinfo \
-    build-essential
+    build-essential\
+    time\
+    cdecl
 
 pass "Packages installed."
 

@@ -7,7 +7,7 @@ CFLAGS := -O3 -Wall -Wextra -Wpedantic -std=c11
 LDFLAGS :=
 LDLIBS := -lm
 
-GPU_CFLAGS := -DFUZZY_OPENCL -Wno-overlength-strings -Wno-unused-function
+GPU_CFLAGS := -Wno-overlength-strings -Wno-unused-function
 GPU_LDLIBS := -lOpenCL
 
 

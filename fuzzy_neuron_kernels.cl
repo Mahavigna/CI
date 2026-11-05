@@ -18,6 +18,13 @@ inline float fn_derivative(float y, uint kind)
     return 1.0f;
 }
 
+inline float fn_huber_gradient(float error, float delta)
+{
+    if (error < -delta) return -1.0f;
+    if (error > delta) return 1.0f;
+    return error / delta;
+}
+
 __kernel void fn_forward(__global const float *rule_inputs, __global const float *weights, __global const float *biases, __global float *activations, __global const uint *layer_counts, __global const uint *weight_offsets, __global const uint *bias_offsets, __global const uint *activation_kinds, uint sample_count, uint rule_count, uint layer_count, uint neuron_count)
 {
     uint sample = get_global_id(0);
@@ -59,6 +66,7 @@ __kernel void fn_backward(__global const float *targets, __global const float *w
     uint sample = get_global_id(0);
     uint last_layer = layer_count - 1u;
     uint output_offset = neuron_count - output_count;
+    float huber_delta = 10.0f;
 
     if (sample >= sample_count) return;
 
@@ -66,8 +74,9 @@ __kernel void fn_backward(__global const float *targets, __global const float *w
     {
         float value = activations[sample * neuron_count + output_offset + output];
         float error = value - targets[sample * output_count + output];
+        float gradient = fn_huber_gradient(error, huber_delta);
 
-        deltas[sample * neuron_count + output_offset + output] = error * fn_derivative(value, activation_kinds[last_layer]);
+        deltas[sample * neuron_count + output_offset + output] = gradient * fn_derivative(value, activation_kinds[last_layer]);
     }
 
     for (uint reverse = 0u; reverse < layer_count; reverse++)
