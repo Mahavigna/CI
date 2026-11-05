@@ -2,88 +2,108 @@ name: ESP32 CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   esp32:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # ============================================================
-    # ESP32 Xtensa toolchain
-    # ============================================================
+      - name: Install ESP32 Xtensa toolchain
+        shell: bash
+        run: |
+          set -eux
 
-    - name: Install ESP32 Xtensa toolchain
-      run: |
-        mkdir -p "$HOME/.local/esp"
+          ARCHIVE="${RUNNER_TEMP}/esp32-toolchain.tar.xz"
+          TOOLCHAIN_ROOT="${RUNNER_TEMP}/esp32-toolchain"
 
-        wget -q \
-          https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2-patch5/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch5-linux-amd64.tar.xz
+          mkdir -p "${TOOLCHAIN_ROOT}"
 
-        tar -xf \
-          xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch5-linux-amd64.tar.xz \
-          -C "$HOME/.local/esp"
+          wget \
+            --fail \
+            --show-progress \
+            --tries=3 \
+            --timeout=30 \
+            "https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2-patch5/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch5-linux-amd64.tar.xz" \
+            -O "${ARCHIVE}"
 
-        echo "$HOME/.local/esp/xtensa-esp32-elf/bin" >> "$GITHUB_PATH"
+          test -s "${ARCHIVE}"
 
-    # ============================================================
-    # Check toolchain
-    # ============================================================
+          tar -xJf "${ARCHIVE}" -C "${TOOLCHAIN_ROOT}"
 
-    - name: Check ESP32 toolchain
-      run: |
-        xtensa-esp32-elf-gcc --version
-        xtensa-esp32-elf-objcopy --version
-        xtensa-esp32-elf-size --version
+          GCC="$(find "${TOOLCHAIN_ROOT}" \
+            -type f \
+            -name "xtensa-esp32-elf-gcc" \
+            -print -quit)"
 
-    # ============================================================
-    # Match Makefile compiler names
-    # ============================================================
+          OBJCOPY="$(find "${TOOLCHAIN_ROOT}" \
+            -type f \
+            -name "xtensa-esp32-elf-objcopy" \
+            -print -quit)"
 
-    - name: Configure ESP32 compiler aliases
-      run: |
-        TOOLCHAIN="$HOME/.local/esp/xtensa-esp32-elf/bin"
+          SIZE="$(find "${TOOLCHAIN_ROOT}" \
+            -type f \
+            -name "xtensa-esp32-elf-size" \
+            -print -quit)"
 
-        ln -s "$TOOLCHAIN/xtensa-esp32-elf-gcc" \
-              "$TOOLCHAIN/xtensa-esp-elf-gcc"
+          test -x "${GCC}"
+          test -x "${OBJCOPY}"
+          test -x "${SIZE}"
 
-        ln -s "$TOOLCHAIN/xtensa-esp32-elf-objcopy" \
-              "$TOOLCHAIN/xtensa-esp-elf-objcopy"
+          TOOLCHAIN_BIN="$(dirname "${GCC}")"
 
-        ln -s "$TOOLCHAIN/xtensa-esp32-elf-size" \
-              "$TOOLCHAIN/xtensa-esp-elf-size"
+          echo "ESP32 toolchain: ${TOOLCHAIN_BIN}"
+          echo "${TOOLCHAIN_BIN}" >> "${GITHUB_PATH}"
 
-    # ============================================================
-    # ESP32 workflow test
-    # ============================================================
+      - name: Verify ESP32 toolchain
+        shell: bash
+        run: |
+          set -eux
 
-    - name: Check ESP32 configuration
-      run: make check-esp32
+          command -v xtensa-esp32-elf-gcc
+          command -v xtensa-esp32-elf-objcopy
+          command -v xtensa-esp32-elf-size
 
-    - name: Build ESP32 demo
-      run: make esp32-build
+          xtensa-esp32-elf-gcc --version
+          xtensa-esp32-elf-objcopy --version
+          xtensa-esp32-elf-size --version
 
-    - name: Convert ESP32 ELF to binary
-      run: make esp32-bin
+      - name: Check ESP32 configuration
+        shell: bash
+        run: make check-esp32
 
-    - name: Show ESP32 build artifacts
-      run: |
-        echo "=== ESP32 build directory ==="
-        find esp32/build -maxdepth 1 -type f -print
+      - name: Build ESP32 demo
+        shell: bash
+        run: make esp32-build
 
-        echo
-        echo "=== ESP32 ELF ==="
-        file esp32/build/esp32_demo.elf
+      - name: Convert ESP32 ELF to binary
+        shell: bash
+        run: make esp32-bin
 
-        echo
-        echo "=== ESP32 binary ==="
-        file esp32/build/esp32_demo.bin
+      - name: Validate ESP32 artifacts
+        shell: bash
+        run: |
+          set -eux
 
-        echo
-        echo "=== ESP32 size ==="
-        xtensa-esp-elf-size esp32/build/esp32_demo.elf
+          test -f "esp32/build/esp32_demo.elf"
+          test -f "esp32/build/esp32_demo.bin"
+
+          echo "=== ESP32 artifacts ==="
+          find "esp32/build" -maxdepth 1 -type f -print
+
+          echo
+          echo "=== ELF ==="
+          file "esp32/build/esp32_demo.elf"
+
+          echo
+          echo "=== BIN ==="
+          file "esp32/build/esp32_demo.bin"
+
+          echo
+          echo "=== Size ==="
+          xtensa-esp32-elf-size "esp32/build/esp32_demo.elf"
