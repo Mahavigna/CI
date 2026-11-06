@@ -10657,14 +10657,10 @@ bool fuzzy_neuron_opencl_predict(
     return true;
 }
 
-void fuzzy_neuron_opencl_free(
-    fuzzy_neuron_network_t *network
-)
+void fuzzy_neuron_opencl_free(fuzzy_neuron_network_t *network)
 {
     if (network != NULL)
-    {
         fuzzy_neuron_opencl_release(&network->opencl);
-    }
 }
 #endif /* FUZZY_NEURON_OPENCL */
 #endif /* FUZZY_NEURON_IMPLEMENTATION_ONCE */

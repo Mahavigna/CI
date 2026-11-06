@@ -29,12 +29,16 @@
 #define SCALE 1.0f
 
 FUZZY_NEURON_MODEL(fuzzy_model, 3u, 1u,
-    FUZZY_NEURON_PREMISE_RAMP((*model), temperature_low, 0u, 1.0f, 15.0f, 40.0f, false, 0.0f, 100.0f);
-    FUZZY_NEURON_PREMISE_RAMP((*model), temperature_high, 0u, 1.0f, 35.0f, 75.0f, true, 0.0f, 100.0f);
-    FUZZY_NEURON_PREMISE_RAMP((*model), load_low, 1u, 1.0f, 20.0f, 50.0f, false, 0.0f, 100.0f);
-    FUZZY_NEURON_PREMISE_RAMP((*model), load_high, 1u, 1.0f, 45.0f, 85.0f, true, 0.0f, 100.0f);
-    FUZZY_NEURON_PREMISE_RAMP((*model), vibration_low, 2u, 1.0f, 1.0f, 4.0f, false, 0.0f, 10.0f);
-    FUZZY_NEURON_PREMISE_RAMP((*model), vibration_high, 2u, 1.0f, 3.0f, 8.0f, true, 0.0f, 10.0f);
+    FUZZY_NEURON_INPUT((*model), temperature, 0.0f, 100.0f, 1.0f);
+    FUZZY_NEURON_INPUT((*model), load, 0.0f, 100.0f, 1.0f);
+    FUZZY_NEURON_INPUT((*model), vibration, 0.0f, 10.0f, 0.1f);
+
+    FUZZY_NEURON_PREMISE((*model), temperature_low, temperature, FUZZY_SHAPE_ZMF, 1.0f, 15.0f, 40.0f);
+    FUZZY_NEURON_PREMISE((*model), temperature_high, temperature, FUZZY_SHAPE_SMF, 1.0f, 35.0f, 75.0f);
+    FUZZY_NEURON_PREMISE((*model), load_low, load, FUZZY_SHAPE_ZMF, 1.0f, 20.0f, 50.0f);
+    FUZZY_NEURON_PREMISE((*model), load_high, load, FUZZY_SHAPE_SMF, 1.0f, 45.0f, 85.0f);
+    FUZZY_NEURON_PREMISE((*model), vibration_low, vibration, FUZZY_SHAPE_SIGMOID, 1.0f, -1.5f, 2.5f);
+    FUZZY_NEURON_PREMISE((*model), vibration_high, vibration, FUZZY_SHAPE_SIGMOID, 1.0f, 1.0f, 5.5f);
 
     FUZZY_NEURON_EXPR_MEMBERSHIP((*model), temperature_low_node, temperature_low);
     FUZZY_NEURON_EXPR_MEMBERSHIP((*model), temperature_high_node, temperature_high);
@@ -78,58 +82,10 @@ FUZZY_NEURON_MODEL_PLUGIN(fuzzy_model, FUZZY_MODEL_PLUGIN_ABI, "temperature-load
 
 FUZZY_NEURON_HOT_RELOAD(fuzzy_model_plugin, DEFAULT_PLUGIN)
 
-static fuzzy_neuron_network_t *plot_model = NULL;
-
-enum
-{
-    PREMISE_TEMPERATURE_LOW = 0u,
-    PREMISE_TEMPERATURE_HIGH = 1u,
-    PREMISE_LOAD_LOW = 2u,
-    PREMISE_LOAD_HIGH = 3u,
-    PREMISE_VIBRATION_LOW = 4u,
-    PREMISE_VIBRATION_HIGH = 5u
-};
-
-static float plot_temperature_low(float value)
-{
-    return fuzzy_neuron_evaluate_premise(plot_model, PREMISE_TEMPERATURE_LOW, (const float[3]){value, 0.0f, 0.0f});
-}
-
-static float plot_temperature_high(float value)
-{
-    return fuzzy_neuron_evaluate_premise(plot_model, PREMISE_TEMPERATURE_HIGH, (const float[3]){value, 0.0f, 0.0f});
-}
-
-static float plot_load_low(float value)
-{
-    return fuzzy_neuron_evaluate_premise(plot_model, PREMISE_LOAD_LOW, (const float[3]){0.0f, value, 0.0f});
-}
-
-static float plot_load_high(float value)
-{
-    return fuzzy_neuron_evaluate_premise(plot_model, PREMISE_LOAD_HIGH, (const float[3]){0.0f, value, 0.0f});
-}
-
-static float plot_vibration_low(float value)
-{
-    return fuzzy_neuron_evaluate_premise(plot_model, PREMISE_VIBRATION_LOW, (const float[3]){0.0f, 0.0f, value});
-}
-
-static float plot_vibration_high(float value)
-{
-    return fuzzy_neuron_evaluate_premise(plot_model, PREMISE_VIBRATION_HIGH, (const float[3]){0.0f, 0.0f, value});
-}
-
-FUZZY_NEURON_SWEEP_EVALUATOR(evaluate_trained_model, plot_model, 1u, 0u, SCALE)
-
 static void generate_model_plots(fuzzy_neuron_network_t *model)
 {
-    plot_model = model;
-    PLOT(OUTPUT_DIR "/fuzzy_neuron_temperature_memberships", "Temperature Membership Functions", 100.0f, 1.0f, SERIES(plot_temperature_low, "#3b82f6"), SERIES(plot_temperature_high, "#ef4444"));
-    PLOT(OUTPUT_DIR "/fuzzy_neuron_load_memberships", "Load Membership Functions", 100.0f, 1.0f, SERIES(plot_load_low, "#22c55e"), SERIES(plot_load_high, "#f97316"));
-    PLOT(OUTPUT_DIR "/fuzzy_neuron_vibration_memberships", "Vibration Membership Functions", 10.0f, 0.1f, SERIES(plot_vibration_low, "#06b6d4"), SERIES(plot_vibration_high, "#a855f7"));
-    FUZZY_COG_SWEEP(OUTPUT_DIR "/fuzzy_neuron_learned_surface", "Trained Fuzzy-Neuron Surface", evaluate_trained_model, 1.0f, FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Load", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.5f));
-    plot_model = NULL;
+    if (!FUZZY_NEURON_PLOT_MEMBERSHIPS((*model), OUTPUT_DIR)) exit(EXIT_FAILURE);
+    if (!FUZZY_NEURON_SWEEP_MODEL((*model), OUTPUT_DIR "/fuzzy_neuron_learned_surface", "Trained Fuzzy-Neuron Surface", 0u, SCALE, FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Load", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.5f))) exit(EXIT_FAILURE);
 }
 
 static unsigned int random_state = 0x12345678u;
@@ -171,15 +127,17 @@ static fuzzy_neuron_csv_t csv_format(void)
 
 static void print_premises(const fuzzy_neuron_network_t *model, const char *stage)
 {
-    size_t premise;
+    size_t premise_index;
     printf("\n============================================================\n");
     printf("Trainable Premises: %s\n", stage);
     printf("============================================================\n");
-    for (premise = 0u; premise < model->premise_count; premise++)
+    for (premise_index = 0u; premise_index < model->premise_count; premise_index++)
     {
-        const fuzzy_neuron_premise_t *current = &model->premises[premise];
-        const float *parameter = model->premise_parameters + current->parameter_offset;
-        printf("%s input=%u minimum=%+.9f maximum=%+.9f rising=%u trainable_mask=0x%X\n", current->name, (unsigned int)current->input_index, parameter[0], parameter[1], parameter[2] != 0.0f ? 1u : 0u, current->trainable_mask);
+        const fuzzy_neuron_premise_t *premise = &model->premises[premise_index];
+        size_t parameter_index;
+        printf("%s input=%s shape=%u hedge=%+.9f trainable_mask=0x%X parameters=", premise->name, model->inputs[premise->input_index].name, (unsigned int)premise->shape, premise->hedge, premise->trainable_mask);
+        for (parameter_index = 0u; parameter_index < premise->parameter_count; parameter_index++) printf("%s%+.9f", parameter_index == 0u ? "" : ",", model->premise_parameters[premise->parameter_offset + parameter_index]);
+        printf("\n");
     }
     printf("============================================================\n");
 }

@@ -544,15 +544,15 @@ GSINIT                              000000A5    00000015 =          21. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   000000A5  A$sugeno_8051$557                  sugeno_demo
-C:   000000A5  C$sugeno_demo.c$17$2_0$107         sugeno_demo
+C:   000000A5  C$sugeno_demo.c$17$2_0$131         sugeno_demo
 C:   000000A8  A$sugeno_8051$560                  sugeno_demo
-C:   000000A8  C$sugeno_demo.c$18$2_0$107         sugeno_demo
+C:   000000A8  C$sugeno_demo.c$18$2_0$131         sugeno_demo
 C:   000000AB  A$sugeno_8051$563                  sugeno_demo
-C:   000000AB  C$sugeno_demo.c$19$2_0$107         sugeno_demo
+C:   000000AB  C$sugeno_demo.c$19$2_0$131         sugeno_demo
 C:   000000AE  A$sugeno_8051$566                  sugeno_demo
-C:   000000AE  C$sugeno_demo.c$20$2_0$107         sugeno_demo
+C:   000000AE  C$sugeno_demo.c$20$2_0$131         sugeno_demo
 C:   000000B1  A$sugeno_8051$569                  sugeno_demo
-C:   000000B1  C$sugeno_demo.c$21$2_0$107         sugeno_demo
+C:   000000B1  C$sugeno_demo.c$21$2_0$131         sugeno_demo
 C:   000000B2  A$sugeno_8051$570                  sugeno_demo
 C:   000000B4  A$sugeno_8051$571                  sugeno_demo
 C:   000000B6  A$sugeno_8051$572                  sugeno_demo
@@ -579,14 +579,14 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   000000BD  A$sugeno_8051$611                  sugeno_demo
-C:   000000BD  C$fuzzy.h$114$0_0$11               sugeno_demo
+C:   000000BD  C$fuzzy.h$116$0_0$35               sugeno_demo
 C:   000000BD  Fsugeno_demo$fuzzy_8051_and2$0$0   sugeno_demo
 C:   000000BF  A$sugeno_8051$612                  sugeno_demo
 C:   000000C2  A$sugeno_8051$613                  sugeno_demo
 C:   000000C4  A$sugeno_8051$616                  sugeno_demo
-C:   000000C4  C$fuzzy.h$116$1_0$11               sugeno_demo
+C:   000000C4  C$fuzzy.h$118$1_0$35               sugeno_demo
 C:   000000C7  A$sugeno_8051$619                  sugeno_demo
-C:   000000C7  C$fuzzy.h$117$1_0$11               sugeno_demo
+C:   000000C7  C$fuzzy.h$119$1_0$35               sugeno_demo
 C:   000000C9  A$sugeno_8051$620                  sugeno_demo
 C:   000000CB  A$sugeno_8051$621                  sugeno_demo
 C:   000000CC  A$sugeno_8051$622                  sugeno_demo
@@ -624,7 +624,7 @@ C:   000000FE  A$sugeno_8051$653                  sugeno_demo
 C:   00000100  A$sugeno_8051$654                  sugeno_demo
 C:   00000101  A$sugeno_8051$655                  sugeno_demo
 C:   00000104  A$sugeno_8051$659                  sugeno_demo
-C:   00000104  C$fuzzy.h$120$1_0$11               sugeno_demo
+C:   00000104  C$fuzzy.h$122$1_0$35               sugeno_demo
 C:   00000107  A$sugeno_8051$660                  sugeno_demo
 C:   00000109  A$sugeno_8051$662                  sugeno_demo
 C:   0000010C  A$sugeno_8051$666                  sugeno_demo
@@ -637,7 +637,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   0000010C  C$fuzzy.h$121$1_0$11               sugeno_demo
+C:   0000010C  C$fuzzy.h$123$1_0$35               sugeno_demo
 C:   0000010E  A$sugeno_8051$667                  sugeno_demo
 C:   00000110  A$sugeno_8051$668                  sugeno_demo
 C:   00000111  A$sugeno_8051$669                  sugeno_demo
@@ -677,7 +677,7 @@ C:   00000146  A$sugeno_8051$702                  sugeno_demo
 C:   00000148  A$sugeno_8051$703                  sugeno_demo
 C:   0000014A  A$sugeno_8051$704                  sugeno_demo
 C:   0000014C  A$sugeno_8051$707                  sugeno_demo
-C:   0000014C  C$fuzzy.h$122$1_0$11               sugeno_demo
+C:   0000014C  C$fuzzy.h$124$1_0$35               sugeno_demo
 C:   0000014E  A$sugeno_8051$708                  sugeno_demo
 C:   00000150  A$sugeno_8051$709                  sugeno_demo
 C:   00000152  A$sugeno_8051$710                  sugeno_demo
@@ -730,7 +730,7 @@ C:   00000197  A$sugeno_8051$748                  sugeno_demo
 C:   00000199  A$sugeno_8051$749                  sugeno_demo
 C:   0000019A  A$sugeno_8051$750                  sugeno_demo
 C:   0000019C  A$sugeno_8051$754                  sugeno_demo
-C:   0000019C  C$fuzzy.h$125$1_0$11               sugeno_demo
+C:   0000019C  C$fuzzy.h$127$1_0$35               sugeno_demo
 C:   0000019E  A$sugeno_8051$755                  sugeno_demo
 C:   000001A0  A$sugeno_8051$756                  sugeno_demo
 C:   000001A1  A$sugeno_8051$757                  sugeno_demo
@@ -797,15 +797,15 @@ C:   000001F3  A$sugeno_8051$810                  sugeno_demo
 C:   000001F5  A$sugeno_8051$811                  sugeno_demo
 C:   000001F6  A$sugeno_8051$815                  sugeno_demo
 C:   000001F8  A$sugeno_8051$818                  sugeno_demo
-C:   000001F8  C$fuzzy.h$126$1_0$11               sugeno_demo
+C:   000001F8  C$fuzzy.h$128$1_0$35               sugeno_demo
 C:   000001F8  XFsugeno_demo$fuzzy_8051_and2$0$   sugeno_demo
 C:   000001F9  A$sugeno_8051$834                  sugeno_demo
-C:   000001F9  C$fuzzy.h$128$1_0$15               sugeno_demo
+C:   000001F9  C$fuzzy.h$130$1_0$39               sugeno_demo
 C:   000001F9  Fsugeno_demo$fuzzy_8051_and3$0$0   sugeno_demo
 C:   000001FB  A$sugeno_8051$835                  sugeno_demo
 C:   000001FE  A$sugeno_8051$836                  sugeno_demo
 C:   00000200  A$sugeno_8051$839                  sugeno_demo
-C:   00000200  C$fuzzy.h$130$1_0$15               sugeno_demo
+C:   00000200  C$fuzzy.h$132$1_0$39               sugeno_demo
 C:   00000202  A$sugeno_8051$840                  sugeno_demo
 C:   00000204  A$sugeno_8051$841                  sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 24.
@@ -895,10 +895,10 @@ C:   00000270  A$sugeno_8051$907                  sugeno_demo
 C:   00000272  A$sugeno_8051$908                  sugeno_demo
 C:   00000273  A$sugeno_8051$911                  sugeno_demo
 C:   00000275  A$sugeno_8051$914                  sugeno_demo
-C:   00000275  C$fuzzy.h$131$1_0$15               sugeno_demo
+C:   00000275  C$fuzzy.h$133$1_0$39               sugeno_demo
 C:   00000275  XFsugeno_demo$fuzzy_8051_and3$0$   sugeno_demo
 C:   00000276  A$sugeno_8051$931                  sugeno_demo
-C:   00000276  C$fuzzy.h$133$1_0$17               sugeno_demo
+C:   00000276  C$fuzzy.h$135$1_0$41               sugeno_demo
 C:   00000276  Fsugeno_demo$fuzzy_8051_or2$0$0    sugeno_demo
 C:   00000278  A$sugeno_8051$932                  sugeno_demo
 C:   0000027A  A$sugeno_8051$933                  sugeno_demo
@@ -906,11 +906,11 @@ C:   0000027C  A$sugeno_8051$934                  sugeno_demo
 C:   0000027E  A$sugeno_8051$935                  sugeno_demo
 C:   00000280  A$sugeno_8051$936                  sugeno_demo
 C:   00000282  A$sugeno_8051$939                  sugeno_demo
-C:   00000282  C$fuzzy.h$135$1_0$17               sugeno_demo
+C:   00000282  C$fuzzy.h$137$1_0$41               sugeno_demo
 C:   00000285  A$sugeno_8051$940                  sugeno_demo
 C:   00000287  A$sugeno_8051$942                  sugeno_demo
 C:   0000028A  A$sugeno_8051$946                  sugeno_demo
-C:   0000028A  C$fuzzy.h$136$1_0$17               sugeno_demo
+C:   0000028A  C$fuzzy.h$138$1_0$41               sugeno_demo
 C:   0000028C  A$sugeno_8051$947                  sugeno_demo
 C:   0000028E  A$sugeno_8051$948                  sugeno_demo
 C:   0000028F  A$sugeno_8051$949                  sugeno_demo
@@ -1024,9 +1024,9 @@ C:   0000031F  A$sugeno_8051$1038                 sugeno_demo
 C:   00000321  A$sugeno_8051$1039                 sugeno_demo
 C:   00000322  A$sugeno_8051$1040                 sugeno_demo
 C:   00000325  A$sugeno_8051$1044                 sugeno_demo
-C:   00000325  C$fuzzy.h$139$1_0$17               sugeno_demo
+C:   00000325  C$fuzzy.h$141$1_0$41               sugeno_demo
 C:   00000328  A$sugeno_8051$1047                 sugeno_demo
-C:   00000328  C$fuzzy.h$140$1_0$17               sugeno_demo
+C:   00000328  C$fuzzy.h$142$1_0$41               sugeno_demo
 C:   0000032A  A$sugeno_8051$1048                 sugeno_demo
 C:   0000032C  A$sugeno_8051$1049                 sugeno_demo
 C:   0000032D  A$sugeno_8051$1050                 sugeno_demo
@@ -1041,7 +1041,7 @@ C:   00000338  A$sugeno_8051$1058                 sugeno_demo
 C:   00000339  A$sugeno_8051$1059                 sugeno_demo
 C:   0000033A  A$sugeno_8051$1060                 sugeno_demo
 C:   0000033C  A$sugeno_8051$1063                 sugeno_demo
-C:   0000033C  C$fuzzy.h$141$1_0$17               sugeno_demo
+C:   0000033C  C$fuzzy.h$143$1_0$41               sugeno_demo
 C:   0000033E  A$sugeno_8051$1064                 sugeno_demo
 C:   00000340  A$sugeno_8051$1065                 sugeno_demo
 C:   00000341  A$sugeno_8051$1066                 sugeno_demo
@@ -1105,7 +1105,7 @@ C:   0000039B  A$sugeno_8051$1116                 sugeno_demo
 C:   0000039D  A$sugeno_8051$1117                 sugeno_demo
 C:   0000039E  A$sugeno_8051$1118                 sugeno_demo
 C:   000003A0  A$sugeno_8051$1122                 sugeno_demo
-C:   000003A0  C$fuzzy.h$144$1_0$17               sugeno_demo
+C:   000003A0  C$fuzzy.h$146$1_0$41               sugeno_demo
 C:   000003A2  A$sugeno_8051$1123                 sugeno_demo
 C:   000003A4  A$sugeno_8051$1124                 sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 29.
@@ -1182,15 +1182,15 @@ C:   000003F9  A$sugeno_8051$1179                 sugeno_demo
 C:   000003FA  A$sugeno_8051$1183                 sugeno_demo
 C:   000003FD  A$sugeno_8051$1184                 sugeno_demo
 C:   000003FF  A$sugeno_8051$1187                 sugeno_demo
-C:   000003FF  C$fuzzy.h$145$1_0$17               sugeno_demo
+C:   000003FF  C$fuzzy.h$147$1_0$41               sugeno_demo
 C:   000003FF  XFsugeno_demo$fuzzy_8051_or2$0$0   sugeno_demo
 C:   00000400  A$sugeno_8051$1203                 sugeno_demo
-C:   00000400  C$fuzzy.h$147$1_0$21               sugeno_demo
+C:   00000400  C$fuzzy.h$149$1_0$45               sugeno_demo
 C:   00000400  Fsugeno_demo$fuzzy_8051_or3$0$0    sugeno_demo
 C:   00000402  A$sugeno_8051$1204                 sugeno_demo
 C:   00000405  A$sugeno_8051$1205                 sugeno_demo
 C:   00000407  A$sugeno_8051$1208                 sugeno_demo
-C:   00000407  C$fuzzy.h$149$1_0$21               sugeno_demo
+C:   00000407  C$fuzzy.h$151$1_0$45               sugeno_demo
 C:   00000409  A$sugeno_8051$1209                 sugeno_demo
 C:   0000040B  A$sugeno_8051$1210                 sugeno_demo
 C:   0000040D  A$sugeno_8051$1211                 sugeno_demo
@@ -1271,16 +1271,16 @@ C:   00000477  A$sugeno_8051$1276                 sugeno_demo
 C:   00000479  A$sugeno_8051$1277                 sugeno_demo
 C:   0000047A  A$sugeno_8051$1280                 sugeno_demo
 C:   0000047C  A$sugeno_8051$1283                 sugeno_demo
-C:   0000047C  C$fuzzy.h$150$1_0$21               sugeno_demo
+C:   0000047C  C$fuzzy.h$152$1_0$45               sugeno_demo
 C:   0000047C  XFsugeno_demo$fuzzy_8051_or3$0$0   sugeno_demo
 C:   0000047D  A$sugeno_8051$1296                 sugeno_demo
-C:   0000047D  C$fuzzy.h$160$1_0$23               sugeno_demo
+C:   0000047D  C$fuzzy.h$162$1_0$47               sugeno_demo
 C:   0000047D  Fsugeno_demo$fuzzy_8051_clamp$0$   sugeno_demo
 C:   0000047F  A$sugeno_8051$1297                 sugeno_demo
 C:   00000481  A$sugeno_8051$1298                 sugeno_demo
 C:   00000483  A$sugeno_8051$1299                 sugeno_demo
 C:   00000484  A$sugeno_8051$1302                 sugeno_demo
-C:   00000484  C$fuzzy.h$162$1_0$23               sugeno_demo
+C:   00000484  C$fuzzy.h$164$1_0$47               sugeno_demo
 C:   00000486  A$sugeno_8051$1303                 sugeno_demo
 C:   00000488  A$sugeno_8051$1304                 sugeno_demo
 C:   0000048A  A$sugeno_8051$1305                 sugeno_demo
@@ -1314,12 +1314,12 @@ C:   000004AD  A$sugeno_8051$1323                 sugeno_demo
 C:   000004AF  A$sugeno_8051$1324                 sugeno_demo
 C:   000004B0  A$sugeno_8051$1325                 sugeno_demo
 C:   000004B2  A$sugeno_8051$1328                 sugeno_demo
-C:   000004B2  C$fuzzy.h$163$2_0$24               sugeno_demo
+C:   000004B2  C$fuzzy.h$165$2_0$48               sugeno_demo
 C:   000004B5  A$sugeno_8051$1329                 sugeno_demo
 C:   000004B6  A$sugeno_8051$1330                 sugeno_demo
 C:   000004B8  A$sugeno_8051$1331                 sugeno_demo
 C:   000004BA  A$sugeno_8051$1335                 sugeno_demo
-C:   000004BA  C$fuzzy.h$166$1_0$23               sugeno_demo
+C:   000004BA  C$fuzzy.h$168$1_0$47               sugeno_demo
 C:   000004BC  A$sugeno_8051$1336                 sugeno_demo
 C:   000004BE  A$sugeno_8051$1337                 sugeno_demo
 C:   000004C0  A$sugeno_8051$1338                 sugeno_demo
@@ -1342,12 +1342,12 @@ C:   000004E3  A$sugeno_8051$1354                 sugeno_demo
 C:   000004E5  A$sugeno_8051$1355                 sugeno_demo
 C:   000004E6  A$sugeno_8051$1356                 sugeno_demo
 C:   000004E8  A$sugeno_8051$1359                 sugeno_demo
-C:   000004E8  C$fuzzy.h$167$2_0$25               sugeno_demo
+C:   000004E8  C$fuzzy.h$169$2_0$49               sugeno_demo
 C:   000004EB  A$sugeno_8051$1360                 sugeno_demo
 C:   000004EE  A$sugeno_8051$1361                 sugeno_demo
 C:   000004F0  A$sugeno_8051$1362                 sugeno_demo
 C:   000004F2  A$sugeno_8051$1366                 sugeno_demo
-C:   000004F2  C$fuzzy.h$170$1_0$23               sugeno_demo
+C:   000004F2  C$fuzzy.h$172$1_0$47               sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 33.
 Hexadecimal  [32-Bits]
 
@@ -1361,10 +1361,10 @@ C:   000004F4  A$sugeno_8051$1367                 sugeno_demo
 C:   000004F6  A$sugeno_8051$1368                 sugeno_demo
 C:   000004F8  A$sugeno_8051$1369                 sugeno_demo
 C:   000004F9  A$sugeno_8051$1375                 sugeno_demo
-C:   000004F9  C$fuzzy.h$171$1_0$23               sugeno_demo
+C:   000004F9  C$fuzzy.h$173$1_0$47               sugeno_demo
 C:   000004F9  XFsugeno_demo$fuzzy_8051_clamp$0   sugeno_demo
 C:   000004FA  A$sugeno_8051$1390                 sugeno_demo
-C:   000004FA  C$fuzzy.h$173$1_0$27               sugeno_demo
+C:   000004FA  C$fuzzy.h$175$1_0$51               sugeno_demo
 C:   000004FA  Fsugeno_demo$fuzzy_8051_hedge$0$   sugeno_demo
 C:   000004FC  A$sugeno_8051$1391                 sugeno_demo
 C:   000004FF  A$sugeno_8051$1392                 sugeno_demo
@@ -1375,7 +1375,7 @@ C:   00000506  A$sugeno_8051$1396                 sugeno_demo
 C:   00000508  A$sugeno_8051$1397                 sugeno_demo
 C:   0000050A  A$sugeno_8051$1398                 sugeno_demo
 C:   0000050C  A$sugeno_8051$1401                 sugeno_demo
-C:   0000050C  C$fuzzy.h$177$1_0$27               sugeno_demo
+C:   0000050C  C$fuzzy.h$179$1_0$51               sugeno_demo
 C:   0000050E  A$sugeno_8051$1402                 sugeno_demo
 C:   00000510  A$sugeno_8051$1403                 sugeno_demo
 C:   00000512  A$sugeno_8051$1404                 sugeno_demo
@@ -1390,23 +1390,23 @@ C:   0000051F  A$sugeno_8051$1412                 sugeno_demo
 C:   00000521  A$sugeno_8051$1413                 sugeno_demo
 C:   00000522  A$sugeno_8051$1414                 sugeno_demo
 C:   00000523  A$sugeno_8051$1417                 sugeno_demo
-C:   00000523  C$fuzzy.h$179$1_0$27               sugeno_demo
+C:   00000523  C$fuzzy.h$181$1_0$51               sugeno_demo
 C:   00000525  A$sugeno_8051$1418                 sugeno_demo
 C:   00000527  A$sugeno_8051$1419                 sugeno_demo
 C:   00000528  A$sugeno_8051$1420                 sugeno_demo
 C:   00000529  A$sugeno_8051$1421                 sugeno_demo
 C:   0000052B  A$sugeno_8051$1424                 sugeno_demo
-C:   0000052B  C$fuzzy.h$180$2_0$28               sugeno_demo
+C:   0000052B  C$fuzzy.h$182$2_0$52               sugeno_demo
 C:   0000052D  A$sugeno_8051$1425                 sugeno_demo
 C:   0000052F  A$sugeno_8051$1426                 sugeno_demo
 C:   00000530  A$sugeno_8051$1427                 sugeno_demo
 C:   00000532  A$sugeno_8051$1431                 sugeno_demo
-C:   00000532  C$fuzzy.h$183$1_0$27               sugeno_demo
+C:   00000532  C$fuzzy.h$185$1_0$51               sugeno_demo
 C:   00000534  A$sugeno_8051$1432                 sugeno_demo
 C:   00000536  A$sugeno_8051$1433                 sugeno_demo
 C:   00000538  A$sugeno_8051$1434                 sugeno_demo
 C:   0000053A  A$sugeno_8051$1437                 sugeno_demo
-C:   0000053A  C$fuzzy.h$185$1_0$27               sugeno_demo
+C:   0000053A  C$fuzzy.h$187$1_0$51               sugeno_demo
 C:   0000053C  A$sugeno_8051$1438                 sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 34.
 Hexadecimal  [32-Bits]
@@ -1422,7 +1422,7 @@ C:   0000053F  A$sugeno_8051$1440                 sugeno_demo
 C:   00000541  A$sugeno_8051$1442                 sugeno_demo
 C:   00000542  A$sugeno_8051$1443                 sugeno_demo
 C:   00000544  A$sugeno_8051$1446                 sugeno_demo
-C:   00000544  C$fuzzy.h$186$1_0$27               sugeno_demo
+C:   00000544  C$fuzzy.h$188$1_0$51               sugeno_demo
 C:   00000546  A$sugeno_8051$1447                 sugeno_demo
 C:   00000548  A$sugeno_8051$1448                 sugeno_demo
 C:   00000549  A$sugeno_8051$1449                 sugeno_demo
@@ -1437,7 +1437,7 @@ C:   00000554  A$sugeno_8051$1457                 sugeno_demo
 C:   00000555  A$sugeno_8051$1458                 sugeno_demo
 C:   00000556  A$sugeno_8051$1459                 sugeno_demo
 C:   00000558  A$sugeno_8051$1462                 sugeno_demo
-C:   00000558  C$fuzzy.h$187$1_0$27               sugeno_demo
+C:   00000558  C$fuzzy.h$189$1_0$51               sugeno_demo
 C:   0000055A  A$sugeno_8051$1463                 sugeno_demo
 C:   0000055C  A$sugeno_8051$1464                 sugeno_demo
 C:   0000055E  A$sugeno_8051$1465                 sugeno_demo
@@ -1453,7 +1453,7 @@ C:   0000056F  A$sugeno_8051$1474                 sugeno_demo
 C:   00000571  A$sugeno_8051$1475                 sugeno_demo
 C:   00000572  A$sugeno_8051$1476                 sugeno_demo
 C:   00000574  A$sugeno_8051$1480                 sugeno_demo
-C:   00000574  C$fuzzy.h$190$1_0$27               sugeno_demo
+C:   00000574  C$fuzzy.h$192$1_0$51               sugeno_demo
 C:   00000576  A$sugeno_8051$1481                 sugeno_demo
 C:   00000578  A$sugeno_8051$1482                 sugeno_demo
 C:   0000057A  A$sugeno_8051$1483                 sugeno_demo
@@ -1461,11 +1461,11 @@ C:   0000057B  A$sugeno_8051$1484                 sugeno_demo
 C:   0000057E  A$sugeno_8051$1487                 sugeno_demo
 C:   00000581  A$sugeno_8051$1488                 sugeno_demo
 C:   00000583  A$sugeno_8051$1491                 sugeno_demo
-C:   00000583  C$fuzzy.h$191$1_0$27               sugeno_demo
+C:   00000583  C$fuzzy.h$193$1_0$51               sugeno_demo
 C:   00000583  XFsugeno_demo$fuzzy_8051_hedge$0   sugeno_demo
 C:   00000584  A$sugeno_8051$1506                 sugeno_demo
-C:   00000584  C$fuzzy.h$193$1_0$31               sugeno_demo
-C:   00000584  C$fuzzy.h$195$1_0$31               sugeno_demo
+C:   00000584  C$fuzzy.h$195$1_0$55               sugeno_demo
+C:   00000584  C$fuzzy.h$197$1_0$55               sugeno_demo
 C:   00000584  G$fuzzy_not$0$0                    sugeno_demo
 C:   00000584  _fuzzy_not                         sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 35.
@@ -1501,10 +1501,10 @@ C:   000005B0  A$sugeno_8051$1527                 sugeno_demo
 C:   000005B2  A$sugeno_8051$1528                 sugeno_demo
 C:   000005B4  A$sugeno_8051$1529                 sugeno_demo
 C:   000005B5  A$sugeno_8051$1534                 sugeno_demo
-C:   000005B5  C$fuzzy.h$196$1_0$31               sugeno_demo
+C:   000005B5  C$fuzzy.h$198$1_0$55               sugeno_demo
 C:   000005B5  XG$fuzzy_not$0$0                   sugeno_demo
 C:   000005B6  A$sugeno_8051$1553                 sugeno_demo
-C:   000005B6  C$fuzzy.h$198$1_0$33               sugeno_demo
+C:   000005B6  C$fuzzy.h$200$1_0$57               sugeno_demo
 C:   000005B6  G$fuzzy_ramp$0$0                   sugeno_demo
 C:   000005B6  _fuzzy_ramp                        sugeno_demo
 C:   000005B8  A$sugeno_8051$1554                 sugeno_demo
@@ -1516,7 +1516,7 @@ C:   000005C2  A$sugeno_8051$1559                 sugeno_demo
 C:   000005C4  A$sugeno_8051$1560                 sugeno_demo
 C:   000005C6  A$sugeno_8051$1561                 sugeno_demo
 C:   000005C8  A$sugeno_8051$1564                 sugeno_demo
-C:   000005C8  C$fuzzy.h$202$1_0$33               sugeno_demo
+C:   000005C8  C$fuzzy.h$204$1_0$57               sugeno_demo
 C:   000005CA  A$sugeno_8051$1565                 sugeno_demo
 C:   000005CC  A$sugeno_8051$1566                 sugeno_demo
 C:   000005CE  A$sugeno_8051$1567                 sugeno_demo
@@ -1560,12 +1560,12 @@ C:   000005FE  A$sugeno_8051$1595                 sugeno_demo
 C:   00000600  A$sugeno_8051$1596                 sugeno_demo
 C:   00000602  A$sugeno_8051$1597                 sugeno_demo
 C:   00000604  A$sugeno_8051$1600                 sugeno_demo
-C:   00000604  C$fuzzy.h$203$2_0$34               sugeno_demo
+C:   00000604  C$fuzzy.h$205$2_0$58               sugeno_demo
 C:   00000607  A$sugeno_8051$1601                 sugeno_demo
 C:   00000608  A$sugeno_8051$1602                 sugeno_demo
 C:   0000060A  A$sugeno_8051$1603                 sugeno_demo
 C:   0000060D  A$sugeno_8051$1607                 sugeno_demo
-C:   0000060D  C$fuzzy.h$206$1_0$33               sugeno_demo
+C:   0000060D  C$fuzzy.h$208$1_0$57               sugeno_demo
 C:   0000060F  A$sugeno_8051$1608                 sugeno_demo
 C:   00000611  A$sugeno_8051$1609                 sugeno_demo
 C:   00000613  A$sugeno_8051$1610                 sugeno_demo
@@ -1609,7 +1609,7 @@ C:   00000643  A$sugeno_8051$1638                 sugeno_demo
 C:   00000645  A$sugeno_8051$1639                 sugeno_demo
 C:   00000647  A$sugeno_8051$1640                 sugeno_demo
 C:   00000649  A$sugeno_8051$1643                 sugeno_demo
-C:   00000649  C$fuzzy.h$207$2_0$35               sugeno_demo
+C:   00000649  C$fuzzy.h$209$2_0$59               sugeno_demo
 C:   0000064B  A$sugeno_8051$1644                 sugeno_demo
 C:   0000064D  A$sugeno_8051$1645                 sugeno_demo
 C:   0000064E  A$sugeno_8051$1646                 sugeno_demo
@@ -1658,7 +1658,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000682  A$sugeno_8051$1687                 sugeno_demo
-C:   00000682  C$fuzzy.h$209$1_0$33               sugeno_demo
+C:   00000682  C$fuzzy.h$211$1_0$57               sugeno_demo
 C:   00000684  A$sugeno_8051$1688                 sugeno_demo
 C:   00000686  A$sugeno_8051$1689                 sugeno_demo
 C:   00000688  A$sugeno_8051$1690                 sugeno_demo
@@ -1699,7 +1699,7 @@ C:   000006C0  A$sugeno_8051$1724                 sugeno_demo
 C:   000006C2  A$sugeno_8051$1725                 sugeno_demo
 C:   000006C4  A$sugeno_8051$1726                 sugeno_demo
 C:   000006C6  A$sugeno_8051$1729                 sugeno_demo
-C:   000006C6  C$fuzzy.h$210$2_0$36               sugeno_demo
+C:   000006C6  C$fuzzy.h$212$2_0$60               sugeno_demo
 C:   000006C8  A$sugeno_8051$1730                 sugeno_demo
 C:   000006CA  A$sugeno_8051$1731                 sugeno_demo
 C:   000006CB  A$sugeno_8051$1732                 sugeno_demo
@@ -1745,7 +1745,7 @@ C:   000006F3  A$sugeno_8051$1764                 sugeno_demo
 C:   000006F4  A$sugeno_8051$1765                 sugeno_demo
 C:   000006F6  A$sugeno_8051$1766                 sugeno_demo
 C:   000006F9  A$sugeno_8051$1770                 sugeno_demo
-C:   000006F9  C$fuzzy.h$213$1_0$33               sugeno_demo
+C:   000006F9  C$fuzzy.h$215$1_0$57               sugeno_demo
 C:   000006FB  A$sugeno_8051$1771                 sugeno_demo
 C:   000006FD  A$sugeno_8051$1772                 sugeno_demo
 C:   000006FF  A$sugeno_8051$1773                 sugeno_demo
@@ -1808,7 +1808,7 @@ C:   0000074F  A$sugeno_8051$1820                 sugeno_demo
 C:   00000751  A$sugeno_8051$1821                 sugeno_demo
 C:   00000753  A$sugeno_8051$1822                 sugeno_demo
 C:   00000755  A$sugeno_8051$1825                 sugeno_demo
-C:   00000755  C$fuzzy.h$215$1_0$33               sugeno_demo
+C:   00000755  C$fuzzy.h$217$1_0$57               sugeno_demo
 C:   00000757  A$sugeno_8051$1826                 sugeno_demo
 C:   00000758  A$sugeno_8051$1827                 sugeno_demo
 C:   0000075A  A$sugeno_8051$1828                 sugeno_demo
@@ -1840,7 +1840,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 C:   00000777  A$sugeno_8051$1845                 sugeno_demo
 C:   00000778  A$sugeno_8051$1846                 sugeno_demo
 C:   0000077A  A$sugeno_8051$1849                 sugeno_demo
-C:   0000077A  C$fuzzy.h$216$1_0$33               sugeno_demo
+C:   0000077A  C$fuzzy.h$218$1_0$57               sugeno_demo
 C:   0000077C  A$sugeno_8051$1850                 sugeno_demo
 C:   0000077E  A$sugeno_8051$1851                 sugeno_demo
 C:   00000780  A$sugeno_8051$1852                 sugeno_demo
@@ -1856,7 +1856,7 @@ C:   00000794  A$sugeno_8051$1861                 sugeno_demo
 C:   00000796  A$sugeno_8051$1862                 sugeno_demo
 C:   00000798  A$sugeno_8051$1863                 sugeno_demo
 C:   0000079A  A$sugeno_8051$1867                 sugeno_demo
-C:   0000079A  C$fuzzy.h$220$1_0$33               sugeno_demo
+C:   0000079A  C$fuzzy.h$222$1_0$57               sugeno_demo
 C:   0000079C  A$sugeno_8051$1868                 sugeno_demo
 C:   0000079E  A$sugeno_8051$1869                 sugeno_demo
 C:   0000079F  A$sugeno_8051$1870                 sugeno_demo
@@ -1878,10 +1878,10 @@ C:   000007BB  A$sugeno_8051$1885                 sugeno_demo
 C:   000007BC  A$sugeno_8051$1889                 sugeno_demo
 C:   000007BF  A$sugeno_8051$1890                 sugeno_demo
 C:   000007C1  A$sugeno_8051$1893                 sugeno_demo
-C:   000007C1  C$fuzzy.h$221$1_0$33               sugeno_demo
+C:   000007C1  C$fuzzy.h$223$1_0$57               sugeno_demo
 C:   000007C1  XG$fuzzy_ramp$0$0                  sugeno_demo
 C:   000007C2  A$sugeno_8051$1913                 sugeno_demo
-C:   000007C2  C$fuzzy.h$223$1_0$40               sugeno_demo
+C:   000007C2  C$fuzzy.h$225$1_0$64               sugeno_demo
 C:   000007C2  G$fuzzy_triangle$0$0               sugeno_demo
 C:   000007C2  _fuzzy_triangle                    sugeno_demo
 C:   000007C4  A$sugeno_8051$1914                 sugeno_demo
@@ -1902,7 +1902,7 @@ C:   000007CE  A$sugeno_8051$1919                 sugeno_demo
 C:   000007D0  A$sugeno_8051$1920                 sugeno_demo
 C:   000007D2  A$sugeno_8051$1921                 sugeno_demo
 C:   000007D4  A$sugeno_8051$1924                 sugeno_demo
-C:   000007D4  C$fuzzy.h$227$1_0$40               sugeno_demo
+C:   000007D4  C$fuzzy.h$229$1_0$64               sugeno_demo
 C:   000007D6  A$sugeno_8051$1925                 sugeno_demo
 C:   000007D8  A$sugeno_8051$1926                 sugeno_demo
 C:   000007DA  A$sugeno_8051$1927                 sugeno_demo
@@ -2080,7 +2080,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 C:   000008D6  A$sugeno_8051$2074                 sugeno_demo
 C:   000008D8  A$sugeno_8051$2075                 sugeno_demo
 C:   000008DA  A$sugeno_8051$2079                 sugeno_demo
-C:   000008DA  C$fuzzy.h$228$2_0$41               sugeno_demo
+C:   000008DA  C$fuzzy.h$230$2_0$65               sugeno_demo
 C:   000008DC  A$sugeno_8051$2080                 sugeno_demo
 C:   000008DD  A$sugeno_8051$2081                 sugeno_demo
 C:   000008DE  A$sugeno_8051$2082                 sugeno_demo
@@ -2092,7 +2092,7 @@ C:   000008E3  A$sugeno_8051$2087                 sugeno_demo
 C:   000008E4  A$sugeno_8051$2088                 sugeno_demo
 C:   000008E5  A$sugeno_8051$2089                 sugeno_demo
 C:   000008E8  A$sugeno_8051$2093                 sugeno_demo
-C:   000008E8  C$fuzzy.h$230$1_0$40               sugeno_demo
+C:   000008E8  C$fuzzy.h$232$1_0$64               sugeno_demo
 C:   000008EA  A$sugeno_8051$2094                 sugeno_demo
 C:   000008EC  A$sugeno_8051$2095                 sugeno_demo
 C:   000008EE  A$sugeno_8051$2096                 sugeno_demo
@@ -2141,7 +2141,7 @@ C:   00000924  A$sugeno_8051$2129                 sugeno_demo
 C:   00000926  A$sugeno_8051$2130                 sugeno_demo
 C:   00000927  A$sugeno_8051$2131                 sugeno_demo
 C:   00000929  A$sugeno_8051$2134                 sugeno_demo
-C:   00000929  C$fuzzy.h$231$2_0$42               sugeno_demo
+C:   00000929  C$fuzzy.h$233$2_0$66               sugeno_demo
 C:   0000092B  A$sugeno_8051$2135                 sugeno_demo
 C:   0000092C  A$sugeno_8051$2136                 sugeno_demo
 C:   0000092D  A$sugeno_8051$2137                 sugeno_demo
@@ -2153,7 +2153,7 @@ C:   00000933  A$sugeno_8051$2142                 sugeno_demo
 C:   00000934  A$sugeno_8051$2143                 sugeno_demo
 C:   00000936  A$sugeno_8051$2144                 sugeno_demo
 C:   00000939  A$sugeno_8051$2148                 sugeno_demo
-C:   00000939  C$fuzzy.h$233$1_0$40               sugeno_demo
+C:   00000939  C$fuzzy.h$235$1_0$64               sugeno_demo
 C:   0000093B  A$sugeno_8051$2149                 sugeno_demo
 C:   0000093D  A$sugeno_8051$2150                 sugeno_demo
 C:   0000093F  A$sugeno_8051$2151                 sugeno_demo
@@ -2203,7 +2203,7 @@ C:   00000977  A$sugeno_8051$2185                 sugeno_demo
 C:   00000978  A$sugeno_8051$2186                 sugeno_demo
 C:   0000097A  A$sugeno_8051$2187                 sugeno_demo
 C:   0000097D  A$sugeno_8051$2191                 sugeno_demo
-C:   0000097D  C$fuzzy.h$234$1_0$40               sugeno_demo
+C:   0000097D  C$fuzzy.h$236$1_0$64               sugeno_demo
 C:   0000097F  A$sugeno_8051$2192                 sugeno_demo
 C:   00000981  A$sugeno_8051$2193                 sugeno_demo
 C:   00000983  A$sugeno_8051$2194                 sugeno_demo
@@ -2292,7 +2292,7 @@ C:   000009FD  A$sugeno_8051$2267                 sugeno_demo
 C:   000009FF  A$sugeno_8051$2268                 sugeno_demo
 C:   00000A01  A$sugeno_8051$2269                 sugeno_demo
 C:   00000A04  A$sugeno_8051$2273                 sugeno_demo
-C:   00000A04  C$fuzzy.h$237$1_0$40               sugeno_demo
+C:   00000A04  C$fuzzy.h$239$1_0$64               sugeno_demo
 C:   00000A06  A$sugeno_8051$2274                 sugeno_demo
 C:   00000A08  A$sugeno_8051$2275                 sugeno_demo
 C:   00000A09  A$sugeno_8051$2276                 sugeno_demo
@@ -2409,7 +2409,7 @@ C:   00000A9A  A$sugeno_8051$2368                 sugeno_demo
 C:   00000A9C  A$sugeno_8051$2369                 sugeno_demo
 C:   00000A9E  A$sugeno_8051$2370                 sugeno_demo
 C:   00000AA0  A$sugeno_8051$2374                 sugeno_demo
-C:   00000AA0  C$fuzzy.h$240$1_0$40               sugeno_demo
+C:   00000AA0  C$fuzzy.h$242$1_0$64               sugeno_demo
 C:   00000AA2  A$sugeno_8051$2375                 sugeno_demo
 C:   00000AA4  A$sugeno_8051$2376                 sugeno_demo
 C:   00000AA5  A$sugeno_8051$2377                 sugeno_demo
@@ -2445,10 +2445,10 @@ C:   00000AC7  A$sugeno_8051$2397                 sugeno_demo
 C:   00000AC8  A$sugeno_8051$2400                 sugeno_demo
 C:   00000ACB  A$sugeno_8051$2401                 sugeno_demo
 C:   00000ACD  A$sugeno_8051$2404                 sugeno_demo
-C:   00000ACD  C$fuzzy.h$241$1_0$40               sugeno_demo
+C:   00000ACD  C$fuzzy.h$243$1_0$64               sugeno_demo
 C:   00000ACD  XG$fuzzy_triangle$0$0              sugeno_demo
 C:   00000ACE  A$sugeno_8051$2425                 sugeno_demo
-C:   00000ACE  C$fuzzy.h$243$1_0$46               sugeno_demo
+C:   00000ACE  C$fuzzy.h$245$1_0$70               sugeno_demo
 C:   00000ACE  G$fuzzy_trapezoid$0$0              sugeno_demo
 C:   00000ACE  _fuzzy_trapezoid                   sugeno_demo
 C:   00000AD0  A$sugeno_8051$2426                 sugeno_demo
@@ -2460,7 +2460,7 @@ C:   00000ADA  A$sugeno_8051$2431                 sugeno_demo
 C:   00000ADC  A$sugeno_8051$2432                 sugeno_demo
 C:   00000ADE  A$sugeno_8051$2433                 sugeno_demo
 C:   00000AE0  A$sugeno_8051$2436                 sugeno_demo
-C:   00000AE0  C$fuzzy.h$247$1_0$46               sugeno_demo
+C:   00000AE0  C$fuzzy.h$249$1_0$70               sugeno_demo
 C:   00000AE2  A$sugeno_8051$2437                 sugeno_demo
 C:   00000AE4  A$sugeno_8051$2438                 sugeno_demo
 C:   00000AE6  A$sugeno_8051$2439                 sugeno_demo
@@ -2687,7 +2687,7 @@ C:   00000C24  A$sugeno_8051$2626                 sugeno_demo
 C:   00000C26  A$sugeno_8051$2627                 sugeno_demo
 C:   00000C28  A$sugeno_8051$2628                 sugeno_demo
 C:   00000C2A  A$sugeno_8051$2632                 sugeno_demo
-C:   00000C2A  C$fuzzy.h$248$2_0$47               sugeno_demo
+C:   00000C2A  C$fuzzy.h$250$2_0$71               sugeno_demo
 C:   00000C2C  A$sugeno_8051$2633                 sugeno_demo
 C:   00000C2D  A$sugeno_8051$2634                 sugeno_demo
 C:   00000C2E  A$sugeno_8051$2635                 sugeno_demo
@@ -2699,7 +2699,7 @@ C:   00000C33  A$sugeno_8051$2640                 sugeno_demo
 C:   00000C34  A$sugeno_8051$2641                 sugeno_demo
 C:   00000C35  A$sugeno_8051$2642                 sugeno_demo
 C:   00000C38  A$sugeno_8051$2646                 sugeno_demo
-C:   00000C38  C$fuzzy.h$250$1_0$46               sugeno_demo
+C:   00000C38  C$fuzzy.h$252$1_0$70               sugeno_demo
 C:   00000C3A  A$sugeno_8051$2647                 sugeno_demo
 C:   00000C3C  A$sugeno_8051$2648                 sugeno_demo
 C:   00000C3E  A$sugeno_8051$2649                 sugeno_demo
@@ -2798,7 +2798,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00000CC0  A$sugeno_8051$2728                 sugeno_demo
-C:   00000CC0  C$fuzzy.h$251$2_0$48               sugeno_demo
+C:   00000CC0  C$fuzzy.h$253$2_0$72               sugeno_demo
 C:   00000CC2  A$sugeno_8051$2729                 sugeno_demo
 C:   00000CC3  A$sugeno_8051$2730                 sugeno_demo
 C:   00000CC4  A$sugeno_8051$2731                 sugeno_demo
@@ -2810,7 +2810,7 @@ C:   00000CCA  A$sugeno_8051$2736                 sugeno_demo
 C:   00000CCB  A$sugeno_8051$2737                 sugeno_demo
 C:   00000CCD  A$sugeno_8051$2738                 sugeno_demo
 C:   00000CD0  A$sugeno_8051$2742                 sugeno_demo
-C:   00000CD0  C$fuzzy.h$253$1_0$46               sugeno_demo
+C:   00000CD0  C$fuzzy.h$255$1_0$70               sugeno_demo
 C:   00000CD2  A$sugeno_8051$2743                 sugeno_demo
 C:   00000CD4  A$sugeno_8051$2744                 sugeno_demo
 C:   00000CD6  A$sugeno_8051$2745                 sugeno_demo
@@ -2860,7 +2860,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 C:   00000D0F  A$sugeno_8051$2780                 sugeno_demo
 C:   00000D11  A$sugeno_8051$2781                 sugeno_demo
 C:   00000D14  A$sugeno_8051$2785                 sugeno_demo
-C:   00000D14  C$fuzzy.h$254$1_0$46               sugeno_demo
+C:   00000D14  C$fuzzy.h$256$1_0$70               sugeno_demo
 C:   00000D16  A$sugeno_8051$2786                 sugeno_demo
 C:   00000D18  A$sugeno_8051$2787                 sugeno_demo
 C:   00000D1A  A$sugeno_8051$2788                 sugeno_demo
@@ -2949,7 +2949,7 @@ C:   00000D94  A$sugeno_8051$2861                 sugeno_demo
 C:   00000D96  A$sugeno_8051$2862                 sugeno_demo
 C:   00000D98  A$sugeno_8051$2863                 sugeno_demo
 C:   00000D9B  A$sugeno_8051$2867                 sugeno_demo
-C:   00000D9B  C$fuzzy.h$257$1_0$46               sugeno_demo
+C:   00000D9B  C$fuzzy.h$259$1_0$70               sugeno_demo
 C:   00000D9D  A$sugeno_8051$2868                 sugeno_demo
 C:   00000D9F  A$sugeno_8051$2869                 sugeno_demo
 C:   00000DA0  A$sugeno_8051$2870                 sugeno_demo
@@ -3066,7 +3066,7 @@ C:   00000E31  A$sugeno_8051$2962                 sugeno_demo
 C:   00000E33  A$sugeno_8051$2963                 sugeno_demo
 C:   00000E35  A$sugeno_8051$2964                 sugeno_demo
 C:   00000E37  A$sugeno_8051$2968                 sugeno_demo
-C:   00000E37  C$fuzzy.h$260$1_0$46               sugeno_demo
+C:   00000E37  C$fuzzy.h$262$1_0$70               sugeno_demo
 C:   00000E39  A$sugeno_8051$2969                 sugeno_demo
 C:   00000E3B  A$sugeno_8051$2970                 sugeno_demo
 C:   00000E3C  A$sugeno_8051$2971                 sugeno_demo
@@ -3102,10 +3102,10 @@ C:   00000E5E  A$sugeno_8051$2991                 sugeno_demo
 C:   00000E5F  A$sugeno_8051$2994                 sugeno_demo
 C:   00000E62  A$sugeno_8051$2995                 sugeno_demo
 C:   00000E64  A$sugeno_8051$2998                 sugeno_demo
-C:   00000E64  C$fuzzy.h$261$1_0$46               sugeno_demo
+C:   00000E64  C$fuzzy.h$263$1_0$70               sugeno_demo
 C:   00000E64  XG$fuzzy_trapezoid$0$0             sugeno_demo
 C:   00000E65  A$sugeno_8051$3018                 sugeno_demo
-C:   00000E65  C$fuzzy.h$263$1_0$52               sugeno_demo
+C:   00000E65  C$fuzzy.h$265$1_0$76               sugeno_demo
 C:   00000E65  Fsugeno_demo$fuzzy_8051_eval$0$0   sugeno_demo
 C:   00000E67  A$sugeno_8051$3019                 sugeno_demo
 C:   00000E6A  A$sugeno_8051$3020                 sugeno_demo
@@ -3115,7 +3115,7 @@ C:   00000E70  A$sugeno_8051$3023                 sugeno_demo
 C:   00000E72  A$sugeno_8051$3024                 sugeno_demo
 C:   00000E74  A$sugeno_8051$3025                 sugeno_demo
 C:   00000E76  A$sugeno_8051$3028                 sugeno_demo
-C:   00000E76  C$fuzzy.h$265$1_0$52               sugeno_demo
+C:   00000E76  C$fuzzy.h$267$1_0$76               sugeno_demo
 C:   00000E78  A$sugeno_8051$3029                 sugeno_demo
 C:   00000E79  A$sugeno_8051$3030                 sugeno_demo
 C:   00000E7B  A$sugeno_8051$3031                 sugeno_demo
@@ -3130,7 +3130,7 @@ C:   00000E8A  A$sugeno_8051$3039                 sugeno_demo
 C:   00000E8B  A$sugeno_8051$3040                 sugeno_demo
 C:   00000E8D  A$sugeno_8051$3041                 sugeno_demo
 C:   00000E90  A$sugeno_8051$3045                 sugeno_demo
-C:   00000E90  C$fuzzy.h$266$2_0$53               sugeno_demo
+C:   00000E90  C$fuzzy.h$268$2_0$77               sugeno_demo
 C:   00000E92  A$sugeno_8051$3046                 sugeno_demo
 C:   00000E93  A$sugeno_8051$3047                 sugeno_demo
 C:   00000E95  A$sugeno_8051$3048                 sugeno_demo
@@ -3324,7 +3324,7 @@ C:   00000F8F  A$sugeno_8051$3209                 sugeno_demo
 C:   00000F91  A$sugeno_8051$3210                 sugeno_demo
 C:   00000F92  A$sugeno_8051$3211                 sugeno_demo
 C:   00000F95  A$sugeno_8051$3215                 sugeno_demo
-C:   00000F95  C$fuzzy.h$269$1_0$52               sugeno_demo
+C:   00000F95  C$fuzzy.h$271$1_0$76               sugeno_demo
 C:   00000F98  A$sugeno_8051$3216                 sugeno_demo
 C:   00000F9A  A$sugeno_8051$3218                 sugeno_demo
 C:   00000F9D  A$sugeno_8051$3222                 sugeno_demo
@@ -3337,7 +3337,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   00000F9D  C$fuzzy.h$270$2_0$54               sugeno_demo
+C:   00000F9D  C$fuzzy.h$272$2_0$78               sugeno_demo
 C:   00000F9F  A$sugeno_8051$3223                 sugeno_demo
 C:   00000FA0  A$sugeno_8051$3224                 sugeno_demo
 C:   00000FA2  A$sugeno_8051$3225                 sugeno_demo
@@ -3528,11 +3528,11 @@ C:   00001093  A$sugeno_8051$3382                 sugeno_demo
 C:   00001095  A$sugeno_8051$3383                 sugeno_demo
 C:   00001096  A$sugeno_8051$3384                 sugeno_demo
 C:   00001099  A$sugeno_8051$3388                 sugeno_demo
-C:   00001099  C$fuzzy.h$273$1_0$52               sugeno_demo
+C:   00001099  C$fuzzy.h$275$1_0$76               sugeno_demo
 C:   0000109C  A$sugeno_8051$3389                 sugeno_demo
 C:   0000109E  A$sugeno_8051$3391                 sugeno_demo
 C:   000010A1  A$sugeno_8051$3395                 sugeno_demo
-C:   000010A1  C$fuzzy.h$274$2_0$55               sugeno_demo
+C:   000010A1  C$fuzzy.h$276$2_0$79               sugeno_demo
 C:   000010A3  A$sugeno_8051$3396                 sugeno_demo
 C:   000010A4  A$sugeno_8051$3397                 sugeno_demo
 C:   000010A6  A$sugeno_8051$3398                 sugeno_demo
@@ -3784,16 +3784,16 @@ C:   000011E5  A$sugeno_8051$3607                 sugeno_demo
 C:   000011E7  A$sugeno_8051$3608                 sugeno_demo
 C:   000011E8  A$sugeno_8051$3609                 sugeno_demo
 C:   000011EA  A$sugeno_8051$3613                 sugeno_demo
-C:   000011EA  C$fuzzy.h$277$1_0$52               sugeno_demo
+C:   000011EA  C$fuzzy.h$279$1_0$76               sugeno_demo
 C:   000011ED  A$sugeno_8051$3614                 sugeno_demo
 C:   000011EE  A$sugeno_8051$3615                 sugeno_demo
 C:   000011F0  A$sugeno_8051$3619                 sugeno_demo
 C:   000011F3  A$sugeno_8051$3620                 sugeno_demo
 C:   000011F5  A$sugeno_8051$3623                 sugeno_demo
-C:   000011F5  C$fuzzy.h$278$1_0$52               sugeno_demo
+C:   000011F5  C$fuzzy.h$280$1_0$76               sugeno_demo
 C:   000011F5  XFsugeno_demo$fuzzy_8051_eval$0$   sugeno_demo
 C:   000011F6  A$sugeno_8051$3642                 sugeno_demo
-C:   000011F6  C$fuzzy.h$280$1_0$57               sugeno_demo
+C:   000011F6  C$fuzzy.h$282$1_0$81               sugeno_demo
 C:   000011F6  G$fuzzy_rules_add_8051$0$0         sugeno_demo
 C:   000011F6  _fuzzy_rules_add_8051              sugeno_demo
 C:   000011F8  A$sugeno_8051$3643                 sugeno_demo
@@ -3804,7 +3804,7 @@ C:   00001201  A$sugeno_8051$3647                 sugeno_demo
 C:   00001203  A$sugeno_8051$3648                 sugeno_demo
 C:   00001205  A$sugeno_8051$3649                 sugeno_demo
 C:   00001207  A$sugeno_8051$3652                 sugeno_demo
-C:   00001207  C$fuzzy.h$284$1_0$57               sugeno_demo
+C:   00001207  C$fuzzy.h$286$1_0$81               sugeno_demo
 C:   00001209  A$sugeno_8051$3653                 sugeno_demo
 C:   0000120A  A$sugeno_8051$3654                 sugeno_demo
 C:   0000120C  A$sugeno_8051$3655                 sugeno_demo
@@ -3843,12 +3843,12 @@ C:   0000122C  A$sugeno_8051$3678                 sugeno_demo
 C:   0000122D  A$sugeno_8051$3679                 sugeno_demo
 C:   00001230  A$sugeno_8051$3681                 sugeno_demo
 C:   00001232  A$sugeno_8051$3684                 sugeno_demo
-C:   00001232  C$fuzzy.h$285$2_0$58               sugeno_demo
+C:   00001232  C$fuzzy.h$287$2_0$82               sugeno_demo
 C:   00001235  A$sugeno_8051$3685                 sugeno_demo
 C:   00001238  A$sugeno_8051$3689                 sugeno_demo
-C:   00001238  C$fuzzy.h$288$1_0$57               sugeno_demo
+C:   00001238  C$fuzzy.h$290$1_0$81               sugeno_demo
 C:   0000123A  A$sugeno_8051$3692                 sugeno_demo
-C:   0000123A  C$fuzzy.h$289$1_0$57               sugeno_demo
+C:   0000123A  C$fuzzy.h$291$1_0$81               sugeno_demo
 C:   0000123B  A$sugeno_8051$3693                 sugeno_demo
 C:   0000123E  A$sugeno_8051$3694                 sugeno_demo
 C:   0000123F  A$sugeno_8051$3695                 sugeno_demo
@@ -3917,7 +3917,7 @@ C:   00001290  A$sugeno_8051$3748                 sugeno_demo
 C:   00001291  A$sugeno_8051$3749                 sugeno_demo
 C:   00001292  A$sugeno_8051$3750                 sugeno_demo
 C:   00001295  A$sugeno_8051$3753                 sugeno_demo
-C:   00001295  C$fuzzy.h$290$1_0$57               sugeno_demo
+C:   00001295  C$fuzzy.h$292$1_0$81               sugeno_demo
 C:   00001297  A$sugeno_8051$3754                 sugeno_demo
 C:   00001298  A$sugeno_8051$3755                 sugeno_demo
 C:   00001299  A$sugeno_8051$3756                 sugeno_demo
@@ -3960,7 +3960,7 @@ C:   000012BF  A$sugeno_8051$3783                 sugeno_demo
 C:   000012C0  A$sugeno_8051$3784                 sugeno_demo
 C:   000012C1  A$sugeno_8051$3785                 sugeno_demo
 C:   000012C4  A$sugeno_8051$3788                 sugeno_demo
-C:   000012C4  C$fuzzy.h$291$1_0$57               sugeno_demo
+C:   000012C4  C$fuzzy.h$293$1_0$81               sugeno_demo
 C:   000012C5  A$sugeno_8051$3789                 sugeno_demo
 C:   000012C6  A$sugeno_8051$3790                 sugeno_demo
 C:   000012C7  A$sugeno_8051$3791                 sugeno_demo
@@ -3974,14 +3974,14 @@ C:   000012D2  A$sugeno_8051$3798                 sugeno_demo
 C:   000012D4  A$sugeno_8051$3799                 sugeno_demo
 C:   000012D5  A$sugeno_8051$3800                 sugeno_demo
 C:   000012D8  A$sugeno_8051$3803                 sugeno_demo
-C:   000012D8  C$fuzzy.h$293$1_0$57               sugeno_demo
+C:   000012D8  C$fuzzy.h$295$1_0$81               sugeno_demo
 C:   000012DB  A$sugeno_8051$3807                 sugeno_demo
 C:   000012DE  A$sugeno_8051$3808                 sugeno_demo
 C:   000012E0  A$sugeno_8051$3811                 sugeno_demo
-C:   000012E0  C$fuzzy.h$294$1_0$57               sugeno_demo
+C:   000012E0  C$fuzzy.h$296$1_0$81               sugeno_demo
 C:   000012E0  XG$fuzzy_rules_add_8051$0$0        sugeno_demo
 C:   000012E1  A$sugeno_8051$3832                 sugeno_demo
-C:   000012E1  C$fuzzy.h$296$1_0$60               sugeno_demo
+C:   000012E1  C$fuzzy.h$298$1_0$84               sugeno_demo
 C:   000012E1  Fsugeno_demo$fuzzy_8051_height$0   sugeno_demo
 C:   000012E3  A$sugeno_8051$3833                 sugeno_demo
 C:   000012E6  A$sugeno_8051$3834                 sugeno_demo
@@ -4000,7 +4000,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 C:   000012EE  A$sugeno_8051$3838                 sugeno_demo
 C:   000012F0  A$sugeno_8051$3839                 sugeno_demo
 C:   000012F2  A$sugeno_8051$3842                 sugeno_demo
-C:   000012F2  C$fuzzy.h$303$1_0$60               sugeno_demo
+C:   000012F2  C$fuzzy.h$305$1_0$84               sugeno_demo
 C:   000012F4  A$sugeno_8051$3843                 sugeno_demo
 C:   000012F6  A$sugeno_8051$3844                 sugeno_demo
 C:   000012F7  A$sugeno_8051$3845                 sugeno_demo
@@ -4012,7 +4012,7 @@ C:   000012FC  A$sugeno_8051$3850                 sugeno_demo
 C:   000012FD  A$sugeno_8051$3851                 sugeno_demo
 C:   000012FE  A$sugeno_8051$3852                 sugeno_demo
 C:   000012FF  A$sugeno_8051$3855                 sugeno_demo
-C:   000012FF  C$fuzzy.h$305$3_0$62               sugeno_demo
+C:   000012FF  C$fuzzy.h$307$3_0$86               sugeno_demo
 C:   00001301  A$sugeno_8051$3856                 sugeno_demo
 C:   00001302  A$sugeno_8051$3857                 sugeno_demo
 C:   00001304  A$sugeno_8051$3858                 sugeno_demo
@@ -4070,7 +4070,7 @@ C:   0000133B  A$sugeno_8051$3901                 sugeno_demo
 C:   0000133C  A$sugeno_8051$3902                 sugeno_demo
 C:   0000133E  A$sugeno_8051$3903                 sugeno_demo
 C:   00001341  A$sugeno_8051$3907                 sugeno_demo
-C:   00001341  C$fuzzy.h$306$3_0$62               sugeno_demo
+C:   00001341  C$fuzzy.h$308$3_0$86               sugeno_demo
 C:   00001342  A$sugeno_8051$3908                 sugeno_demo
 C:   00001345  A$sugeno_8051$3909                 sugeno_demo
 C:   00001346  A$sugeno_8051$3910                 sugeno_demo
@@ -4150,7 +4150,7 @@ C:   000013A8  A$sugeno_8051$3974                 sugeno_demo
 C:   000013AA  A$sugeno_8051$3975                 sugeno_demo
 C:   000013AC  A$sugeno_8051$3976                 sugeno_demo
 C:   000013AE  A$sugeno_8051$3979                 sugeno_demo
-C:   000013AE  C$fuzzy.h$307$3_0$62               sugeno_demo
+C:   000013AE  C$fuzzy.h$309$3_0$86               sugeno_demo
 C:   000013B0  A$sugeno_8051$3980                 sugeno_demo
 C:   000013B1  A$sugeno_8051$3981                 sugeno_demo
 C:   000013B2  A$sugeno_8051$3982                 sugeno_demo
@@ -4253,7 +4253,7 @@ C:   0000142C  A$sugeno_8051$4061                 sugeno_demo
 C:   0000142E  A$sugeno_8051$4062                 sugeno_demo
 C:   0000142F  A$sugeno_8051$4063                 sugeno_demo
 C:   00001431  A$sugeno_8051$4067                 sugeno_demo
-C:   00001431  C$fuzzy.h$309$1_0$60               sugeno_demo
+C:   00001431  C$fuzzy.h$311$1_0$84               sugeno_demo
 C:   00001433  A$sugeno_8051$4068                 sugeno_demo
 C:   00001435  A$sugeno_8051$4069                 sugeno_demo
 C:   00001437  A$sugeno_8051$4070                 sugeno_demo
@@ -4285,7 +4285,7 @@ C:   00001465  A$sugeno_8051$4095                 sugeno_demo
 C:   00001467  A$sugeno_8051$4096                 sugeno_demo
 C:   00001468  A$sugeno_8051$4097                 sugeno_demo
 C:   0000146A  A$sugeno_8051$4100                 sugeno_demo
-C:   0000146A  C$fuzzy.h$310$4_0$63               sugeno_demo
+C:   0000146A  C$fuzzy.h$312$4_0$87               sugeno_demo
 C:   0000146C  A$sugeno_8051$4101                 sugeno_demo
 C:   0000146E  A$sugeno_8051$4102                 sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 82.
@@ -4305,10 +4305,10 @@ C:   00001475  A$sugeno_8051$4107                 sugeno_demo
 C:   00001477  A$sugeno_8051$4108                 sugeno_demo
 C:   00001478  A$sugeno_8051$4109                 sugeno_demo
 C:   0000147A  A$sugeno_8051$4113                 sugeno_demo
-C:   0000147A  C$fuzzy.h$305$2_0$61               sugeno_demo
+C:   0000147A  C$fuzzy.h$307$2_0$85               sugeno_demo
 C:   0000147B  A$sugeno_8051$4114                 sugeno_demo
 C:   0000147E  A$sugeno_8051$4118                 sugeno_demo
-C:   0000147E  C$fuzzy.h$314$1_0$60               sugeno_demo
+C:   0000147E  C$fuzzy.h$316$1_0$84               sugeno_demo
 C:   00001480  A$sugeno_8051$4119                 sugeno_demo
 C:   00001482  A$sugeno_8051$4120                 sugeno_demo
 C:   00001483  A$sugeno_8051$4121                 sugeno_demo
@@ -4321,10 +4321,10 @@ C:   0000148C  A$sugeno_8051$4127                 sugeno_demo
 C:   0000148D  A$sugeno_8051$4130                 sugeno_demo
 C:   00001490  A$sugeno_8051$4131                 sugeno_demo
 C:   00001492  A$sugeno_8051$4134                 sugeno_demo
-C:   00001492  C$fuzzy.h$315$1_0$60               sugeno_demo
+C:   00001492  C$fuzzy.h$317$1_0$84               sugeno_demo
 C:   00001492  XFsugeno_demo$fuzzy_8051_height$   sugeno_demo
 C:   00001493  A$sugeno_8051$4160                 sugeno_demo
-C:   00001493  C$fuzzy.h$317$1_0$65               sugeno_demo
+C:   00001493  C$fuzzy.h$319$1_0$89               sugeno_demo
 C:   00001493  G$fuzzy_rules_defuzzify$0$0        sugeno_demo
 C:   00001493  _fuzzy_rules_defuzzify             sugeno_demo
 C:   00001495  A$sugeno_8051$4161                 sugeno_demo
@@ -4335,7 +4335,7 @@ C:   0000149E  A$sugeno_8051$4165                 sugeno_demo
 C:   000014A0  A$sugeno_8051$4166                 sugeno_demo
 C:   000014A2  A$sugeno_8051$4167                 sugeno_demo
 C:   000014A4  A$sugeno_8051$4170                 sugeno_demo
-C:   000014A4  C$fuzzy.h$329$1_0$65               sugeno_demo
+C:   000014A4  C$fuzzy.h$331$1_0$89               sugeno_demo
 C:   000014A6  A$sugeno_8051$4171                 sugeno_demo
 C:   000014A7  A$sugeno_8051$4172                 sugeno_demo
 C:   000014A9  A$sugeno_8051$4173                 sugeno_demo
@@ -4426,12 +4426,12 @@ C:   00001513  A$sugeno_8051$4239                 sugeno_demo
 C:   00001515  A$sugeno_8051$4240                 sugeno_demo
 C:   00001517  A$sugeno_8051$4241                 sugeno_demo
 C:   00001519  A$sugeno_8051$4245                 sugeno_demo
-C:   00001519  C$fuzzy.h$330$2_0$66               sugeno_demo
+C:   00001519  C$fuzzy.h$332$2_0$90               sugeno_demo
 C:   0000151C  A$sugeno_8051$4246                 sugeno_demo
 C:   0000151D  A$sugeno_8051$4247                 sugeno_demo
 C:   0000151F  A$sugeno_8051$4248                 sugeno_demo
 C:   00001522  A$sugeno_8051$4252                 sugeno_demo
-C:   00001522  C$fuzzy.h$333$1_0$65               sugeno_demo
+C:   00001522  C$fuzzy.h$335$1_0$89               sugeno_demo
 C:   00001524  A$sugeno_8051$4253                 sugeno_demo
 C:   00001526  A$sugeno_8051$4254                 sugeno_demo
 C:   00001527  A$sugeno_8051$4255                 sugeno_demo
@@ -4443,7 +4443,7 @@ C:   0000152C  A$sugeno_8051$4260                 sugeno_demo
 C:   0000152D  A$sugeno_8051$4261                 sugeno_demo
 C:   0000152E  A$sugeno_8051$4262                 sugeno_demo
 C:   0000152F  A$sugeno_8051$4265                 sugeno_demo
-C:   0000152F  C$fuzzy.h$334$1_0$65               sugeno_demo
+C:   0000152F  C$fuzzy.h$336$1_0$89               sugeno_demo
 C:   00001531  A$sugeno_8051$4266                 sugeno_demo
 C:   00001533  A$sugeno_8051$4267                 sugeno_demo
 C:   00001534  A$sugeno_8051$4268                 sugeno_demo
@@ -4455,7 +4455,7 @@ C:   00001539  A$sugeno_8051$4273                 sugeno_demo
 C:   0000153A  A$sugeno_8051$4274                 sugeno_demo
 C:   0000153B  A$sugeno_8051$4275                 sugeno_demo
 C:   0000153C  A$sugeno_8051$4278                 sugeno_demo
-C:   0000153C  C$fuzzy.h$335$1_0$65               sugeno_demo
+C:   0000153C  C$fuzzy.h$337$1_0$89               sugeno_demo
 C:   0000153E  A$sugeno_8051$4279                 sugeno_demo
 C:   00001540  A$sugeno_8051$4280                 sugeno_demo
 C:   00001541  A$sugeno_8051$4281                 sugeno_demo
@@ -4467,7 +4467,7 @@ C:   00001546  A$sugeno_8051$4286                 sugeno_demo
 C:   00001548  A$sugeno_8051$4287                 sugeno_demo
 C:   00001549  A$sugeno_8051$4288                 sugeno_demo
 C:   0000154B  A$sugeno_8051$4291                 sugeno_demo
-C:   0000154B  C$fuzzy.h$336$1_0$65               sugeno_demo
+C:   0000154B  C$fuzzy.h$338$1_0$89               sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 85.
 Hexadecimal  [32-Bits]
 
@@ -4488,10 +4488,10 @@ C:   00001555  A$sugeno_8051$4299                 sugeno_demo
 C:   00001556  A$sugeno_8051$4300                 sugeno_demo
 C:   00001557  A$sugeno_8051$4301                 sugeno_demo
 C:   00001558  A$sugeno_8051$4304                 sugeno_demo
-C:   00001558  C$fuzzy.h$337$1_0$65               sugeno_demo
+C:   00001558  C$fuzzy.h$339$1_0$89               sugeno_demo
 C:   00001559  A$sugeno_8051$4305                 sugeno_demo
 C:   0000155A  A$sugeno_8051$4308                 sugeno_demo
-C:   0000155A  C$fuzzy.h$338$1_0$65               sugeno_demo
+C:   0000155A  C$fuzzy.h$340$1_0$89               sugeno_demo
 C:   0000155C  A$sugeno_8051$4309                 sugeno_demo
 C:   0000155E  A$sugeno_8051$4310                 sugeno_demo
 C:   0000155F  A$sugeno_8051$4311                 sugeno_demo
@@ -4512,7 +4512,7 @@ C:   0000156F  A$sugeno_8051$4325                 sugeno_demo
 C:   00001570  A$sugeno_8051$4326                 sugeno_demo
 C:   00001571  A$sugeno_8051$4327                 sugeno_demo
 C:   00001572  A$sugeno_8051$4330                 sugeno_demo
-C:   00001572  C$fuzzy.h$339$1_0$65               sugeno_demo
+C:   00001572  C$fuzzy.h$341$1_0$89               sugeno_demo
 C:   00001574  A$sugeno_8051$4331                 sugeno_demo
 C:   00001576  A$sugeno_8051$4332                 sugeno_demo
 C:   00001577  A$sugeno_8051$4333                 sugeno_demo
@@ -4542,7 +4542,7 @@ C:   00001587  A$sugeno_8051$4347                 sugeno_demo
 C:   00001588  A$sugeno_8051$4348                 sugeno_demo
 C:   00001589  A$sugeno_8051$4349                 sugeno_demo
 C:   0000158A  A$sugeno_8051$4352                 sugeno_demo
-C:   0000158A  C$fuzzy.h$341$2_0$67               sugeno_demo
+C:   0000158A  C$fuzzy.h$343$2_0$91               sugeno_demo
 C:   0000158C  A$sugeno_8051$4353                 sugeno_demo
 C:   0000158E  A$sugeno_8051$4354                 sugeno_demo
 C:   0000158F  A$sugeno_8051$4355                 sugeno_demo
@@ -4609,7 +4609,7 @@ C:   000015DA  A$sugeno_8051$4407                 sugeno_demo
 C:   000015DC  A$sugeno_8051$4408                 sugeno_demo
 C:   000015DE  A$sugeno_8051$4409                 sugeno_demo
 C:   000015E1  A$sugeno_8051$4413                 sugeno_demo
-C:   000015E1  C$fuzzy.h$342$3_0$68               sugeno_demo
+C:   000015E1  C$fuzzy.h$344$3_0$92               sugeno_demo
 C:   000015E3  A$sugeno_8051$4414                 sugeno_demo
 C:   000015E5  A$sugeno_8051$4415                 sugeno_demo
 C:   000015E7  A$sugeno_8051$4416                 sugeno_demo
@@ -4657,7 +4657,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
-C:   0000161D  C$fuzzy.h$344$1_0$65               sugeno_demo
+C:   0000161D  C$fuzzy.h$346$1_0$89               sugeno_demo
 C:   0000161F  A$sugeno_8051$4454                 sugeno_demo
 C:   00001621  A$sugeno_8051$4455                 sugeno_demo
 C:   00001622  A$sugeno_8051$4456                 sugeno_demo
@@ -4694,7 +4694,7 @@ C:   00001652  A$sugeno_8051$4486                 sugeno_demo
 C:   00001654  A$sugeno_8051$4487                 sugeno_demo
 C:   00001656  A$sugeno_8051$4488                 sugeno_demo
 C:   00001658  A$sugeno_8051$4491                 sugeno_demo
-C:   00001658  C$fuzzy.h$345$1_0$65               sugeno_demo
+C:   00001658  C$fuzzy.h$347$1_0$89               sugeno_demo
 C:   0000165A  A$sugeno_8051$4492                 sugeno_demo
 C:   0000165C  A$sugeno_8051$4493                 sugeno_demo
 C:   0000165D  A$sugeno_8051$4494                 sugeno_demo
@@ -4743,7 +4743,7 @@ C:   00001690  A$sugeno_8051$4527                 sugeno_demo
 C:   00001691  A$sugeno_8051$4528                 sugeno_demo
 C:   00001692  A$sugeno_8051$4529                 sugeno_demo
 C:   00001694  A$sugeno_8051$4532                 sugeno_demo
-C:   00001694  C$fuzzy.h$347$1_0$65               sugeno_demo
+C:   00001694  C$fuzzy.h$349$1_0$89               sugeno_demo
 C:   00001696  A$sugeno_8051$4533                 sugeno_demo
 C:   00001698  A$sugeno_8051$4534                 sugeno_demo
 C:   00001699  A$sugeno_8051$4535                 sugeno_demo
@@ -4811,7 +4811,7 @@ C:   000016EC  A$sugeno_8051$4587                 sugeno_demo
 C:   000016EE  A$sugeno_8051$4588                 sugeno_demo
 C:   000016EF  A$sugeno_8051$4589                 sugeno_demo
 C:   000016F1  A$sugeno_8051$4592                 sugeno_demo
-C:   000016F1  C$fuzzy.h$348$4_0$69               sugeno_demo
+C:   000016F1  C$fuzzy.h$350$4_0$93               sugeno_demo
 C:   000016F3  A$sugeno_8051$4593                 sugeno_demo
 C:   000016F5  A$sugeno_8051$4594                 sugeno_demo
 C:   000016F6  A$sugeno_8051$4595                 sugeno_demo
@@ -4841,7 +4841,7 @@ C:   00001706  A$sugeno_8051$4609                 sugeno_demo
 C:   00001707  A$sugeno_8051$4610                 sugeno_demo
 C:   00001708  A$sugeno_8051$4611                 sugeno_demo
 C:   00001709  A$sugeno_8051$4614                 sugeno_demo
-C:   00001709  C$fuzzy.h$349$4_0$69               sugeno_demo
+C:   00001709  C$fuzzy.h$351$4_0$93               sugeno_demo
 C:   0000170B  A$sugeno_8051$4615                 sugeno_demo
 C:   0000170D  A$sugeno_8051$4616                 sugeno_demo
 C:   0000170E  A$sugeno_8051$4617                 sugeno_demo
@@ -4862,10 +4862,10 @@ C:   0000171E  A$sugeno_8051$4631                 sugeno_demo
 C:   0000171F  A$sugeno_8051$4632                 sugeno_demo
 C:   00001720  A$sugeno_8051$4633                 sugeno_demo
 C:   00001721  A$sugeno_8051$4636                 sugeno_demo
-C:   00001721  C$fuzzy.h$350$4_0$69               sugeno_demo
+C:   00001721  C$fuzzy.h$352$4_0$93               sugeno_demo
 C:   00001723  A$sugeno_8051$4637                 sugeno_demo
 C:   00001725  A$sugeno_8051$4640                 sugeno_demo
-C:   00001725  C$fuzzy.h$351$4_0$69               sugeno_demo
+C:   00001725  C$fuzzy.h$353$4_0$93               sugeno_demo
 C:   00001727  A$sugeno_8051$4641                 sugeno_demo
 C:   00001729  A$sugeno_8051$4642                 sugeno_demo
 C:   0000172A  A$sugeno_8051$4643                 sugeno_demo
@@ -4886,7 +4886,7 @@ C:   0000173A  A$sugeno_8051$4657                 sugeno_demo
 C:   0000173B  A$sugeno_8051$4658                 sugeno_demo
 C:   0000173C  A$sugeno_8051$4659                 sugeno_demo
 C:   0000173D  A$sugeno_8051$4662                 sugeno_demo
-C:   0000173D  C$fuzzy.h$352$4_0$69               sugeno_demo
+C:   0000173D  C$fuzzy.h$354$4_0$93               sugeno_demo
 C:   0000173F  A$sugeno_8051$4663                 sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 92.
 Hexadecimal  [32-Bits]
@@ -4917,7 +4917,7 @@ C:   00001753  A$sugeno_8051$4680                 sugeno_demo
 C:   00001754  A$sugeno_8051$4681                 sugeno_demo
 C:   00001755  A$sugeno_8051$4682                 sugeno_demo
 C:   00001758  A$sugeno_8051$4686                 sugeno_demo
-C:   00001758  C$fuzzy.h$354$1_0$65               sugeno_demo
+C:   00001758  C$fuzzy.h$356$1_0$89               sugeno_demo
 C:   0000175A  A$sugeno_8051$4687                 sugeno_demo
 C:   0000175C  A$sugeno_8051$4688                 sugeno_demo
 C:   0000175E  A$sugeno_8051$4689                 sugeno_demo
@@ -4962,7 +4962,7 @@ C:   0000178C  A$sugeno_8051$4718                 sugeno_demo
 C:   0000178E  A$sugeno_8051$4719                 sugeno_demo
 C:   0000178F  A$sugeno_8051$4720                 sugeno_demo
 C:   00001791  A$sugeno_8051$4723                 sugeno_demo
-C:   00001791  C$fuzzy.h$355$1_0$65               sugeno_demo
+C:   00001791  C$fuzzy.h$357$1_0$89               sugeno_demo
 C:   00001793  A$sugeno_8051$4724                 sugeno_demo
 C:   00001795  A$sugeno_8051$4725                 sugeno_demo
 C:   00001797  A$sugeno_8051$4726                 sugeno_demo
@@ -4979,7 +4979,7 @@ C:   000017A5  A$sugeno_8051$4736                 sugeno_demo
 C:   000017A6  A$sugeno_8051$4737                 sugeno_demo
 C:   000017A7  A$sugeno_8051$4738                 sugeno_demo
 C:   000017A9  A$sugeno_8051$4741                 sugeno_demo
-C:   000017A9  C$fuzzy.h$356$1_0$65               sugeno_demo
+C:   000017A9  C$fuzzy.h$358$1_0$89               sugeno_demo
 C:   000017AB  A$sugeno_8051$4742                 sugeno_demo
 C:   000017AD  A$sugeno_8051$4743                 sugeno_demo
 C:   000017AE  A$sugeno_8051$4744                 sugeno_demo
@@ -5019,7 +5019,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       -----  --------------------------------   ------------------------
 C:   000017D9  A$sugeno_8051$4770                 sugeno_demo
 C:   000017DA  A$sugeno_8051$4774                 sugeno_demo
-C:   000017DA  C$fuzzy.h$357$4_0$70               sugeno_demo
+C:   000017DA  C$fuzzy.h$359$4_0$94               sugeno_demo
 C:   000017DC  A$sugeno_8051$4775                 sugeno_demo
 C:   000017DE  A$sugeno_8051$4776                 sugeno_demo
 C:   000017DF  A$sugeno_8051$4777                 sugeno_demo
@@ -5040,7 +5040,7 @@ C:   000017EF  A$sugeno_8051$4791                 sugeno_demo
 C:   000017F0  A$sugeno_8051$4792                 sugeno_demo
 C:   000017F1  A$sugeno_8051$4793                 sugeno_demo
 C:   000017F2  A$sugeno_8051$4797                 sugeno_demo
-C:   000017F2  C$fuzzy.h$341$1_0$65               sugeno_demo
+C:   000017F2  C$fuzzy.h$343$1_0$89               sugeno_demo
 C:   000017F4  A$sugeno_8051$4798                 sugeno_demo
 C:   000017F6  A$sugeno_8051$4799                 sugeno_demo
 C:   000017F8  A$sugeno_8051$4800                 sugeno_demo
@@ -5094,14 +5094,14 @@ C:   00001832  A$sugeno_8051$4838                 sugeno_demo
 C:   00001834  A$sugeno_8051$4839                 sugeno_demo
 C:   00001836  A$sugeno_8051$4840                 sugeno_demo
 C:   00001839  A$sugeno_8051$4844                 sugeno_demo
-C:   00001839  C$fuzzy.h$361$1_0$65               sugeno_demo
+C:   00001839  C$fuzzy.h$363$1_0$89               sugeno_demo
 C:   0000183B  A$sugeno_8051$4845                 sugeno_demo
 C:   0000183D  A$sugeno_8051$4846                 sugeno_demo
 C:   0000183E  A$sugeno_8051$4847                 sugeno_demo
 C:   00001841  A$sugeno_8051$4848                 sugeno_demo
 C:   00001843  A$sugeno_8051$4850                 sugeno_demo
 C:   00001845  A$sugeno_8051$4854                 sugeno_demo
-C:   00001845  C$fuzzy.h$362$1_0$65               sugeno_demo
+C:   00001845  C$fuzzy.h$364$1_0$89               sugeno_demo
 C:   00001847  A$sugeno_8051$4855                 sugeno_demo
 C:   00001849  A$sugeno_8051$4856                 sugeno_demo
 C:   0000184B  A$sugeno_8051$4857                 sugeno_demo
@@ -5178,12 +5178,12 @@ C:   000018B8  A$sugeno_8051$4920                 sugeno_demo
 C:   000018BA  A$sugeno_8051$4921                 sugeno_demo
 C:   000018BB  A$sugeno_8051$4922                 sugeno_demo
 C:   000018BE  A$sugeno_8051$4926                 sugeno_demo
-C:   000018BE  C$fuzzy.h$365$1_0$65               sugeno_demo
+C:   000018BE  C$fuzzy.h$367$1_0$89               sugeno_demo
 C:   000018C0  A$sugeno_8051$4927                 sugeno_demo
 C:   000018C2  A$sugeno_8051$4928                 sugeno_demo
 C:   000018C3  A$sugeno_8051$4929                 sugeno_demo
 C:   000018C6  A$sugeno_8051$4932                 sugeno_demo
-C:   000018C6  C$fuzzy.h$366$1_0$65               sugeno_demo
+C:   000018C6  C$fuzzy.h$368$1_0$89               sugeno_demo
 C:   000018C8  A$sugeno_8051$4933                 sugeno_demo
 C:   000018CA  A$sugeno_8051$4934                 sugeno_demo
 C:   000018CB  A$sugeno_8051$4935                 sugeno_demo
@@ -5237,12 +5237,12 @@ C:   0000190C  A$sugeno_8051$4975                 sugeno_demo
 C:   0000190E  A$sugeno_8051$4976                 sugeno_demo
 C:   0000190F  A$sugeno_8051$4977                 sugeno_demo
 C:   00001912  A$sugeno_8051$4981                 sugeno_demo
-C:   00001912  C$fuzzy.h$369$1_0$65               sugeno_demo
+C:   00001912  C$fuzzy.h$371$1_0$89               sugeno_demo
 C:   00001914  A$sugeno_8051$4982                 sugeno_demo
 C:   00001916  A$sugeno_8051$4983                 sugeno_demo
 C:   00001917  A$sugeno_8051$4984                 sugeno_demo
 C:   0000191A  A$sugeno_8051$4987                 sugeno_demo
-C:   0000191A  C$fuzzy.h$370$1_0$65               sugeno_demo
+C:   0000191A  C$fuzzy.h$372$1_0$89               sugeno_demo
 C:   0000191C  A$sugeno_8051$4988                 sugeno_demo
 C:   0000191E  A$sugeno_8051$4989                 sugeno_demo
 C:   0000191F  A$sugeno_8051$4990                 sugeno_demo
@@ -5296,7 +5296,7 @@ C:   00001960  A$sugeno_8051$5030                 sugeno_demo
 C:   00001962  A$sugeno_8051$5031                 sugeno_demo
 C:   00001963  A$sugeno_8051$5032                 sugeno_demo
 C:   00001965  A$sugeno_8051$5036                 sugeno_demo
-C:   00001965  C$fuzzy.h$373$1_0$65               sugeno_demo
+C:   00001965  C$fuzzy.h$375$1_0$89               sugeno_demo
 C:   00001967  A$sugeno_8051$5037                 sugeno_demo
 C:   00001969  A$sugeno_8051$5038                 sugeno_demo
 C:   0000196A  A$sugeno_8051$5039                 sugeno_demo
@@ -5382,10 +5382,10 @@ C:   000019D0  A$sugeno_8051$5102                 sugeno_demo
 C:   000019D1  A$sugeno_8051$5106                 sugeno_demo
 C:   000019D4  A$sugeno_8051$5107                 sugeno_demo
 C:   000019D6  A$sugeno_8051$5110                 sugeno_demo
-C:   000019D6  C$fuzzy.h$374$1_0$65               sugeno_demo
+C:   000019D6  C$fuzzy.h$376$1_0$89               sugeno_demo
 C:   000019D6  XG$fuzzy_rules_defuzzify$0$0       sugeno_demo
 C:   000019D7  A$sugeno_8051$5126                 sugeno_demo
-C:   000019D7  C$fuzzy.h$376$1_0$75               sugeno_demo
+C:   000019D7  C$fuzzy.h$378$1_0$99               sugeno_demo
 C:   000019D7  G$fuzzy_rules_cog$0$0              sugeno_demo
 C:   000019D7  _fuzzy_rules_cog                   sugeno_demo
 C:   000019D9  A$sugeno_8051$5127                 sugeno_demo
@@ -5393,7 +5393,7 @@ C:   000019DC  A$sugeno_8051$5128                 sugeno_demo
 C:   000019DE  A$sugeno_8051$5129                 sugeno_demo
 C:   000019E0  A$sugeno_8051$5130                 sugeno_demo
 C:   000019E2  A$sugeno_8051$5133                 sugeno_demo
-C:   000019E2  C$fuzzy.h$378$1_0$75               sugeno_demo
+C:   000019E2  C$fuzzy.h$380$1_0$99               sugeno_demo
 C:   000019E3  A$sugeno_8051$5134                 sugeno_demo
 C:   000019E5  A$sugeno_8051$5135                 sugeno_demo
 C:   000019E7  A$sugeno_8051$5136                 sugeno_demo
@@ -5463,7 +5463,7 @@ C:   00001A3B  A$sugeno_8051$5190                 sugeno_demo
 C:   00001A3D  A$sugeno_8051$5191                 sugeno_demo
 C:   00001A3E  A$sugeno_8051$5194                 sugeno_demo
 C:   00001A40  A$sugeno_8051$5197                 sugeno_demo
-C:   00001A40  C$fuzzy.h$379$1_0$75               sugeno_demo
+C:   00001A40  C$fuzzy.h$381$1_0$99               sugeno_demo
 C:   00001A40  XG$fuzzy_rules_cog$0$0             sugeno_demo
 C:   00001A41  A$sugeno_8051$5210                 sugeno_demo
 C:   00001A41  Fsugeno_demo$temperature_low$0$0   sugeno_demo
@@ -5498,7 +5498,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00001A6D  A$sugeno_8051$5234                 sugeno_demo
-C:   00001A6D  C$sugeno_demo.c$29$1_0$77          sugeno_demo
+C:   00001A6D  C$sugeno_demo.c$29$1_0$101         sugeno_demo
 C:   00001A6D  XFsugeno_demo$temperature_low$0$   sugeno_demo
 C:   00001A6E  A$sugeno_8051$5247                 sugeno_demo
 C:   00001A6E  Fsugeno_demo$temperature_high$0$   sugeno_demo
@@ -5524,7 +5524,7 @@ C:   00001A95  A$sugeno_8051$5266                 sugeno_demo
 C:   00001A97  A$sugeno_8051$5267                 sugeno_demo
 C:   00001A99  A$sugeno_8051$5268                 sugeno_demo
 C:   00001A9A  A$sugeno_8051$5271                 sugeno_demo
-C:   00001A9A  C$sugeno_demo.c$30$1_0$79          sugeno_demo
+C:   00001A9A  C$sugeno_demo.c$30$1_0$103         sugeno_demo
 C:   00001A9A  XFsugeno_demo$temperature_high$0   sugeno_demo
 C:   00001A9B  A$sugeno_8051$5284                 sugeno_demo
 C:   00001A9B  Fsugeno_demo$load_low$0$0          sugeno_demo
@@ -5559,7 +5559,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       -----  --------------------------------   ------------------------
 C:   00001AC6  A$sugeno_8051$5305                 sugeno_demo
 C:   00001AC7  A$sugeno_8051$5308                 sugeno_demo
-C:   00001AC7  C$sugeno_demo.c$31$1_0$81          sugeno_demo
+C:   00001AC7  C$sugeno_demo.c$31$1_0$105         sugeno_demo
 C:   00001AC7  XFsugeno_demo$load_low$0$0         sugeno_demo
 C:   00001AC8  A$sugeno_8051$5321                 sugeno_demo
 C:   00001AC8  Fsugeno_demo$load_high$0$0         sugeno_demo
@@ -5585,7 +5585,7 @@ C:   00001AEF  A$sugeno_8051$5340                 sugeno_demo
 C:   00001AF1  A$sugeno_8051$5341                 sugeno_demo
 C:   00001AF3  A$sugeno_8051$5342                 sugeno_demo
 C:   00001AF4  A$sugeno_8051$5345                 sugeno_demo
-C:   00001AF4  C$sugeno_demo.c$32$1_0$83          sugeno_demo
+C:   00001AF4  C$sugeno_demo.c$32$1_0$107         sugeno_demo
 C:   00001AF4  XFsugeno_demo$load_high$0$0        sugeno_demo
 C:   00001AF5  A$sugeno_8051$5358                 sugeno_demo
 C:   00001AF5  Fsugeno_demo$vibration_low$0$0     sugeno_demo
@@ -5620,7 +5620,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
 C:   00001B1E  A$sugeno_8051$5378                 sugeno_demo
 C:   00001B20  A$sugeno_8051$5379                 sugeno_demo
 C:   00001B21  A$sugeno_8051$5382                 sugeno_demo
-C:   00001B21  C$sugeno_demo.c$33$1_0$85          sugeno_demo
+C:   00001B21  C$sugeno_demo.c$33$1_0$109         sugeno_demo
 C:   00001B21  XFsugeno_demo$vibration_low$0$0    sugeno_demo
 C:   00001B22  A$sugeno_8051$5395                 sugeno_demo
 C:   00001B22  Fsugeno_demo$vibration_high$0$0    sugeno_demo
@@ -5646,7 +5646,7 @@ C:   00001B49  A$sugeno_8051$5414                 sugeno_demo
 C:   00001B4B  A$sugeno_8051$5415                 sugeno_demo
 C:   00001B4D  A$sugeno_8051$5416                 sugeno_demo
 C:   00001B4E  A$sugeno_8051$5419                 sugeno_demo
-C:   00001B4E  C$sugeno_demo.c$34$1_0$87          sugeno_demo
+C:   00001B4E  C$sugeno_demo.c$34$1_0$111         sugeno_demo
 C:   00001B4E  XFsugeno_demo$vibration_high$0$0   sugeno_demo
 C:   00001B4F  A$sugeno_8051$5435                 sugeno_demo
 C:   00001B4F  Fsugeno_demo$response_idle$0$0     sugeno_demo
@@ -5828,7 +5828,7 @@ C:   00001C57  A$sugeno_8051$5583                 sugeno_demo
 C:   00001C58  A$sugeno_8051$5584                 sugeno_demo
 C:   00001C5B  A$sugeno_8051$5585                 sugeno_demo
 C:   00001C5D  A$sugeno_8051$5588                 sugeno_demo
-C:   00001C5D  C$sugeno_demo.c$36$1_0$89          sugeno_demo
+C:   00001C5D  C$sugeno_demo.c$36$1_0$113         sugeno_demo
 C:   00001C5D  XFsugeno_demo$response_idle$0$0    sugeno_demo
 C:   00001C5E  A$sugeno_8051$5604                 sugeno_demo
 C:   00001C5E  Fsugeno_demo$response_economy$0$   sugeno_demo
@@ -6010,7 +6010,7 @@ C:   00001D67  A$sugeno_8051$5752                 sugeno_demo
 C:   00001D68  A$sugeno_8051$5753                 sugeno_demo
 C:   00001D6B  A$sugeno_8051$5754                 sugeno_demo
 C:   00001D6D  A$sugeno_8051$5757                 sugeno_demo
-C:   00001D6D  C$sugeno_demo.c$37$1_0$91          sugeno_demo
+C:   00001D6D  C$sugeno_demo.c$37$1_0$115         sugeno_demo
 C:   00001D6D  XFsugeno_demo$response_economy$0   sugeno_demo
 C:   00001D6E  A$sugeno_8051$5773                 sugeno_demo
 C:   00001D6E  Fsugeno_demo$response_balanced$0   sugeno_demo
@@ -6192,7 +6192,7 @@ C:   00001E78  A$sugeno_8051$5921                 sugeno_demo
 C:   00001E79  A$sugeno_8051$5922                 sugeno_demo
 C:   00001E7C  A$sugeno_8051$5923                 sugeno_demo
 C:   00001E7E  A$sugeno_8051$5926                 sugeno_demo
-C:   00001E7E  C$sugeno_demo.c$38$1_0$93          sugeno_demo
+C:   00001E7E  C$sugeno_demo.c$38$1_0$117         sugeno_demo
 C:   00001E7E  XFsugeno_demo$response_balanced$   sugeno_demo
 C:   00001E7F  A$sugeno_8051$5942                 sugeno_demo
 C:   00001E7F  Fsugeno_demo$response_cooling$0$   sugeno_demo
@@ -6374,7 +6374,7 @@ C:   00001F88  A$sugeno_8051$6090                 sugeno_demo
 C:   00001F89  A$sugeno_8051$6091                 sugeno_demo
 C:   00001F8C  A$sugeno_8051$6092                 sugeno_demo
 C:   00001F8E  A$sugeno_8051$6095                 sugeno_demo
-C:   00001F8E  C$sugeno_demo.c$39$1_0$95          sugeno_demo
+C:   00001F8E  C$sugeno_demo.c$39$1_0$119         sugeno_demo
 C:   00001F8E  XFsugeno_demo$response_cooling$0   sugeno_demo
 C:   00001F8F  A$sugeno_8051$6111                 sugeno_demo
 C:   00001F8F  Fsugeno_demo$response_heavy_load   sugeno_demo
@@ -6531,7 +6531,7 @@ C:   0000206D  A$sugeno_8051$6234                 sugeno_demo
 C:   0000206E  A$sugeno_8051$6235                 sugeno_demo
 C:   00002071  A$sugeno_8051$6236                 sugeno_demo
 C:   00002073  A$sugeno_8051$6239                 sugeno_demo
-C:   00002073  C$sugeno_demo.c$40$1_0$97          sugeno_demo
+C:   00002073  C$sugeno_demo.c$40$1_0$121         sugeno_demo
 C:   00002073  XFsugeno_demo$response_heavy_loa   sugeno_demo
 C:   00002074  A$sugeno_8051$6255                 sugeno_demo
 C:   00002074  Fsugeno_demo$response_protection   sugeno_demo
@@ -6713,10 +6713,10 @@ C:   0000217E  A$sugeno_8051$6403                 sugeno_demo
 C:   0000217F  A$sugeno_8051$6404                 sugeno_demo
 C:   00002182  A$sugeno_8051$6405                 sugeno_demo
 C:   00002184  A$sugeno_8051$6408                 sugeno_demo
-C:   00002184  C$sugeno_demo.c$41$1_0$99          sugeno_demo
+C:   00002184  C$sugeno_demo.c$41$1_0$123         sugeno_demo
 C:   00002184  XFsugeno_demo$response_protectio   sugeno_demo
 C:   00002185  A$sugeno_8051$6436                 sugeno_demo
-C:   00002185  C$sugeno_demo.c$43$1_0$101         sugeno_demo
+C:   00002185  C$sugeno_demo.c$43$1_0$125         sugeno_demo
 C:   00002185  Fsugeno_demo$calculate_fan_speed   sugeno_demo
 C:   00002187  A$sugeno_8051$6437                 sugeno_demo
 C:   0000218A  A$sugeno_8051$6438                 sugeno_demo
@@ -6727,7 +6727,7 @@ C:   00002192  A$sugeno_8051$6442                 sugeno_demo
 C:   00002194  A$sugeno_8051$6443                 sugeno_demo
 C:   00002196  A$sugeno_8051$6444                 sugeno_demo
 C:   00002198  A$sugeno_8051$6447                 sugeno_demo
-C:   00002198  C$sugeno_demo.c$45$1_0$101         sugeno_demo
+C:   00002198  C$sugeno_demo.c$45$1_0$125         sugeno_demo
 C:   0000219A  A$sugeno_8051$6448                 sugeno_demo
 C:   0000219B  A$sugeno_8051$6449                 sugeno_demo
 C:   0000219D  A$sugeno_8051$6450                 sugeno_demo
@@ -6742,7 +6742,7 @@ C:   000021AA  A$sugeno_8051$6458                 sugeno_demo
 C:   000021AC  A$sugeno_8051$6459                 sugeno_demo
 C:   000021AE  A$sugeno_8051$6460                 sugeno_demo
 C:   000021AF  A$sugeno_8051$6463                 sugeno_demo
-C:   000021AF  C$sugeno_demo.c$46$1_0$101         sugeno_demo
+C:   000021AF  C$sugeno_demo.c$46$1_0$125         sugeno_demo
 C:   000021B1  A$sugeno_8051$6464                 sugeno_demo
 C:   000021B2  A$sugeno_8051$6465                 sugeno_demo
 C:   000021B4  A$sugeno_8051$6466                 sugeno_demo
@@ -6777,7 +6777,7 @@ C:   000021D3  A$sugeno_8051$6485                 sugeno_demo
 C:   000021D5  A$sugeno_8051$6486                 sugeno_demo
 C:   000021D6  A$sugeno_8051$6487                 sugeno_demo
 C:   000021D7  A$sugeno_8051$6490                 sugeno_demo
-C:   000021D7  C$sugeno_demo.c$47$1_0$101         sugeno_demo
+C:   000021D7  C$sugeno_demo.c$47$1_0$125         sugeno_demo
 C:   000021D9  A$sugeno_8051$6491                 sugeno_demo
 C:   000021DB  A$sugeno_8051$6492                 sugeno_demo
 C:   000021DC  A$sugeno_8051$6493                 sugeno_demo
@@ -6800,7 +6800,7 @@ C:   000021F5  A$sugeno_8051$6509                 sugeno_demo
 C:   000021F7  A$sugeno_8051$6510                 sugeno_demo
 C:   000021F8  A$sugeno_8051$6511                 sugeno_demo
 C:   000021F9  A$sugeno_8051$6514                 sugeno_demo
-C:   000021F9  C$sugeno_demo.c$48$1_0$101         sugeno_demo
+C:   000021F9  C$sugeno_demo.c$48$1_0$125         sugeno_demo
 C:   000021FB  A$sugeno_8051$6515                 sugeno_demo
 C:   000021FD  A$sugeno_8051$6516                 sugeno_demo
 C:   000021FE  A$sugeno_8051$6517                 sugeno_demo
@@ -6832,7 +6832,7 @@ C:   00002217  A$sugeno_8051$6533                 sugeno_demo
 C:   00002219  A$sugeno_8051$6534                 sugeno_demo
 C:   0000221A  A$sugeno_8051$6535                 sugeno_demo
 C:   0000221B  A$sugeno_8051$6538                 sugeno_demo
-C:   0000221B  C$sugeno_demo.c$49$1_0$101         sugeno_demo
+C:   0000221B  C$sugeno_demo.c$49$1_0$125         sugeno_demo
 C:   0000221D  A$sugeno_8051$6539                 sugeno_demo
 C:   0000221F  A$sugeno_8051$6540                 sugeno_demo
 C:   00002220  A$sugeno_8051$6541                 sugeno_demo
@@ -6855,7 +6855,7 @@ C:   00002239  A$sugeno_8051$6557                 sugeno_demo
 C:   0000223B  A$sugeno_8051$6558                 sugeno_demo
 C:   0000223C  A$sugeno_8051$6559                 sugeno_demo
 C:   0000223D  A$sugeno_8051$6562                 sugeno_demo
-C:   0000223D  C$sugeno_demo.c$50$1_0$101         sugeno_demo
+C:   0000223D  C$sugeno_demo.c$50$1_0$125         sugeno_demo
 C:   0000223F  A$sugeno_8051$6563                 sugeno_demo
 C:   00002241  A$sugeno_8051$6564                 sugeno_demo
 C:   00002242  A$sugeno_8051$6565                 sugeno_demo
@@ -6891,7 +6891,7 @@ C:   00002261  A$sugeno_8051$6585                 sugeno_demo
 C:   00002263  A$sugeno_8051$6586                 sugeno_demo
 C:   00002265  A$sugeno_8051$6587                 sugeno_demo
 C:   00002267  A$sugeno_8051$6590                 sugeno_demo
-C:   00002267  C$sugeno_demo.c$52$1_0$101         sugeno_demo
+C:   00002267  C$sugeno_demo.c$52$1_0$125         sugeno_demo
 C:   00002269  A$sugeno_8051$6591                 sugeno_demo
 C:   0000226B  A$sugeno_8051$6592                 sugeno_demo
 C:   0000226C  A$sugeno_8051$6593                 sugeno_demo
@@ -6949,7 +6949,7 @@ C:   000022AD  A$sugeno_8051$6635                 sugeno_demo
 C:   000022AF  A$sugeno_8051$6636                 sugeno_demo
 C:   000022B1  A$sugeno_8051$6637                 sugeno_demo
 C:   000022B3  A$sugeno_8051$6640                 sugeno_demo
-C:   000022B3  C$sugeno_demo.c$53$1_0$101         sugeno_demo
+C:   000022B3  C$sugeno_demo.c$53$1_0$125         sugeno_demo
 C:   000022B5  A$sugeno_8051$6641                 sugeno_demo
 C:   000022B7  A$sugeno_8051$6642                 sugeno_demo
 C:   000022B8  A$sugeno_8051$6643                 sugeno_demo
@@ -7008,7 +7008,7 @@ C:   000022FE  A$sugeno_8051$6686                 sugeno_demo
 C:   00002300  A$sugeno_8051$6687                 sugeno_demo
 C:   00002302  A$sugeno_8051$6688                 sugeno_demo
 C:   00002304  A$sugeno_8051$6691                 sugeno_demo
-C:   00002304  C$sugeno_demo.c$54$1_0$101         sugeno_demo
+C:   00002304  C$sugeno_demo.c$54$1_0$125         sugeno_demo
 C:   00002306  A$sugeno_8051$6692                 sugeno_demo
 C:   00002308  A$sugeno_8051$6693                 sugeno_demo
 C:   00002309  A$sugeno_8051$6694                 sugeno_demo
@@ -7062,7 +7062,7 @@ C:   00002342  A$sugeno_8051$6732                 sugeno_demo
 C:   00002344  A$sugeno_8051$6733                 sugeno_demo
 C:   00002346  A$sugeno_8051$6734                 sugeno_demo
 C:   00002348  A$sugeno_8051$6737                 sugeno_demo
-C:   00002348  C$sugeno_demo.c$55$1_0$101         sugeno_demo
+C:   00002348  C$sugeno_demo.c$55$1_0$125         sugeno_demo
 C:   0000234A  A$sugeno_8051$6738                 sugeno_demo
 C:   0000234C  A$sugeno_8051$6739                 sugeno_demo
 C:   0000234D  A$sugeno_8051$6740                 sugeno_demo
@@ -7107,7 +7107,7 @@ C:   00002386  A$sugeno_8051$6778                 sugeno_demo
 C:   00002388  A$sugeno_8051$6779                 sugeno_demo
 C:   0000238A  A$sugeno_8051$6780                 sugeno_demo
 C:   0000238C  A$sugeno_8051$6783                 sugeno_demo
-C:   0000238C  C$sugeno_demo.c$56$1_0$101         sugeno_demo
+C:   0000238C  C$sugeno_demo.c$56$1_0$125         sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 129.
 Hexadecimal  [32-Bits]
 
@@ -7166,7 +7166,7 @@ C:   000023D7  A$sugeno_8051$6829                 sugeno_demo
 C:   000023D9  A$sugeno_8051$6830                 sugeno_demo
 C:   000023DB  A$sugeno_8051$6831                 sugeno_demo
 C:   000023DD  A$sugeno_8051$6834                 sugeno_demo
-C:   000023DD  C$sugeno_demo.c$57$1_0$101         sugeno_demo
+C:   000023DD  C$sugeno_demo.c$57$1_0$125         sugeno_demo
 C:   000023DF  A$sugeno_8051$6835                 sugeno_demo
 ASxxxx Linker V03.00/V05.40 + sdld,  page 130.
 Hexadecimal  [32-Bits]
@@ -7309,7 +7309,7 @@ C:   0000248E  A$sugeno_8051$6946                 sugeno_demo
 C:   00002490  A$sugeno_8051$6947                 sugeno_demo
 C:   00002492  A$sugeno_8051$6948                 sugeno_demo
 C:   00002494  A$sugeno_8051$6951                 sugeno_demo
-C:   00002494  C$sugeno_demo.c$59$1_0$101         sugeno_demo
+C:   00002494  C$sugeno_demo.c$59$1_0$125         sugeno_demo
 C:   00002496  A$sugeno_8051$6952                 sugeno_demo
 C:   00002498  A$sugeno_8051$6953                 sugeno_demo
 C:   00002499  A$sugeno_8051$6954                 sugeno_demo
@@ -8154,16 +8154,16 @@ C:   00002921  A$sugeno_8051$7666                 sugeno_demo
 C:   00002922  A$sugeno_8051$7669                 sugeno_demo
 C:   00002925  A$sugeno_8051$7670                 sugeno_demo
 C:   00002927  A$sugeno_8051$7673                 sugeno_demo
-C:   00002927  C$sugeno_demo.c$60$1_0$101         sugeno_demo
+C:   00002927  C$sugeno_demo.c$60$1_0$125         sugeno_demo
 C:   00002927  XFsugeno_demo$calculate_fan_spee   sugeno_demo
 C:   00002928  A$sugeno_8051$7686                 sugeno_demo
-C:   00002928  C$sugeno_demo.c$62$1_0$103         sugeno_demo
+C:   00002928  C$sugeno_demo.c$62$1_0$127         sugeno_demo
 C:   00002928  Fsugeno_demo$fan_speed_to_pwm$0$   sugeno_demo
 C:   0000292A  A$sugeno_8051$7687                 sugeno_demo
 C:   0000292C  A$sugeno_8051$7688                 sugeno_demo
 C:   0000292E  A$sugeno_8051$7689                 sugeno_demo
 C:   0000292F  A$sugeno_8051$7692                 sugeno_demo
-C:   0000292F  C$sugeno_demo.c$64$1_0$103         sugeno_demo
+C:   0000292F  C$sugeno_demo.c$64$1_0$127         sugeno_demo
 C:   00002931  A$sugeno_8051$7693                 sugeno_demo
 C:   00002933  A$sugeno_8051$7694                 sugeno_demo
 C:   00002935  A$sugeno_8051$7695                 sugeno_demo
@@ -8198,7 +8198,7 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       Value  Global                              Global Defined In Module
       -----  --------------------------------   ------------------------
 C:   00002963  A$sugeno_8051$7720                 sugeno_demo
-C:   00002963  C$sugeno_demo.c$65$1_0$103         sugeno_demo
+C:   00002963  C$sugeno_demo.c$65$1_0$127         sugeno_demo
 C:   00002965  A$sugeno_8051$7721                 sugeno_demo
 C:   00002967  A$sugeno_8051$7722                 sugeno_demo
 C:   00002969  A$sugeno_8051$7723                 sugeno_demo
@@ -8228,7 +8228,7 @@ C:   00002996  A$sugeno_8051$7746                 sugeno_demo
 C:   00002998  A$sugeno_8051$7747                 sugeno_demo
 C:   0000299B  A$sugeno_8051$7748                 sugeno_demo
 C:   0000299D  A$sugeno_8051$7752                 sugeno_demo
-C:   0000299D  C$sugeno_demo.c$66$1_0$103         sugeno_demo
+C:   0000299D  C$sugeno_demo.c$66$1_0$127         sugeno_demo
 C:   0000299E  A$sugeno_8051$7753                 sugeno_demo
 C:   000029A0  A$sugeno_8051$7754                 sugeno_demo
 C:   000029A2  A$sugeno_8051$7755                 sugeno_demo
@@ -8261,10 +8261,10 @@ C:   000029C3  A$sugeno_8051$7772                 sugeno_demo
 C:   000029C5  A$sugeno_8051$7773                 sugeno_demo
 C:   000029C6  A$sugeno_8051$7774                 sugeno_demo
 C:   000029C9  A$sugeno_8051$7780                 sugeno_demo
-C:   000029C9  C$sugeno_demo.c$67$1_0$103         sugeno_demo
+C:   000029C9  C$sugeno_demo.c$67$1_0$127         sugeno_demo
 C:   000029C9  XFsugeno_demo$fan_speed_to_pwm$0   sugeno_demo
 C:   000029CA  A$sugeno_8051$7797                 sugeno_demo
-C:   000029CA  C$sugeno_demo.c$69$1_0$105         sugeno_demo
+C:   000029CA  C$sugeno_demo.c$69$1_0$129         sugeno_demo
 C:   000029CA  Fsugeno_demo$update_controller$0   sugeno_demo
 C:   000029CC  A$sugeno_8051$7798                 sugeno_demo
 C:   000029CE  A$sugeno_8051$7799                 sugeno_demo
@@ -8272,17 +8272,17 @@ C:   000029D0  A$sugeno_8051$7800                 sugeno_demo
 C:   000029D2  A$sugeno_8051$7801                 sugeno_demo
 C:   000029D4  A$sugeno_8051$7802                 sugeno_demo
 C:   000029D7  A$sugeno_8051$7805                 sugeno_demo
-C:   000029D7  C$sugeno_demo.c$72$1_0$105         sugeno_demo
+C:   000029D7  C$sugeno_demo.c$72$1_0$129         sugeno_demo
 C:   000029D9  A$sugeno_8051$7806                 sugeno_demo
 C:   000029DB  A$sugeno_8051$7807                 sugeno_demo
 C:   000029DC  A$sugeno_8051$7808                 sugeno_demo
 C:   000029DE  A$sugeno_8051$7811                 sugeno_demo
-C:   000029DE  C$sugeno_demo.c$73$1_0$105         sugeno_demo
+C:   000029DE  C$sugeno_demo.c$73$1_0$129         sugeno_demo
 C:   000029E0  A$sugeno_8051$7812                 sugeno_demo
 C:   000029E2  A$sugeno_8051$7813                 sugeno_demo
 C:   000029E3  A$sugeno_8051$7814                 sugeno_demo
 C:   000029E5  A$sugeno_8051$7817                 sugeno_demo
-C:   000029E5  C$sugeno_demo.c$74$1_0$105         sugeno_demo
+C:   000029E5  C$sugeno_demo.c$74$1_0$129         sugeno_demo
 C:   000029E8  A$sugeno_8051$7818                 sugeno_demo
 C:   000029EB  A$sugeno_8051$7819                 sugeno_demo
 C:   000029ED  A$sugeno_8051$7820                 sugeno_demo
@@ -8361,7 +8361,7 @@ C:   00002A56  A$sugeno_8051$7883                 sugeno_demo
 C:   00002A58  A$sugeno_8051$7884                 sugeno_demo
 C:   00002A5A  A$sugeno_8051$7885                 sugeno_demo
 C:   00002A5C  A$sugeno_8051$7888                 sugeno_demo
-C:   00002A5C  C$sugeno_demo.c$75$1_0$105         sugeno_demo
+C:   00002A5C  C$sugeno_demo.c$75$1_0$129         sugeno_demo
 C:   00002A5F  A$sugeno_8051$7889                 sugeno_demo
 C:   00002A62  A$sugeno_8051$7890                 sugeno_demo
 C:   00002A65  A$sugeno_8051$7891                 sugeno_demo
@@ -8379,21 +8379,21 @@ CSEG                                000000BD    00002DF4 =       11764. bytes (R
       -----  --------------------------------   ------------------------
 C:   00002A70  A$sugeno_8051$7897                 sugeno_demo
 C:   00002A72  A$sugeno_8051$7900                 sugeno_demo
-C:   00002A72  C$sugeno_demo.c$76$1_0$105         sugeno_demo
+C:   00002A72  C$sugeno_demo.c$76$1_0$129         sugeno_demo
 C:   00002A72  XFsugeno_demo$update_controller$   sugeno_demo
 C:   00002A73  A$sugeno_8051$7913                 sugeno_demo
-C:   00002A73  C$sugeno_demo.c$80$1_0$107         sugeno_demo
-C:   00002A73  C$sugeno_demo.c$82$1_0$107         sugeno_demo
+C:   00002A73  C$sugeno_demo.c$80$1_0$131         sugeno_demo
+C:   00002A73  C$sugeno_demo.c$82$1_0$131         sugeno_demo
 C:   00002A73  G$main$0$0                         sugeno_demo
 C:   00002A73  _main                              sugeno_demo
 C:   00002A76  A$sugeno_8051$7917                 sugeno_demo
-C:   00002A76  C$sugeno_demo.c$85$3_0$109         sugeno_demo
+C:   00002A76  C$sugeno_demo.c$85$3_0$133         sugeno_demo
 C:   00002A79  A$sugeno_8051$7920                 sugeno_demo
-C:   00002A79  C$sugeno_demo.c$86$3_0$109         sugeno_demo
+C:   00002A79  C$sugeno_demo.c$86$3_0$133         sugeno_demo
 C:   00002A7C  A$sugeno_8051$7923                 sugeno_demo
-C:   00002A7C  C$sugeno_demo.c$87$3_0$109         sugeno_demo
+C:   00002A7C  C$sugeno_demo.c$87$3_0$133         sugeno_demo
 C:   00002A7F  A$sugeno_8051$7926                 sugeno_demo
-C:   00002A7F  C$sugeno_demo.c$89$3_0$109         sugeno_demo
+C:   00002A7F  C$sugeno_demo.c$89$3_0$133         sugeno_demo
 C:   00002A81  A$sugeno_8051$7927                 sugeno_demo
 C:   00002A83  A$sugeno_8051$7928                 sugeno_demo
 C:   00002A85  A$sugeno_8051$7929                 sugeno_demo
@@ -8403,21 +8403,21 @@ C:   00002A8B  A$sugeno_8051$7932                 sugeno_demo
 C:   00002A8D  A$sugeno_8051$7933                 sugeno_demo
 C:   00002A8F  A$sugeno_8051$7934                 sugeno_demo
 C:   00002A91  A$sugeno_8051$7938                 sugeno_demo
-C:   00002A91  C$sugeno_demo.c$90$4_0$110         sugeno_demo
+C:   00002A91  C$sugeno_demo.c$90$4_0$134         sugeno_demo
 C:   00002A94  A$sugeno_8051$7941                 sugeno_demo
-C:   00002A94  C$sugeno_demo.c$91$4_0$110         sugeno_demo
+C:   00002A94  C$sugeno_demo.c$91$4_0$134         sugeno_demo
 C:   00002A96  A$sugeno_8051$7945                 sugeno_demo
-C:   00002A96  C$sugeno_demo.c$95$3_0$109         sugeno_demo
+C:   00002A96  C$sugeno_demo.c$95$3_0$133         sugeno_demo
 C:   00002A98  A$sugeno_8051$7946                 sugeno_demo
 C:   00002A9A  A$sugeno_8051$7947                 sugeno_demo
 C:   00002A9D  A$sugeno_8051$7948                 sugeno_demo
 C:   00002AA0  A$sugeno_8051$7949                 sugeno_demo
 C:   00002AA2  A$sugeno_8051$7950                 sugeno_demo
 C:   00002AA4  A$sugeno_8051$7953                 sugeno_demo
-C:   00002AA4  C$sugeno_demo.c$100$3_0$109        sugeno_demo
+C:   00002AA4  C$sugeno_demo.c$100$3_0$133        sugeno_demo
 C:   00002AA7  A$sugeno_8051$7954                 sugeno_demo
 C:   00002AA9  A$sugeno_8051$7959                 sugeno_demo
-C:   00002AA9  C$sugeno_demo.c$102$2_0$107        sugeno_demo
+C:   00002AA9  C$sugeno_demo.c$102$2_0$131        sugeno_demo
 C:   00002AA9  XG$main$0$0                        sugeno_demo
 C:   00002AAA  ___fssub                           _fssub
 C:   00002AB5  ___fsmul                           _fsmul

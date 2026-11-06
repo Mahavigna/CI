@@ -2,24 +2,23 @@
 #define FUZZY_MAX_VALUES 3u
 
 #ifdef SIMULATION
+
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
+
 #else
+
 #ifdef __SDCC
 #include <8052.h>
 #else
 #include <REG51.H>
 #endif
+
 #define FUZZY_8051
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
+
 #endif
-
-static fuzzy_rules_t rules;
-
-volatile unsigned char test_temperature = 0u;
-volatile unsigned char test_pwm = 0u;
-volatile float test_fan_speed = 0.0f;
 
 #ifdef SIMULATION
 #define HEDGE_NONE 1.0f
@@ -27,18 +26,30 @@ volatile float test_fan_speed = 0.0f;
 #define HEDGE_NONE 1u
 #endif
 
-FUZZY_VAR(temperature_low,  FUZZY_SHAPE_RAMP, HEDGE_NONE, 20.0f, 40.0f, false)
+FUZZY_VAR(temperature_low, FUZZY_SHAPE_RAMP, HEDGE_NONE, 20.0f, 40.0f, false)
 FUZZY_VAR(temperature_high, FUZZY_SHAPE_RAMP, HEDGE_NONE, 30.0f, 60.0f, true)
-FUZZY_VAR(fan_slow,         FUZZY_SHAPE_RAMP, HEDGE_NONE, 20.0f, 50.0f, false)
-FUZZY_VAR(fan_fast,         FUZZY_SHAPE_RAMP, HEDGE_NONE, 40.0f, 80.0f, true)
+FUZZY_VAR(fan_slow, FUZZY_SHAPE_RAMP, HEDGE_NONE, 20.0f, 50.0f, false)
+FUZZY_VAR(fan_fast, FUZZY_SHAPE_RAMP, HEDGE_NONE, 40.0f, 80.0f, true)
+
+static fuzzy_rules_t rules;
+
+volatile unsigned char test_temperature = 0u;
+volatile unsigned char test_pwm = 0u;
+volatile float test_fan_speed = 0.0f;
 
 static float calculate_fan_speed(float temperature)
 {
     rules.count = 0u;
 
-    RULE(rules, "Low temperature produces slow fan", temperature_low(temperature), fan_slow);
+    if (!RULE(rules, "Low temperature produces slow fan", temperature_low(temperature), fan_slow))
+    {
+        return 0.0f;
+    }
 
-    RULE(rules, "High temperature produces fast fan", temperature_high(temperature), fan_fast);
+    if (!RULE(rules, "High temperature produces fast fan", temperature_high(temperature), fan_fast))
+    {
+        return 0.0f;
+    }
 
     return fuzzy_rules_defuzzify(&rules, 0.0f, 100.0f, 10.0f, FUZZY_DEFUZZ_BOA);
 }
@@ -46,10 +57,14 @@ static float calculate_fan_speed(float temperature)
 static unsigned char fan_speed_to_pwm(float fan_speed)
 {
     if (fan_speed <= 0.0f)
+    {
         return 0u;
+    }
 
     if (fan_speed >= 100.0f)
+    {
         return 100u;
+    }
 
     return (unsigned char)(fan_speed + 0.5f);
 }
@@ -68,12 +83,13 @@ void main(void)
     P0 = 0x00u;
     P1 = 0x00u;
 
-    for (;;) {
+    for (;;)
+    {
         P0 = 0x55u;
-
         test_temperature = P2;
 
-        if (test_temperature > 100u) {
+        if (test_temperature > 100u)
+        {
             P1 = 0x00u;
             P0 = 0xF0u;
             continue;
@@ -81,8 +97,10 @@ void main(void)
 
         P0 = 0x60u;
         update_controller(test_temperature);
+
         P0 = 0x70u;
         P1 = test_pwm;
+
         P0 = 0xAAu;
     }
 }
@@ -121,12 +139,13 @@ int main(void)
     );
 
     printf("\nSelected-input rule activations:\n");
+
     fuzzy_rules_print(&rules);
 
     fuzzy_rules_plot_cog(
         &rules,
         "mamdani_selected_output",
-        "Mamdani 8052 Fan Controller: Selected MOM Output",
+        "Mamdani 8052 Fan Controller: Selected BOA Output",
         test_fan_speed,
         0.0f,
         100.0f,
@@ -138,7 +157,7 @@ int main(void)
         "Temperature Membership Functions",
         100.0f,
         1.0f,
-        SERIES(temperature_low,  "#3b82f6"),
+        SERIES(temperature_low, "#3b82f6"),
         SERIES(temperature_high, "#ef4444")
     );
 

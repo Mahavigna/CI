@@ -4,7 +4,18 @@
 #define FN_ACTIVATION_SIGMOID 1u
 #define FN_ACTIVATION_TANH 2u
 #define FN_ACTIVATION_RELU 3u
-#define FN_PREMISE_RAMP 0u
+#define FN_SHAPE_RAMP 0u
+#define FN_SHAPE_TRIANGLE 1u
+#define FN_SHAPE_TRAPEZOID 2u
+#define FN_SHAPE_SMF 3u
+#define FN_SHAPE_ZMF 4u
+#define FN_SHAPE_GAUSSIAN 5u
+#define FN_SHAPE_BELL 6u
+#define FN_SHAPE_SIGMOID 7u
+#define FN_SHAPE_PIMF 8u
+#define FN_SHAPE_DSIGMOID 9u
+#define FN_SHAPE_PSIGMOID 10u
+#define FN_SHAPE_GAUSSIAN2 11u
 #define FN_EXPR_MEMBERSHIP 0u
 #define FN_EXPR_NOT 1u
 #define FN_EXPR_AND 2u
@@ -65,28 +76,92 @@ inline float fn_logic_or(float left, float right, uint method)
     return fmax(left, right);
 }
 
-inline float fn_ramp(float x, float a, float b, float rising)
+inline float fn_sigmoid(float slope, float center, float x)
 {
-    if (!(b > a)) return 0.0f;
-    if (x <= a) return rising != 0.0f ? 0.0f : 1.0f;
-    if (x >= b) return rising != 0.0f ? 1.0f : 0.0f;
-    float value = (x - a) / (b - a);
-    return rising != 0.0f ? value : 1.0f - value;
+    return native_recip(1.0f + native_exp(-clamp(slope * (x - center), -80.0f, 80.0f)));
+}
+
+inline float fn_shape(uint shape, float x, __global const float *parameters, uint offset, uint count, float epsilon)
+{
+    if (shape == FN_SHAPE_RAMP && count == 3u)
+    {
+        float a = parameters[offset];
+        float b = parameters[offset + 1u];
+        int rising = parameters[offset + 2u] != 0.0f;
+        if (!(b > a)) return 0.0f;
+        if (x <= a) return rising ? 0.0f : 1.0f;
+        if (x >= b) return rising ? 1.0f : 0.0f;
+        return rising ? (x - a) / (b - a) : (b - x) / (b - a);
+    }
+    if (shape == FN_SHAPE_TRIANGLE && count == 3u)
+    {
+        float a = parameters[offset]; float b = parameters[offset + 1u]; float c = parameters[offset + 2u];
+        if (!(a < b && b < c) || x <= a || x >= c) return 0.0f;
+        return x <= b ? (x - a) / (b - a) : (c - x) / (c - b);
+    }
+    if (shape == FN_SHAPE_TRAPEZOID && count == 4u)
+    {
+        float a = parameters[offset]; float b = parameters[offset + 1u]; float c = parameters[offset + 2u]; float d = parameters[offset + 3u];
+        if (!(a < b && b <= c && c < d) || x <= a || x >= d) return 0.0f;
+        if (x >= b && x <= c) return 1.0f;
+        return x < b ? (x - a) / (b - a) : (d - x) / (d - c);
+    }
+    if ((shape == FN_SHAPE_SMF || shape == FN_SHAPE_ZMF) && count == 2u)
+    {
+        float a = parameters[offset]; float b = parameters[offset + 1u]; float result; float t;
+        if (!(b > a)) return 0.0f;
+        if (x <= a) result = 0.0f; else if (x >= b) result = 1.0f; else if (x <= 0.5f * (a + b)) { t = (x - a) / (b - a); result = 2.0f * t * t; } else { t = (b - x) / (b - a); result = 1.0f - 2.0f * t * t; }
+        return shape == FN_SHAPE_ZMF ? 1.0f - result : result;
+    }
+    if (shape == FN_SHAPE_GAUSSIAN && count == 2u)
+    {
+        float mean = parameters[offset]; float sigma = fabs(parameters[offset + 1u]); float d;
+        if (sigma <= epsilon) return 0.0f;
+        d = (x - mean) / sigma; return native_exp(-0.5f * d * d);
+    }
+    if (shape == FN_SHAPE_BELL && count == 3u)
+    {
+        float width = parameters[offset]; float slope = parameters[offset + 1u]; float center = parameters[offset + 2u];
+        if (fabs(width) <= epsilon) return 0.0f;
+        return native_recip(1.0f + pow(fabs((x - center) / (0.5f * width)), 2.0f * slope));
+    }
+    if (shape == FN_SHAPE_SIGMOID && count == 2u) return fn_sigmoid(parameters[offset], parameters[offset + 1u], x);
+    if (shape == FN_SHAPE_PIMF && count == 4u)
+    {
+        float a = parameters[offset]; float b = parameters[offset + 1u]; float c = parameters[offset + 2u]; float d = parameters[offset + 3u]; float left; float right;
+        if (!(a < b && b <= c && c < d)) return 0.0f;
+        left = fn_shape(FN_SHAPE_SMF, x, parameters, offset, 2u, epsilon);
+        right = fn_shape(FN_SHAPE_ZMF, x, parameters, offset + 2u, 2u, epsilon);
+        return fmin(left, right);
+    }
+    if ((shape == FN_SHAPE_DSIGMOID || shape == FN_SHAPE_PSIGMOID) && count == 4u)
+    {
+        float first = fn_sigmoid(parameters[offset], parameters[offset + 1u], x);
+        float second = fn_sigmoid(parameters[offset + 2u], parameters[offset + 3u], x);
+        return shape == FN_SHAPE_DSIGMOID ? clamp(first - second, 0.0f, 1.0f) : first * second;
+    }
+    if (shape == FN_SHAPE_GAUSSIAN2 && count == 4u)
+    {
+        float m1 = parameters[offset]; float s1 = fabs(parameters[offset + 1u]); float m2 = parameters[offset + 2u]; float s2 = fabs(parameters[offset + 3u]); float d;
+        if (s1 <= epsilon || s2 <= epsilon || m1 > m2) return 0.0f;
+        if (x < m1) { d = (x - m1) / s1; return native_exp(-0.5f * d * d); }
+        if (x <= m2) return 1.0f;
+        d = (x - m2) / s2; return native_exp(-0.5f * d * d);
+    }
+    return 0.0f;
 }
 
 __kernel void fn_premise_forward(__global const float *restrict raw_inputs, __global const fn_premise_t *restrict premises, __global const float *restrict parameters, __global float *restrict memberships, uint sample_count, uint input_count, uint premise_count)
 {
     uint sample = get_global_id(0);
     uint premise_index = get_global_id(1);
+    fn_premise_t premise;
+    float x;
+    float value;
     if (sample >= sample_count || premise_index >= premise_count) return;
-    fn_premise_t premise = premises[premise_index];
-    float x = raw_inputs[(size_t)sample * input_count + premise.input_index];
-    float value = 0.0f;
-    if (premise.shape == FN_PREMISE_RAMP)
-    {
-        uint offset = premise.parameter_offset;
-        value = fn_ramp(x, parameters[offset], parameters[offset + 1u], parameters[offset + 2u]);
-    }
+    premise = premises[premise_index];
+    x = raw_inputs[(size_t)sample * input_count + premise.input_index];
+    value = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
     value = pow(clamp(value, 0.0f, 1.0f), fmax(premise.hedge, premise.epsilon));
     memberships[(size_t)sample * premise_count + premise_index] = value;
 }
@@ -259,34 +334,42 @@ __kernel void fn_expression_backward(__global const fn_expression_t *restrict ex
     }
 }
 
-__kernel void fn_premise_gradient(__global const float *restrict raw_inputs, __global const fn_premise_t *restrict premises, __global const float *restrict parameters, __global const float *restrict memberships, __global const float *restrict membership_gradients, __global float *restrict parameter_gradients, uint sample_count, uint input_count, uint premise_count, uint parameter_count)
+__kernel void fn_premise_gradient(__global const float *restrict raw_inputs, __global const fn_premise_t *restrict premises, __global float *restrict parameters, __global const float *restrict memberships, __global const float *restrict membership_gradients, __global float *restrict parameter_gradients, uint sample_count, uint input_count, uint premise_count, uint parameter_count)
 {
     uint parameter = get_global_id(0);
-    if (parameter >= parameter_count) return;
     float gradient = 0.0f;
-    for (uint premise_index = 0u; premise_index < premise_count; premise_index++)
+    uint premise_index;
+    if (parameter >= parameter_count) return;
+    for (premise_index = 0u; premise_index < premise_count; premise_index++)
     {
         fn_premise_t premise = premises[premise_index];
+        uint local_parameter;
+        float original;
+        float step;
+        uint sample;
         if (parameter < premise.parameter_offset || parameter >= premise.parameter_offset + premise.parameter_count) continue;
-        uint local_parameter = parameter - premise.parameter_offset;
+        local_parameter = parameter - premise.parameter_offset;
         if ((premise.trainable_mask & (1u << local_parameter)) == 0u) continue;
-        if (premise.shape != FN_PREMISE_RAMP || local_parameter > 1u) continue;
-        float a = parameters[premise.parameter_offset];
-        float b = parameters[premise.parameter_offset + 1u];
-        float rising = parameters[premise.parameter_offset + 2u];
-        float width = b - a;
-        if (!(width > premise.epsilon)) continue;
-        for (uint sample = 0u; sample < sample_count; sample++)
+        original = parameters[parameter];
+        step = fmax(premise.epsilon, fabs(original) * 1.0e-4f);
+        for (sample = 0u; sample < sample_count; sample++)
         {
             float x = raw_inputs[(size_t)sample * input_count + premise.input_index];
-            if (!(x > a && x < b)) continue;
-            float base = rising != 0.0f ? (x - a) / width : 1.0f - (x - a) / width;
-            float dbase;
-            if (rising != 0.0f) dbase = local_parameter == 0u ? (x - b) / (width * width) : -(x - a) / (width * width);
-            else dbase = local_parameter == 0u ? (b - x) / (width * width) : (x - a) / (width * width);
-            float hedge = fmax(premise.hedge, premise.epsilon);
-            float hedge_derivative = hedge * pow(fmax(base, premise.epsilon), hedge - 1.0f);
-            gradient += membership_gradients[(size_t)sample * premise_count + premise_index] * hedge_derivative * dbase;
+            float plus;
+            float minus;
+            float derivative;
+            parameters[parameter] = original + step;
+            plus = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
+            parameters[parameter] = original - step;
+            minus = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
+            parameters[parameter] = original;
+            derivative = (plus - minus) / (2.0f * step);
+            if (premise.hedge != 1.0f)
+            {
+                float base = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
+                derivative *= premise.hedge * pow(fmax(base, premise.epsilon), premise.hedge - 1.0f);
+            }
+            gradient += membership_gradients[(size_t)sample * premise_count + premise_index] * derivative;
         }
     }
     parameter_gradients[parameter] = gradient;
@@ -339,18 +422,14 @@ __kernel void fn_adam_apply(__global float *parameters, __global const float *gr
 __kernel void fn_project_premises(__global const fn_premise_t *restrict premises, __global float *parameters, uint premise_count)
 {
     uint premise_index = get_global_id(0);
+    uint parameter_index;
+    fn_premise_t premise;
     if (premise_index >= premise_count) return;
-    fn_premise_t premise = premises[premise_index];
-    if (premise.shape != FN_PREMISE_RAMP) return;
-    uint offset = premise.parameter_offset;
-    float a = clamp(parameters[offset], premise.domain_minimum, premise.domain_maximum);
-    float b = clamp(parameters[offset + 1u], premise.domain_minimum, premise.domain_maximum);
-    if (b <= a + premise.epsilon)
+    premise = premises[premise_index];
+    for (parameter_index = 0u; parameter_index < premise.parameter_count; parameter_index++)
     {
-        float middle = 0.5f * (a + b);
-        a = clamp(middle - 0.5f * premise.epsilon, premise.domain_minimum, premise.domain_maximum - premise.epsilon);
-        b = a + premise.epsilon;
+        uint index = premise.parameter_offset + parameter_index;
+        if (!isfinite(parameters[index])) parameters[index] = 0.0f;
     }
-    parameters[offset] = a;
-    parameters[offset + 1u] = b;
 }
+
