@@ -5,12 +5,11 @@
 #define FUZZY_IMPLEMENTATION
 #include "fuzzy.h"
 
-#if !defined(FUZZY_NEURON_OPENCL)
+#ifndef FUZZY_NEURON_OPENCL
 #error FUZZY_NEURON_OPENCL must be enabled for this program
 #endif
 
 #include <dlfcn.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,265 +17,285 @@
 #define FUZZY_MODEL_PLUGIN_ABI 2u
 #define OUTPUT_DIR "fuzzy-neuron-output"
 #define DEFAULT_PLUGIN "./fuzzy_model_rules.so"
-#define DEFAULT_TRAIN_DATASET "sugeno/sugeno_complex_sweep.csv"
-#define DEFAULT_MODEL OUTPUT_DIR "/fuzzy_neuron_trainable_model.csv"
-#define DEFAULT_KERNEL "fuzzy_neuron_kernels.cl"
-#define DEFAULT_TEST_OUTPUT OUTPUT_DIR "/fuzzy_neuron_trainable_predictions.csv"
+#define DATASET_PATH OUTPUT_DIR "/airfoil_self_noise.dat"
+#define MODEL_PATH OUTPUT_DIR "/airfoil_model.csv"
+#define KERNEL_PATH "fuzzy_neuron_kernels.cl"
+#define TRAINING_INTERPOLATION_PATH OUTPUT_DIR "/airfoil_training_interpolation"
+#define MODEL_INTERPOLATION_PATH OUTPUT_DIR "/airfoil_model_interpolation"
+#define TEST_INTERPOLATION_PATH OUTPUT_DIR "/airfoil_test_interpolation"
 #define FUZZY_MODEL_EXPORT __attribute__((visibility("default")))
-#define FIRST_HIDDEN 10u
-#define SECOND_HIDDEN 10u
-#define THIRD_HIDDEN 10u
-#define SCALE 1.0f
 
-FUZZY_NEURON_MODEL(fuzzy_model, 3u, 1u,
-    FUZZY_NEURON_INPUT((*model), temperature, 0.0f, 100.0f, 1.0f);
-    FUZZY_NEURON_INPUT((*model), load, 0.0f, 100.0f, 1.0f);
-    FUZZY_NEURON_INPUT((*model), vibration, 0.0f, 10.0f, 0.1f);
+#define DATASET_ROWS 1503u
+#define INPUT_DIMENSIONS 5u
+#define OUTPUT_DIMENSIONS 1u
+#define TRAIN_ROWS 1202u
+#define TEST_ROWS 301u
+#define SPLIT_SEED 42u
+#define XAVIER_SEED 42u
 
-    FUZZY_NEURON_PREMISE((*model), temperature_low, temperature, FUZZY_SHAPE_ZMF, 1.0f, 15.0f, 40.0f);
-    FUZZY_NEURON_PREMISE((*model), temperature_high, temperature, FUZZY_SHAPE_SMF, 1.0f, 35.0f, 75.0f);
-    FUZZY_NEURON_PREMISE((*model), load_low, load, FUZZY_SHAPE_ZMF, 1.0f, 20.0f, 50.0f);
-    FUZZY_NEURON_PREMISE((*model), load_high, load, FUZZY_SHAPE_SMF, 1.0f, 45.0f, 85.0f);
-    FUZZY_NEURON_PREMISE((*model), vibration_low, vibration, FUZZY_SHAPE_SIGMOID, 1.0f, -1.5f, 2.5f);
-    FUZZY_NEURON_PREMISE((*model), vibration_high, vibration, FUZZY_SHAPE_SIGMOID, 1.0f, 1.0f, 5.5f);
+#define TRAIN_EPOCHS 10000u
+#define TRAIN_BATCH_SIZE 256u
+#define TRAIN_LEARNING_RATE 0.0001f
+#define TRAIN_REPORT_INTERVAL 25u
+#define HIDDEN_WIDTH 16u
+#define INTERPOLATION_STEP 0.10f
 
-    FUZZY_NEURON_EXPR_MEMBERSHIP((*model), temperature_low_node, temperature_low);
-    FUZZY_NEURON_EXPR_MEMBERSHIP((*model), temperature_high_node, temperature_high);
-    FUZZY_NEURON_EXPR_MEMBERSHIP((*model), load_low_node, load_low);
-    FUZZY_NEURON_EXPR_MEMBERSHIP((*model), load_high_node, load_high);
-    FUZZY_NEURON_EXPR_MEMBERSHIP((*model), vibration_low_node, vibration_low);
-    FUZZY_NEURON_EXPR_MEMBERSHIP((*model), vibration_high_node, vibration_high);
+//User Setup
+typedef struct airfoil_scale
+{
+    float input_minimum[INPUT_DIMENSIONS];
+    float input_maximum[INPUT_DIMENSIONS];
+    float target_minimum;
+    float target_maximum;
+} airfoil_scale_t; //User defines these themselves based on the dataset and normalization requirements
 
-    FUZZY_NEURON_EXPR_AND((*model), idle_tl, temperature_low_node, load_low_node);
-    FUZZY_NEURON_EXPR_AND((*model), idle_root, idle_tl, vibration_low_node);
-    FUZZY_NEURON_TRAINABLE_RULE_ROOT((*model), "idle", idle_root);
+//Actual ANN setup via DSL macros
+FUZZY_NEURON_PARAMETERS(airfoil_low_parameters, 0.25f, 0.30f);
+FUZZY_NEURON_PARAMETERS(airfoil_high_parameters, 0.75f, 0.30f);
 
-    FUZZY_NEURON_EXPR_NOT((*model), economy_not_temperature_high, temperature_high_node);
-    FUZZY_NEURON_EXPR_AND((*model), economy_root, economy_not_temperature_high, load_high_node);
-    FUZZY_NEURON_TRAINABLE_RULE_ROOT((*model), "economy", economy_root);
+FUZZY_NEURON_MEMBERSHIP_DESCRIPTOR(airfoil_low_membership, FUZZY_SHAPE_GAUSSIAN, 1.0f, 0x3u, 0.0f, 1.0f, airfoil_low_parameters);
+FUZZY_NEURON_MEMBERSHIP_DESCRIPTOR(airfoil_high_membership, FUZZY_SHAPE_GAUSSIAN, 1.0f, 0x3u, 0.0f, 1.0f, airfoil_high_parameters);
 
-    FUZZY_NEURON_EXPR_OR((*model), balanced_root, temperature_high_node, vibration_high_node);
-    FUZZY_NEURON_TRAINABLE_RULE_ROOT((*model), "balanced", balanced_root);
+FUZZY_NEURON_LAYERS(
+    airfoil_layers,
+    FUZZY_NEURON_LAYER_ENTRY(HIDDEN_WIDTH, FUZZY_NEURON_TANH),
+    FUZZY_NEURON_LAYER_ENTRY(HIDDEN_WIDTH, FUZZY_NEURON_TANH),
+    FUZZY_NEURON_OUTPUT_ENTRY(OUTPUT_DIMENSIONS, FUZZY_NEURON_LINEAR)
+);
 
-    FUZZY_NEURON_EXPR_AND((*model), cooling_root, temperature_high_node, load_high_node);
-    FUZZY_NEURON_TRAINABLE_RULE_ROOT((*model), "cooling", cooling_root);
+FUZZY_NEURON_BINARY_MODEL(
+    airfoil_model,
+    INPUT_DIMENSIONS,
+    OUTPUT_DIMENSIONS,
+    FUZZY_LOGIC_STANDARD,
+    airfoil_low_membership,
+    airfoil_high_membership,
+    airfoil_layers,
+    "frequency",
+    "attack",
+    "chord",
+    "velocity",
+    "displacement"
+);
 
-    FUZZY_NEURON_EXPR_NOT((*model), heavy_not_vibration_high, vibration_high_node);
-    FUZZY_NEURON_EXPR_AND((*model), heavy_load_root, load_high_node, heavy_not_vibration_high);
-    FUZZY_NEURON_TRAINABLE_RULE_ROOT((*model), "heavy_load", heavy_load_root);
-
-    FUZZY_NEURON_EXPR_AND((*model), protection_temperature, temperature_high_node, vibration_high_node);
-    FUZZY_NEURON_EXPR_AND((*model), protection_load, load_high_node, vibration_high_node);
-    FUZZY_NEURON_EXPR_OR((*model), protection_root, protection_temperature, protection_load);
-    FUZZY_NEURON_TRAINABLE_RULE_ROOT((*model), "protection", protection_root);
-
-    FUZZY_NEURON_LAYER((*model), FIRST_HIDDEN, FUZZY_NEURON_RELU);
-    FUZZY_NEURON_LAYER((*model), SECOND_HIDDEN, FUZZY_NEURON_RELU);
-    FUZZY_NEURON_LAYER((*model), THIRD_HIDDEN, FUZZY_NEURON_RELU);
-    FUZZY_NEURON_OUTPUT((*model), FUZZY_NEURON_LINEAR);
-)
-
-FUZZY_NEURON_MODEL_PLUGIN(fuzzy_model, FUZZY_MODEL_PLUGIN_ABI, "temperature-load-vibration-trainable", FUZZY_MODEL_EXPORT)
+//Extra functionality for plugin support, user can hold load model changes without full recompilation
+FUZZY_NEURON_MODEL_PLUGIN(airfoil_model, FUZZY_MODEL_PLUGIN_ABI, "airfoil-self-noise-anfis", FUZZY_MODEL_EXPORT)
 
 #ifndef FUZZY_MODEL_PLUGIN_ONLY
 
-FUZZY_NEURON_HOT_RELOAD(fuzzy_model_plugin, DEFAULT_PLUGIN)
+FUZZY_NEURON_HOT_RELOAD(airfoil_plugin, DEFAULT_PLUGIN)
 
-static void generate_model_plots(fuzzy_neuron_network_t *model)
+
+//User Setup
+static float normalize_value(float value, float minimum, float maximum)
 {
-    if (!FUZZY_NEURON_PLOT_MEMBERSHIPS((*model), OUTPUT_DIR)) exit(EXIT_FAILURE);
-    if (!FUZZY_NEURON_SWEEP_MODEL((*model), OUTPUT_DIR "/fuzzy_neuron_learned_surface", "Trained Fuzzy-Neuron Surface", 0u, SCALE, FUZZY_SWEEP_DIMENSION("Temperature", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Load", 0.0f, 100.0f, 2.0f), FUZZY_SWEEP_DIMENSION("Vibration", 0.0f, 10.0f, 0.5f))) exit(EXIT_FAILURE);
+    return (value - minimum) / (maximum - minimum);
 }
 
-static unsigned int random_state = 0x12345678u;
-
-static float random_uniform(float minimum, float maximum)
+//User Setup
+static void load_dataset(fuzzy_neuron_dataset_t *dataset)
 {
-    random_state = random_state * 1664525u + 1013904223u;
-    return minimum + (maximum - minimum) * ((float)(random_state & 0x00ffffffu) / 16777215.0f);
-}
-
-static void initialize_network(fuzzy_neuron_network_t *model)
-{
-    size_t layer;
-    random_state = 0x12345678u;
-    for (layer = 0u; layer < model->layer_count; layer++)
-    {
-        fuzzy_neuron_layer_t *current = &model->layers[layer];
-        size_t source_count = layer == 0u ? model->rule_count : model->layers[layer - 1u].count;
-        size_t destination_count = current->count;
-        bool relu = current->activation == FUZZY_NEURON_RELU;
-        float limit = relu ? sqrtf(6.0f / (float)source_count) : sqrtf(6.0f / ((float)source_count + (float)destination_count));
-        size_t destination;
-        size_t source;
-        for (destination = 0u; destination < destination_count; destination++)
-        {
-            model->biases[current->bias_offset + destination] = 0.0f;
-            for (source = 0u; source < source_count; source++) model->weights[current->weight_offset + destination * source_count + source] = random_uniform(-limit, limit);
-        }
-    }
-}
-
-static fuzzy_neuron_csv_t csv_format(void)
-{
-    static const float input_scales[3] = {1.0f, 1.0f, 1.0f};
-    static const float target_scales[1] = {SCALE};
-    fuzzy_neuron_csv_t csv = {3u, 1u, true, ',', input_scales, target_scales};
-    return csv;
-}
-
-static void print_premises(const fuzzy_neuron_network_t *model, const char *stage)
-{
-    size_t premise_index;
-    printf("\n============================================================\n");
-    printf("Trainable Premises: %s\n", stage);
-    printf("============================================================\n");
-    for (premise_index = 0u; premise_index < model->premise_count; premise_index++)
-    {
-        const fuzzy_neuron_premise_t *premise = &model->premises[premise_index];
-        size_t parameter_index;
-        printf("%s input=%s shape=%u hedge=%+.9f trainable_mask=0x%X parameters=", premise->name, model->inputs[premise->input_index].name, (unsigned int)premise->shape, premise->hedge, premise->trainable_mask);
-        for (parameter_index = 0u; parameter_index < premise->parameter_count; parameter_index++) printf("%s%+.9f", parameter_index == 0u ? "" : ",", model->premise_parameters[premise->parameter_offset + parameter_index]);
-        printf("\n");
-    }
-    printf("============================================================\n");
-}
-
-static void measure(fuzzy_neuron_network_t *model, const fuzzy_neuron_dataset_t *dataset, const char *stage)
-{
-    double mse = 0.0;
-    double mae = 0.0;
-    double maximum = 0.0;
-    float output[1];
+    FILE *file = fopen(DATASET_PATH, "r");
     size_t row;
-    for (row = 0u; row < dataset->rows; row++)
+
+    FUZZY_NEURON_DATASET_ALLOCATE(*dataset, DATASET_ROWS, INPUT_DIMENSIONS, OUTPUT_DIMENSIONS);
+
+    for (row = 0u; row < DATASET_ROWS; row++)
     {
-        const float *input = dataset->inputs + row * dataset->input_dimensions;
-        float expected = dataset->targets[row];
-        float error;
-        fuzzy_neuron_predict(model, input, output);
-        error = output[0] - expected;
-        mse += (double)error * error;
-        mae += fabs((double)error);
-        if (fabs((double)error) > maximum) maximum = fabs((double)error);
+        float *input = dataset->inputs + row * INPUT_DIMENSIONS;
+        fscanf(file, "%f %f %f %f %f %f", &input[0], &input[1], &input[2], &input[3], &input[4], &dataset->targets[row]);
     }
-    printf("%s MSE %.10f RMSE %.10f MAE %.10f maximum %.10f\n", stage, mse / dataset->rows, sqrt(mse / dataset->rows), mae / dataset->rows, maximum);
+
+    fclose(file);
 }
 
-static void train_model(void)
+//User Setup
+static void split_dataset(const fuzzy_neuron_dataset_t *source, fuzzy_neuron_dataset_t *training, fuzzy_neuron_dataset_t *test)
 {
-    fuzzy_neuron_csv_t csv = csv_format();
-    fuzzy_neuron_dataset_t dataset = {0};
-    fuzzy_neuron_loaded_plugin_t plugin = fuzzy_model_plugin_load();
-    fuzzy_neuron_network_t *model = plugin.api->create();
-    fuzzy_neuron_train_options_t mse_options;
-    fuzzy_neuron_train_options_t huber_options;
-    unsigned int continue_training;
-    unsigned int mse_epochs;
-    unsigned int mse_batch_size;
-    unsigned int mse_report_interval;
-    unsigned int huber_epochs;
-    unsigned int huber_batch_size;
-    unsigned int huber_report_interval;
-    unsigned int opencl_batch_capacity;
-    float mse_learning_rate;
-    float huber_learning_rate;
+    size_t order[DATASET_ROWS];
+    unsigned int state = SPLIT_SEED;
+    size_t row;
 
-    printf("Continue existing model? 0 = new, 1 = continue: ");
-    if (scanf("%u", &continue_training) != 1) exit(EXIT_FAILURE);
-    if (continue_training)
+    FUZZY_NEURON_DATASET_ALLOCATE(*training, TRAIN_ROWS, INPUT_DIMENSIONS, OUTPUT_DIMENSIONS);
+    FUZZY_NEURON_DATASET_ALLOCATE(*test, TEST_ROWS, INPUT_DIMENSIONS, OUTPUT_DIMENSIONS);
+
+    for (row = 0u; row < DATASET_ROWS; row++)
     {
-        if (!fuzzy_neuron_model_load_csv(model, DEFAULT_MODEL)) exit(EXIT_FAILURE);
+        order[row] = row;
     }
-    else initialize_network(model);
 
-    printf("GPU MSE epochs: ");
-    if (scanf("%u", &mse_epochs) != 1) exit(EXIT_FAILURE);
-    printf("GPU MSE batch size: ");
-    if (scanf("%u", &mse_batch_size) != 1) exit(EXIT_FAILURE);
-    printf("GPU MSE learning rate: ");
-    if (scanf("%f", &mse_learning_rate) != 1) exit(EXIT_FAILURE);
-    printf("GPU MSE report interval: ");
-    if (scanf("%u", &mse_report_interval) != 1) exit(EXIT_FAILURE);
-    printf("GPU Huber epochs: ");
-    if (scanf("%u", &huber_epochs) != 1) exit(EXIT_FAILURE);
-    printf("GPU Huber batch size: ");
-    if (scanf("%u", &huber_batch_size) != 1) exit(EXIT_FAILURE);
-    printf("GPU Huber learning rate: ");
-    if (scanf("%f", &huber_learning_rate) != 1) exit(EXIT_FAILURE);
-    printf("GPU Huber report interval: ");
-    if (scanf("%u", &huber_report_interval) != 1) exit(EXIT_FAILURE);
-
-    mse_options = FUZZY_NEURON_TRAIN_OPTIONS_ADAM(mse_epochs, mse_batch_size, mse_learning_rate, mse_report_interval);
-    huber_options = FUZZY_NEURON_TRAIN_OPTIONS_ADAM_CONTINUE(huber_epochs, huber_batch_size, huber_learning_rate, huber_report_interval);
-    opencl_batch_capacity = mse_batch_size > huber_batch_size ? mse_batch_size : huber_batch_size;
-
-    if (system("mkdir -p " OUTPUT_DIR) != 0) exit(EXIT_FAILURE);
-    if (!fuzzy_neuron_dataset_load_csv(DEFAULT_TRAIN_DATASET, &csv, &dataset)) exit(EXIT_FAILURE);
-    print_premises(model, "Before Training");
-    measure(model, &dataset, "Before Training");
-
-    if (!fuzzy_neuron_opencl_init(model, opencl_batch_capacity, DEFAULT_KERNEL)) exit(EXIT_FAILURE);
-    if (mse_epochs > 0u && !fuzzy_neuron_opencl_train(model, &dataset, &mse_options, MSE)) exit(EXIT_FAILURE);
-    measure(model, &dataset, "After GPU MSE");
-    if (huber_epochs > 0u && !fuzzy_neuron_opencl_train(model, &dataset, &huber_options, HUBER)) exit(EXIT_FAILURE);
-    measure(model, &dataset, "After GPU Huber");
-    print_premises(model, "After Training");
-
-    if (!fuzzy_neuron_model_save_csv(model, DEFAULT_MODEL)) exit(EXIT_FAILURE);
-    generate_model_plots(model);
-    printf("Membership plots and trained surface written to %s/\n", OUTPUT_DIR);
-    fuzzy_neuron_dataset_free(&dataset);
-    plugin.api->destroy(model);
-    fuzzy_model_plugin_unload(&plugin);
-}
-
-static void run_input(void)
-{
-    fuzzy_neuron_loaded_plugin_t plugin = fuzzy_model_plugin_load();
-    fuzzy_neuron_network_t *model = plugin.api->create();
-    float input[3];
-    float output[1];
-    if (!fuzzy_neuron_model_load_csv(model, DEFAULT_MODEL)) exit(EXIT_FAILURE);
-    printf("Temperature Load Vibration: ");
-    if (scanf("%f %f %f", &input[0], &input[1], &input[2]) != 3) exit(EXIT_FAILURE);
-    if (!fuzzy_neuron_predict(model, input, output)) exit(EXIT_FAILURE);
-    printf("Predicted output: %.9f\n", output[0]);
-    plugin.api->destroy(model);
-    fuzzy_model_plugin_unload(&plugin);
-}
-
-static void test_dataset(const char *dataset_path)
-{
-    fuzzy_neuron_csv_t csv = csv_format();
-    fuzzy_neuron_dataset_t dataset = {0};
-    fuzzy_neuron_loaded_plugin_t plugin = fuzzy_model_plugin_load();
-    fuzzy_neuron_network_t *model = plugin.api->create();
-    if (!fuzzy_neuron_model_load_csv(model, DEFAULT_MODEL)) exit(EXIT_FAILURE);
-    if (!fuzzy_neuron_dataset_load_csv(dataset_path, &csv, &dataset)) exit(EXIT_FAILURE);
-    measure(model, &dataset, "Dataset Test");
-    fuzzy_neuron_dataset_free(&dataset);
-    plugin.api->destroy(model);
-    fuzzy_model_plugin_unload(&plugin);
-}
-
-static void menu(void)
-{
-    int choice = 0;
-    while (choice != 4)
+    for (row = DATASET_ROWS; row > 1u; row--)
     {
-        printf("\n1. Train model\n2. Run one input\n3. Test original dataset\n4. Exit\nChoice: ");
-        if (scanf("%d", &choice) != 1) exit(EXIT_FAILURE);
-        if (choice == 1) train_model();
-        else if (choice == 2) run_input();
-        else if (choice == 3) test_dataset(DEFAULT_TRAIN_DATASET);
+        size_t selected;
+        size_t temporary;
+
+        state = state * 1664525u + 1013904223u;
+        selected = (size_t)state % row;
+        temporary = order[row - 1u];
+        order[row - 1u] = order[selected];
+        order[selected] = temporary;
     }
+
+    for (row = 0u; row < DATASET_ROWS; row++)
+    {
+        fuzzy_neuron_dataset_t *destination = row < TRAIN_ROWS ? training : test;
+        size_t destination_row = row < TRAIN_ROWS ? row : row - TRAIN_ROWS;
+
+        memcpy(destination->inputs + destination_row * INPUT_DIMENSIONS, source->inputs + order[row] * INPUT_DIMENSIONS, INPUT_DIMENSIONS * sizeof(float));
+        destination->targets[destination_row] = source->targets[order[row]];
+    }
+}
+
+//User Setup
+static void normalize_dataset(fuzzy_neuron_dataset_t *training, fuzzy_neuron_dataset_t *test, airfoil_scale_t *scale)
+{
+    size_t dimension;
+    size_t row;
+
+    for (dimension = 0u; dimension < INPUT_DIMENSIONS; dimension++)
+    {
+        scale->input_minimum[dimension] = training->inputs[dimension];
+        scale->input_maximum[dimension] = training->inputs[dimension];
+    }
+
+    scale->target_minimum = training->targets[0];
+    scale->target_maximum = training->targets[0];
+
+    for (row = 0u; row < TRAIN_ROWS; row++)
+    {
+        for (dimension = 0u; dimension < INPUT_DIMENSIONS; dimension++)
+        {
+            float value = training->inputs[row * INPUT_DIMENSIONS + dimension];
+
+            if (value < scale->input_minimum[dimension]) scale->input_minimum[dimension] = value;
+
+            if (value > scale->input_maximum[dimension]) scale->input_maximum[dimension] = value;
+        }
+
+        if (training->targets[row] < scale->target_minimum) scale->target_minimum = training->targets[row];
+
+        if (training->targets[row] > scale->target_maximum) scale->target_maximum = training->targets[row];
+    }
+
+    for (row = 0u; row < DATASET_ROWS; row++)
+    {
+        fuzzy_neuron_dataset_t *dataset = row < TRAIN_ROWS ? training : test;
+        size_t local_row = row < TRAIN_ROWS ? row : row - TRAIN_ROWS;
+
+        for (dimension = 0u; dimension < INPUT_DIMENSIONS; dimension++)
+        {
+            size_t index = local_row * INPUT_DIMENSIONS + dimension;
+            dataset->inputs[index] = normalize_value(dataset->inputs[index], scale->input_minimum[dimension], scale->input_maximum[dimension]);
+        }
+
+        dataset->targets[local_row] = normalize_value(dataset->targets[local_row], scale->target_minimum, scale->target_maximum);
+    }
+}
+
+static fuzzy_neuron_network_t *load_plugin(fuzzy_neuron_loaded_plugin_t *plugin)
+{
+    fuzzy_neuron_network_t *model;
+
+    *plugin = airfoil_plugin_load();
+    model = plugin->api->create();
+
+    return model;
+}
+
+//User Setup
+static void plot_interpolation(fuzzy_neuron_network_t *model, const fuzzy_neuron_dataset_t *training, const fuzzy_neuron_dataset_t *test)
+{
+    fuzzy_point_t training_points[TRAIN_ROWS];
+    fuzzy_point_t model_points[TRAIN_ROWS];
+    fuzzy_point_t test_points[TEST_ROWS];
+    float model_outputs[TRAIN_ROWS * OUTPUT_DIMENSIONS];
+
+    FUZZY_NEURON_DATASET_POINTS(training_points, *training);
+    FUZZY_NEURON_MODEL_POINTS(model_points, model, *training, model_outputs);
+    FUZZY_NEURON_DATASET_POINTS(test_points, *test);
+
+    FUZZY_INTERPOLATION_SWEEP(
+            TRAINING_INTERPOLATION_PATH,
+            "Airfoil Training Data",
+            training_points,
+            FUZZY_SWEEP_DIMENSION("frequency", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("attack", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("chord", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("velocity", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("displacement", 0.0f, 1.0f, INTERPOLATION_STEP)
+        );
+
+    FUZZY_INTERPOLATION_SWEEP(
+            MODEL_INTERPOLATION_PATH,
+            "Airfoil Model Output",
+            model_points,
+            FUZZY_SWEEP_DIMENSION("frequency", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("attack", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("chord", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("velocity", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("displacement", 0.0f, 1.0f, INTERPOLATION_STEP)
+        );
+
+    FUZZY_INTERPOLATION_SWEEP(
+            TEST_INTERPOLATION_PATH,
+            "Airfoil Test Data",
+            test_points,
+            FUZZY_SWEEP_DIMENSION("frequency", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("attack", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("chord", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("velocity", 0.0f, 1.0f, INTERPOLATION_STEP),
+            FUZZY_SWEEP_DIMENSION("displacement", 0.0f, 1.0f, INTERPOLATION_STEP)
+        );
+}
+
+//User Setup
+static void train(void)
+{
+    fuzzy_neuron_dataset_t complete = {0};
+    fuzzy_neuron_dataset_t training = {0};
+    fuzzy_neuron_dataset_t test = {0};
+    fuzzy_neuron_loaded_plugin_t plugin = {0};
+    fuzzy_neuron_network_t *model;
+    fuzzy_neuron_train_options_t options;
+    airfoil_scale_t scale;
+    double initial_mse;
+    double final_mse;
+
+    load_dataset(&complete);
+    split_dataset(&complete, &training, &test);
+    normalize_dataset(&training, &test, &scale);
+
+    model = load_plugin(&plugin);
+    FUZZY_NEURON_XAVIER_INIT(model, XAVIER_SEED);
+
+    initial_mse = fuzzy_neuron_dataset_mse(model, &training);
+    options = FUZZY_NEURON_TRAIN_OPTIONS_ADAM(TRAIN_EPOCHS, TRAIN_BATCH_SIZE, TRAIN_LEARNING_RATE, TRAIN_REPORT_INTERVAL);
+
+    FUZZY_NEURON_MODEL_OPENCL_INIT(model, TRAIN_BATCH_SIZE, KERNEL_PATH);
+    FUZZY_NEURON_MODEL_OPENCL_TRAIN(model, &training, &options, MSE);
+    
+    final_mse = fuzzy_neuron_dataset_mse(model, &training);
+
+    FUZZY_NEURON_MODEL_SAVE(model, MODEL_PATH);
+
+    plot_interpolation(model, &training, &test);
+
+    printf("training_mse_initial=%.12g\n", initial_mse);
+    printf("training_mse_final=%.12g\n", final_mse);
+    printf("test_mse=%.12g\n", fuzzy_neuron_dataset_mse(model, &test));
+    printf("test_mae=%.12g\n", fuzzy_neuron_dataset_mae(model, &test));
+
+    fuzzy_neuron_dataset_free(&complete);
+    fuzzy_neuron_dataset_free(&training);
+    fuzzy_neuron_dataset_free(&test);
+
+    plugin.api->destroy(model);
+    airfoil_plugin_unload(&plugin);
 }
 
 int main(void)
 {
-    if (system("mkdir -p " OUTPUT_DIR) != 0) return EXIT_FAILURE;
-    menu();
+    train();
     return EXIT_SUCCESS;
 }
 

@@ -36,7 +36,8 @@ typedef struct fn_premise
     float domain_minimum;
     float domain_maximum;
     float epsilon;
-} fn_premise_t;
+}
+fn_premise_t;
 
 typedef struct fn_expression
 {
@@ -44,11 +45,12 @@ typedef struct fn_expression
     uint left;
     uint right;
     uint value;
-} fn_expression_t;
+}
+fn_expression_t;
 
 inline float fn_activate(float value, uint kind)
 {
-    if (kind == FN_ACTIVATION_SIGMOID) return native_recip(1.0f + native_exp(-clamp(value, -80.0f, 80.0f)));
+    if (kind == FN_ACTIVATION_SIGMOID) return (1.0f / (1.0f + exp(-clamp(value, -80.0f, 80.0f))));
     if (kind == FN_ACTIVATION_TANH) return tanh(value);
     if (kind == FN_ACTIVATION_RELU) return fmax(value, 0.0f);
     return value;
@@ -78,358 +80,426 @@ inline float fn_logic_or(float left, float right, uint method)
 
 inline float fn_sigmoid(float slope, float center, float x)
 {
-    return native_recip(1.0f + native_exp(-clamp(slope * (x - center), -80.0f, 80.0f)));
+    return (1.0f / (1.0f + exp(-clamp(slope * (x - center), -80.0f, 80.0f))));
 }
 
-inline float fn_shape(uint shape, float x, __global const float *parameters, uint offset, uint count, float epsilon)
+inline float fn_parameter(__global const float *parameters, uint index, uint shifted_index, float shift)
+{
+    return parameters[index] + (index == shifted_index ? shift : 0.0f);
+}
+
+inline float fn_shape_shift(uint shape, float x, __global const float *parameters, uint offset, uint count, float epsilon, uint shifted_index, float shift)
 {
     if (shape == FN_SHAPE_RAMP && count == 3u)
     {
-        float a = parameters[offset];
-        float b = parameters[offset + 1u];
-        int rising = parameters[offset + 2u] != 0.0f;
-        if (!(b > a)) return 0.0f;
-        if (x <= a) return rising ? 0.0f : 1.0f;
-        if (x >= b) return rising ? 1.0f : 0.0f;
-        return rising ? (x - a) / (b - a) : (b - x) / (b - a);
+        float a=fn_parameter(parameters,offset,shifted_index,shift);
+        float b=fn_parameter(parameters,offset+1u,shifted_index,shift);
+        int rising=fn_parameter(parameters,offset+2u,shifted_index,shift)!=0.0f;
+        if (!(b>a)) return 0.0f;
+        if (x<=a) return rising?0.0f:1.0f;
+        if (x>=b) return rising?1.0f:0.0f;
+        return rising?(x-a)/(b-a):(b-x)/(b-a);
     }
     if (shape == FN_SHAPE_TRIANGLE && count == 3u)
     {
-        float a = parameters[offset]; float b = parameters[offset + 1u]; float c = parameters[offset + 2u];
-        if (!(a < b && b < c) || x <= a || x >= c) return 0.0f;
-        return x <= b ? (x - a) / (b - a) : (c - x) / (c - b);
+        float a=fn_parameter(parameters,offset,shifted_index,shift);
+        float b=fn_parameter(parameters,offset+1u,shifted_index,shift);
+        float c=fn_parameter(parameters,offset+2u,shifted_index,shift);
+        if (!(a<b&&b<c)||x<=a||x>=c) return 0.0f;
+        return x<=b?(x-a)/(b-a):(c-x)/(c-b);
     }
     if (shape == FN_SHAPE_TRAPEZOID && count == 4u)
     {
-        float a = parameters[offset]; float b = parameters[offset + 1u]; float c = parameters[offset + 2u]; float d = parameters[offset + 3u];
-        if (!(a < b && b <= c && c < d) || x <= a || x >= d) return 0.0f;
-        if (x >= b && x <= c) return 1.0f;
-        return x < b ? (x - a) / (b - a) : (d - x) / (d - c);
+        float a=fn_parameter(parameters,offset,shifted_index,shift);
+        float b=fn_parameter(parameters,offset+1u,shifted_index,shift);
+        float c=fn_parameter(parameters,offset+2u,shifted_index,shift);
+        float d=fn_parameter(parameters,offset+3u,shifted_index,shift);
+        if (!(a<b&&b<=c&&c<d)||x<=a||x>=d) return 0.0f;
+        if (x>=b&&x<=c) return 1.0f;
+        return x<b?(x-a)/(b-a):(d-x)/(d-c);
     }
     if ((shape == FN_SHAPE_SMF || shape == FN_SHAPE_ZMF) && count == 2u)
     {
-        float a = parameters[offset]; float b = parameters[offset + 1u]; float result; float t;
-        if (!(b > a)) return 0.0f;
-        if (x <= a) result = 0.0f; else if (x >= b) result = 1.0f; else if (x <= 0.5f * (a + b)) { t = (x - a) / (b - a); result = 2.0f * t * t; } else { t = (b - x) / (b - a); result = 1.0f - 2.0f * t * t; }
-        return shape == FN_SHAPE_ZMF ? 1.0f - result : result;
+        float a=fn_parameter(parameters,offset,shifted_index,shift);
+        float b=fn_parameter(parameters,offset+1u,shifted_index,shift);
+        float result,t;
+        if (!(b>a)) return 0.0f;
+        if (x<=a) result=0.0f;
+        else if (x>=b) result=1.0f;
+        else if (x<=0.5f*(a+b))
+        {
+            t=(x-a)/(b-a);
+            result=2.0f*t*t;
+        }
+        else
+        {
+            t=(b-x)/(b-a);
+            result=1.0f-2.0f*t*t;
+        }
+        return shape==FN_SHAPE_ZMF?1.0f-result:result;
     }
     if (shape == FN_SHAPE_GAUSSIAN && count == 2u)
     {
-        float mean = parameters[offset]; float sigma = fabs(parameters[offset + 1u]); float d;
-        if (sigma <= epsilon) return 0.0f;
-        d = (x - mean) / sigma; return native_exp(-0.5f * d * d);
+        float mean=fn_parameter(parameters,offset,shifted_index,shift);
+        float sigma=fabs(fn_parameter(parameters,offset+1u,shifted_index,shift));
+        float d;
+        if (sigma<=epsilon) return 0.0f;
+        d=(x-mean)/sigma;
+        return exp(-0.5f*d*d);
     }
     if (shape == FN_SHAPE_BELL && count == 3u)
     {
-        float width = parameters[offset]; float slope = parameters[offset + 1u]; float center = parameters[offset + 2u];
-        if (fabs(width) <= epsilon) return 0.0f;
-        return native_recip(1.0f + pow(fabs((x - center) / (0.5f * width)), 2.0f * slope));
+        float width=fn_parameter(parameters,offset,shifted_index,shift);
+        float slope=fn_parameter(parameters,offset+1u,shifted_index,shift);
+        float center=fn_parameter(parameters,offset+2u,shifted_index,shift);
+        if (fabs(width)<=epsilon) return 0.0f;
+        return (1.0f / (1.0f + pow(fabs((x - center) / (0.5f * width)), 2.0f * slope)));
     }
-    if (shape == FN_SHAPE_SIGMOID && count == 2u) return fn_sigmoid(parameters[offset], parameters[offset + 1u], x);
+    if (shape == FN_SHAPE_SIGMOID && count == 2u) return fn_sigmoid(fn_parameter(parameters,offset,shifted_index,shift),fn_parameter(parameters,offset+1u,shifted_index,shift),x);
     if (shape == FN_SHAPE_PIMF && count == 4u)
     {
-        float a = parameters[offset]; float b = parameters[offset + 1u]; float c = parameters[offset + 2u]; float d = parameters[offset + 3u]; float left; float right;
-        if (!(a < b && b <= c && c < d)) return 0.0f;
-        left = fn_shape(FN_SHAPE_SMF, x, parameters, offset, 2u, epsilon);
-        right = fn_shape(FN_SHAPE_ZMF, x, parameters, offset + 2u, 2u, epsilon);
-        return fmin(left, right);
+        float a=fn_parameter(parameters,offset,shifted_index,shift);
+        float b=fn_parameter(parameters,offset+1u,shifted_index,shift);
+        float c=fn_parameter(parameters,offset+2u,shifted_index,shift);
+        float d=fn_parameter(parameters,offset+3u,shifted_index,shift);
+        float left,right,t;
+        if (!(a<b&&b<=c&&c<d)) return 0.0f;
+        if (x<=a||x>=d) return 0.0f;
+        if (x>=b&&x<=c) return 1.0f;
+        if (x<b)
+        {
+            if (x<=0.5f*(a+b))
+            {
+                t=(x-a)/(b-a);
+                left=2.0f*t*t;
+            }
+            else
+            {
+                t=(b-x)/(b-a);
+                left=1.0f-2.0f*t*t;
+            }
+            return left;
+        }
+        if (x<=0.5f*(c+d))
+        {
+            t=(x-c)/(d-c);
+            right=1.0f-2.0f*t*t;
+        }
+        else
+        {
+            t=(d-x)/(d-c);
+            right=2.0f*t*t;
+        }
+        return right;
     }
     if ((shape == FN_SHAPE_DSIGMOID || shape == FN_SHAPE_PSIGMOID) && count == 4u)
     {
-        float first = fn_sigmoid(parameters[offset], parameters[offset + 1u], x);
-        float second = fn_sigmoid(parameters[offset + 2u], parameters[offset + 3u], x);
-        return shape == FN_SHAPE_DSIGMOID ? clamp(first - second, 0.0f, 1.0f) : first * second;
+        float first=fn_sigmoid(fn_parameter(parameters,offset,shifted_index,shift),fn_parameter(parameters,offset+1u,shifted_index,shift),x);
+        float second=fn_sigmoid(fn_parameter(parameters,offset+2u,shifted_index,shift),fn_parameter(parameters,offset+3u,shifted_index,shift),x);
+        return shape==FN_SHAPE_DSIGMOID?clamp(first-second,0.0f,1.0f):first*second;
     }
     if (shape == FN_SHAPE_GAUSSIAN2 && count == 4u)
     {
-        float m1 = parameters[offset]; float s1 = fabs(parameters[offset + 1u]); float m2 = parameters[offset + 2u]; float s2 = fabs(parameters[offset + 3u]); float d;
-        if (s1 <= epsilon || s2 <= epsilon || m1 > m2) return 0.0f;
-        if (x < m1) { d = (x - m1) / s1; return native_exp(-0.5f * d * d); }
-        if (x <= m2) return 1.0f;
-        d = (x - m2) / s2; return native_exp(-0.5f * d * d);
+        float m1=fn_parameter(parameters,offset,shifted_index,shift);
+        float s1=fabs(fn_parameter(parameters,offset+1u,shifted_index,shift));
+        float m2=fn_parameter(parameters,offset+2u,shifted_index,shift);
+        float s2=fabs(fn_parameter(parameters,offset+3u,shifted_index,shift));
+        float d;
+        if (s1<=epsilon||s2<=epsilon||m1>m2) return 0.0f;
+        if (x<m1)
+        {
+            d=(x-m1)/s1;
+            return exp(-0.5f*d*d);
+        }
+        if (x<=m2) return 1.0f;
+        d=(x-m2)/s2;
+        return exp(-0.5f*d*d);
     }
     return 0.0f;
 }
 
-__kernel void fn_premise_forward(__global const float *restrict raw_inputs, __global const fn_premise_t *restrict premises, __global const float *restrict parameters, __global float *restrict memberships, uint sample_count, uint input_count, uint premise_count)
+inline float fn_shape(uint shape,float x,__global const float *parameters,uint offset,uint count,float epsilon)
 {
-    uint sample = get_global_id(0);
-    uint premise_index = get_global_id(1);
-    fn_premise_t premise;
-    float x;
-    float value;
-    if (sample >= sample_count || premise_index >= premise_count) return;
-    premise = premises[premise_index];
-    x = raw_inputs[(size_t)sample * input_count + premise.input_index];
-    value = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
-    value = pow(clamp(value, 0.0f, 1.0f), fmax(premise.hedge, premise.epsilon));
-    memberships[(size_t)sample * premise_count + premise_index] = value;
+    return fn_shape_shift(shape,x,parameters,offset,count,epsilon,0xffffffffu,0.0f);
 }
 
-__kernel void fn_expression_forward(__global const fn_expression_t *restrict expressions, __global const uint *restrict rule_roots, __global const float *restrict memberships, __global float *restrict expression_values, __global float *restrict raw_rules, uint sample_count, uint premise_count, uint expression_count, uint rule_count, uint logic_method)
+__kernel void fn_premise_forward(__global const float *restrict raw_inputs,__global const fn_premise_t *restrict premises,__global const float *restrict parameters,__global float *restrict memberships,uint sample_count,uint input_count,uint premise_count)
 {
-    uint sample = get_global_id(0);
-    if (sample >= sample_count) return;
-    size_t expression_base = (size_t)sample * expression_count;
-    size_t membership_base = (size_t)sample * premise_count;
-    for (uint node_index = 0u; node_index < expression_count; node_index++)
+    uint sample=get_global_id(0), premise_index=get_global_id(1);
+    if(sample>=sample_count||premise_index>=premise_count)return;
+    fn_premise_t p=premises[premise_index];
+    float base=fn_shape(p.shape,raw_inputs[(size_t)sample*input_count+p.input_index],parameters,p.parameter_offset,p.parameter_count,p.epsilon);
+    memberships[(size_t)sample*premise_count+premise_index]=pow(clamp(base,0.0f,1.0f),fmax(p.hedge,p.epsilon));
+}
+
+__kernel void fn_expression_forward(__global const fn_expression_t *restrict expressions,__global const uint *restrict rule_roots,__global const float *restrict memberships,__global float *restrict expression_values,__global float *restrict raw_rules,uint sample_count,uint premise_count,uint expression_count,uint rule_count,uint logic_method)
+{
+    uint sample=get_global_id(0);
+    if(sample>=sample_count)return;
+    size_t eb=(size_t)sample*expression_count, mb=(size_t)sample*premise_count;
+    for(uint n=0;n<expression_count;n++)
     {
-        fn_expression_t node = expressions[node_index];
-        float value;
-        if (node.kind == FN_EXPR_MEMBERSHIP) value = memberships[membership_base + node.value];
-        else if (node.kind == FN_EXPR_NOT) value = 1.0f - expression_values[expression_base + node.left];
-        else if (node.kind == FN_EXPR_AND) value = fn_logic_and(expression_values[expression_base + node.left], expression_values[expression_base + node.right], logic_method);
-        else value = fn_logic_or(expression_values[expression_base + node.left], expression_values[expression_base + node.right], logic_method);
-        expression_values[expression_base + node_index] = value;
+        fn_expression_t e=expressions[n];
+        float v;
+        if(e.kind==FN_EXPR_MEMBERSHIP)v=memberships[mb+e.value];
+        else if(e.kind==FN_EXPR_NOT)v=1.0f-expression_values[eb+e.left];
+        else if(e.kind==FN_EXPR_AND)v=fn_logic_and(expression_values[eb+e.left],expression_values[eb+e.right],logic_method);
+        else v=fn_logic_or(expression_values[eb+e.left],expression_values[eb+e.right],logic_method);
+        expression_values[eb+n]=v;
     }
-    for (uint rule = 0u; rule < rule_count; rule++) raw_rules[(size_t)sample * rule_count + rule] = expression_values[expression_base + rule_roots[rule]];
+    for(uint r=0;r<rule_count;r++)raw_rules[(size_t)sample*rule_count+r]=expression_values[eb+rule_roots[r]];
 }
 
-__kernel void fn_normalize_rules(__global const float *restrict raw_rules, __global float *restrict activations, uint sample_count, uint rule_count, uint neuron_count)
+__kernel void fn_normalize_rules(__global const float *restrict raw_rules,__global float *restrict activations,uint sample_count,uint rule_count,uint neuron_count)
 {
-    uint sample = get_global_id(0);
-    if (sample >= sample_count) return;
-    size_t rule_base = (size_t)sample * rule_count;
-    size_t activation_base = (size_t)sample * neuron_count;
-    float total = 0.0f;
-    for (uint rule = 0u; rule < rule_count; rule++) total += raw_rules[rule_base + rule];
-    if (total <= 1.0e-12f)
+    uint s=get_global_id(0);
+    if(s>=sample_count)return;
+    size_t rb=(size_t)s*rule_count,ab=(size_t)s*neuron_count;
+    float total=0.0f;
+    for(uint r=0;r<rule_count;r++)total+=raw_rules[rb+r];
+    for(uint r=0;r<rule_count;r++)activations[ab+r]=total>1.0e-12f?raw_rules[rb+r]/total:0.0f;
+}
+
+__kernel void fn_forward_gemm(__global const float *restrict weights,__global const float *restrict biases,__global float *restrict activations,uint sample_count,uint neuron_count,uint source_offset,uint source_count,uint destination_offset,uint destination_count,uint weight_offset,uint bias_offset,uint activation_kind)
+{
+    uint s=get_global_id(0),d=get_global_id(1);
+    if(s>=sample_count||d>=destination_count)return;
+    size_t ab=(size_t)s*neuron_count,wb=(size_t)weight_offset+(size_t)d*source_count;
+    float sum=biases[bias_offset+d];
+    for(uint i=0;i<source_count;i++)sum=fma(activations[ab+source_offset+i],weights[wb+i],sum);
+    activations[ab+destination_offset+d]=fn_activate(sum,activation_kind);
+}
+
+__kernel void fn_output_delta(__global const float *restrict targets,__global const float *restrict activations,__global float *restrict deltas,__global float *restrict losses,uint sample_count,uint output_count,uint neuron_count,uint output_offset,uint activation_kind,uint loss_method,float huber_delta)
+{
+    size_t i=get_global_id(0),total=(size_t)sample_count*output_count;
+    if(i>=total)return;
+    size_t s=i/output_count,o=i-s*output_count,a=s*neuron_count+output_offset+o;
+    float prediction=activations[a],error=prediction-targets[i],gradient=error,loss=error*error;
+    if(loss_method==FN_LOSS_HUBER)
     {
-        for (uint rule = 0u; rule < rule_count; rule++) activations[activation_base + rule] = 0.0f;
-        return;
+        float m=fabs(error);
+        int q=m<=huber_delta;
+        gradient=q?error/huber_delta:copysign(1.0f,error);
+        loss=q?0.5f*error*error/huber_delta:m-0.5f*huber_delta;
     }
-    for (uint rule = 0u; rule < rule_count; rule++) activations[activation_base + rule] = raw_rules[rule_base + rule] / total;
+    deltas[a]=gradient*fn_derivative_from_output(prediction,activation_kind);
+    losses[i]=loss;
 }
 
-__kernel void fn_forward_gemm(__global const float *restrict weights, __global const float *restrict biases, __global float *restrict activations, uint sample_count, uint neuron_count, uint source_offset, uint source_count, uint destination_offset, uint destination_count, uint weight_offset, uint bias_offset, uint activation_kind)
+__kernel void fn_hidden_delta_gemm(__global const float *restrict weights,__global const float *restrict activations,__global float *restrict deltas,uint sample_count,uint neuron_count,uint current_offset,uint current_count,uint next_offset,uint next_count,uint next_weight_offset,uint activation_kind)
 {
-    uint sample = get_global_id(0);
-    uint destination = get_global_id(1);
-    if (sample >= sample_count || destination >= destination_count) return;
-    size_t activation_base = (size_t)sample * neuron_count;
-    size_t weight_base = (size_t)weight_offset + (size_t)destination * source_count;
-    float sum = biases[bias_offset + destination];
-    for (uint source = 0u; source < source_count; source++) sum = fma(activations[activation_base + source_offset + source], weights[weight_base + source], sum);
-    activations[activation_base + destination_offset + destination] = fn_activate(sum, activation_kind);
+    uint s=get_global_id(0),c=get_global_id(1);
+    if(s>=sample_count||c>=current_count)return;
+    size_t b=(size_t)s*neuron_count;
+    float sum=0.0f;
+    for(uint n=0;n<next_count;n++)sum=fma(weights[(size_t)next_weight_offset+(size_t)n*current_count+c],deltas[b+next_offset+n],sum);
+    size_t i=b+current_offset+c;
+    deltas[i]=sum*fn_derivative_from_output(activations[i],activation_kind);
 }
 
-__kernel void fn_output_delta(__global const float *restrict targets, __global const float *restrict activations, __global float *restrict deltas, __global float *restrict losses, uint sample_count, uint output_count, uint neuron_count, uint output_offset, uint activation_kind, uint loss_method, float huber_delta)
+__kernel void fn_input_delta(__global const float *restrict weights,__global const float *restrict deltas,__global float *restrict normalized_rule_gradients,uint sample_count,uint neuron_count,uint rule_count,uint first_destination_offset,uint first_destination_count,uint first_weight_offset)
 {
-    size_t index = get_global_id(0);
-    size_t total = (size_t)sample_count * output_count;
-    if (index >= total) return;
-    size_t sample = index / output_count;
-    size_t output = index - sample * output_count;
-    size_t activation_index = sample * neuron_count + output_offset + output;
-    float prediction = activations[activation_index];
-    float error = prediction - targets[index];
-    float gradient = error;
-    float loss = error * error;
-    if (loss_method == FN_LOSS_HUBER)
+    uint s=get_global_id(0),r=get_global_id(1);
+    if(s>=sample_count||r>=rule_count)return;
+    size_t b=(size_t)s*neuron_count;
+    float g=0.0f;
+    for(uint d=0;d<first_destination_count;d++)g=fma(weights[(size_t)first_weight_offset+(size_t)d*rule_count+r],deltas[b+first_destination_offset+d],g);
+    normalized_rule_gradients[(size_t)s*rule_count+r]=g;
+}
+
+__kernel void fn_normalize_backward(__global const float *restrict raw_rules,__global const float *restrict normalized_gradients,__global float *restrict raw_rule_gradients,uint sample_count,uint rule_count)
+{
+    uint s=get_global_id(0);
+    if(s>=sample_count)return;
+    size_t b=(size_t)s*rule_count;
+    float total=0.0f,weighted=0.0f;
+    for(uint r=0;r<rule_count;r++)
     {
-        float magnitude = fabs(error);
-        int quadratic = magnitude <= huber_delta;
-        gradient = quadratic ? error / huber_delta : copysign(1.0f, error);
-        loss = quadratic ? 0.5f * error * error / huber_delta : magnitude - 0.5f * huber_delta;
+        total+=raw_rules[b+r];
+        weighted+=normalized_gradients[b+r]*raw_rules[b+r];
     }
-    deltas[activation_index] = gradient * fn_derivative_from_output(prediction, activation_kind);
-    losses[index] = loss;
+    for(uint r=0;r<rule_count;r++)raw_rule_gradients[b+r]=total>1.0e-12f?(normalized_gradients[b+r]*total-weighted)/(total*total):0.0f;
 }
 
-__kernel void fn_hidden_delta_gemm(__global const float *restrict weights, __global const float *restrict activations, __global float *restrict deltas, uint sample_count, uint neuron_count, uint current_offset, uint current_count, uint next_offset, uint next_count, uint next_weight_offset, uint activation_kind)
+__kernel void fn_expression_backward(__global const fn_expression_t *restrict expressions,__global const uint *restrict rule_roots,__global const float *restrict expression_values,__global const float *restrict raw_rule_gradients,__global float *restrict expression_gradients,__global float *restrict membership_gradients,uint sample_count,uint premise_count,uint expression_count,uint rule_count,uint logic_method)
 {
-    uint sample = get_global_id(0);
-    uint current = get_global_id(1);
-    if (sample >= sample_count || current >= current_count) return;
-    size_t base = (size_t)sample * neuron_count;
-    float sum = 0.0f;
-    for (uint next = 0u; next < next_count; next++) sum = fma(weights[(size_t)next_weight_offset + (size_t)next * current_count + current], deltas[base + next_offset + next], sum);
-    size_t index = base + current_offset + current;
-    deltas[index] = sum * fn_derivative_from_output(activations[index], activation_kind);
-}
-
-__kernel void fn_input_delta(__global const float *restrict weights, __global const float *restrict deltas, __global float *restrict normalized_rule_gradients, uint sample_count, uint neuron_count, uint rule_count, uint first_destination_offset, uint first_destination_count, uint first_weight_offset)
-{
-    uint sample = get_global_id(0);
-    uint rule = get_global_id(1);
-    if (sample >= sample_count || rule >= rule_count) return;
-    size_t base = (size_t)sample * neuron_count;
-    float gradient = 0.0f;
-    for (uint destination = 0u; destination < first_destination_count; destination++) gradient = fma(weights[(size_t)first_weight_offset + (size_t)destination * rule_count + rule], deltas[base + first_destination_offset + destination], gradient);
-    normalized_rule_gradients[(size_t)sample * rule_count + rule] = gradient;
-}
-
-__kernel void fn_normalize_backward(__global const float *restrict raw_rules, __global const float *restrict normalized_gradients, __global float *restrict raw_rule_gradients, uint sample_count, uint rule_count)
-{
-    uint sample = get_global_id(0);
-    if (sample >= sample_count) return;
-    size_t base = (size_t)sample * rule_count;
-    float total = 0.0f;
-    float weighted = 0.0f;
-    for (uint rule = 0u; rule < rule_count; rule++)
+    uint s=get_global_id(0);
+    if(s>=sample_count)return;
+    size_t eb=(size_t)s*expression_count,mb=(size_t)s*premise_count;
+    for(uint n=0;n<expression_count;n++)expression_gradients[eb+n]=0.0f;
+    for(uint p=0;p<premise_count;p++)membership_gradients[mb+p]=0.0f;
+    for(uint r=0;r<rule_count;r++)expression_gradients[eb+rule_roots[r]]+=raw_rule_gradients[(size_t)s*rule_count+r];
+    for(uint rev=expression_count;rev-->0u;)
     {
-        total += raw_rules[base + rule];
-        weighted += normalized_gradients[base + rule] * raw_rules[base + rule];
-    }
-    if (total <= 1.0e-12f)
-    {
-        for (uint rule = 0u; rule < rule_count; rule++) raw_rule_gradients[base + rule] = 0.0f;
-        return;
-    }
-    float denominator = total * total;
-    for (uint rule = 0u; rule < rule_count; rule++) raw_rule_gradients[base + rule] = (normalized_gradients[base + rule] * total - weighted) / denominator;
-}
-
-__kernel void fn_expression_backward(__global const fn_expression_t *restrict expressions, __global const uint *restrict rule_roots, __global const float *restrict expression_values, __global const float *restrict raw_rule_gradients, __global float *restrict expression_gradients, __global float *restrict membership_gradients, uint sample_count, uint premise_count, uint expression_count, uint rule_count, uint logic_method)
-{
-    uint sample = get_global_id(0);
-    if (sample >= sample_count) return;
-    size_t expression_base = (size_t)sample * expression_count;
-    size_t membership_base = (size_t)sample * premise_count;
-    for (uint node = 0u; node < expression_count; node++) expression_gradients[expression_base + node] = 0.0f;
-    for (uint premise = 0u; premise < premise_count; premise++) membership_gradients[membership_base + premise] = 0.0f;
-    for (uint rule = 0u; rule < rule_count; rule++) expression_gradients[expression_base + rule_roots[rule]] += raw_rule_gradients[(size_t)sample * rule_count + rule];
-    for (uint reverse = expression_count; reverse-- > 0u;)
-    {
-        fn_expression_t node = expressions[reverse];
-        float incoming = expression_gradients[expression_base + reverse];
-        if (node.kind == FN_EXPR_MEMBERSHIP)
-        {
-            membership_gradients[membership_base + node.value] += incoming;
-        }
-        else if (node.kind == FN_EXPR_NOT)
-        {
-            expression_gradients[expression_base + node.left] -= incoming;
-        }
+        fn_expression_t e=expressions[rev];
+        float in=expression_gradients[eb+rev];
+        if(e.kind==FN_EXPR_MEMBERSHIP)membership_gradients[mb+e.value]+=in;
+        else if(e.kind==FN_EXPR_NOT)expression_gradients[eb+e.left]-=in;
         else
         {
-            float left_value = expression_values[expression_base + node.left];
-            float right_value = expression_values[expression_base + node.right];
-            if (logic_method == FN_LOGIC_ALGEBRAIC)
+            float l=expression_values[eb+e.left],r=expression_values[eb+e.right];
+            if(logic_method==FN_LOGIC_ALGEBRAIC)
             {
-                if (node.kind == FN_EXPR_AND)
+                if(e.kind==FN_EXPR_AND)
                 {
-                    expression_gradients[expression_base + node.left] += incoming * right_value;
-                    expression_gradients[expression_base + node.right] += incoming * left_value;
+                    expression_gradients[eb+e.left]+=in*r;
+                    expression_gradients[eb+e.right]+=in*l;
                 }
                 else
                 {
-                    expression_gradients[expression_base + node.left] += incoming * (1.0f - right_value);
-                    expression_gradients[expression_base + node.right] += incoming * (1.0f - left_value);
+                    expression_gradients[eb+e.left]+=in*(1.0f-r);
+                    expression_gradients[eb+e.right]+=in*(1.0f-l);
+                }
+            }
+            else if(logic_method==FN_LOGIC_BOUNDED)
+            {
+                float active=e.kind==FN_EXPR_AND?(l+r>1.0f):(l+r<1.0f);
+                if(active)
+                {
+                    expression_gradients[eb+e.left]+=in;
+                    expression_gradients[eb+e.right]+=in;
                 }
             }
             else
             {
-                int left_wins = node.kind == FN_EXPR_AND ? left_value < right_value : left_value > right_value;
-                int right_wins = node.kind == FN_EXPR_AND ? right_value < left_value : right_value > left_value;
-                if (!left_wins && !right_wins)
+                int lw=e.kind==FN_EXPR_AND?l<r:l>r;
+                int rw=e.kind==FN_EXPR_AND?r<l:r>l;
+                if(!lw&&!rw)
                 {
-                    expression_gradients[expression_base + node.left] += 0.5f * incoming;
-                    expression_gradients[expression_base + node.right] += 0.5f * incoming;
+                    expression_gradients[eb+e.left]+=0.5f*in;
+                    expression_gradients[eb+e.right]+=0.5f*in;
                 }
-                else if (left_wins) expression_gradients[expression_base + node.left] += incoming;
-                else expression_gradients[expression_base + node.right] += incoming;
+                else if(lw)expression_gradients[eb+e.left]+=in;
+                else expression_gradients[eb+e.right]+=in;
             }
         }
     }
 }
 
-__kernel void fn_premise_gradient(__global const float *restrict raw_inputs, __global const fn_premise_t *restrict premises, __global float *restrict parameters, __global const float *restrict memberships, __global const float *restrict membership_gradients, __global float *restrict parameter_gradients, uint sample_count, uint input_count, uint premise_count, uint parameter_count)
+__kernel void fn_premise_gradient(__global const float *restrict raw_inputs,__global const fn_premise_t *restrict premises,__global const float *restrict parameters,__global const float *restrict memberships,__global const float *restrict membership_gradients,__global float *restrict parameter_gradients,uint sample_count,uint input_count,uint premise_count,uint parameter_count)
 {
-    uint parameter = get_global_id(0);
-    float gradient = 0.0f;
-    uint premise_index;
-    if (parameter >= parameter_count) return;
-    for (premise_index = 0u; premise_index < premise_count; premise_index++)
+    uint parameter=get_global_id(0);
+    if(parameter>=parameter_count)return;
+    float gradient=0.0f;
+    for(uint pi=0;pi<premise_count;pi++)
     {
-        fn_premise_t premise = premises[premise_index];
-        uint local_parameter;
-        float original;
-        float step;
-        uint sample;
-        if (parameter < premise.parameter_offset || parameter >= premise.parameter_offset + premise.parameter_count) continue;
-        local_parameter = parameter - premise.parameter_offset;
-        if ((premise.trainable_mask & (1u << local_parameter)) == 0u) continue;
-        original = parameters[parameter];
-        step = fmax(premise.epsilon, fabs(original) * 1.0e-4f);
-        for (sample = 0u; sample < sample_count; sample++)
+        fn_premise_t p=premises[pi];
+        if(parameter<p.parameter_offset||parameter>=p.parameter_offset+p.parameter_count)continue;
+        uint local_param=parameter-p.parameter_offset;
+        if(local_param>=32u||(p.trainable_mask&(1u<<local_param))==0u)continue;
+        float original=parameters[parameter],h=fmax(p.epsilon,fabs(original)*1.0e-4f);
+        for(uint s=0;s<sample_count;s++)
         {
-            float x = raw_inputs[(size_t)sample * input_count + premise.input_index];
-            float plus;
-            float minus;
-            float derivative;
-            parameters[parameter] = original + step;
-            plus = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
-            parameters[parameter] = original - step;
-            minus = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
-            parameters[parameter] = original;
-            derivative = (plus - minus) / (2.0f * step);
-            if (premise.hedge != 1.0f)
-            {
-                float base = fn_shape(premise.shape, x, parameters, premise.parameter_offset, premise.parameter_count, premise.epsilon);
-                derivative *= premise.hedge * pow(fmax(base, premise.epsilon), premise.hedge - 1.0f);
-            }
-            gradient += membership_gradients[(size_t)sample * premise_count + premise_index] * derivative;
+            float x=raw_inputs[(size_t)s*input_count+p.input_index];
+            float plus=fn_shape_shift(p.shape,x,parameters,p.parameter_offset,p.parameter_count,p.epsilon,parameter,h);
+            float minus=fn_shape_shift(p.shape,x,parameters,p.parameter_offset,p.parameter_count,p.epsilon,parameter,-h);
+            float d=(plus-minus)/(2.0f*h);
+            float base=fn_shape(p.shape,x,parameters,p.parameter_offset,p.parameter_count,p.epsilon);
+            d*=p.hedge*pow(fmax(base,p.epsilon),p.hedge-1.0f);
+            gradient+=membership_gradients[(size_t)s*premise_count+pi]*d;
         }
     }
-    parameter_gradients[parameter] = gradient;
+    parameter_gradients[parameter]=gradient;
 }
 
-__kernel void fn_weight_gradient_gemm(__global const float *restrict activations, __global const float *restrict deltas, __global float *restrict gradients, uint sample_count, uint neuron_count, uint source_offset, uint source_count, uint destination_offset, uint destination_count, uint weight_offset)
+__kernel void fn_weight_gradient_gemm(__global const float *restrict activations,__global const float *restrict deltas,__global float *restrict gradients,uint sample_count,uint neuron_count,uint source_offset,uint source_count,uint destination_offset,uint destination_count,uint weight_offset)
 {
-    uint source = get_global_id(0);
-    uint destination = get_global_id(1);
-    if (source >= source_count || destination >= destination_count) return;
-    float gradient = 0.0f;
-    for (uint sample = 0u; sample < sample_count; sample++)
+    uint src=get_global_id(0),dst=get_global_id(1);
+    if(src>=source_count||dst>=destination_count)return;
+    float g=0.0f;
+    for(uint s=0;s<sample_count;s++)
     {
-        size_t base = (size_t)sample * neuron_count;
-        gradient = fma(deltas[base + destination_offset + destination], activations[base + source_offset + source], gradient);
+        size_t b=(size_t)s*neuron_count;
+        g=fma(deltas[b+destination_offset+dst],activations[b+source_offset+src],g);
     }
-    gradients[(size_t)weight_offset + (size_t)destination * source_count + source] = gradient;
+    gradients[(size_t)weight_offset+(size_t)dst*source_count+src]=g;
 }
 
-__kernel void fn_bias_gradient(__global const float *restrict deltas, __global float *restrict gradients, uint sample_count, uint neuron_count, uint destination_offset, uint destination_count, uint bias_offset)
+__kernel void fn_bias_gradient(__global const float *restrict deltas,__global float *restrict gradients,uint sample_count,uint neuron_count,uint destination_offset,uint destination_count,uint bias_offset)
 {
-    uint destination = get_global_id(0);
-    if (destination >= destination_count) return;
-    float gradient = 0.0f;
-    for (uint sample = 0u; sample < sample_count; sample++) gradient += deltas[(size_t)sample * neuron_count + destination_offset + destination];
-    gradients[bias_offset + destination] = gradient;
+    uint d=get_global_id(0);
+    if(d>=destination_count)return;
+    float g=0.0f;
+    for(uint s=0;s<sample_count;s++)g+=deltas[(size_t)s*neuron_count+destination_offset+d];
+    gradients[bias_offset+d]=g;
 }
 
-__kernel void fn_apply_parameters(__global float *parameters, __global const float *gradients, uint parameter_count, uint parameter_offset, uint sample_count, float learning_rate)
+__kernel void fn_apply_parameters(__global float *parameters,__global const float *gradients,uint parameter_count,uint parameter_offset,uint sample_count,float learning_rate)
 {
-    uint parameter = get_global_id(0);
-    if (parameter >= parameter_count) return;
-    size_t index = (size_t)parameter_offset + parameter;
-    parameters[index] = fma(-learning_rate / (float)sample_count, gradients[index], parameters[index]);
+    uint p=get_global_id(0);
+    if(p>=parameter_count)return;
+    size_t i=(size_t)parameter_offset+p;
+    parameters[i]=fma(-learning_rate/(float)sample_count,gradients[i],parameters[i]);
 }
 
-__kernel void fn_adam_apply(__global float *parameters, __global const float *gradients, __global float *first_moment, __global float *second_moment, uint parameter_count, uint parameter_offset, uint sample_count, float alpha, float beta1, float beta2, float epsilon)
+__kernel void fn_adam_apply(__global float *parameters,__global const float *gradients,__global float *first_moment,__global float *second_moment,uint parameter_count,uint parameter_offset,uint sample_count,float alpha,float beta1,float beta2,float epsilon)
 {
-    uint parameter = get_global_id(0);
-    if (parameter >= parameter_count) return;
-    size_t index = (size_t)parameter_offset + parameter;
-    float gradient = gradients[index] / (float)sample_count;
-    float moment1 = fma(1.0f - beta1, gradient, beta1 * first_moment[index]);
-    float moment2 = fma(1.0f - beta2, gradient * gradient, beta2 * second_moment[index]);
-    first_moment[index] = moment1;
-    second_moment[index] = moment2;
-    parameters[index] -= alpha * moment1 / (sqrt(moment2) + epsilon);
+    uint p=get_global_id(0);
+    if(p>=parameter_count)return;
+    size_t i=(size_t)parameter_offset+p;
+    float g=gradients[i]/(float)sample_count,m1=fma(1.0f-beta1,g,beta1*first_moment[i]),m2=fma(1.0f-beta2,g*g,beta2*second_moment[i]);
+    first_moment[i]=m1;
+    second_moment[i]=m2;
+    parameters[i]-=alpha*m1/(sqrt(m2)+epsilon);
 }
 
-__kernel void fn_project_premises(__global const fn_premise_t *restrict premises, __global float *parameters, uint premise_count)
+inline void fn_order2(__global float *p,uint a,uint b,float epsilon)
 {
-    uint premise_index = get_global_id(0);
-    uint parameter_index;
-    fn_premise_t premise;
-    if (premise_index >= premise_count) return;
-    premise = premises[premise_index];
-    for (parameter_index = 0u; parameter_index < premise.parameter_count; parameter_index++)
+    float x=p[a],y=p[b];
+    if(!isfinite(x))x=0.0f;
+    if(!isfinite(y))y=x+epsilon;
+    if(y<x+epsilon)y=x+epsilon;
+    p[a]=x;
+    p[b]=y;
+}
+
+__kernel void fn_project_premises(__global const fn_premise_t *restrict premises,__global float *parameters,uint premise_count)
+{
+    uint i=get_global_id(0);
+    if(i>=premise_count)return;
+    fn_premise_t p=premises[i];
+    uint o=p.parameter_offset,c=p.parameter_count;
+    for(uint j=0;j<c;j++)
     {
-        uint index = premise.parameter_offset + parameter_index;
-        if (!isfinite(parameters[index])) parameters[index] = 0.0f;
+        float v=parameters[o+j];
+        if(!isfinite(v))parameters[o+j]=0.0f;
+    }
+    if(p.shape==FN_SHAPE_RAMP&&c==3u)
+    {
+        fn_order2(parameters,o,o+1u,p.epsilon);
+        parameters[o+2u]=parameters[o+2u]!=0.0f?1.0f:0.0f;
+    }
+    else if(p.shape==FN_SHAPE_TRIANGLE&&c==3u)
+    {
+        fn_order2(parameters,o,o+1u,p.epsilon);
+        fn_order2(parameters,o+1u,o+2u,p.epsilon);
+    }
+    else if((p.shape==FN_SHAPE_TRAPEZOID||p.shape==FN_SHAPE_PIMF)&&c==4u)
+    {
+        fn_order2(parameters,o,o+1u,p.epsilon);
+        if(parameters[o+2u]<parameters[o+1u])parameters[o+2u]=parameters[o+1u];
+        fn_order2(parameters,o+2u,o+3u,p.epsilon);
+    }
+    else if((p.shape==FN_SHAPE_SMF||p.shape==FN_SHAPE_ZMF)&&c==2u)fn_order2(parameters,o,o+1u,p.epsilon);
+    else if(p.shape==FN_SHAPE_GAUSSIAN&&c==2u)
+    {
+        parameters[o+1u]=fmax(fabs(parameters[o+1u]),p.epsilon);
+    }
+    else if(p.shape==FN_SHAPE_BELL&&c==3u)
+    {
+        float sign=parameters[o]<0.0f?-1.0f:1.0f;
+        parameters[o]=sign*fmax(fabs(parameters[o]),p.epsilon);
+    }
+    else if(p.shape==FN_SHAPE_GAUSSIAN2&&c==4u)
+    {
+        parameters[o+1u]=fmax(fabs(parameters[o+1u]),p.epsilon);
+        parameters[o+3u]=fmax(fabs(parameters[o+3u]),p.epsilon);
+        if(parameters[o+2u]<parameters[o])parameters[o+2u]=parameters[o];
+    }
+    for(uint j=0;j<c;j++)
+    {
+        uint bit=j<32u?(1u<<j):0u;
+        if((p.trainable_mask&bit)!=0u)parameters[o+j]=clamp(parameters[o+j],p.domain_minimum,p.domain_maximum);
     }
 }
-
