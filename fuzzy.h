@@ -1267,7 +1267,8 @@ typedef struct FuzzySweepDimension {
 
 typedef float (*fuzzy_sweep_evaluator_t)(const float inputs[], size_t input_count, float cog_step);
 
-typedef struct FuzzyCogSweep {
+typedef struct fuzzy_cog_sweep
+{
     const char *filename;
     const char *title;
     const char *value_name;
@@ -1635,6 +1636,8 @@ bool fuzzy_gpu_interpolation_sweep(const fuzzy_interpolation_sweep_t *sweep);
 
 #define FUZZY_INTERPOLATION_SWEEP(filename_arg, title_arg, points_arg, ...) fuzzy_interpolation_sweep(&(const fuzzy_interpolation_sweep_t){.filename = (filename_arg), .title = (title_arg), .dimensions = (const fuzzy_sweep_dimension_t[]){__VA_ARGS__}, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]){__VA_ARGS__}) / sizeof(fuzzy_sweep_dimension_t), .points = (points_arg), .point_count = sizeof(points_arg) / sizeof((points_arg)[0])})
 
+#define FUZZY_NEURON_INTERPOLATION_SWEEP(filename_arg, title_arg, points_arg, value_minimum_arg, value_maximum_arg, ...) fuzzy_neuron_interpolation_sweep(&(const fuzzy_interpolation_sweep_t){.filename = (filename_arg), .title = (title_arg), .dimensions = (const fuzzy_sweep_dimension_t[]){__VA_ARGS__}, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]){__VA_ARGS__}) / sizeof(fuzzy_sweep_dimension_t), .points = (points_arg), .point_count = sizeof(points_arg) / sizeof((points_arg)[0])}, (value_minimum_arg), (value_maximum_arg))
+
 #define FUZZY_INTERPOLATION_SLICES(filename_arg, title_arg, points_arg, ...) fuzzy_interpolation_slices(&(const fuzzy_interpolation_sweep_t){.filename = (filename_arg), .title = (title_arg), .dimensions = (const fuzzy_sweep_dimension_t[]){__VA_ARGS__}, .dimension_count = sizeof((const fuzzy_sweep_dimension_t[]){__VA_ARGS__}) / sizeof(fuzzy_sweep_dimension_t), .points = (points_arg), .point_count = sizeof(points_arg) / sizeof((points_arg)[0])})
 
 /* PLOTTING ADAPTER FOR COMPRESSED SYNTAX */
@@ -1692,6 +1695,12 @@ bool fuzzy_cog_sweep(
 
 bool fuzzy_interpolation_sweep(
     const fuzzy_interpolation_sweep_t *sweep
+);
+
+bool fuzzy_neuron_interpolation_sweep(
+    const fuzzy_interpolation_sweep_t *sweep,
+    float value_minimum,
+    float value_maximum
 );
 
 bool fuzzy_interpolation_slices(
@@ -4252,6 +4261,10 @@ static bool fuzzy_sweep_write_svg(
     size_t total_points,
     const float parsed_inputs[],
     const float parsed_cog_values[]
+,
+    bool fixed_value_range,
+    float fixed_value_minimum,
+    float fixed_value_maximum
 )
 {
     if (
@@ -4304,36 +4317,39 @@ static bool fuzzy_sweep_write_svg(
         return false;
     }
 
-    float minimum_cog =
-        parsed_cog_values[0];
 
-    float maximum_cog =
-        parsed_cog_values[0];
+    float minimum_cog;
+    float maximum_cog;
+    float cog_range;
 
-    for (
-        size_t point = 1;
-        point < total_points;
-        point++
-    ) {
-        if (
-            parsed_cog_values[point] <
-            minimum_cog
-        ) {
-            minimum_cog = parsed_cog_values[point];
-        }
+    if (fixed_value_range)
+    {
+        minimum_cog = fixed_value_minimum;
+        maximum_cog = fixed_value_maximum;
+    }
+    else
+    {
+        minimum_cog = parsed_cog_values[0];
+        maximum_cog = parsed_cog_values[0];
 
-        if (
-            parsed_cog_values[point] > maximum_cog
-        ) {
-            maximum_cog = parsed_cog_values[point];
+        for (size_t point = 1u; point < total_points; point++)
+        {
+            if (parsed_cog_values[point] < minimum_cog) minimum_cog = parsed_cog_values[point];
+            if (parsed_cog_values[point] > maximum_cog) maximum_cog = parsed_cog_values[point];
         }
     }
 
-    float cog_range =
-        maximum_cog -
-        minimum_cog;
+    cog_range = maximum_cog - minimum_cog;
 
-    if (cog_range <= 0.0f) {
+    if (!(cog_range > 0.0f))
+    {
+        if (fixed_value_range)
+        {
+            fclose(file);
+            fprintf(stderr, "COG sweep fixed plot range is invalid.\n");
+            return false;
+        }
+
         cog_range = 1.0f;
     }
 
@@ -6606,7 +6622,10 @@ static void fuzzy_gpu_harness_end(
 static bool fuzzy_sweep_generate(
     const fuzzy_cog_sweep_t *sweep,
     const fuzzy_point_t points[],
-    size_t point_count
+    size_t point_count,
+    bool fixed_value_range,
+    float fixed_value_minimum,
+    float fixed_value_maximum
 )
 {
     size_t dimension_count;
@@ -6896,7 +6915,10 @@ static bool fuzzy_sweep_generate(
             sample_counts,
             total_points,
             sweep_inputs,
-            sweep_values
+            sweep_values,
+            fixed_value_range,
+            fixed_value_minimum,
+            fixed_value_maximum
         );
 
     free(sweep_inputs);
@@ -7291,7 +7313,10 @@ bool fuzzy_gpu_sweep(const fuzzy_gpu_sweep_t *sweep)
             sample_counts,
             total_points,
             inputs,
-            outputs
+            outputs,
+            false,
+            0.0f,
+            0.0f
         );
 
     free(sample_counts);
@@ -7302,8 +7327,11 @@ bool fuzzy_gpu_sweep(const fuzzy_gpu_sweep_t *sweep)
     return success;
 }
 
-bool fuzzy_gpu_interpolation_sweep(
-    const fuzzy_interpolation_sweep_t *sweep
+static bool fuzzy_gpu_interpolation_sweep_range(
+    const fuzzy_interpolation_sweep_t *sweep,
+    bool fixed_value_range,
+    float fixed_value_minimum,
+    float fixed_value_maximum
 )
 {
     fuzzy_gpu_harness_t gpu;
@@ -7589,7 +7617,10 @@ bool fuzzy_gpu_interpolation_sweep(
             sample_counts,
             total_points,
             inputs,
-            outputs
+            outputs,
+            fixed_value_range,
+            fixed_value_minimum,
+            fixed_value_maximum
         );
 
     free(sample_counts);
@@ -7609,6 +7640,18 @@ bool fuzzy_gpu_interpolation_sweep(
     return success;
 }
 
+bool fuzzy_gpu_interpolation_sweep(
+    const fuzzy_interpolation_sweep_t *sweep
+)
+{
+    return fuzzy_gpu_interpolation_sweep_range(
+        sweep,
+        false,
+        0.0f,
+        0.0f
+    );
+}
+
 #endif /* FUZZY_OPENCL */
 
 bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
@@ -7624,7 +7667,10 @@ bool fuzzy_cog_sweep(const fuzzy_cog_sweep_t *sweep)
     return fuzzy_sweep_generate(
         sweep,
         NULL,
-        0u
+        0u,
+        false,
+        0.0f,
+        0.0f
     );
 }
 
@@ -7868,11 +7914,14 @@ bool fuzzy_interpolation_sweep(
 
     shared_sweep.evaluate =
         NULL;
-
+    
     return fuzzy_sweep_generate(
         &shared_sweep,
         sweep->points,
-        sweep->point_count
+        sweep->point_count,
+        false,
+        0.0f,
+        0.0f
     );
 }
 
@@ -8062,6 +8111,15 @@ typedef struct fuzzy_neuron_train_options
 
 #ifdef FUZZY_NEURON_OPENCL
 
+typedef struct fuzzy_neuron_opencl_kernel_plan
+{
+    size_t maximum_work_group_size;
+    size_t preferred_multiple;
+    size_t local_size;
+    cl_ulong static_local_memory;
+    cl_ulong private_memory;
+} fuzzy_neuron_opencl_kernel_plan_t;
+
 typedef struct fuzzy_neuron_opencl
 {
     cl_platform_id platform;
@@ -8089,6 +8147,25 @@ typedef struct fuzzy_neuron_opencl
     cl_kernel adam_weights_kernel;
     cl_kernel adam_biases_kernel;
     cl_kernel adam_premises_kernel;
+    cl_kernel loss_reduce_stage_kernel;
+    cl_kernel loss_reduce_final_kernel;
+    cl_kernel best_model_kernel;
+    cl_kernel conditional_copy_kernel;
+    cl_kernel gather_outputs_kernel;
+    cl_kernel forward_gemm_tiled_kernel;
+    cl_kernel hidden_delta_gemm_tiled_kernel;
+    cl_kernel layer_backward_update_kernel;
+    cl_kernel fuzzy_backward_kernel;
+    cl_kernel fuzzy_update_kernel;
+
+    fuzzy_neuron_opencl_kernel_plan_t premise_gradient_plan;
+    fuzzy_neuron_opencl_kernel_plan_t loss_reduce_stage_plan;
+    fuzzy_neuron_opencl_kernel_plan_t loss_reduce_final_plan;
+    fuzzy_neuron_opencl_kernel_plan_t forward_gemm_plan;
+    fuzzy_neuron_opencl_kernel_plan_t hidden_delta_gemm_plan;
+    fuzzy_neuron_opencl_kernel_plan_t layer_backward_update_plan;
+    fuzzy_neuron_opencl_kernel_plan_t fuzzy_backward_plan;
+    fuzzy_neuron_opencl_kernel_plan_t fuzzy_update_plan;
 
     cl_mem d_raw_inputs;
     cl_mem d_premises;
@@ -8117,9 +8194,21 @@ typedef struct fuzzy_neuron_opencl
     cl_mem d_weight_second_moment;
     cl_mem d_bias_first_moment;
     cl_mem d_bias_second_moment;
+    cl_mem d_dataset_inputs;
+    cl_mem d_dataset_targets;
+    cl_mem d_outputs;
+    cl_mem d_loss_partials;
+    cl_mem d_epoch_loss;
+    cl_mem d_best_loss;
+    cl_mem d_best_updated;
+    cl_mem d_best_weights;
+    cl_mem d_best_biases;
+    cl_mem d_best_premise_parameters;
     cl_ulong optimizer_step;
 
     size_t batch_capacity;
+    size_t dataset_capacity_rows;
+    size_t loss_partial_capacity;
     bool ready;
 } fuzzy_neuron_opencl_t;
 
@@ -8494,6 +8583,22 @@ typedef struct fuzzy_neuron_membership_descriptor
             (points_arg)[fuzzy_neuron_point__].membership = (outputs_arg)[fuzzy_neuron_point__ * (dataset_arg).target_dimensions]; \
         } \
     } while (0)
+
+#define FUZZY_NEURON_PREMISE_PLOT_FUNCTION(function_name, model_pointer, premise_index) \
+    static float function_name(float value) \
+    { \
+        const fuzzy_neuron_network_t *fuzzy_neuron_premise_plot_model__ = (model_pointer); \
+        const fuzzy_neuron_premise_t *fuzzy_neuron_premise_plot_premise__; \
+        const float *fuzzy_neuron_premise_plot_parameters__; \
+        if (fuzzy_neuron_premise_plot_model__ == NULL || !fuzzy_neuron_premise_plot_model__->compiled || (premise_index) >= fuzzy_neuron_premise_plot_model__->premise_count) \
+        { \
+            abort(); \
+        } \
+        fuzzy_neuron_premise_plot_premise__ = &fuzzy_neuron_premise_plot_model__->premises[(premise_index)]; \
+        fuzzy_neuron_premise_plot_parameters__ = fuzzy_neuron_premise_plot_model__->premise_parameters + fuzzy_neuron_premise_plot_premise__->parameter_offset; \
+        return fuzzy_function_array(fuzzy_neuron_premise_plot_premise__->shape, value, fuzzy_neuron_premise_plot_premise__->hedge, fuzzy_neuron_premise_plot_premise__->parameter_count, fuzzy_neuron_premise_plot_parameters__); \
+    }
+    
 #define FUZZY_NEURON_MODEL_INIT(symbol) symbol##_create()
 #define FUZZY_NEURON_MODEL_DESTROY(symbol, model) symbol##_destroy(model)
 #define FUZZY_NEURON_MODEL_PREDICT(model, inputs, outputs) fuzzy_neuron_predict((model), (inputs), (outputs))
@@ -10163,6 +10268,16 @@ static void fuzzy_neuron_opencl_release(
     if (cl == NULL) return;
 #define FUZZY_NEURON_RELEASE_MEM(member) do { if (cl->member != NULL) clReleaseMemObject(cl->member); } while (0)
 #define FUZZY_NEURON_RELEASE_KERNEL(member) do { if (cl->member != NULL) clReleaseKernel(cl->member); } while (0)
+    FUZZY_NEURON_RELEASE_MEM(d_best_premise_parameters);
+    FUZZY_NEURON_RELEASE_MEM(d_best_biases);
+    FUZZY_NEURON_RELEASE_MEM(d_best_weights);
+    FUZZY_NEURON_RELEASE_MEM(d_best_updated);
+    FUZZY_NEURON_RELEASE_MEM(d_best_loss);
+    FUZZY_NEURON_RELEASE_MEM(d_epoch_loss);
+    FUZZY_NEURON_RELEASE_MEM(d_loss_partials);
+    FUZZY_NEURON_RELEASE_MEM(d_outputs);
+    FUZZY_NEURON_RELEASE_MEM(d_dataset_targets);
+    FUZZY_NEURON_RELEASE_MEM(d_dataset_inputs);
     FUZZY_NEURON_RELEASE_MEM(d_bias_second_moment);
     FUZZY_NEURON_RELEASE_MEM(d_bias_first_moment);
     FUZZY_NEURON_RELEASE_MEM(d_weight_second_moment);
@@ -10190,6 +10305,16 @@ static void fuzzy_neuron_opencl_release(
     FUZZY_NEURON_RELEASE_MEM(d_biases);
     FUZZY_NEURON_RELEASE_MEM(d_weights);
     FUZZY_NEURON_RELEASE_MEM(d_targets);
+    FUZZY_NEURON_RELEASE_KERNEL(fuzzy_update_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(fuzzy_backward_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(layer_backward_update_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(hidden_delta_gemm_tiled_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(forward_gemm_tiled_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(gather_outputs_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(conditional_copy_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(best_model_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(loss_reduce_final_kernel);
+    FUZZY_NEURON_RELEASE_KERNEL(loss_reduce_stage_kernel);
     FUZZY_NEURON_RELEASE_KERNEL(project_premises_kernel);
     FUZZY_NEURON_RELEASE_KERNEL(adam_premises_kernel);
     FUZZY_NEURON_RELEASE_KERNEL(adam_biases_kernel);
@@ -10264,6 +10389,214 @@ static bool fuzzy_neuron_opencl_create_kernel(
         *kernel = NULL;
         return false;
     }
+    return true;
+}
+
+static bool fuzzy_neuron_opencl_reduction_local_size(
+    fuzzy_neuron_opencl_t *cl,
+    cl_kernel kernel,
+    size_t item_count,
+    size_t local_element_size,
+    size_t *local_size
+)
+{
+    size_t device_maximum;
+    size_t kernel_maximum;
+    size_t preferred_multiple;
+    cl_ulong device_local_memory;
+    cl_ulong kernel_static_local_memory;
+    size_t limit;
+    size_t selected;
+    cl_int error;
+
+    if (cl == NULL ||
+        kernel == NULL ||
+        item_count == 0u ||
+        local_element_size == 0u ||
+        local_size == NULL)
+    {
+        return false;
+    }
+
+    error = clGetDeviceInfo(
+        cl->device,
+        CL_DEVICE_MAX_WORK_GROUP_SIZE,
+        sizeof(device_maximum),
+        &device_maximum,
+        NULL
+    );
+
+    error |= clGetDeviceInfo(
+        cl->device,
+        CL_DEVICE_LOCAL_MEM_SIZE,
+        sizeof(device_local_memory),
+        &device_local_memory,
+        NULL
+    );
+
+    error |= clGetKernelWorkGroupInfo(
+        kernel,
+        cl->device,
+        CL_KERNEL_WORK_GROUP_SIZE,
+        sizeof(kernel_maximum),
+        &kernel_maximum,
+        NULL
+    );
+
+    error |= clGetKernelWorkGroupInfo(
+        kernel,
+        cl->device,
+        CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+        sizeof(preferred_multiple),
+        &preferred_multiple,
+        NULL
+    );
+
+    error |= clGetKernelWorkGroupInfo(
+        kernel,
+        cl->device,
+        CL_KERNEL_LOCAL_MEM_SIZE,
+        sizeof(kernel_static_local_memory),
+        &kernel_static_local_memory,
+        NULL
+    );
+
+    if (error != CL_SUCCESS)
+    {
+        return false;
+    }
+
+    if (kernel_static_local_memory >= device_local_memory)
+    {
+        return false;
+    }
+
+    limit = item_count;
+
+    if (limit > device_maximum)
+    {
+        limit = device_maximum;
+    }
+
+    if (limit > kernel_maximum)
+    {
+        limit = kernel_maximum;
+    }
+
+    {
+        size_t local_memory_limit =
+            (size_t)(
+                (device_local_memory - kernel_static_local_memory) /
+                (cl_ulong)local_element_size
+            );
+
+        if (limit > local_memory_limit)
+        {
+            limit = local_memory_limit;
+        }
+    }
+
+    if (limit == 0u)
+    {
+        return false;
+    }
+
+    selected = 1u;
+
+    while (selected <= limit / 2u)
+    {
+        selected *= 2u;
+    }
+
+    if (preferred_multiple > 1u &&
+        selected >= preferred_multiple)
+    {
+        while (selected > 1u &&
+               selected % preferred_multiple != 0u)
+        {
+            selected /= 2u;
+        }
+    }
+
+    if (selected == 0u)
+    {
+        return false;
+    }
+
+    *local_size = selected;
+
+    return true;
+}
+
+static bool fuzzy_neuron_opencl_tiled_local_size(
+    fuzzy_neuron_opencl_t *cl,
+    cl_kernel kernel,
+    size_t first_count,
+    size_t second_count,
+    size_t *first_local,
+    size_t *second_local
+)
+{
+    size_t device_maximum;
+    size_t kernel_maximum;
+    cl_ulong device_local_memory;
+    cl_ulong kernel_local_memory;
+    size_t first;
+    size_t second;
+    cl_int error;
+
+    if (cl == NULL || kernel == NULL || first_count == 0u || second_count == 0u || first_local == NULL || second_local == NULL)
+    {
+        return false;
+    }
+
+    error = clGetDeviceInfo(cl->device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(device_maximum), &device_maximum, NULL);
+    error |= clGetDeviceInfo(cl->device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(device_local_memory), &device_local_memory, NULL);
+    error |= clGetKernelWorkGroupInfo(kernel, cl->device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(kernel_maximum), &kernel_maximum, NULL);
+    error |= clGetKernelWorkGroupInfo(kernel, cl->device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(kernel_local_memory), &kernel_local_memory, NULL);
+    if (error != CL_SUCCESS || kernel_local_memory >= device_local_memory)
+    {
+        return false;
+    }
+
+    first = 1u;
+    second = 1u;
+    for (;;)
+    {
+        size_t next_first = first;
+        size_t next_second = second;
+        size_t local_bytes;
+
+        if ((first <= second && first < first_count) || second >= second_count)
+        {
+            next_first = first <= first_count / 2u ? first * 2u : first;
+        }
+        else
+        {
+            next_second = second <= second_count / 2u ? second * 2u : second;
+        }
+
+        if (next_first == first && next_second == second)
+        {
+            break;
+        }
+        if (next_first > device_maximum / next_second || next_first * next_second > kernel_maximum)
+        {
+            break;
+        }
+
+        local_bytes = (next_first * next_second + next_second * next_second) * sizeof(float);
+        if ((cl_ulong)local_bytes > device_local_memory - kernel_local_memory)
+        {
+            break;
+        }
+
+        first = next_first;
+        second = next_second;
+    }
+
+    *first_local = first;
+    *second_local = second;
     return true;
 }
 
@@ -10487,7 +10820,7 @@ bool fuzzy_neuron_opencl_init(
         return false;
     }
 
-    cl->queue = clCreateCommandQueue(cl->context, cl->device, 0u, &error);
+    cl->queue = clCreateCommandQueue(cl->context, cl->device, CL_QUEUE_PROFILING_ENABLE, &error);
 
     if (error != CL_SUCCESS || cl->queue == NULL)
     {
@@ -10545,7 +10878,17 @@ if (!fuzzy_neuron_opencl_create_kernel(cl->program, "fn_premise_forward", &cl->p
     !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_adam_apply", &cl->adam_weights_kernel) ||
     !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_adam_apply", &cl->adam_biases_kernel) ||
     !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_adam_apply", &cl->adam_premises_kernel) ||
-    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_project_premises", &cl->project_premises_kernel))
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_project_premises", &cl->project_premises_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_loss_reduce_stage", &cl->loss_reduce_stage_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_loss_reduce_final", &cl->loss_reduce_final_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_best_model", &cl->best_model_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_conditional_copy", &cl->conditional_copy_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_gather_outputs", &cl->gather_outputs_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_forward_gemm_tiled", &cl->forward_gemm_tiled_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_hidden_delta_gemm_tiled", &cl->hidden_delta_gemm_tiled_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_layer_backward_update", &cl->layer_backward_update_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_fuzzy_backward", &cl->fuzzy_backward_kernel) ||
+    !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_fuzzy_update", &cl->fuzzy_update_kernel))
 {
     fuzzy_neuron_opencl_release(cl);
     return false;
@@ -10615,6 +10958,15 @@ if (!fuzzy_neuron_opencl_create_kernel(cl->program, "fn_premise_forward", &cl->p
         FUZZY_NEURON_CREATE_BUFFER(d_weight_second_moment, CL_MEM_READ_WRITE, network->weight_count * sizeof(float));
         FUZZY_NEURON_CREATE_BUFFER(d_bias_first_moment, CL_MEM_READ_WRITE, network->bias_count * sizeof(float));
         FUZZY_NEURON_CREATE_BUFFER(d_bias_second_moment, CL_MEM_READ_WRITE, network->bias_count * sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_outputs, CL_MEM_READ_WRITE, batch_capacity * network->output_dimensions * sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_loss_partials, CL_MEM_READ_WRITE, batch_capacity * network->output_dimensions * sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_epoch_loss, CL_MEM_READ_WRITE, sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_best_loss, CL_MEM_READ_WRITE, sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_best_updated, CL_MEM_READ_WRITE, sizeof(cl_uint));
+        FUZZY_NEURON_CREATE_BUFFER(d_best_weights, CL_MEM_READ_WRITE, network->weight_count * sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_best_biases, CL_MEM_READ_WRITE, network->bias_count * sizeof(float));
+        FUZZY_NEURON_CREATE_BUFFER(d_best_premise_parameters, CL_MEM_READ_WRITE, network->premise_parameter_count * sizeof(float));
+        cl->loss_partial_capacity = batch_capacity * network->output_dimensions;
 #undef FUZZY_NEURON_CREATE_BUFFER
         error = CL_SUCCESS;
         error |= clEnqueueWriteBuffer(cl->queue, cl->d_premises, CL_TRUE, 0u, network->premise_count * sizeof(*premises), premises, 0u, NULL, NULL);
@@ -10623,7 +10975,6 @@ if (!fuzzy_neuron_opencl_create_kernel(cl->program, "fn_premise_forward", &cl->p
         error |= clEnqueueWriteBuffer(cl->queue, cl->d_rule_roots, CL_TRUE, 0u, network->rule_count * sizeof(*rule_roots), rule_roots, 0u, NULL, NULL);
         error |= clEnqueueWriteBuffer(cl->queue, cl->d_weights, CL_TRUE, 0u, network->weight_count * sizeof(float), network->weights, 0u, NULL, NULL);
         error |= clEnqueueWriteBuffer(cl->queue, cl->d_biases, CL_TRUE, 0u, network->bias_count * sizeof(float), network->biases, 0u, NULL, NULL);
-        error |= clEnqueueWriteBuffer(cl->queue, cl->d_premise_parameters, CL_TRUE, 0u, network->premise_parameter_count * sizeof(float), network->premise_parameters, 0u, NULL, NULL);
         free(premises);
         free(expressions);
         free(rule_roots);
@@ -10654,6 +11005,7 @@ static bool fuzzy_neuron_opencl_enqueue_forward(
     size_t sample_global_size = (size_t)sample_count;
     size_t layer;
     cl_int error = CL_SUCCESS;
+
     error |= clSetKernelArg(cl->premise_forward_kernel, 0u, sizeof(cl_mem), &cl->d_raw_inputs);
     error |= clSetKernelArg(cl->premise_forward_kernel, 1u, sizeof(cl_mem), &cl->d_premises);
     error |= clSetKernelArg(cl->premise_forward_kernel, 2u, sizeof(cl_mem), &cl->d_premise_parameters);
@@ -10662,6 +11014,7 @@ static bool fuzzy_neuron_opencl_enqueue_forward(
     error |= clSetKernelArg(cl->premise_forward_kernel, 5u, sizeof(input_count), &input_count);
     error |= clSetKernelArg(cl->premise_forward_kernel, 6u, sizeof(premise_count), &premise_count);
     if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->premise_forward_kernel, 2u, NULL, premise_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
     error = CL_SUCCESS;
     error |= clSetKernelArg(cl->expression_forward_kernel, 0u, sizeof(cl_mem), &cl->d_expressions);
     error |= clSetKernelArg(cl->expression_forward_kernel, 1u, sizeof(cl_mem), &cl->d_rule_roots);
@@ -10674,6 +11027,7 @@ static bool fuzzy_neuron_opencl_enqueue_forward(
     error |= clSetKernelArg(cl->expression_forward_kernel, 8u, sizeof(rule_count), &rule_count);
     error |= clSetKernelArg(cl->expression_forward_kernel, 9u, sizeof(logic_method), &logic_method);
     if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->expression_forward_kernel, 1u, NULL, &sample_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
     error = CL_SUCCESS;
     error |= clSetKernelArg(cl->normalize_rules_kernel, 0u, sizeof(cl_mem), &cl->d_raw_rules);
     error |= clSetKernelArg(cl->normalize_rules_kernel, 1u, sizeof(cl_mem), &cl->d_activations);
@@ -10681,6 +11035,7 @@ static bool fuzzy_neuron_opencl_enqueue_forward(
     error |= clSetKernelArg(cl->normalize_rules_kernel, 3u, sizeof(rule_count), &rule_count);
     error |= clSetKernelArg(cl->normalize_rules_kernel, 4u, sizeof(neuron_count), &neuron_count);
     if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->normalize_rules_kernel, 1u, NULL, &sample_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
     for (layer = 0u; layer < network->layer_count; ++layer)
     {
         const fuzzy_neuron_layer_t *current = &network->layers[layer];
@@ -10691,25 +11046,40 @@ static bool fuzzy_neuron_opencl_enqueue_forward(
         cl_uint weight_offset = (cl_uint)current->weight_offset;
         cl_uint bias_offset = (cl_uint)current->bias_offset;
         cl_uint activation_kind = (cl_uint)current->activation;
-        size_t global_size[2] = {(size_t)sample_count, current->count};
+        size_t local_size[2];
+        size_t global_size[2];
+        size_t input_tile_bytes;
+        size_t weight_tile_bytes;
+
+        if (!fuzzy_neuron_opencl_tiled_local_size(cl, cl->forward_gemm_tiled_kernel, sample_count, current->count, &local_size[0], &local_size[1]))
+        {
+            return false;
+        }
+
+        global_size[0] = ((size_t)sample_count + local_size[0] - 1u) / local_size[0] * local_size[0];
+        global_size[1] = (current->count + local_size[1] - 1u) / local_size[1] * local_size[1];
+        input_tile_bytes = local_size[0] * local_size[1] * sizeof(float);
+        weight_tile_bytes = local_size[1] * local_size[1] * sizeof(float);
+
         error = CL_SUCCESS;
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 1u, sizeof(cl_mem), &cl->d_biases);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 2u, sizeof(cl_mem), &cl->d_activations);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 3u, sizeof(sample_count), &sample_count);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 4u, sizeof(neuron_count), &neuron_count);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 5u, sizeof(source_offset), &source_offset);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 6u, sizeof(source_count), &source_count);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 7u, sizeof(destination_offset), &destination_offset);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 8u, sizeof(destination_count), &destination_count);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 9u, sizeof(weight_offset), &weight_offset);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 10u, sizeof(bias_offset), &bias_offset);
-        error |= clSetKernelArg(cl->forward_gemm_kernel, 11u, sizeof(activation_kind), &activation_kind);
-        if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->forward_gemm_kernel, 2u, NULL, global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 1u, sizeof(cl_mem), &cl->d_biases);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 2u, sizeof(cl_mem), &cl->d_activations);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 3u, sizeof(sample_count), &sample_count);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 4u, sizeof(neuron_count), &neuron_count);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 5u, sizeof(source_offset), &source_offset);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 6u, sizeof(source_count), &source_count);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 7u, sizeof(destination_offset), &destination_offset);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 8u, sizeof(destination_count), &destination_count);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 9u, sizeof(weight_offset), &weight_offset);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 10u, sizeof(bias_offset), &bias_offset);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 11u, sizeof(activation_kind), &activation_kind);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 12u, input_tile_bytes, NULL);
+        error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 13u, weight_tile_bytes, NULL);
+        if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->forward_gemm_tiled_kernel, 2u, NULL, global_size, local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
     }
     return true;
 }
-
 double fuzzy_neuron_dataset_huber(fuzzy_neuron_network_t *network, const fuzzy_neuron_dataset_t *dataset)
 {
     float *output;
@@ -10804,30 +11174,24 @@ bool fuzzy_neuron_opencl_train(
 )
 {
     fuzzy_neuron_opencl_t *cl;
-    float *best_premise_parameters;
-    float *best_weights;
-    float *best_biases;
-    double best_loss = -1.0;
     size_t epoch;
     size_t batch_start;
     size_t layer;
     cl_uint loss_method;
     cl_float huber_delta = 10.0f;
-    cl_int error;
     cl_float adam_beta1;
     cl_float adam_beta2;
     cl_float adam_epsilon;
+    cl_int error;
 
-    if (network == NULL || dataset == NULL || options == NULL || !network->opencl.ready || options->batch_size == 0u || options->batch_size > network->opencl.batch_capacity)
+    if (network == NULL || dataset == NULL || options == NULL || !network->opencl.ready || options->batch_size == 0u || options->batch_size > network->opencl.batch_capacity || dataset->input_dimensions != network->raw_input_dimensions || dataset->target_dimensions != network->output_dimensions || dataset->rows == 0u)
     {
         return false;
     }
-
     if (error_fn != MSE && error_fn != HUBER)
     {
         return false;
     }
-
     if (options->optimizer != FUZZY_NEURON_OPTIMIZER_SGD && options->optimizer != FUZZY_NEURON_OPTIMIZER_ADAM)
     {
         return false;
@@ -10836,13 +11200,13 @@ bool fuzzy_neuron_opencl_train(
     adam_beta1 = options->adam_beta1;
     adam_beta2 = options->adam_beta2;
     adam_epsilon = options->adam_epsilon;
-
     if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM && (!(adam_beta1 > 0.0f && adam_beta1 < 1.0f) || !(adam_beta2 > 0.0f && adam_beta2 < 1.0f) || !(adam_epsilon > 0.0f)))
     {
         return false;
     }
 
     cl = &network->opencl;
+    loss_method = error_fn == HUBER ? 1u : 0u;
 
     if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM && options->reset_optimizer_state)
     {
@@ -10854,25 +11218,28 @@ bool fuzzy_neuron_opencl_train(
         error |= clEnqueueFillBuffer(cl->queue, cl->d_bias_second_moment, &zero, sizeof(zero), 0u, network->bias_count * sizeof(float), 0u, NULL, NULL);
         error |= clEnqueueFillBuffer(cl->queue, cl->d_premise_first_moment, &zero, sizeof(zero), 0u, network->premise_parameter_count * sizeof(float), 0u, NULL, NULL);
         error |= clEnqueueFillBuffer(cl->queue, cl->d_premise_second_moment, &zero, sizeof(zero), 0u, network->premise_parameter_count * sizeof(float), 0u, NULL, NULL);
-        if (error != CL_SUCCESS || clFinish(cl->queue) != CL_SUCCESS)
-        {
-            return false;
-        }
+        if (error != CL_SUCCESS) return false;
         cl->optimizer_step = 0u;
     }
-    loss_method = error_fn == HUBER ? 1u : 0u;
-    best_premise_parameters = malloc(network->premise_parameter_count * sizeof(*best_premise_parameters));
-    best_weights = malloc(network->weight_count * sizeof(*best_weights));
-    best_biases = malloc(network->bias_count * sizeof(*best_biases));
-    if (best_premise_parameters == NULL || best_weights == NULL || best_biases == NULL)
+
     {
-        free(best_premise_parameters);
-        free(best_weights);
-        free(best_biases);
-        return false;
+        float initial_best_loss = INFINITY;
+        cl_uint enabled = 1u;
+        error = CL_SUCCESS;
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_best_loss, CL_TRUE, 0u, sizeof(initial_best_loss), &initial_best_loss, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_best_updated, CL_TRUE, 0u, sizeof(enabled), &enabled, 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_weights, cl->d_best_weights, 0u, 0u, network->weight_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_biases, cl->d_best_biases, 0u, 0u, network->bias_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_premise_parameters, cl->d_best_premise_parameters, 0u, 0u, network->premise_parameter_count * sizeof(float), 0u, NULL, NULL);
+        if (error != CL_SUCCESS) return false;
     }
+
     for (epoch = 0u; epoch < options->epochs; ++epoch)
     {
+        float zero_loss = 0.0f;
+        error = clEnqueueWriteBuffer(cl->queue, cl->d_epoch_loss, CL_FALSE, 0u, sizeof(zero_loss), &zero_loss, 0u, NULL, NULL);
+        if (error != CL_SUCCESS) goto train_failure;
+
         for (batch_start = 0u; batch_start < dataset->rows; batch_start += options->batch_size)
         {
             size_t batch_count = dataset->rows - batch_start;
@@ -10881,31 +11248,27 @@ bool fuzzy_neuron_opencl_train(
             cl_uint neuron_count = (cl_uint)network->neuron_count;
             cl_uint output_offset;
             cl_uint output_activation;
+            cl_uint optimizer_kind = (cl_uint)options->optimizer;
+            cl_float learning_rate = options->learning_rate;
+            cl_float alpha = learning_rate;
 
-            if (batch_count > options->batch_size)
-            {
-                batch_count = options->batch_size;
-            }
-
-
+            if (batch_count > options->batch_size) batch_count = options->batch_size;
             sample_count = (cl_uint)batch_count;
             output_offset = (cl_uint)fuzzy_neuron_opencl_layer_destination_offset(network, network->layer_count - 1u);
             output_activation = (cl_uint)network->layers[network->layer_count - 1u].activation;
 
+            if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM)
+            {
+                ++cl->optimizer_step;
+                alpha = learning_rate * sqrtf(1.0f - powf(adam_beta2, (float)cl->optimizer_step)) / (1.0f - powf(adam_beta1, (float)cl->optimizer_step));
+            }
+
             error = clEnqueueWriteBuffer(cl->queue, cl->d_raw_inputs, CL_FALSE, 0u, batch_count * network->raw_input_dimensions * sizeof(float), dataset->inputs + batch_start * dataset->input_dimensions, 0u, NULL, NULL);
             error |= clEnqueueWriteBuffer(cl->queue, cl->d_targets, CL_FALSE, 0u, batch_count * network->output_dimensions * sizeof(float), dataset->targets + batch_start * dataset->target_dimensions, 0u, NULL, NULL);
-
-            if (error != CL_SUCCESS || !fuzzy_neuron_opencl_enqueue_forward(network, sample_count))
-            {
-                free(best_premise_parameters);
-                free(best_weights);
-                free(best_biases);
-                return false;
-            }
+            if (error != CL_SUCCESS || !fuzzy_neuron_opencl_enqueue_forward(network, sample_count)) goto train_failure;
 
             {
                 size_t output_global_size = batch_count * network->output_dimensions;
-
                 error = CL_SUCCESS;
                 error |= clSetKernelArg(cl->output_delta_kernel, 0u, sizeof(cl_mem), &cl->d_targets);
                 error |= clSetKernelArg(cl->output_delta_kernel, 1u, sizeof(cl_mem), &cl->d_activations);
@@ -10918,14 +11281,35 @@ bool fuzzy_neuron_opencl_train(
                 error |= clSetKernelArg(cl->output_delta_kernel, 8u, sizeof(output_activation), &output_activation);
                 error |= clSetKernelArg(cl->output_delta_kernel, 9u, sizeof(loss_method), &loss_method);
                 error |= clSetKernelArg(cl->output_delta_kernel, 10u, sizeof(huber_delta), &huber_delta);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->output_delta_kernel, 1u, NULL, &output_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+            }
 
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->output_delta_kernel, 1u, NULL, &output_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS)
-                {
-                    free(best_premise_parameters);
-                    free(best_weights);
-                    free(best_biases);
-                    return false;
-                }
+            {
+                size_t loss_count = batch_count * network->output_dimensions;
+                size_t local_size;
+                size_t group_count;
+                size_t global_size;
+                cl_uint gpu_loss_count = (cl_uint)loss_count;
+                cl_uint partial_count;
+                if (!fuzzy_neuron_opencl_reduction_local_size(cl, cl->loss_reduce_stage_kernel, loss_count, sizeof(float), &local_size)) goto train_failure;
+                group_count = (loss_count + local_size - 1u) / local_size;
+                if (group_count > cl->loss_partial_capacity) goto train_failure;
+                global_size = group_count * local_size;
+                partial_count = (cl_uint)group_count;
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 0u, sizeof(cl_mem), &cl->d_losses);
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 1u, sizeof(cl_mem), &cl->d_loss_partials);
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 2u, sizeof(gpu_loss_count), &gpu_loss_count);
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 3u, local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->loss_reduce_stage_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+                if (!fuzzy_neuron_opencl_reduction_local_size(cl, cl->loss_reduce_final_kernel, group_count, sizeof(float), &local_size)) goto train_failure;
+                global_size = local_size;
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 0u, sizeof(cl_mem), &cl->d_loss_partials);
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 1u, sizeof(cl_mem), &cl->d_epoch_loss);
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 2u, sizeof(partial_count), &partial_count);
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 3u, local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->loss_reduce_final_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
             }
 
             for (layer = network->layer_count - 1u; layer-- > 0u;)
@@ -10937,30 +11321,31 @@ bool fuzzy_neuron_opencl_train(
                 cl_uint next_offset = (cl_uint)fuzzy_neuron_opencl_layer_destination_offset(network, layer + 1u);
                 cl_uint next_count = (cl_uint)next->count;
                 cl_uint next_weight_offset = (cl_uint)next->weight_offset;
-                cl_uint activation_kind = (cl_uint)current->activation;
-                size_t global_size[2] = {(batch_count + 15u) / 16u * 16u, (current->count + 15u) / 16u * 16u};
-                size_t local_size[2] = {16u, 16u};
-
+                cl_uint current_activation_kind = (cl_uint)current->activation;
+                size_t local_size[2];
+                size_t global_size[2];
+                size_t delta_tile_bytes;
+                size_t weight_tile_bytes;
+                if (!fuzzy_neuron_opencl_tiled_local_size(cl, cl->hidden_delta_gemm_tiled_kernel, batch_count, current->count, &local_size[0], &local_size[1])) goto train_failure;
+                global_size[0] = (batch_count + local_size[0] - 1u) / local_size[0] * local_size[0];
+                global_size[1] = (current->count + local_size[1] - 1u) / local_size[1] * local_size[1];
+                delta_tile_bytes = local_size[0] * local_size[1] * sizeof(float);
+                weight_tile_bytes = local_size[1] * local_size[1] * sizeof(float);
                 error = CL_SUCCESS;
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 1u, sizeof(cl_mem), &cl->d_activations);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 2u, sizeof(cl_mem), &cl->d_deltas);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 3u, sizeof(sample_count), &sample_count);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 4u, sizeof(neuron_count), &neuron_count);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 5u, sizeof(current_offset), &current_offset);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 6u, sizeof(current_count), &current_count);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 7u, sizeof(next_offset), &next_offset);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 8u, sizeof(next_count), &next_count);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 9u, sizeof(next_weight_offset), &next_weight_offset);
-                error |= clSetKernelArg(cl->hidden_delta_gemm_kernel, 10u, sizeof(activation_kind), &activation_kind);
-
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->hidden_delta_gemm_kernel, 2u, NULL, global_size, local_size, 0u, NULL, NULL) != CL_SUCCESS)
-                {
-                    free(best_premise_parameters);
-                    free(best_weights);
-                    free(best_biases);
-                    return false;
-                }
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 1u, sizeof(cl_mem), &cl->d_activations);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 2u, sizeof(cl_mem), &cl->d_deltas);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 3u, sizeof(sample_count), &sample_count);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 4u, sizeof(neuron_count), &neuron_count);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 5u, sizeof(current_offset), &current_offset);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 6u, sizeof(current_count), &current_count);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 7u, sizeof(next_offset), &next_offset);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 8u, sizeof(next_count), &next_count);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 9u, sizeof(next_weight_offset), &next_weight_offset);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 10u, sizeof(current_activation_kind), &current_activation_kind);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 11u, delta_tile_bytes, NULL);
+                error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 12u, weight_tile_bytes, NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->hidden_delta_gemm_tiled_kernel, 2u, NULL, global_size, local_size, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
             }
 
             {
@@ -10973,30 +11358,26 @@ bool fuzzy_neuron_opencl_train(
                 cl_uint first_destination_count = (cl_uint)network->layers[0].count;
                 cl_uint first_weight_offset = (cl_uint)network->layers[0].weight_offset;
                 cl_uint logic_method = (cl_uint)network->logic_method;
-                cl_uint zero_offset = 0u;
-                cl_float learning_rate = options->learning_rate;
-                size_t input_delta_size[2] = {batch_count, network->rule_count};
                 size_t sample_global_size = batch_count;
+                size_t premise_gradient_local_size;
+                size_t premise_gradient_global_size;
                 size_t parameter_global_size = network->premise_parameter_count;
                 size_t premise_global_size = network->premise_count;
+
                 error = CL_SUCCESS;
-                error |= clSetKernelArg(cl->input_delta_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
-                error |= clSetKernelArg(cl->input_delta_kernel, 1u, sizeof(cl_mem), &cl->d_deltas);
-                error |= clSetKernelArg(cl->input_delta_kernel, 2u, sizeof(cl_mem), &cl->d_normalized_rule_gradients);
-                error |= clSetKernelArg(cl->input_delta_kernel, 3u, sizeof(sample_count), &sample_count);
-                error |= clSetKernelArg(cl->input_delta_kernel, 4u, sizeof(neuron_count), &neuron_count);
-                error |= clSetKernelArg(cl->input_delta_kernel, 5u, sizeof(rule_count), &rule_count);
-                error |= clSetKernelArg(cl->input_delta_kernel, 6u, sizeof(first_destination_offset), &first_destination_offset);
-                error |= clSetKernelArg(cl->input_delta_kernel, 7u, sizeof(first_destination_count), &first_destination_count);
-                error |= clSetKernelArg(cl->input_delta_kernel, 8u, sizeof(first_weight_offset), &first_weight_offset);
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->input_delta_kernel, 2u, NULL, input_delta_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                error = CL_SUCCESS;
-                error |= clSetKernelArg(cl->normalize_backward_kernel, 0u, sizeof(cl_mem), &cl->d_raw_rules);
-                error |= clSetKernelArg(cl->normalize_backward_kernel, 1u, sizeof(cl_mem), &cl->d_normalized_rule_gradients);
-                error |= clSetKernelArg(cl->normalize_backward_kernel, 2u, sizeof(cl_mem), &cl->d_raw_rule_gradients);
-                error |= clSetKernelArg(cl->normalize_backward_kernel, 3u, sizeof(sample_count), &sample_count);
-                error |= clSetKernelArg(cl->normalize_backward_kernel, 4u, sizeof(rule_count), &rule_count);
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->normalize_backward_kernel, 1u, NULL, &sample_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 1u, sizeof(cl_mem), &cl->d_deltas);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 2u, sizeof(cl_mem), &cl->d_raw_rules);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 3u, sizeof(cl_mem), &cl->d_normalized_rule_gradients);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 4u, sizeof(cl_mem), &cl->d_raw_rule_gradients);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 5u, sizeof(sample_count), &sample_count);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 6u, sizeof(neuron_count), &neuron_count);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 7u, sizeof(rule_count), &rule_count);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 8u, sizeof(first_destination_offset), &first_destination_offset);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 9u, sizeof(first_destination_count), &first_destination_count);
+                error |= clSetKernelArg(cl->fuzzy_backward_kernel, 10u, sizeof(first_weight_offset), &first_weight_offset);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->fuzzy_backward_kernel, 1u, NULL, &sample_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+
                 error = CL_SUCCESS;
                 error |= clSetKernelArg(cl->expression_backward_kernel, 0u, sizeof(cl_mem), &cl->d_expressions);
                 error |= clSetKernelArg(cl->expression_backward_kernel, 1u, sizeof(cl_mem), &cl->d_rule_roots);
@@ -11010,6 +11391,9 @@ bool fuzzy_neuron_opencl_train(
                 error |= clSetKernelArg(cl->expression_backward_kernel, 9u, sizeof(rule_count), &rule_count);
                 error |= clSetKernelArg(cl->expression_backward_kernel, 10u, sizeof(logic_method), &logic_method);
                 if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->expression_backward_kernel, 1u, NULL, &sample_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+
+                if (!fuzzy_neuron_opencl_reduction_local_size(cl, cl->premise_gradient_kernel, batch_count, sizeof(float), &premise_gradient_local_size)) goto train_failure;
+                premise_gradient_global_size = network->premise_parameter_count * premise_gradient_local_size;
                 error = CL_SUCCESS;
                 error |= clSetKernelArg(cl->premise_gradient_kernel, 0u, sizeof(cl_mem), &cl->d_raw_inputs);
                 error |= clSetKernelArg(cl->premise_gradient_kernel, 1u, sizeof(cl_mem), &cl->d_premises);
@@ -11021,43 +11405,31 @@ bool fuzzy_neuron_opencl_train(
                 error |= clSetKernelArg(cl->premise_gradient_kernel, 7u, sizeof(input_count), &input_count);
                 error |= clSetKernelArg(cl->premise_gradient_kernel, 8u, sizeof(premise_count), &premise_count);
                 error |= clSetKernelArg(cl->premise_gradient_kernel, 9u, sizeof(parameter_count), &parameter_count);
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->premise_gradient_kernel, 1u, NULL, &parameter_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM)
-                {
-                    cl_float alpha;
-                    ++cl->optimizer_step;
-                    alpha = learning_rate * sqrtf(1.0f - powf(adam_beta2, (float)cl->optimizer_step)) / (1.0f - powf(adam_beta1, (float)cl->optimizer_step));
-                    error = CL_SUCCESS;
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 0u, sizeof(cl_mem), &cl->d_premise_parameters);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 1u, sizeof(cl_mem), &cl->d_premise_parameter_gradients);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 2u, sizeof(cl_mem), &cl->d_premise_first_moment);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 3u, sizeof(cl_mem), &cl->d_premise_second_moment);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 4u, sizeof(parameter_count), &parameter_count);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 5u, sizeof(zero_offset), &zero_offset);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 6u, sizeof(sample_count), &sample_count);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 7u, sizeof(alpha), &alpha);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 8u, sizeof(adam_beta1), &adam_beta1);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 9u, sizeof(adam_beta2), &adam_beta2);
-                    error |= clSetKernelArg(cl->adam_premises_kernel, 10u, sizeof(adam_epsilon), &adam_epsilon);
-                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->adam_premises_kernel, 1u, NULL, &parameter_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                }
-                else
-                {
-                    error = CL_SUCCESS;
-                    error |= clSetKernelArg(cl->apply_premises_kernel, 0u, sizeof(cl_mem), &cl->d_premise_parameters);
-                    error |= clSetKernelArg(cl->apply_premises_kernel, 1u, sizeof(cl_mem), &cl->d_premise_parameter_gradients);
-                    error |= clSetKernelArg(cl->apply_premises_kernel, 2u, sizeof(parameter_count), &parameter_count);
-                    error |= clSetKernelArg(cl->apply_premises_kernel, 3u, sizeof(zero_offset), &zero_offset);
-                    error |= clSetKernelArg(cl->apply_premises_kernel, 4u, sizeof(sample_count), &sample_count);
-                    error |= clSetKernelArg(cl->apply_premises_kernel, 5u, sizeof(learning_rate), &learning_rate);
-                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->apply_premises_kernel, 1u, NULL, &parameter_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                }
+                error |= clSetKernelArg(cl->premise_gradient_kernel, 10u, premise_gradient_local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->premise_gradient_kernel, 1u, NULL, &premise_gradient_global_size, &premise_gradient_local_size, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 0u, sizeof(cl_mem), &cl->d_premise_parameter_gradients);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 1u, sizeof(cl_mem), &cl->d_premise_parameters);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 2u, sizeof(cl_mem), &cl->d_premise_first_moment);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 3u, sizeof(cl_mem), &cl->d_premise_second_moment);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 4u, sizeof(parameter_count), &parameter_count);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 5u, sizeof(sample_count), &sample_count);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 6u, sizeof(optimizer_kind), &optimizer_kind);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 7u, sizeof(learning_rate), &learning_rate);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 8u, sizeof(alpha), &alpha);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 9u, sizeof(adam_beta1), &adam_beta1);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 10u, sizeof(adam_beta2), &adam_beta2);
+                error |= clSetKernelArg(cl->fuzzy_update_kernel, 11u, sizeof(adam_epsilon), &adam_epsilon);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->fuzzy_update_kernel, 1u, NULL, &parameter_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+
                 error = CL_SUCCESS;
                 error |= clSetKernelArg(cl->project_premises_kernel, 0u, sizeof(cl_mem), &cl->d_premises);
                 error |= clSetKernelArg(cl->project_premises_kernel, 1u, sizeof(cl_mem), &cl->d_premise_parameters);
                 error |= clSetKernelArg(cl->project_premises_kernel, 2u, sizeof(premise_count), &premise_count);
                 if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->project_premises_kernel, 1u, NULL, &premise_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
             }
+
             for (layer = 0u; layer < network->layer_count; ++layer)
             {
                 const fuzzy_neuron_layer_t *current = &network->layers[layer];
@@ -11067,176 +11439,90 @@ bool fuzzy_neuron_opencl_train(
                 cl_uint destination_count = (cl_uint)current->count;
                 cl_uint weight_offset = (cl_uint)current->weight_offset;
                 cl_uint bias_offset = (cl_uint)current->bias_offset;
-                cl_uint weight_parameter_count = source_count * destination_count;
-                cl_uint bias_parameter_count = destination_count;
-                cl_float learning_rate = options->learning_rate;
-                size_t matrix_global_size[2] = {((size_t)source_count + 15u) / 16u * 16u, ((size_t)destination_count + 15u) / 16u * 16u};
-                size_t matrix_local_size[2] = {16u, 16u};
-                size_t weight_global_size = weight_parameter_count;
-                size_t bias_global_size = bias_parameter_count;
-
+                size_t parameter_count = (size_t)source_count * destination_count + destination_count;
+                size_t local_size;
+                size_t global_size;
+                if (!fuzzy_neuron_opencl_reduction_local_size(cl, cl->layer_backward_update_kernel, batch_count, sizeof(float), &local_size)) goto train_failure;
+                global_size = parameter_count * local_size;
                 error = CL_SUCCESS;
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 0u, sizeof(cl_mem), &cl->d_activations);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 1u, sizeof(cl_mem), &cl->d_deltas);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 2u, sizeof(cl_mem), &cl->d_weight_gradients);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 3u, sizeof(sample_count), &sample_count);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 4u, sizeof(neuron_count), &neuron_count);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 5u, sizeof(source_offset), &source_offset);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 6u, sizeof(source_count), &source_count);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 7u, sizeof(destination_offset), &destination_offset);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 8u, sizeof(destination_count), &destination_count);
-                error |= clSetKernelArg(cl->weight_gradient_gemm_kernel, 9u, sizeof(weight_offset), &weight_offset);
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->weight_gradient_gemm_kernel, 2u, NULL, matrix_global_size, matrix_local_size, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-
-                error = CL_SUCCESS;
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 0u, sizeof(cl_mem), &cl->d_deltas);
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 1u, sizeof(cl_mem), &cl->d_bias_gradients);
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 2u, sizeof(sample_count), &sample_count);
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 3u, sizeof(neuron_count), &neuron_count);
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 4u, sizeof(destination_offset), &destination_offset);
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 5u, sizeof(destination_count), &destination_count);
-                error |= clSetKernelArg(cl->bias_gradient_kernel, 6u, sizeof(bias_offset), &bias_offset);
-                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->bias_gradient_kernel, 1u, NULL, &bias_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-
-                if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM)
-                {
-                    cl_float alpha = learning_rate * sqrtf(1.0f - powf(adam_beta2, (float)cl->optimizer_step)) / (1.0f - powf(adam_beta1, (float)cl->optimizer_step));
-                    error = CL_SUCCESS;
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 1u, sizeof(cl_mem), &cl->d_weight_gradients);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 2u, sizeof(cl_mem), &cl->d_weight_first_moment);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 3u, sizeof(cl_mem), &cl->d_weight_second_moment);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 4u, sizeof(weight_parameter_count), &weight_parameter_count);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 5u, sizeof(weight_offset), &weight_offset);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 6u, sizeof(sample_count), &sample_count);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 7u, sizeof(alpha), &alpha);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 8u, sizeof(adam_beta1), &adam_beta1);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 9u, sizeof(adam_beta2), &adam_beta2);
-                    error |= clSetKernelArg(cl->adam_weights_kernel, 10u, sizeof(adam_epsilon), &adam_epsilon);
-                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->adam_weights_kernel, 1u, NULL, &weight_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                    error = CL_SUCCESS;
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 0u, sizeof(cl_mem), &cl->d_biases);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 1u, sizeof(cl_mem), &cl->d_bias_gradients);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 2u, sizeof(cl_mem), &cl->d_bias_first_moment);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 3u, sizeof(cl_mem), &cl->d_bias_second_moment);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 4u, sizeof(bias_parameter_count), &bias_parameter_count);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 5u, sizeof(bias_offset), &bias_offset);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 6u, sizeof(sample_count), &sample_count);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 7u, sizeof(alpha), &alpha);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 8u, sizeof(adam_beta1), &adam_beta1);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 9u, sizeof(adam_beta2), &adam_beta2);
-                    error |= clSetKernelArg(cl->adam_biases_kernel, 10u, sizeof(adam_epsilon), &adam_epsilon);
-                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->adam_biases_kernel, 1u, NULL, &bias_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                }
-                else
-                {
-                    error = CL_SUCCESS;
-                    error |= clSetKernelArg(cl->apply_weights_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
-                    error |= clSetKernelArg(cl->apply_weights_kernel, 1u, sizeof(cl_mem), &cl->d_weight_gradients);
-                    error |= clSetKernelArg(cl->apply_weights_kernel, 2u, sizeof(weight_parameter_count), &weight_parameter_count);
-                    error |= clSetKernelArg(cl->apply_weights_kernel, 3u, sizeof(weight_offset), &weight_offset);
-                    error |= clSetKernelArg(cl->apply_weights_kernel, 4u, sizeof(sample_count), &sample_count);
-                    error |= clSetKernelArg(cl->apply_weights_kernel, 5u, sizeof(learning_rate), &learning_rate);
-                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->apply_weights_kernel, 1u, NULL, &weight_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                    error = CL_SUCCESS;
-                    error |= clSetKernelArg(cl->apply_biases_kernel, 0u, sizeof(cl_mem), &cl->d_biases);
-                    error |= clSetKernelArg(cl->apply_biases_kernel, 1u, sizeof(cl_mem), &cl->d_bias_gradients);
-                    error |= clSetKernelArg(cl->apply_biases_kernel, 2u, sizeof(bias_parameter_count), &bias_parameter_count);
-                    error |= clSetKernelArg(cl->apply_biases_kernel, 3u, sizeof(bias_offset), &bias_offset);
-                    error |= clSetKernelArg(cl->apply_biases_kernel, 4u, sizeof(sample_count), &sample_count);
-                    error |= clSetKernelArg(cl->apply_biases_kernel, 5u, sizeof(learning_rate), &learning_rate);
-                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->apply_biases_kernel, 1u, NULL, &bias_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
-                }
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 1u, sizeof(cl_mem), &cl->d_biases);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 2u, sizeof(cl_mem), &cl->d_activations);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 3u, sizeof(cl_mem), &cl->d_deltas);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 4u, sizeof(cl_mem), &cl->d_weight_first_moment);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 5u, sizeof(cl_mem), &cl->d_weight_second_moment);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 6u, sizeof(cl_mem), &cl->d_bias_first_moment);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 7u, sizeof(cl_mem), &cl->d_bias_second_moment);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 8u, sizeof(sample_count), &sample_count);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 9u, sizeof(neuron_count), &neuron_count);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 10u, sizeof(source_offset), &source_offset);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 11u, sizeof(source_count), &source_count);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 12u, sizeof(destination_offset), &destination_offset);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 13u, sizeof(destination_count), &destination_count);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 14u, sizeof(weight_offset), &weight_offset);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 15u, sizeof(bias_offset), &bias_offset);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 16u, sizeof(optimizer_kind), &optimizer_kind);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 17u, sizeof(learning_rate), &learning_rate);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 18u, sizeof(alpha), &alpha);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 19u, sizeof(adam_beta1), &adam_beta1);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 20u, sizeof(adam_beta2), &adam_beta2);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 21u, sizeof(adam_epsilon), &adam_epsilon);
+                error |= clSetKernelArg(cl->layer_backward_update_kernel, 22u, local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->layer_backward_update_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
             }
         }
 
-        if (options->report_every != 0u && ((epoch + 1u) % options->report_every == 0u || epoch + 1u == options->epochs))
         {
-            double loss;
+            cl_uint normalization_count = (cl_uint)(dataset->rows * network->output_dimensions);
+            size_t one = 1u;
+            size_t weight_global = network->weight_count;
+            size_t bias_global = network->bias_count;
+            size_t premise_global = network->premise_parameter_count;
+            cl_uint weight_count = (cl_uint)network->weight_count;
+            cl_uint bias_count = (cl_uint)network->bias_count;
+            cl_uint premise_count = (cl_uint)network->premise_parameter_count;
 
-            error = clEnqueueReadBuffer(cl->queue, cl->d_weights, CL_TRUE, 0u, network->weight_count * sizeof(float), network->weights, 0u, NULL, NULL);
-            error |= clEnqueueReadBuffer(cl->queue, cl->d_biases, CL_TRUE, 0u, network->bias_count * sizeof(float), network->biases, 0u, NULL, NULL);
-            error |= clEnqueueReadBuffer(cl->queue, cl->d_premise_parameters, CL_TRUE, 0u, network->premise_parameter_count * sizeof(float), network->premise_parameters, 0u, NULL, NULL);
+            error = CL_SUCCESS;
+            error |= clSetKernelArg(cl->best_model_kernel, 0u, sizeof(cl_mem), &cl->d_epoch_loss);
+            error |= clSetKernelArg(cl->best_model_kernel, 1u, sizeof(cl_mem), &cl->d_best_loss);
+            error |= clSetKernelArg(cl->best_model_kernel, 2u, sizeof(cl_mem), &cl->d_best_updated);
+            error |= clSetKernelArg(cl->best_model_kernel, 3u, sizeof(normalization_count), &normalization_count);
+            if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->best_model_kernel, 1u, NULL, &one, NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
 
-            if (error != CL_SUCCESS)
+#define FUZZY_NEURON_BEST_COPY(source_buffer, destination_buffer, count_value, global_value) do {                 error = CL_SUCCESS;                 error |= clSetKernelArg(cl->conditional_copy_kernel, 0u, sizeof(cl_mem), &(source_buffer));                 error |= clSetKernelArg(cl->conditional_copy_kernel, 1u, sizeof(cl_mem), &(destination_buffer));                 error |= clSetKernelArg(cl->conditional_copy_kernel, 2u, sizeof(cl_mem), &cl->d_best_updated);                 error |= clSetKernelArg(cl->conditional_copy_kernel, 3u, sizeof(count_value), &(count_value));                 if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->conditional_copy_kernel, 1u, NULL, &(global_value), NULL, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;             } while (0)
+            FUZZY_NEURON_BEST_COPY(cl->d_weights, cl->d_best_weights, weight_count, weight_global);
+            FUZZY_NEURON_BEST_COPY(cl->d_biases, cl->d_best_biases, bias_count, bias_global);
+            FUZZY_NEURON_BEST_COPY(cl->d_premise_parameters, cl->d_best_premise_parameters, premise_count, premise_global);
+#undef FUZZY_NEURON_BEST_COPY
+
+            if (options->report_every != 0u && (((epoch + 1u) % options->report_every) == 0u || epoch + 1u == options->epochs))
             {
-                free(best_premise_parameters);
-                free(best_weights);
-                free(best_biases);
-                return false;
-            }
-
-            loss = error_fn == MSE
-                ? fuzzy_neuron_dataset_mse(network, dataset)
-                : fuzzy_neuron_dataset_huber(network, dataset);
-
-            printf("Epoch %4u %s %.10f\n", (unsigned int)(epoch + 1u), error_fn == MSE ? "MSE" : "Huber", loss);
-
-            if (best_loss < 0.0 || loss < best_loss)
-            {
-                best_loss = loss;
-                memcpy(best_weights, network->weights, network->weight_count * sizeof(*best_weights));
-                memcpy(best_biases, network->biases, network->bias_count * sizeof(*best_biases));
-                memcpy(best_premise_parameters, network->premise_parameters, network->premise_parameter_count * sizeof(*best_premise_parameters));
+                float epoch_loss_sum;
+                if (clEnqueueReadBuffer(cl->queue, cl->d_epoch_loss, CL_TRUE, 0u, sizeof(epoch_loss_sum), &epoch_loss_sum, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
+                printf("Epoch %4u %s %.10f\n", (unsigned int)(epoch + 1u), error_fn == MSE ? "MSE" : "Huber", epoch_loss_sum / (float)normalization_count);
             }
         }
     }
 
-    error = clFinish(cl->queue);
+    error = CL_SUCCESS;
+    error |= clEnqueueCopyBuffer(cl->queue, cl->d_best_weights, cl->d_weights, 0u, 0u, network->weight_count * sizeof(float), 0u, NULL, NULL);
+    error |= clEnqueueCopyBuffer(cl->queue, cl->d_best_biases, cl->d_biases, 0u, 0u, network->bias_count * sizeof(float), 0u, NULL, NULL);
+    error |= clEnqueueCopyBuffer(cl->queue, cl->d_best_premise_parameters, cl->d_premise_parameters, 0u, 0u, network->premise_parameter_count * sizeof(float), 0u, NULL, NULL);
+    error |= clEnqueueReadBuffer(cl->queue, cl->d_weights, CL_FALSE, 0u, network->weight_count * sizeof(float), network->weights, 0u, NULL, NULL);
+    error |= clEnqueueReadBuffer(cl->queue, cl->d_biases, CL_FALSE, 0u, network->bias_count * sizeof(float), network->biases, 0u, NULL, NULL);
+    error |= clEnqueueReadBuffer(cl->queue, cl->d_premise_parameters, CL_TRUE, 0u, network->premise_parameter_count * sizeof(float), network->premise_parameters, 0u, NULL, NULL);
+    if (error != CL_SUCCESS) goto train_failure;
 
-    if (error != CL_SUCCESS)
     {
-        free(best_premise_parameters);
-        free(best_weights);
-        free(best_biases);
-        return false;
-    }
-
-    if (best_loss >= 0.0)
-    {
-        memcpy(network->weights, best_weights, network->weight_count * sizeof(*network->weights));
-        memcpy(network->biases, best_biases, network->bias_count * sizeof(*network->biases));
-        memcpy(network->premise_parameters, best_premise_parameters, network->premise_parameter_count * sizeof(*network->premise_parameters));
-
-        error = clEnqueueWriteBuffer(cl->queue, cl->d_weights, CL_TRUE, 0u, network->weight_count * sizeof(float), network->weights, 0u, NULL, NULL);
-        error |= clEnqueueWriteBuffer(cl->queue, cl->d_biases, CL_TRUE, 0u, network->bias_count * sizeof(float), network->biases, 0u, NULL, NULL);
-
-        if (error != CL_SUCCESS)
-        {
-            free(best_premise_parameters);
-            free(best_weights);
-            free(best_biases);
-            return false;
-        }
-
+        float best_loss;
+        if (clEnqueueReadBuffer(cl->queue, cl->d_best_loss, CL_TRUE, 0u, sizeof(best_loss), &best_loss, 0u, NULL, NULL) != CL_SUCCESS) goto train_failure;
         printf("Best %s %.10f restored\n", error_fn == MSE ? "MSE" : "Huber", best_loss);
     }
-    else
-    {
-        error = clEnqueueReadBuffer(cl->queue, cl->d_weights, CL_TRUE, 0u, network->weight_count * sizeof(float), network->weights, 0u, NULL, NULL);
-        error |= clEnqueueReadBuffer(cl->queue, cl->d_biases, CL_TRUE, 0u, network->bias_count * sizeof(float), network->biases, 0u, NULL, NULL);
-
-        if (error != CL_SUCCESS)
-        {
-            free(best_premise_parameters);
-            free(best_weights);
-            free(best_biases);
-            return false;
-        }
-    }
-
-    free(best_premise_parameters);
-    free(best_weights);
-    free(best_biases);
     return true;
 
 train_failure:
-    free(best_premise_parameters);
-    free(best_weights);
-    free(best_biases);
     return false;
 }
-
 bool fuzzy_neuron_opencl_predict(
     fuzzy_neuron_network_t *network,
     const float raw_inputs[],
@@ -11245,7 +11531,6 @@ bool fuzzy_neuron_opencl_predict(
 )
 {
     fuzzy_neuron_opencl_t *cl;
-    float *batch_activations;
     size_t batch_start;
     size_t output_offset;
     cl_int error;
@@ -11256,66 +11541,272 @@ bool fuzzy_neuron_opencl_predict(
     }
 
     cl = &network->opencl;
-    batch_activations = malloc(cl->batch_capacity * network->neuron_count * sizeof(*batch_activations));
-    if (batch_activations == NULL) return false;
-
     output_offset = fuzzy_neuron_opencl_layer_destination_offset(network, network->layer_count - 1u);
 
     for (batch_start = 0u; batch_start < rows; batch_start += cl->batch_capacity)
     {
         size_t batch_count = rows - batch_start;
-        size_t sample;
-        size_t output;
         cl_uint sample_count;
+        cl_uint neuron_count = (cl_uint)network->neuron_count;
+        cl_uint gpu_output_offset = (cl_uint)output_offset;
+        cl_uint output_count = (cl_uint)network->output_dimensions;
+        size_t output_global_size;
 
-        if (batch_count > cl->batch_capacity)
-        {
-            batch_count = cl->batch_capacity;
-        }
-
-
+        if (batch_count > cl->batch_capacity) batch_count = cl->batch_capacity;
         sample_count = (cl_uint)batch_count;
+        output_global_size = batch_count * network->output_dimensions;
+
         error = clEnqueueWriteBuffer(cl->queue, cl->d_raw_inputs, CL_FALSE, 0u, batch_count * network->raw_input_dimensions * sizeof(float), raw_inputs + batch_start * network->raw_input_dimensions, 0u, NULL, NULL);
+        if (error != CL_SUCCESS || !fuzzy_neuron_opencl_enqueue_forward(network, sample_count)) return false;
 
-        if (error != CL_SUCCESS || !fuzzy_neuron_opencl_enqueue_forward(network, sample_count))
-        {
-            free(batch_activations);
-            return false;
-        }
+        error = CL_SUCCESS;
+        error |= clSetKernelArg(cl->gather_outputs_kernel, 0u, sizeof(cl_mem), &cl->d_activations);
+        error |= clSetKernelArg(cl->gather_outputs_kernel, 1u, sizeof(cl_mem), &cl->d_outputs);
+        error |= clSetKernelArg(cl->gather_outputs_kernel, 2u, sizeof(sample_count), &sample_count);
+        error |= clSetKernelArg(cl->gather_outputs_kernel, 3u, sizeof(neuron_count), &neuron_count);
+        error |= clSetKernelArg(cl->gather_outputs_kernel, 4u, sizeof(gpu_output_offset), &gpu_output_offset);
+        error |= clSetKernelArg(cl->gather_outputs_kernel, 5u, sizeof(output_count), &output_count);
+        if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->gather_outputs_kernel, 1u, NULL, &output_global_size, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
 
-        error = clEnqueueReadBuffer(cl->queue, cl->d_activations, CL_TRUE, 0u, batch_count * network->neuron_count * sizeof(float), batch_activations, 0u, NULL, NULL);
-
-        if (error != CL_SUCCESS)
-        {
-            free(batch_activations);
-            return false;
-        }
-
-        for (sample = 0u; sample < batch_count; ++sample)
-        {
-            for (output = 0u; output < network->output_dimensions; ++output)
-            {
-                outputs[(batch_start + sample) * network->output_dimensions + output] =
-                    batch_activations[sample * network->neuron_count + output_offset + output];
-            }
-        }
+        if (clEnqueueReadBuffer(cl->queue, cl->d_outputs, CL_TRUE, 0u, output_global_size * sizeof(float), outputs + batch_start * network->output_dimensions, 0u, NULL, NULL) != CL_SUCCESS) return false;
     }
-
-    free(batch_activations);
     return true;
 }
-
 void fuzzy_neuron_opencl_free(fuzzy_neuron_network_t *network)
 {
     if (network != NULL)
+    {
         fuzzy_neuron_opencl_release(&network->opencl);
+    }
 }
+
+bool fuzzy_neuron_interpolation_sweep(
+    const fuzzy_interpolation_sweep_t *sweep,
+    float value_minimum,
+    float value_maximum
+)
+{
+    if (sweep == NULL ||
+        sweep->points == NULL ||
+        sweep->point_count == 0u ||
+        !(value_maximum > value_minimum))
+    {
+        return false;
+    }
+
+#ifdef FUZZY_OPENCL
+    return fuzzy_gpu_interpolation_sweep_range(
+        sweep,
+        true,
+        value_minimum,
+        value_maximum
+    );
+#else
+    fuzzy_cog_sweep_t shared_sweep;
+
+    shared_sweep.filename = sweep->filename;
+    shared_sweep.title = sweep->title;
+    shared_sweep.value_name = "Membership";
+    shared_sweep.dimensions = sweep->dimensions;
+    shared_sweep.dimension_count = sweep->dimension_count;
+    shared_sweep.cog_step = 0.0f;
+    shared_sweep.evaluate = NULL;
+
+    return fuzzy_sweep_generate(
+        &shared_sweep,
+        sweep->points,
+        sweep->point_count,
+        true,
+        value_minimum,
+        value_maximum
+    );
+#endif
+}
+
+
+typedef struct fuzzy_neuron_output_pipeline
+{
+    const fuzzy_output_function_t *memberships;
+    size_t membership_count;
+    float minimum;
+    float maximum;
+    float step;
+    float gain;
+    float bias;
+} fuzzy_neuron_output_pipeline_t;
+
+typedef struct fuzzy_neuron_output_cache
+{
+    float *activations;
+    float *raw_predictions;
+    size_t rows;
+    size_t output_count;
+} fuzzy_neuron_output_cache_t;
+
+typedef struct fuzzy_neuron_checkpoint
+{
+    float *weights;
+    float *biases;
+    float *premises;
+    void *extra;
+    size_t extra_size;
+    double loss;
+    size_t epoch;
+} fuzzy_neuron_checkpoint_t;
+
+typedef struct fuzzy_neuron_history
+{
+    size_t *epochs;
+    double *losses;
+    size_t count;
+    size_t capacity;
+    double initial_loss;
+} fuzzy_neuron_history_t;
+
+#define FUZZY_NEURON_OUTPUT_PIPELINE(name, minimum_arg, maximum_arg, step_arg, ...) \
+    static const fuzzy_output_function_t name##_memberships[] = {__VA_ARGS__}; \
+    static fuzzy_neuron_output_pipeline_t name = {name##_memberships, sizeof(name##_memberships) / sizeof(name##_memberships[0]), (minimum_arg), (maximum_arg), (step_arg), 1.0f, 0.0f}
+
+static float fuzzy_neuron_output_decode_raw(const fuzzy_neuron_output_pipeline_t *pipeline, const float activations[])
+{
+    fuzzy_rules_t rules;
+    size_t index;
+    rules.count = 0u;
+    for (index = 0u; index < pipeline->membership_count; ++index)
+        if (!FUZZY_RULE_ADD(&rules, activations[index], pipeline->memberships[index])) return NAN;
+    return fuzzy_rules_defuzzify(&rules, pipeline->minimum, pipeline->maximum, pipeline->step, FUZZY_DEFUZZ_COG);
+}
+
+static float fuzzy_neuron_output_decode(const fuzzy_neuron_output_pipeline_t *pipeline, const float activations[])
+{
+    float raw = fuzzy_neuron_output_decode_raw(pipeline, activations);
+    return fminf(pipeline->maximum, fmaxf(pipeline->minimum, pipeline->gain * raw + pipeline->bias));
+}
+
+static void fuzzy_neuron_output_encode(const fuzzy_neuron_output_pipeline_t *pipeline, float target, float activations[])
+{
+    size_t index;
+    for (index = 0u; index < pipeline->membership_count; ++index) activations[index] = pipeline->memberships[index](target);
+}
+
+static bool fuzzy_neuron_dataset_encode_targets(fuzzy_neuron_dataset_t *destination, const fuzzy_neuron_dataset_t *source, const fuzzy_neuron_output_pipeline_t *pipeline)
+{
+    size_t row;
+    FUZZY_NEURON_DATASET_ALLOCATE(*destination, source->rows, source->input_dimensions, pipeline->membership_count);
+    if (destination->inputs == NULL || destination->targets == NULL) return false;
+    memcpy(destination->inputs, source->inputs, source->rows * source->input_dimensions * sizeof(float));
+    for (row = 0u; row < source->rows; ++row) fuzzy_neuron_output_encode(pipeline, source->targets[row], destination->targets + row * pipeline->membership_count);
+    return true;
+}
+
+static void fuzzy_neuron_dataset_refresh_targets(fuzzy_neuron_dataset_t *destination, const fuzzy_neuron_dataset_t *source, const fuzzy_neuron_output_pipeline_t *pipeline)
+{
+    size_t row;
+    for (row = 0u; row < source->rows; ++row) fuzzy_neuron_output_encode(pipeline, source->targets[row], destination->targets + row * pipeline->membership_count);
+}
+
+static bool fuzzy_neuron_output_cache_create(fuzzy_neuron_output_cache_t *cache, size_t rows, size_t output_count)
+{
+    cache->activations = malloc(rows * output_count * sizeof(float));
+    cache->raw_predictions = malloc(rows * sizeof(float));
+    cache->rows = rows;
+    cache->output_count = output_count;
+    return cache->activations != NULL && cache->raw_predictions != NULL;
+}
+
+static void fuzzy_neuron_output_cache_free(fuzzy_neuron_output_cache_t *cache)
+{
+    free(cache->activations);
+    free(cache->raw_predictions);
+    memset(cache, 0, sizeof(*cache));
+}
+
+static bool fuzzy_neuron_output_cache_refresh(fuzzy_neuron_output_cache_t *cache, fuzzy_neuron_network_t *model, const fuzzy_neuron_dataset_t *dataset, const fuzzy_neuron_output_pipeline_t *pipeline)
+{
+    size_t row;
+    if (cache->rows != dataset->rows || cache->output_count != pipeline->membership_count) return false;
+    if (!fuzzy_neuron_opencl_predict(model, dataset->inputs, dataset->rows, cache->activations)) return false;
+    for (row = 0u; row < cache->rows; ++row) cache->raw_predictions[row] = fuzzy_neuron_output_decode_raw(pipeline, cache->activations + row * cache->output_count);
+    return true;
+}
+
+static bool fuzzy_neuron_output_fit_affine(fuzzy_neuron_output_pipeline_t *pipeline, const fuzzy_neuron_output_cache_t *cache, const float targets[])
+{
+    double sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0, denominator;
+    size_t row;
+    for (row = 0u; row < cache->rows; ++row) { double x = cache->raw_predictions[row], y = targets[row]; sx += x; sy += y; sxx += x * x; sxy += x * y; }
+    denominator = (double)cache->rows * sxx - sx * sx;
+    if (!(denominator > 0.0)) return false;
+    pipeline->gain = (float)(((double)cache->rows * sxy - sx * sy) / denominator);
+    pipeline->bias = (float)((sy - pipeline->gain * sx) / (double)cache->rows);
+    return isfinite(pipeline->gain) && isfinite(pipeline->bias);
+}
+
+static double fuzzy_neuron_output_cache_mse(const fuzzy_neuron_output_pipeline_t *pipeline, const fuzzy_neuron_output_cache_t *cache, const float targets[])
+{
+    double total = 0.0;
+    size_t row;
+    for (row = 0u; row < cache->rows; ++row) { double prediction = fmin(pipeline->maximum, fmax(pipeline->minimum, pipeline->gain * cache->raw_predictions[row] + pipeline->bias)); double error = prediction - targets[row]; total += error * error; }
+    return total / (double)cache->rows;
+}
+
+static bool fuzzy_neuron_checkpoint_create(fuzzy_neuron_checkpoint_t *checkpoint, const fuzzy_neuron_network_t *model, size_t extra_size, double loss)
+{
+    checkpoint->weights = malloc(model->weight_count * sizeof(float));
+    checkpoint->biases = malloc(model->bias_count * sizeof(float));
+    checkpoint->premises = malloc(model->premise_parameter_count * sizeof(float));
+    checkpoint->extra = extra_size == 0u ? NULL : malloc(extra_size);
+    checkpoint->extra_size = extra_size;
+    checkpoint->loss = loss;
+    checkpoint->epoch = 0u;
+    return checkpoint->weights != NULL && checkpoint->biases != NULL && checkpoint->premises != NULL && (extra_size == 0u || checkpoint->extra != NULL);
+}
+
+static void fuzzy_neuron_checkpoint_capture(fuzzy_neuron_checkpoint_t *checkpoint, const fuzzy_neuron_network_t *model, const void *extra, size_t epoch, double loss)
+{
+    memcpy(checkpoint->weights, model->weights, model->weight_count * sizeof(float));
+    memcpy(checkpoint->biases, model->biases, model->bias_count * sizeof(float));
+    memcpy(checkpoint->premises, model->premise_parameters, model->premise_parameter_count * sizeof(float));
+    if (checkpoint->extra_size != 0u) memcpy(checkpoint->extra, extra, checkpoint->extra_size);
+    checkpoint->epoch = epoch;
+    checkpoint->loss = loss;
+}
+
+static void fuzzy_neuron_checkpoint_restore(const fuzzy_neuron_checkpoint_t *checkpoint, fuzzy_neuron_network_t *model, void *extra)
+{
+    memcpy(model->weights, checkpoint->weights, model->weight_count * sizeof(float));
+    memcpy(model->biases, checkpoint->biases, model->bias_count * sizeof(float));
+    memcpy(model->premise_parameters, checkpoint->premises, model->premise_parameter_count * sizeof(float));
+    if (checkpoint->extra_size != 0u) memcpy(extra, checkpoint->extra, checkpoint->extra_size);
+}
+
+static void fuzzy_neuron_checkpoint_free(fuzzy_neuron_checkpoint_t *checkpoint)
+{
+    free(checkpoint->weights); free(checkpoint->biases); free(checkpoint->premises); free(checkpoint->extra); memset(checkpoint, 0, sizeof(*checkpoint));
+}
+
+static bool fuzzy_neuron_history_create(fuzzy_neuron_history_t *history, size_t capacity, double initial_loss)
+{
+    history->epochs = malloc(capacity * sizeof(size_t));
+    history->losses = malloc(capacity * sizeof(double));
+    history->count = 0u; history->capacity = capacity; history->initial_loss = initial_loss;
+    return history->epochs != NULL && history->losses != NULL;
+}
+
+static bool fuzzy_neuron_history_push(fuzzy_neuron_history_t *history, size_t epoch, double loss)
+{
+    if (history->count >= history->capacity) return false;
+    history->epochs[history->count] = epoch; history->losses[history->count++] = loss; return true;
+}
+
+static void fuzzy_neuron_history_free(fuzzy_neuron_history_t *history)
+{
+    free(history->epochs); free(history->losses); memset(history, 0, sizeof(*history));
+}
+
 #endif /* FUZZY_NEURON_OPENCL */
 #endif /* FUZZY_NEURON_IMPLEMENTATION_ONCE */
-#endif /* FUZZY_NEURON_IMPLEMENT`ATION */
-#endif /* FUZZY_8051 */
-
-
-
+#endif /* FUZZY_NEURON_IMPLEMENTATION */
+#endif /* !FUZZY_8051 */
 
 #endif /* FUZZY_H */

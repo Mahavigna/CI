@@ -8,3 +8,57 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Generated executables and shared libraries
+braking-app
+braking-gpu
+demo-all-gpu
+fuzzy-demo
+fuzzy-neuron
+greenhouse-app
+sim-8051-app
+strength-app
+sugeno-app
+*.so
+
+# Generated fuzzy-neuron reports
+fuzzy-neuron-output/
+
+# Generated demo artifacts
+demo-all/*.svg
+demo-all/*.csv
+demo-gpu/*.svg
+demo-gpu/*.csv
+braking_gpu/*.svg
+braking_gpu/*.csv
+greenhouse/*.svg
+greenhouse/*.csv
+
+# Generated 8051 build products
+sim-8051/embedded/*.adb
+sim-8051/embedded/*.asm
+sim-8051/embedded/*.cdb
+sim-8051/embedded/*.hex
+sim-8051/embedded/*.ihx
+sim-8051/embedded/*.lk
+sim-8051/embedded/*.lst
+sim-8051/embedded/*.map
+sim-8051/embedded/*.mem
+sim-8051/embedded/*.omf
+sim-8051/embedded/*.rel
+sim-8051/embedded/*.rst
+sim-8051/embedded/*.sym
+
+sugeno/embedded/*.adb
+sugeno/embedded/*.asm
+sugeno/embedded/*.cdb
+sugeno/embedded/*.hex
+sugeno/embedded/*.ihx
+sugeno/embedded/*.lk
+sugeno/embedded/*.lst
+sugeno/embedded/*.map
+sugeno/embedded/*.mem
+sugeno/embedded/*.omf
+sugeno/embedded/*.rel
+sugeno/embedded/*.rst
+sugeno/embedded/*.sym
