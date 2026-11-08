@@ -210,7 +210,7 @@ static float predict_scalar(fuzzy_neuron_network_t *model, const float inputs[])
     float activations[OUTPUT_CONSEQUENT_COUNT];
     if (!fuzzy_neuron_predict(model, inputs, activations)) { fprintf(stderr, "Prediction failed.\n"); exit(EXIT_FAILURE); }
     return fuzzy_neuron_output_decode(&power_plant_output, activations);
-}
+} 
 
 static double dataset_metric(fuzzy_neuron_network_t *model, const fuzzy_neuron_dataset_t *dataset, bool mae)
 {
@@ -261,7 +261,7 @@ static bool plot_interpolation(fuzzy_neuron_network_t *model, const fuzzy_neuron
         FUZZY_SWEEP_DIMENSION("exhaust_vacuum", 0.0f, 1.0f, INTERPOLATION_STEP),
         FUZZY_SWEEP_DIMENSION("ambient_pressure", 0.0f, 1.0f, INTERPOLATION_STEP),
         FUZZY_SWEEP_DIMENSION("relative_humidity", 0.0f, 1.0f, INTERPOLATION_STEP))) return false;
-        
+
     if (!FUZZY_NEURON_INTERPOLATION_SWEEP(MODEL_SWEEP_PATH, "Power Plant Model Output", model_points, OUTPUT_MINIMUM, OUTPUT_MAXIMUM,
         FUZZY_SWEEP_DIMENSION("temperature", 0.0f, 1.0f, INTERPOLATION_STEP),
         FUZZY_SWEEP_DIMENSION("exhaust_vacuum", 0.0f, 1.0f, INTERPOLATION_STEP),
