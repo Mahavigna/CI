@@ -22,7 +22,6 @@ sugeno-app
 *.so
 
 # Generated fuzzy-neuron reports
-fuzzy-neuron-output/
 
 # Generated demo artifacts
 demo-all/*.csv
