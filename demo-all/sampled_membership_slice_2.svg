@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+<rect x="0" y="0" width="900" height="600" fill="white" />
+<text x="450" y="35" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="bold" fill="black">Sampled Membership: Vibration Slice</text>
+<line x1="80" y1="520.00" x2="820" y2="520.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="520.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.0</text>
+<line x1="80" y1="476.00" x2="820" y2="476.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="476.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.1</text>
+<line x1="80" y1="432.00" x2="820" y2="432.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="432.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.2</text>
+<line x1="80" y1="388.00" x2="820" y2="388.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="388.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.3</text>
+<line x1="80" y1="344.00" x2="820" y2="344.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="344.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.4</text>
+<line x1="80" y1="300.00" x2="820" y2="300.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="300.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.5</text>
+<line x1="80" y1="256.00" x2="820" y2="256.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="256.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.6</text>
+<line x1="80" y1="212.00" x2="820" y2="212.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="212.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.7</text>
+<line x1="80" y1="168.00" x2="820" y2="168.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="168.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.8</text>
+<line x1="80" y1="124.00" x2="820" y2="124.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="124.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">0.9</text>
+<line x1="80" y1="80.00" x2="820" y2="80.00" stroke="#dddddd" stroke-width="1" />
+<text x="70" y="80.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="black">1.0</text>
+<line x1="80.00" y1="80" x2="80.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="80.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">0.0</text>
+<line x1="154.00" y1="80" x2="154.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="154.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">1.0</text>
+<line x1="228.00" y1="80" x2="228.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="228.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">2.0</text>
+<line x1="302.00" y1="80" x2="302.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="302.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">3.0</text>
+<line x1="376.00" y1="80" x2="376.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="376.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">4.0</text>
+<line x1="450.00" y1="80" x2="450.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="450.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">5.0</text>
+<line x1="524.00" y1="80" x2="524.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="524.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">6.0</text>
+<line x1="598.00" y1="80" x2="598.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="598.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">7.0</text>
+<line x1="672.00" y1="80" x2="672.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="672.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">8.0</text>
+<line x1="746.00" y1="80" x2="746.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="746.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">9.0</text>
+<line x1="820.00" y1="80" x2="820.00" y2="520" stroke="#eeeeee" stroke-width="1" />
+<text x="820.00" y="542" text-anchor="middle" font-family="sans-serif" font-size="12" fill="black">10.0</text>
+<line x1="80" y1="520" x2="820" y2="520" stroke="black" stroke-width="2" />
+<line x1="80" y1="80" x2="80" y2="520" stroke="black" stroke-width="2" />
+<text x="450" y="580" text-anchor="middle" font-family="sans-serif" font-size="15" fill="black">Input value</text>
+<text x="22" y="300" text-anchor="middle" font-family="sans-serif" font-size="15" fill="black" transform="rotate(-90 22 300)">Membership</text>
+<polyline fill="none" stroke="#7c3aed" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="80.00,341.29 83.70,341.29 87.40,341.28 91.10,341.28 94.80,341.28 98.50,341.27 102.20,341.27 105.90,341.26 109.60,341.26 113.30,341.26 117.00,341.25 120.70,341.25 124.40,341.24 128.10,341.24 131.80,341.24 135.50,341.23 139.20,341.23 142.90,341.23 146.60,341.22 150.30,341.22 154.00,341.22 157.70,341.21 161.40,341.21 165.10,341.21 168.80,341.20 172.50,341.20 176.20,341.20 179.90,341.20 183.60,341.19 187.30,341.19 191.00,341.19 194.70,341.18 198.40,341.18 202.10,341.18 205.80,341.18 209.50,341.17 213.20,341.17 216.90,341.17 220.60,341.17 224.30,341.16 228.00,341.16 231.70,341.16 235.40,341.16 239.10,341.16 242.80,341.15 246.50,341.15 250.20,341.15 253.90,341.15 257.60,341.15 261.30,341.14 265.00,341.14 268.70,341.14 272.40,341.14 276.10,341.14 279.80,341.14 283.50,341.13 287.20,341.13 290.90,341.13 294.60,341.13 298.30,341.13 302.00,341.13 305.70,341.13 309.40,341.12 313.10,341.12 316.80,341.12 320.50,341.12 324.20,341.12 327.90,341.12 331.60,341.12 335.30,341.12 339.00,341.12 342.70,341.12 346.40,341.11 350.10,341.11 353.80,341.11 357.50,341.11 361.20,341.11 364.90,341.11 368.60,341.11 372.30,341.11 376.00,341.11 379.70,341.11 383.40,341.11 387.10,341.11 390.80,341.11 394.50,341.11 398.20,341.11 401.90,341.11 405.60,341.11 409.30,341.11 413.00,341.11 416.70,341.11 420.40,341.11 424.10,341.11 427.80,341.11 431.50,341.11 435.20,341.11 438.90,341.11 442.60,341.11 446.30,341.11 450.00,341.11 453.70,341.11 457.40,341.12 461.10,341.12 464.80,341.12 468.50,341.12 472.20,341.12 475.90,341.12 479.60,341.12 483.30,341.12 487.00,341.12 490.70,341.12 494.40,341.13 498.10,341.13 501.80,341.13 505.50,341.13 509.20,341.13 512.90,341.13 516.60,341.13 520.30,341.14 524.00,341.14 527.70,341.14 531.40,341.14 535.10,341.14 538.80,341.14 542.50,341.15 546.20,341.15 549.90,341.15 553.60,341.15 557.30,341.15 561.00,341.16 564.70,341.16 568.40,341.16 572.10,341.16 575.80,341.16 579.50,341.17 583.20,341.17 586.90,341.17 590.60,341.17 594.30,341.18 598.00,341.18 601.70,341.18 605.40,341.18 609.10,341.19 612.80,341.19 616.50,341.19 620.20,341.20 623.90,341.20 627.60,341.20 631.30,341.20 635.00,341.21 638.70,341.21 642.40,341.21 646.10,341.22 649.80,341.22 653.50,341.22 657.20,341.23 660.90,341.23 664.60,341.23 668.30,341.24 672.00,341.24 675.70,341.24 679.40,341.25 683.10,341.25 686.80,341.25 690.50,341.26 694.20,341.26 697.90,341.27 701.60,341.27 705.30,341.27 709.00,341.28 712.70,341.28 716.40,341.29 720.10,341.29 723.80,341.29 727.50,341.30 731.20,341.30 734.90,341.31 738.60,341.31 742.30,341.32 746.00,341.32 749.70,341.32 753.40,341.33 757.10,341.33 760.80,341.34 764.50,341.34 768.20,341.35 771.90,341.35 775.60,341.36 779.30,341.36 783.00,341.37 786.70,341.37 790.40,341.38 794.10,341.38 797.80,341.39 801.50,341.39 805.20,341.40 808.90,341.40 812.60,341.41 816.30,341.41 820.00,341.42" />
+</svg>

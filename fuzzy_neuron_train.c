@@ -40,7 +40,7 @@
 #define OUTPUT_STEP 0.005f
 #define SPLIT_SEED 42u
 #define XAVIER_SEED 42u
-#define TRAIN_EPOCHS 5000u
+#define TRAIN_EPOCHS 1000u
 #define TRAIN_BATCH_SIZE 128u
 #define TRAIN_REPORT_INTERVAL 100u
 #define TRAIN_LEARNING_RATE 0.0003f
@@ -210,7 +210,8 @@ static fuzzy_neuron_network_t *load_plugin(fuzzy_neuron_loaded_plugin_t *plugin)
 static float predict_scalar(fuzzy_neuron_network_t *model, const float inputs[])
 {
     float activations[OUTPUT_CONSEQUENT_COUNT];
-    if (!fuzzy_neuron_predict(model, inputs, activations)) { fprintf(stderr, "Prediction failed.\n"); exit(EXIT_FAILURE); }
+    CATCH_FAILS(fuzzy_neuron_predict, model, inputs, activations);
+
     return fuzzy_neuron_output_decode(&airfoil_output, activations);
 }
 
@@ -226,11 +227,6 @@ static double dataset_metric(fuzzy_neuron_network_t *model, const fuzzy_neuron_d
     return total / (double)dataset->rows;
 }
 
-
-static bool plot_output_memberships(void)
-{
-    return PLOT(OUTPUT_DIR "/airfoil_output_final_memberships", "Mamdani Output Memberships", OUTPUT_MAXIMUM, OUTPUT_STEP, SERIES(airfoil_output_low, "#3b82f6"), SERIES(airfoil_output_medium, "#22c55e"), SERIES(airfoil_output_high, "#ef4444"));
-}
 
 static bool plot_final_memberships(fuzzy_neuron_network_t *model)
 {
@@ -321,7 +317,7 @@ static void write_outputs(fuzzy_neuron_network_t *model, size_t best_epoch, doub
     for (index = 0u; index < airfoil_history.count; ++index) fprintf(file, "%zu,%.12g,%.12g\n", airfoil_history.epochs[index], airfoil_history.losses[index], airfoil_history.losses[index] / airfoil_history.initial_loss);
     fclose(file);
     PLOT(LOSS_PLOT_PATH, "Airfoil Training MSE Relative to Initial MSE", (float)TRAIN_EPOCHS, (float)TRAIN_REPORT_INTERVAL, SERIES(loss_plot_function, "#dc2626"));
-    if (!FUZZY_NEURON_MODEL_SAVE(model, MODEL_PATH)) { fprintf(stderr, "Model save failed.\n"); exit(EXIT_FAILURE); }
+    CATCH_FAILS(FUZZY_NEURON_MODEL_SAVE, model, MODEL_PATH);
     printf("best_scalar_epoch=%zu\noutput_gain=%.12g\noutput_bias=%.12g\ntraining_mse_final=%.12g\n", best_epoch, airfoil_output.gain, airfoil_output.bias, final_mse);
 }
 
@@ -339,34 +335,68 @@ static void train(void)
     load_dataset(&complete);
     split_dataset(&complete, &training, &test);
     normalize_dataset(&training, &test, &scale);
-    if (!fuzzy_neuron_dataset_encode_targets(&encoded, &training, &airfoil_output)) { fprintf(stderr, "Target encoding failed.\n"); exit(EXIT_FAILURE); }
+
+    CATCH_FAILS(fuzzy_neuron_dataset_encode_targets, &encoded, &training, &airfoil_output);
+
     model = load_plugin(&plugin);
     FUZZY_NEURON_XAVIER_INIT(model, XAVIER_SEED);
     initial_mse = dataset_metric(model, &training, false);
-    if (!fuzzy_neuron_history_create(&airfoil_history, capacity, initial_mse) || !fuzzy_neuron_checkpoint_create(&checkpoint, model, sizeof(airfoil_output), initial_mse)) { fprintf(stderr, "Training state allocation failed.\n"); exit(EXIT_FAILURE); }
+
+    CATCH_FAILS(fuzzy_neuron_history_create, &airfoil_history, capacity, initial_mse);
+    CATCH_FAILS(fuzzy_neuron_checkpoint_create, &checkpoint, model, sizeof(airfoil_output), initial_mse);
+
     fuzzy_neuron_checkpoint_capture(&checkpoint, model, &airfoil_output, 0u, initial_mse);
     fuzzy_neuron_history_push(&airfoil_history, 0u, initial_mse);
-    if (!FUZZY_NEURON_MODEL_OPENCL_INIT(model, TRAIN_BATCH_SIZE, KERNEL_PATH) || !fuzzy_neuron_output_cache_create(&cache, training.rows, OUTPUT_CONSEQUENT_COUNT)) { fprintf(stderr, "OpenCL initialization failed.\n"); exit(EXIT_FAILURE); }
+
+    CATCH_FAILS(FUZZY_NEURON_MODEL_OPENCL_INIT, model, TRAIN_BATCH_SIZE, KERNEL_PATH);
+    CATCH_FAILS(fuzzy_neuron_output_cache_create, &cache, training.rows, OUTPUT_CONSEQUENT_COUNT);
 
     while (epoch < TRAIN_EPOCHS)
     {
         size_t chunk = TRAIN_EPOCHS - epoch > TRAIN_REPORT_INTERVAL ? TRAIN_REPORT_INTERVAL : TRAIN_EPOCHS - epoch;
         fuzzy_neuron_train_options_t options = FUZZY_NEURON_TRAIN_OPTIONS_ADAM_CUSTOM(chunk, TRAIN_BATCH_SIZE, TRAIN_LEARNING_RATE, chunk, TRAIN_ADAM_BETA1, TRAIN_ADAM_BETA2, TRAIN_ADAM_EPSILON, false);
-        if (!FUZZY_NEURON_MODEL_OPENCL_TRAIN(model, &encoded, &options, MSE)) { fprintf(stderr, "OpenCL training failed at epoch %zu.\n", epoch + chunk); exit(EXIT_FAILURE); }
+
+        if (!FUZZY_NEURON_MODEL_OPENCL_TRAIN(model, &encoded, &options, MSE)) 
+        { 
+            fprintf(stderr, "OpenCL training failed at epoch %zu.\n", epoch + chunk); 
+            exit(EXIT_FAILURE); 
+        }
+
         epoch += chunk;
-        if (!fuzzy_neuron_output_cache_refresh(&cache, model, &training, &airfoil_output) || !fuzzy_neuron_output_fit_affine(&airfoil_output, &cache, training.targets)) { fprintf(stderr, "Output calibration failed.\n"); exit(EXIT_FAILURE); }
+
+        if (!fuzzy_neuron_output_cache_refresh(&cache, model, &training, &airfoil_output) || !fuzzy_neuron_output_fit_affine(&airfoil_output, &cache, training.targets)) 
+        { 
+            fprintf(stderr, "Output calibration failed.\n"); 
+            exit(EXIT_FAILURE); 
+        }
+
         loss = fuzzy_neuron_output_cache_mse(&airfoil_output, &cache, training.targets);
+
         if (loss < checkpoint.loss) fuzzy_neuron_checkpoint_capture(&checkpoint, model, &airfoil_output, epoch, loss);
+
         fuzzy_neuron_history_push(&airfoil_history, epoch, loss);
+
         printf("epoch=%zu mse=%.12g relative=%.12g gain=%.9g bias=%.9g best_epoch=%zu best_mse=%.12g\n", epoch, loss, loss / initial_mse, airfoil_output.gain, airfoil_output.bias, checkpoint.epoch, checkpoint.loss);
     }
 
     fuzzy_neuron_checkpoint_restore(&checkpoint, model, &airfoil_output);
     loss = dataset_metric(model, &training, false);
     write_outputs(model, checkpoint.epoch, loss);
-    if (!plot_final_memberships(model)) { fprintf(stderr, "Failed to plot final trained memberships.\n"); exit(EXIT_FAILURE); }
-    if (!plot_output_memberships()) { fprintf(stderr, "Failed to plot output memberships.\n"); exit(EXIT_FAILURE); }
-    if (!plot_interpolation(model, &training, &test)) { fprintf(stderr, "Failed to generate interpolation sweeps.\n"); exit(EXIT_FAILURE); }
+
+    CATCH_FAILS(plot_final_memberships, model);
+    
+    if (!PLOT(OUTPUT_DIR "/airfoil_output_final_memberships", "Mamdani Output Memberships", OUTPUT_MAXIMUM, OUTPUT_STEP, SERIES(airfoil_output_low, "#3b82f6"), SERIES(airfoil_output_medium, "#22c55e"), SERIES(airfoil_output_high, "#ef4444")))
+    { 
+        fprintf(stderr, "Failed to plot output memberships.\n"); 
+        exit(EXIT_FAILURE); 
+    }
+
+    if (!plot_interpolation(model, &training, &test)) 
+    { 
+        fprintf(stderr, "Failed to generate interpolation sweeps.\n"); 
+        exit(EXIT_FAILURE); 
+    }
+
     printf("training_mse_initial=%.12g\ntest_mse=%.12g\ntest_mae=%.12g\n", initial_mse, dataset_metric(model, &test, false), dataset_metric(model, &test, true));
 
     fuzzy_neuron_output_cache_free(&cache);
