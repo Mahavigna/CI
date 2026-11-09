@@ -1,6 +1,14 @@
 #ifndef FUZZY_H
 #define FUZZY_H
 
+#define CATCH_FAILS(function, ...) \
+    do { \
+        if (!(function(__VA_ARGS__))) { \
+            fprintf(stderr, "%s failed.\n", #function); \
+            exit(EXIT_FAILURE); \
+        } \
+    } while (0)
+
 #ifdef FUZZY_8051
 
 #include <stddef.h>
@@ -1436,6 +1444,8 @@ typedef struct FuzzyGpuSweep {
     float defuzz_step;
 } fuzzy_gpu_sweep_t;
 
+
+
 #define FUZZY_GPU_VARIABLE(input_arg, shape_arg, hedge_arg, ...) \
     { \
         .input = (cl_uint)(input_arg), \
@@ -1529,7 +1539,6 @@ typedef struct FuzzyGpuSweep {
 
 #define TRAIN_FAIL(...) do { fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define TRAIN_CHECK(condition, ...) do { if (!(condition)) TRAIN_FAIL(__VA_ARGS__); } while (0)
-#define TRAIN_PRINT(...) printf(__VA_ARGS__)
 #define TRAIN_MKDIR(path) TRAIN_CHECK(system("mkdir -p " path) == 0, "Failed to create %s.\n", path)
 #define TRAIN_DATASET_LOAD(path, format, dataset) TRAIN_CHECK(fuzzy_neuron_dataset_load_csv((path), (format), (dataset)), "Failed to load %s.\n", path)
 #define TRAIN_DATASET_FREE(dataset) fuzzy_neuron_dataset_free(dataset)
@@ -9572,6 +9581,17 @@ void fuzzy_neuron_backward(
                     network->deltas[
                         destination_offset + destination
                     ];
+            }
+
+            if (layer > 0u)
+            {
+                propagated *=
+                    fuzzy_neuron_derivative(
+                        network->activations[
+                            source_offset + source
+                        ],
+                        network->layers[layer - 1u].activation
+                    );
             }
 
             network->deltas[
