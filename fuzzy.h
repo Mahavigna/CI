@@ -1376,6 +1376,7 @@ typedef struct FuzzyInterpolationSweep {
 
 #include <CL/cl.h>
 #include <math.h>
+#include <string.h>
 
 typedef enum FuzzyGpuOperator {
     FUZZY_OPERATOR_AND = 0,
@@ -11655,6 +11656,432 @@ typedef struct fuzzy_neuron_output_pipeline
     float bias;
 } fuzzy_neuron_output_pipeline_t;
 
+
+#ifdef FUZZY_SQLITE
+#include <sqlite3.h>
+#ifndef FUZZY_NEURON_MODEL_DATABASE_FORMAT_VERSION
+#define FUZZY_NEURON_MODEL_DATABASE_FORMAT_VERSION 1u
+#endif
+#define FUZZY_NEURON_MODEL_DATABASE(symbol, path_arg, model_name_arg, output_pipeline_arg, input_count_arg) \
+    static const struct { const char *path; const char *model_name; fuzzy_neuron_output_pipeline_t *output; size_t input_count; unsigned int format_version; } symbol = {(path_arg), (model_name_arg), &(output_pipeline_arg), (input_count_arg), FUZZY_NEURON_MODEL_DATABASE_FORMAT_VERSION}
+#define FUZZY_NEURON_MODEL_DATABASE_EXISTS(database_object) fuzzy_neuron_model_database_exists((database_object).path)
+#define FUZZY_NEURON_MODEL_DATABASE_SAVE(database_object, model_arg, input_minimum_arg, input_maximum_arg, target_minimum_arg, target_maximum_arg) fuzzy_neuron_model_database_save_impl((database_object).path, (database_object).format_version, (database_object).model_name, (model_arg), (database_object).output, (input_minimum_arg), (input_maximum_arg), (database_object).input_count, (target_minimum_arg), (target_maximum_arg))
+#define FUZZY_NEURON_MODEL_DATABASE_LOAD(database_object, model_arg, input_minimum_arg, input_maximum_arg, target_minimum_arg, target_maximum_arg) fuzzy_neuron_model_database_load_impl((database_object).path, (database_object).format_version, (database_object).model_name, (model_arg), (database_object).output, (input_minimum_arg), (input_maximum_arg), (database_object).input_count, &(target_minimum_arg), &(target_maximum_arg))
+#define FUZZY_NEURON_MODEL_DATABASE_REQUIRE_MATCHING_SCALE(database_object, current_input_minimum_arg, current_input_maximum_arg, saved_input_minimum_arg, saved_input_maximum_arg, current_target_minimum_arg, current_target_maximum_arg, saved_target_minimum_arg, saved_target_maximum_arg) fuzzy_neuron_model_database_require_matching_scale((current_input_minimum_arg), (current_input_maximum_arg), (saved_input_minimum_arg), (saved_input_maximum_arg), (database_object).input_count, (current_target_minimum_arg), (current_target_maximum_arg), (saved_target_minimum_arg), (saved_target_maximum_arg))
+static void fuzzy_neuron_sqlite_fail(sqlite3 *database, const char *operation)
+{
+    fprintf(stderr, "SQLite %s failed: %s\n", operation, database != NULL ? sqlite3_errmsg(database) : "database handle unavailable");
+    exit(EXIT_FAILURE);
+}
+
+static void fuzzy_neuron_sqlite_expect(int result, sqlite3 *database, int expected, const char *operation)
+{
+    if (result != expected) fuzzy_neuron_sqlite_fail(database, operation);
+}
+
+static void fuzzy_neuron_sqlite_execute(sqlite3 *database, const char *sql)
+{
+    char *message = NULL;
+    int result = sqlite3_exec(database, sql, NULL, NULL, &message);
+    if (result != SQLITE_OK)
+    {
+        fprintf(stderr, "SQLite statement failed: %s\nSQL: %s\n", message != NULL ? message : sqlite3_errmsg(database), sql);
+        sqlite3_free(message);
+        exit(EXIT_FAILURE);
+    }
+}
+
+static sqlite3_stmt *fuzzy_neuron_sqlite_prepare(sqlite3 *database, const char *sql)
+{
+    sqlite3_stmt *statement = NULL;
+    fuzzy_neuron_sqlite_expect(sqlite3_prepare_v2(database, sql, -1, &statement, NULL), database, SQLITE_OK, "prepare");
+    return statement;
+}
+
+static void fuzzy_neuron_sqlite_bind_int64(sqlite3 *database, sqlite3_stmt *statement, int parameter, sqlite3_int64 value)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_bind_int64(statement, parameter, value), database, SQLITE_OK, "bind integer");
+}
+
+static void fuzzy_neuron_sqlite_bind_double(sqlite3 *database, sqlite3_stmt *statement, int parameter, double value)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_bind_double(statement, parameter, value), database, SQLITE_OK, "bind real");
+}
+
+static void fuzzy_neuron_sqlite_bind_text(sqlite3 *database, sqlite3_stmt *statement, int parameter, const char *value)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_bind_text(statement, parameter, value, -1, SQLITE_TRANSIENT), database, SQLITE_OK, "bind text");
+}
+
+static void fuzzy_neuron_sqlite_insert_done(sqlite3 *database, sqlite3_stmt *statement)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "insert");
+    fuzzy_neuron_sqlite_expect(sqlite3_reset(statement), database, SQLITE_OK, "reset insert");
+    fuzzy_neuron_sqlite_expect(sqlite3_clear_bindings(statement), database, SQLITE_OK, "clear insert bindings");
+}
+
+static void fuzzy_neuron_model_database_save_impl(const char *path, unsigned int format_version, const char *model_name, const fuzzy_neuron_network_t *model, const fuzzy_neuron_output_pipeline_t *output, const float input_minimum[], const float input_maximum[], size_t input_count, float target_minimum, float target_maximum)
+{
+    sqlite3 *database = NULL;
+    sqlite3_stmt *statement;
+    size_t layer;
+    size_t index;
+
+    if (path == NULL || model_name == NULL || model == NULL || output == NULL || input_minimum == NULL || input_maximum == NULL || input_count != model->raw_input_dimensions || !model->compiled) { fprintf(stderr, "Invalid model database save request.\n"); exit(EXIT_FAILURE); }
+    fuzzy_neuron_sqlite_expect(sqlite3_open_v2(path, &database, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL), database, SQLITE_OK, "open model database");
+    fuzzy_neuron_sqlite_execute(database, "PRAGMA foreign_keys=ON; PRAGMA journal_mode=DELETE; PRAGMA synchronous=FULL;");
+    fuzzy_neuron_sqlite_execute(database, "BEGIN IMMEDIATE;");
+    fuzzy_neuron_sqlite_execute(database, "DROP TABLE IF EXISTS output_pipeline; DROP TABLE IF EXISTS scales; DROP TABLE IF EXISTS premise_parameters; DROP TABLE IF EXISTS premises; DROP TABLE IF EXISTS expressions; DROP TABLE IF EXISTS rules; DROP TABLE IF EXISTS biases; DROP TABLE IF EXISTS weights; DROP TABLE IF EXISTS layers; DROP TABLE IF EXISTS model;");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE model(id INTEGER PRIMARY KEY CHECK(id=1), format_version INTEGER NOT NULL, model_name TEXT NOT NULL, raw_input_dimensions INTEGER NOT NULL, output_dimensions INTEGER NOT NULL, logic_method INTEGER NOT NULL, rule_count INTEGER NOT NULL, premise_count INTEGER NOT NULL, expression_count INTEGER NOT NULL, premise_parameter_count INTEGER NOT NULL, layer_count INTEGER NOT NULL, neuron_count INTEGER NOT NULL, weight_count INTEGER NOT NULL, bias_count INTEGER NOT NULL, trainable_fuzzy INTEGER NOT NULL);");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE layers(layer_index INTEGER PRIMARY KEY, source_count INTEGER NOT NULL, neuron_count INTEGER NOT NULL, activation INTEGER NOT NULL, weight_offset INTEGER NOT NULL, bias_offset INTEGER NOT NULL);");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE weights(layer_index INTEGER NOT NULL, destination_neuron INTEGER NOT NULL, source_neuron INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(layer_index,destination_neuron,source_neuron), FOREIGN KEY(layer_index) REFERENCES layers(layer_index));");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE biases(layer_index INTEGER NOT NULL, neuron_index INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(layer_index,neuron_index), FOREIGN KEY(layer_index) REFERENCES layers(layer_index));");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE premises(premise_index INTEGER PRIMARY KEY, name TEXT NOT NULL, input_index INTEGER NOT NULL, shape INTEGER NOT NULL, parameter_offset INTEGER NOT NULL, parameter_count INTEGER NOT NULL, trainable_mask INTEGER NOT NULL, hedge REAL NOT NULL, domain_minimum REAL NOT NULL, domain_maximum REAL NOT NULL, epsilon REAL NOT NULL);");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE premise_parameters(premise_index INTEGER NOT NULL, parameter_index INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY(premise_index,parameter_index), FOREIGN KEY(premise_index) REFERENCES premises(premise_index));");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE expressions(expression_index INTEGER PRIMARY KEY, kind INTEGER NOT NULL, left_index INTEGER NOT NULL, right_index INTEGER NOT NULL, value_index INTEGER NOT NULL);");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE rules(rule_index INTEGER PRIMARY KEY, name TEXT NOT NULL, root_expression INTEGER NOT NULL);");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE output_pipeline(membership_index INTEGER PRIMARY KEY, minimum REAL NOT NULL, maximum REAL NOT NULL, step REAL NOT NULL, gain REAL NOT NULL, bias REAL NOT NULL);");
+    fuzzy_neuron_sqlite_execute(database, "CREATE TABLE scales(kind TEXT NOT NULL, value_index INTEGER NOT NULL, minimum REAL NOT NULL, maximum REAL NOT NULL, PRIMARY KEY(kind,value_index));");
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO model VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 1, format_version);
+    fuzzy_neuron_sqlite_bind_text(database, statement, 2, model_name);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 3, (sqlite3_int64)model->raw_input_dimensions);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 4, (sqlite3_int64)model->output_dimensions);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 5, (sqlite3_int64)model->logic_method);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 6, (sqlite3_int64)model->rule_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 7, (sqlite3_int64)model->premise_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 8, (sqlite3_int64)model->expression_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 9, (sqlite3_int64)model->premise_parameter_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 10, (sqlite3_int64)model->layer_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 11, (sqlite3_int64)model->neuron_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 12, (sqlite3_int64)model->weight_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 13, (sqlite3_int64)model->bias_count);
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 14, model->trainable_fuzzy ? 1 : 0);
+    fuzzy_neuron_sqlite_insert_done(database, statement);
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO layers VALUES(?,?,?,?,?,?);");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t source_count = layer == 0u ? model->rule_count : model->layers[layer - 1u].count;
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)layer);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 2, (sqlite3_int64)source_count);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 3, (sqlite3_int64)model->layers[layer].count);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 4, (sqlite3_int64)model->layers[layer].activation);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 5, (sqlite3_int64)model->layers[layer].weight_offset);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 6, (sqlite3_int64)model->layers[layer].bias_offset);
+        fuzzy_neuron_sqlite_insert_done(database, statement);
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO weights VALUES(?,?,?,?);");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t destination;
+        size_t source_count = layer == 0u ? model->rule_count : model->layers[layer - 1u].count;
+        for (destination = 0u; destination < model->layers[layer].count; ++destination)
+        {
+            size_t source;
+            for (source = 0u; source < source_count; ++source)
+            {
+                size_t weight_index = model->layers[layer].weight_offset + destination * source_count + source;
+                fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)layer);
+                fuzzy_neuron_sqlite_bind_int64(database, statement, 2, (sqlite3_int64)destination);
+                fuzzy_neuron_sqlite_bind_int64(database, statement, 3, (sqlite3_int64)source);
+                fuzzy_neuron_sqlite_bind_double(database, statement, 4, model->weights[weight_index]);
+                fuzzy_neuron_sqlite_insert_done(database, statement);
+            }
+        }
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO biases VALUES(?,?,?);");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t neuron;
+        for (neuron = 0u; neuron < model->layers[layer].count; ++neuron)
+        {
+            fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)layer);
+            fuzzy_neuron_sqlite_bind_int64(database, statement, 2, (sqlite3_int64)neuron);
+            fuzzy_neuron_sqlite_bind_double(database, statement, 3, model->biases[model->layers[layer].bias_offset + neuron]);
+            fuzzy_neuron_sqlite_insert_done(database, statement);
+        }
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO premises VALUES(?,?,?,?,?,?,?,?,?,?,?);");
+    for (index = 0u; index < model->premise_count; ++index)
+    {
+        const fuzzy_neuron_premise_t *premise = &model->premises[index];
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)index);
+        fuzzy_neuron_sqlite_bind_text(database, statement, 2, premise->name);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 3, (sqlite3_int64)premise->input_index);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 4, (sqlite3_int64)premise->shape);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 5, (sqlite3_int64)premise->parameter_offset);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 6, (sqlite3_int64)premise->parameter_count);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 7, (sqlite3_int64)premise->trainable_mask);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 8, premise->hedge);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 9, premise->domain_minimum);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 10, premise->domain_maximum);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 11, premise->epsilon);
+        fuzzy_neuron_sqlite_insert_done(database, statement);
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO premise_parameters VALUES(?,?,?);");
+    for (index = 0u; index < model->premise_count; ++index)
+    {
+        size_t parameter;
+        const fuzzy_neuron_premise_t *premise = &model->premises[index];
+        for (parameter = 0u; parameter < premise->parameter_count; ++parameter)
+        {
+            fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)index);
+            fuzzy_neuron_sqlite_bind_int64(database, statement, 2, (sqlite3_int64)parameter);
+            fuzzy_neuron_sqlite_bind_double(database, statement, 3, model->premise_parameters[premise->parameter_offset + parameter]);
+            fuzzy_neuron_sqlite_insert_done(database, statement);
+        }
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO expressions VALUES(?,?,?,?,?);");
+    for (index = 0u; index < model->expression_count; ++index)
+    {
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)index);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 2, (sqlite3_int64)model->expressions[index].kind);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 3, (sqlite3_int64)model->expressions[index].left);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 4, (sqlite3_int64)model->expressions[index].right);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 5, (sqlite3_int64)model->expressions[index].value);
+        fuzzy_neuron_sqlite_insert_done(database, statement);
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO rules VALUES(?,?,?);");
+    for (index = 0u; index < model->rule_count; ++index)
+    {
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)index);
+        fuzzy_neuron_sqlite_bind_text(database, statement, 2, model->rules[index].name);
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 3, (sqlite3_int64)model->rule_roots[index]);
+        fuzzy_neuron_sqlite_insert_done(database, statement);
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO output_pipeline VALUES(?,?,?,?,?,?);");
+    for (index = 0u; index < output->membership_count; ++index)
+    {
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 1, (sqlite3_int64)index);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 2, output->minimum);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 3, output->maximum);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 4, output->step);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 5, output->gain);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 6, output->bias);
+        fuzzy_neuron_sqlite_insert_done(database, statement);
+    }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "INSERT INTO scales VALUES(?,?,?,?);");
+    for (index = 0u; index < input_count; ++index)
+    {
+        fuzzy_neuron_sqlite_bind_text(database, statement, 1, "input");
+        fuzzy_neuron_sqlite_bind_int64(database, statement, 2, (sqlite3_int64)index);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 3, input_minimum[index]);
+        fuzzy_neuron_sqlite_bind_double(database, statement, 4, input_maximum[index]);
+        fuzzy_neuron_sqlite_insert_done(database, statement);
+    }
+    fuzzy_neuron_sqlite_bind_text(database, statement, 1, "target");
+    fuzzy_neuron_sqlite_bind_int64(database, statement, 2, 0);
+    fuzzy_neuron_sqlite_bind_double(database, statement, 3, target_minimum);
+    fuzzy_neuron_sqlite_bind_double(database, statement, 4, target_maximum);
+    fuzzy_neuron_sqlite_insert_done(database, statement);
+    sqlite3_finalize(statement);
+
+    fuzzy_neuron_sqlite_execute(database, "COMMIT;");
+    fuzzy_neuron_sqlite_expect(sqlite3_close(database), database, SQLITE_OK, "close model database");
+    printf("Model database written to %s\n", path);
+}
+
+static void fuzzy_neuron_model_database_load_impl(const char *path, unsigned int format_version, const char *model_name, fuzzy_neuron_network_t *model, fuzzy_neuron_output_pipeline_t *output, float input_minimum[], float input_maximum[], size_t input_count, float *target_minimum, float *target_maximum)
+{
+    sqlite3 *database = NULL;
+    sqlite3_stmt *statement;
+    size_t layer;
+    size_t index;
+
+    if (path == NULL || model_name == NULL || model == NULL || output == NULL || input_minimum == NULL || input_maximum == NULL || target_minimum == NULL || target_maximum == NULL || input_count != model->raw_input_dimensions || !model->compiled) { fprintf(stderr, "Invalid model database load request.\n"); exit(EXIT_FAILURE); }
+    fuzzy_neuron_sqlite_expect(sqlite3_open_v2(path, &database, SQLITE_OPEN_READONLY, NULL), database, SQLITE_OK, "open model database");
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT format_version,raw_input_dimensions,output_dimensions,logic_method,rule_count,premise_count,expression_count,premise_parameter_count,layer_count,neuron_count,weight_count,bias_count,trainable_fuzzy FROM model WHERE id=1;");
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read model metadata");
+    if ((unsigned int)sqlite3_column_int(statement, 0) != format_version ||
+        (size_t)sqlite3_column_int64(statement, 1) != model->raw_input_dimensions ||
+        (size_t)sqlite3_column_int64(statement, 2) != model->output_dimensions ||
+        sqlite3_column_int(statement, 3) != (int)model->logic_method ||
+        (size_t)sqlite3_column_int64(statement, 4) != model->rule_count ||
+        (size_t)sqlite3_column_int64(statement, 5) != model->premise_count ||
+        (size_t)sqlite3_column_int64(statement, 6) != model->expression_count ||
+        (size_t)sqlite3_column_int64(statement, 7) != model->premise_parameter_count ||
+        (size_t)sqlite3_column_int64(statement, 8) != model->layer_count ||
+        (size_t)sqlite3_column_int64(statement, 9) != model->neuron_count ||
+        (size_t)sqlite3_column_int64(statement, 10) != model->weight_count ||
+        (size_t)sqlite3_column_int64(statement, 11) != model->bias_count ||
+        (sqlite3_column_int(statement, 12) != 0) != model->trainable_fuzzy)
+    { fprintf(stderr, "Model database structure does not exactly match the compiled model.\n"); exit(EXIT_FAILURE); }
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT layer_index,source_count,neuron_count,activation,weight_offset,bias_offset FROM layers ORDER BY layer_index;");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t source_count = layer == 0u ? model->rule_count : model->layers[layer - 1u].count;
+        fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read layer");
+        if ((size_t)sqlite3_column_int64(statement, 0) != layer || (size_t)sqlite3_column_int64(statement, 1) != source_count || (size_t)sqlite3_column_int64(statement, 2) != model->layers[layer].count || sqlite3_column_int(statement, 3) != (int)model->layers[layer].activation || (size_t)sqlite3_column_int64(statement, 4) != model->layers[layer].weight_offset || (size_t)sqlite3_column_int64(statement, 5) != model->layers[layer].bias_offset)
+        { fprintf(stderr, "Model database layer %zu does not match the compiled model.\n", layer); exit(EXIT_FAILURE); }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish layer validation");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT layer_index,destination_neuron,source_neuron,value FROM weights ORDER BY layer_index,destination_neuron,source_neuron;");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t destination;
+        size_t source_count = layer == 0u ? model->rule_count : model->layers[layer - 1u].count;
+        for (destination = 0u; destination < model->layers[layer].count; ++destination)
+        {
+            size_t source;
+            for (source = 0u; source < source_count; ++source)
+            {
+                size_t weight_index = model->layers[layer].weight_offset + destination * source_count + source;
+                fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read weight");
+                if ((size_t)sqlite3_column_int64(statement, 0) != layer || (size_t)sqlite3_column_int64(statement, 1) != destination || (size_t)sqlite3_column_int64(statement, 2) != source) { fprintf(stderr, "Model database weight topology is invalid.\n"); exit(EXIT_FAILURE); }
+                model->weights[weight_index] = (float)sqlite3_column_double(statement, 3);
+            }
+        }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish weights");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT layer_index,neuron_index,value FROM biases ORDER BY layer_index,neuron_index;");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t neuron;
+        for (neuron = 0u; neuron < model->layers[layer].count; ++neuron)
+        {
+            fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read bias");
+            if ((size_t)sqlite3_column_int64(statement, 0) != layer || (size_t)sqlite3_column_int64(statement, 1) != neuron) { fprintf(stderr, "Model database bias topology is invalid.\n"); exit(EXIT_FAILURE); }
+            model->biases[model->layers[layer].bias_offset + neuron] = (float)sqlite3_column_double(statement, 2);
+        }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish biases");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT premise_index,name,input_index,shape,parameter_offset,parameter_count,trainable_mask,hedge,domain_minimum,domain_maximum,epsilon FROM premises ORDER BY premise_index;");
+    for (index = 0u; index < model->premise_count; ++index)
+    {
+        const fuzzy_neuron_premise_t *premise = &model->premises[index];
+        const char *name;
+        fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read premise");
+        name = (const char *)sqlite3_column_text(statement, 1);
+        if ((size_t)sqlite3_column_int64(statement, 0) != index || name == NULL || strcmp(name, premise->name) != 0 || (size_t)sqlite3_column_int64(statement, 2) != premise->input_index || sqlite3_column_int(statement, 3) != (int)premise->shape || (size_t)sqlite3_column_int64(statement, 4) != premise->parameter_offset || (size_t)sqlite3_column_int64(statement, 5) != premise->parameter_count || (unsigned int)sqlite3_column_int64(statement, 6) != premise->trainable_mask || (float)sqlite3_column_double(statement, 7) != premise->hedge || (float)sqlite3_column_double(statement, 8) != premise->domain_minimum || (float)sqlite3_column_double(statement, 9) != premise->domain_maximum || (float)sqlite3_column_double(statement, 10) != premise->epsilon)
+        { fprintf(stderr, "Model database premise %zu does not match the compiled model.\n", index); exit(EXIT_FAILURE); }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish premise validation");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT premise_index,parameter_index,value FROM premise_parameters ORDER BY premise_index,parameter_index;");
+    for (index = 0u; index < model->premise_count; ++index)
+    {
+        size_t parameter;
+        const fuzzy_neuron_premise_t *premise = &model->premises[index];
+        for (parameter = 0u; parameter < premise->parameter_count; ++parameter)
+        {
+            fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read premise parameter");
+            if ((size_t)sqlite3_column_int64(statement, 0) != index || (size_t)sqlite3_column_int64(statement, 1) != parameter) { fprintf(stderr, "Model database premise parameter topology is invalid.\n"); exit(EXIT_FAILURE); }
+            model->premise_parameters[premise->parameter_offset + parameter] = (float)sqlite3_column_double(statement, 2);
+        }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish premise parameters");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT expression_index,kind,left_index,right_index,value_index FROM expressions ORDER BY expression_index;");
+    for (index = 0u; index < model->expression_count; ++index)
+    {
+        fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read expression");
+        if ((size_t)sqlite3_column_int64(statement, 0) != index || sqlite3_column_int(statement, 1) != (int)model->expressions[index].kind || (size_t)sqlite3_column_int64(statement, 2) != model->expressions[index].left || (size_t)sqlite3_column_int64(statement, 3) != model->expressions[index].right || (size_t)sqlite3_column_int64(statement, 4) != model->expressions[index].value)
+        { fprintf(stderr, "Model database expression %zu does not match the compiled model.\n", index); exit(EXIT_FAILURE); }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish expression validation");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT rule_index,name,root_expression FROM rules ORDER BY rule_index;");
+    for (index = 0u; index < model->rule_count; ++index)
+    {
+        const char *name;
+        fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read rule");
+        name = (const char *)sqlite3_column_text(statement, 1);
+        if ((size_t)sqlite3_column_int64(statement, 0) != index || name == NULL || strcmp(name, model->rules[index].name) != 0 || (size_t)sqlite3_column_int64(statement, 2) != model->rule_roots[index])
+        { fprintf(stderr, "Model database rule %zu does not match the compiled model.\n", index); exit(EXIT_FAILURE); }
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish rule validation");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT membership_index,minimum,maximum,step,gain,bias FROM output_pipeline ORDER BY membership_index;");
+    for (index = 0u; index < output->membership_count; ++index)
+    {
+        fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read output pipeline");
+        if ((size_t)sqlite3_column_int64(statement, 0) != index || (float)sqlite3_column_double(statement, 1) != output->minimum || (float)sqlite3_column_double(statement, 2) != output->maximum || (float)sqlite3_column_double(statement, 3) != output->step)
+        { fprintf(stderr, "Model database output pipeline does not match the compiled model.\n"); exit(EXIT_FAILURE); }
+        output->gain = (float)sqlite3_column_double(statement, 4);
+        output->bias = (float)sqlite3_column_double(statement, 5);
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish output pipeline");
+    sqlite3_finalize(statement);
+
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT value_index,minimum,maximum FROM scales WHERE kind='input' ORDER BY value_index;");
+    for (index = 0u; index < input_count; ++index)
+    {
+        fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read input scale");
+        if ((size_t)sqlite3_column_int64(statement, 0) != index) { fprintf(stderr, "Model database input scale topology is invalid.\n"); exit(EXIT_FAILURE); }
+        input_minimum[index] = (float)sqlite3_column_double(statement, 1);
+        input_maximum[index] = (float)sqlite3_column_double(statement, 2);
+    }
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_DONE, "finish input scales");
+    sqlite3_finalize(statement);
+    statement = fuzzy_neuron_sqlite_prepare(database, "SELECT minimum,maximum FROM scales WHERE kind='target' AND value_index=0;");
+    fuzzy_neuron_sqlite_expect(sqlite3_step(statement), database, SQLITE_ROW, "read target scale");
+    *target_minimum = (float)sqlite3_column_double(statement, 0);
+    *target_maximum = (float)sqlite3_column_double(statement, 1);
+    sqlite3_finalize(statement);
+    fuzzy_neuron_sqlite_expect(sqlite3_close(database), database, SQLITE_OK, "close model database");
+    printf("Model database loaded from %s\n", path);
+}
+
+static bool fuzzy_neuron_model_database_exists(const char *path)
+{
+    FILE *file;
+    if (path == NULL) return false;
+    file = fopen(path, "rb");
+    if (file == NULL) return false;
+    fclose(file);
+    return true;
+}
+
+static void fuzzy_neuron_model_database_require_matching_scale(const float current_input_minimum[], const float current_input_maximum[], const float saved_input_minimum[], const float saved_input_maximum[], size_t input_count, float current_target_minimum, float current_target_maximum, float saved_target_minimum, float saved_target_maximum)
+{
+    size_t dimension;
+    if (current_input_minimum == NULL || current_input_maximum == NULL || saved_input_minimum == NULL || saved_input_maximum == NULL || input_count == 0u) { fprintf(stderr, "Invalid normalization scale comparison.\n"); exit(EXIT_FAILURE); }
+    for (dimension = 0u; dimension < input_count; ++dimension)
+    {
+        if (current_input_minimum[dimension] != saved_input_minimum[dimension] || current_input_maximum[dimension] != saved_input_maximum[dimension])
+        {
+            fprintf(stderr, "Saved input normalization for dimension %zu does not match the current deterministic dataset split.\n", dimension);
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (current_target_minimum != saved_target_minimum || current_target_maximum != saved_target_maximum)
+    {
+        fprintf(stderr, "Saved target normalization does not match the current deterministic dataset split.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+#endif /* FUZZY_SQLITE */
 typedef struct fuzzy_neuron_output_cache
 {
     float *activations;

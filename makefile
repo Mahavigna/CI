@@ -5,7 +5,7 @@
 CC ?= gcc
 CFLAGS := -O3 -Wall -Wextra -Wpedantic -std=c11
 LDFLAGS :=
-LDLIBS := -lm
+LDLIBS := -lm -lsqlite3
 CPU_THREADS := $(shell nproc)
 MAKE_JOBS := $(shell echo $$(( $(CPU_THREADS) * 3 )))
 MAKEFLAGS += -j$(MAKE_JOBS)
