@@ -25,14 +25,11 @@ sugeno-app
 fuzzy-neuron-output/
 
 # Generated demo artifacts
-demo-all/*.svg
 demo-all/*.csv
-demo-gpu/*.svg
 demo-gpu/*.csv
-braking_gpu/*.svg
 braking_gpu/*.csv
-greenhouse/*.svg
 greenhouse/*.csv
+*.csv
 
 # Generated 8051 build products
 sim-8051/embedded/*.adb
