@@ -524,7 +524,19 @@ __kernel void fn_forward_gemm(__global const float *restrict weights, __global c
         fn_activate(sum, activation_kind);
 }
 
-__kernel void fn_output_delta(__global const float *restrict targets, __global const float *restrict activations, __global float *restrict deltas, __global float *restrict losses, uint sample_count, uint output_count, uint neuron_count, uint output_offset, uint activation_kind, uint loss_method, float huber_delta)
+__kernel void fn_output_delta(
+    __global const float *restrict targets,
+    __global const float *restrict activations,
+    __global float *restrict deltas,
+    __global float *restrict losses,
+    uint sample_count,
+    uint output_count,
+    uint neuron_count,
+    uint output_offset,
+    uint activation_kind,
+    uint loss_method,
+    float huber_delta
+)
 {
     size_t index = get_global_id(0);
     size_t total = (size_t)sample_count * output_count;
@@ -534,7 +546,6 @@ __kernel void fn_output_delta(__global const float *restrict targets, __global c
     float prediction;
     float error;
     float gradient;
-    float loss;
 
     if (index >= total)
     {
@@ -547,21 +558,26 @@ __kernel void fn_output_delta(__global const float *restrict targets, __global c
 
     prediction = activations[activation_index];
     error = prediction - targets[index];
-    gradient = error;
-    loss = error * error;
 
     if (loss_method == FN_LOSS_HUBER)
     {
         float magnitude = fabs(error);
-        int quadratic = magnitude <= huber_delta;
 
-        gradient = quadratic
-            ? error / huber_delta
-            : copysign(1.0f, error);
-
-        loss = quadratic
-            ? 0.5f * error * error / huber_delta
-            : magnitude - 0.5f * huber_delta;
+        if (magnitude <= huber_delta)
+        {
+            losses[index] = 0.5f * error * error / huber_delta;
+            gradient = error / huber_delta;
+        }
+        else
+        {
+            losses[index] = magnitude - 0.5f * huber_delta;
+            gradient = copysign(1.0f, error);
+        }
+    }
+    else
+    {
+        losses[index] = error * error;
+        gradient = 2.0f * error;
     }
 
     deltas[activation_index] =
@@ -570,8 +586,292 @@ __kernel void fn_output_delta(__global const float *restrict targets, __global c
             prediction,
             activation_kind
         );
+}
 
-    losses[index] = loss;
+__kernel void fn_mamdani_output_delta(
+    __global const float *restrict targets,
+    __global const float *restrict activations,
+    __global const float *restrict output_memberships,
+    __global float *restrict predictions,
+    __global float *restrict deltas,
+    __global float *restrict losses,
+    uint sample_count,
+    uint consequent_count,
+    uint neuron_count,
+    uint output_offset,
+    uint output_sample_count,
+    float output_minimum,
+    float output_step,
+    uint activation_kind,
+    uint loss_method,
+    float huber_delta
+)
+{
+    size_t sample = get_global_id(0);
+    size_t activation_base;
+    float numerator = 0.0f;
+    float denominator = 0.0f;
+    float prediction;
+    float error;
+    float loss_gradient;
+    float consequence_gradient;
+    uint consequent;
+    uint output_sample;
+
+    if (sample >= (size_t)sample_count)
+    {
+        return;
+    }
+
+    activation_base =
+        sample *
+        neuron_count +
+        output_offset;
+
+    for (
+        output_sample = 0u;
+        output_sample < output_sample_count;
+        ++output_sample
+    )
+    {
+        float output_value =
+            output_minimum +
+            output_step *
+            (float)output_sample;
+
+        float aggregated_membership = 0.0f;
+
+        for (
+            consequent = 0u;
+            consequent < consequent_count;
+            ++consequent
+        )
+        {
+            float activation =
+                clamp(
+                    activations[
+                        activation_base +
+                        consequent
+                    ],
+                    0.0f,
+                    1.0f
+                );
+
+            float consequent_membership =
+                output_memberships[
+                    (size_t)consequent *
+                    output_sample_count +
+                    output_sample
+                ];
+
+            float implied_membership =
+                fmin(
+                    activation,
+                    consequent_membership
+                );
+
+            aggregated_membership =
+                fmax(
+                    aggregated_membership,
+                    implied_membership
+                );
+        }
+
+        numerator = fma(
+            output_value,
+            aggregated_membership,
+            numerator
+        );
+
+        denominator += aggregated_membership;
+    }
+
+    if (!(denominator > 1.0e-12f))
+    {
+        predictions[sample] = 0.0f;
+        losses[sample] = 0.0f;
+
+        for (
+            consequent = 0u;
+            consequent < consequent_count;
+            ++consequent
+        )
+        {
+            deltas[
+                activation_base +
+                consequent
+            ] = 0.0f;
+        }
+
+        return;
+    }
+
+    prediction = numerator / denominator;
+    predictions[sample] = prediction;
+
+    error = prediction - targets[sample];
+
+    if (loss_method == FN_LOSS_HUBER)
+    {
+        float magnitude = fabs(error);
+
+        if (magnitude <= huber_delta)
+        {
+            losses[sample] =
+                0.5f *
+                error *
+                error /
+                huber_delta;
+
+            loss_gradient =
+                error /
+                huber_delta;
+        }
+        else
+        {
+            losses[sample] =
+                magnitude -
+                0.5f *
+                huber_delta;
+
+            loss_gradient =
+                copysign(
+                    1.0f,
+                    error
+                );
+        }
+    }
+    else
+    {
+        losses[sample] =
+            error *
+            error;
+
+        loss_gradient =
+            2.0f *
+            error;
+    }
+
+    for (
+        consequent = 0u;
+        consequent < consequent_count;
+        ++consequent
+    )
+    {
+        float activation =
+            clamp(
+                activations[
+                    activation_base +
+                    consequent
+                ],
+                0.0f,
+                1.0f
+            );
+
+        consequence_gradient = 0.0f;
+
+        for (
+            output_sample = 0u;
+            output_sample < output_sample_count;
+            ++output_sample
+        )
+        {
+            float output_value =
+                output_minimum +
+                output_step *
+                (float)output_sample;
+
+            float consequent_membership =
+                output_memberships[
+                    (size_t)consequent *
+                    output_sample_count +
+                    output_sample
+                ];
+
+            float implied_membership =
+                fmin(
+                    activation,
+                    consequent_membership
+                );
+
+            float aggregated_membership = 0.0f;
+
+            uint winner = 0xffffffffu;
+            uint candidate;
+
+            for (
+                candidate = 0u;
+                candidate < consequent_count;
+                ++candidate
+            )
+            {
+                float candidate_activation =
+                    clamp(
+                        activations[
+                            activation_base +
+                            candidate
+                        ],
+                        0.0f,
+                        1.0f
+                    );
+
+                float candidate_membership =
+                    output_memberships[
+                        (size_t)candidate *
+                        output_sample_count +
+                        output_sample
+                    ];
+
+                float candidate_implied =
+                    fmin(
+                        candidate_activation,
+                        candidate_membership
+                    );
+
+                if (
+                    winner == 0xffffffffu ||
+                    candidate_implied >
+                    aggregated_membership
+                )
+                {
+                    aggregated_membership =
+                        candidate_implied;
+
+                    winner = candidate;
+                }
+            }
+
+            if (
+                winner == consequent &&
+                implied_membership ==
+                aggregated_membership &&
+                activation <
+                consequent_membership
+            )
+            {
+                consequence_gradient +=
+                    (
+                        output_value -
+                        prediction
+                    ) /
+                    denominator;
+            }
+        }
+
+        deltas[
+            activation_base +
+            consequent
+        ] =
+            loss_gradient *
+            consequence_gradient *
+            fn_derivative_from_output(
+                activations[
+                    activation_base +
+                    consequent
+                ],
+                activation_kind
+            );
+    }
 }
 
 __kernel void fn_hidden_delta_gemm(__global const float *restrict weights, __global const float *restrict activations, __global float *restrict deltas, uint sample_count, uint neuron_count, uint current_offset, uint current_count, uint next_offset, uint next_count, uint next_weight_offset, uint activation_kind)
@@ -1475,51 +1775,28 @@ __kernel void fn_forward_gemm_tiled(
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        if (
-            sample < (size_t)sample_count &&
-            destination < (size_t)destination_count
-        )
+        if (sample < (size_t)sample_count && destination < (size_t)destination_count)
         {
-            for (
-                size_t source = 0u;
-                source < source_tile_count;
-                source++
-            )
-            {
-                weighted_sum = fma(
-                    input_tile[
-                        local_sample *
-                        source_tile_count +
-                        source
-                    ],
-                    weight_tile[
-                        local_destination *
-                        source_tile_count +
-                        source
-                    ],
-                    weighted_sum
-                );
-            }
-        }
+            size_t source = 0u;
+            size_t input_base = local_sample * source_tile_count;
 
+            size_t weight_base = local_destination * source_tile_count;
+
+            for (; source + 4u <= source_tile_count; source += 4u)
+            {
+                float4 input_values = vload4(0u, input_tile + input_base + source);
+                float4 weight_values = vload4(0u, weight_tile + weight_base + source);
+                weighted_sum += dot( input_values, weight_values);
+            }
+
+            for (; source < source_tile_count; source++)
+                weighted_sum = fma(input_tile[input_base + source ], weight_tile[weight_base + source], weighted_sum);
+    }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (
-        sample < (size_t)sample_count &&
-        destination < (size_t)destination_count
-    )
-    {
-        activations[
-            sample *
-            neuron_count +
-            destination_offset +
-            destination
-        ] = fn_activate(
-            weighted_sum,
-            activation_kind
-        );
-    }
+    if (sample < (size_t)sample_count && destination < (size_t)destination_count)
+        activations[ sample * neuron_count + destination_offset + destination] = fn_activate(weighted_sum, activation_kind);
 }
 
 __kernel void fn_hidden_delta_gemm_tiled(
@@ -1597,15 +1874,7 @@ __kernel void fn_hidden_delta_gemm_tiled(
                 tile_sample;
 
             next_delta_tile[element] =
-                global_sample < (size_t)sample_count
-                    ? deltas[
-                        global_sample *
-                        neuron_count +
-                        next_offset +
-                        next_base +
-                        tile_next_neuron
-                    ]
-                    : 0.0f;
+                global_sample < (size_t)sample_count ? deltas[     global_sample *     neuron_count +     next_offset +     next_base +     tile_next_neuron ]: 0.0f;
         }
 
         for (
@@ -1650,26 +1919,60 @@ __kernel void fn_hidden_delta_gemm_tiled(
             current_neuron < (size_t)current_count
         )
         {
-            for (
-                size_t next_neuron = 0u;
-                next_neuron < next_tile_count;
-                next_neuron++
-            )
-            {
-                weighted_delta_sum = fma(
-                    transposed_weight_tile[
-                        local_current_neuron *
-                        next_tile_count +
-                        next_neuron
-                    ],
-                    next_delta_tile[
-                        local_sample *
-                        next_tile_count +
-                        next_neuron
-                    ],
-                    weighted_delta_sum
-                );
-            }
+
+        size_t next_neuron = 0u;
+        size_t weight_base =
+            local_current_neuron *
+            next_tile_count;
+
+        size_t delta_base =
+            local_sample *
+            next_tile_count;
+
+        for (
+            ;
+            next_neuron + 4u <= next_tile_count;
+            next_neuron += 4u
+        )
+        {
+            float4 weight_values = vload4(
+                0u,
+                transposed_weight_tile +
+                weight_base +
+                next_neuron
+            );
+
+            float4 delta_values = vload4(
+                0u,
+                next_delta_tile +
+                delta_base +
+                next_neuron
+            );
+
+            weighted_delta_sum += dot(
+                weight_values,
+                delta_values
+            );
+        }
+
+        for (
+            ;
+            next_neuron < next_tile_count;
+            next_neuron++
+        )
+        {
+            weighted_delta_sum = fma(
+                transposed_weight_tile[
+                    weight_base +
+                    next_neuron
+                ],
+                next_delta_tile[
+                    delta_base +
+                    next_neuron
+                ],
+                weighted_delta_sum
+            );
+        }
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);

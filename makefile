@@ -2,7 +2,7 @@
 # Desktop compiler configuration
 # ============================================================
 
-CC ?= gcc
+CC ?= clang
 CFLAGS := -O3 -Wall -Wextra -Wpedantic -std=c11
 LDFLAGS :=
 LDLIBS := -lm -lsqlite3
@@ -498,6 +498,7 @@ run-fuzzy-neuron: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
 	@echo "============================================================"
 	@echo "Running interactive fuzzy-neuron CLI"
 	@echo "============================================================"
+	mkdir -p $(FUZZY_NEURON_OUTPUT)
 	./$(FUZZY_NEURON_TARGET)
 
 

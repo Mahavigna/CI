@@ -115,7 +115,9 @@ sudo apt-get install -y \
     ocl-icd-libopencl1 \
     ocl-icd-opencl-dev \
     opencl-c-headers \
-    opencl-clhpp-headers
+    opencl-clhpp-headers\
+    sqlite3\
+    
 
 pass "Vendor-neutral OpenCL development stack installed."
 

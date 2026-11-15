@@ -1,0 +1,5 @@
+If:
+  PathMatch: .*\.cl$
+
+CompileFlags:
+  Add: [-x, cl, -cl-std=CL2.0, -Xclang, -finclude-default-header]
