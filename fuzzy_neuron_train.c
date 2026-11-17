@@ -810,6 +810,7 @@ static void train(void)
 
 int main(void)
 {
+    train();
     unsigned int choice;
 
     for (;;)
