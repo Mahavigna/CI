@@ -1854,7 +1854,7 @@ int main(void)
     printf("\nfuzzy.h Complete API Demonstration\n");
     printf("==================================\n");
 
-    print_process_gpu_hedges();
+    // print_process_gpu_hedges();
     print_random_not_rule();
     plot_all_membership_functions();
     plot_sampled_membership_sweep();

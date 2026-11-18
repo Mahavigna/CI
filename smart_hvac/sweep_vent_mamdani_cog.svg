@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1050" height="820" viewBox="0 0 1050 820">
+<rect x="0" y="0" width="1050" height="820" fill="white" />
+<text x="525" y="38" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold">Ventilation 5-Input Sweep (Mamdani COG)</text>
+<rect x="110" y="90" width="740" height="520" fill="#f9fafb" stroke="#111827" stroke-width="2" />
+<g id="fuzzy-heatmap">
+<rect id="fuzzy-cell-0" x="110.000" y="436.667" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-0">Loading</title></rect>
+<rect id="fuzzy-cell-1" x="110.000" y="263.333" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-1">Loading</title></rect>
+<rect id="fuzzy-cell-2" x="110.000" y="90.000" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-2">Loading</title></rect>
+<rect id="fuzzy-cell-3" x="356.667" y="436.667" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-3">Loading</title></rect>
+<rect id="fuzzy-cell-4" x="356.667" y="263.333" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-4">Loading</title></rect>
+<rect id="fuzzy-cell-5" x="356.667" y="90.000" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-5">Loading</title></rect>
+<rect id="fuzzy-cell-6" x="603.333" y="436.667" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-6">Loading</title></rect>
+<rect id="fuzzy-cell-7" x="603.333" y="263.333" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-7">Loading</title></rect>
+<rect id="fuzzy-cell-8" x="603.333" y="90.000" width="246.967" height="173.633" fill="#2563eb" stroke="none"><title id="fuzzy-title-8">Loading</title></rect>
+</g>
+<text x="110.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">0.00</text>
+<text x="100" y="610.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">0.00</text>
+<text x="184.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">5.00</text>
+<text x="100" y="558.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">10.00</text>
+<text x="258.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">10.00</text>
+<text x="100" y="506.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">20.00</text>
+<text x="332.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">15.00</text>
+<text x="100" y="454.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">30.00</text>
+<text x="406.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">20.00</text>
+<text x="100" y="402.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">40.00</text>
+<text x="480.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">25.00</text>
+<text x="100" y="350.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">50.00</text>
+<text x="554.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">30.00</text>
+<text x="100" y="298.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">60.00</text>
+<text x="628.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">35.00</text>
+<text x="100" y="246.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">70.00</text>
+<text x="702.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">40.00</text>
+<text x="100" y="194.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">80.00</text>
+<text x="776.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">45.00</text>
+<text x="100" y="142.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">90.00</text>
+<text x="850.00" y="632" text-anchor="middle" font-family="sans-serif" font-size="11">50.00</text>
+<text x="100" y="90.00" text-anchor="end" dominant-baseline="middle" font-family="sans-serif" font-size="11">100.00</text>
+<text x="480" y="665" text-anchor="middle" font-family="sans-serif" font-size="15">Indoor Temp</text>
+<text x="35" y="350" text-anchor="middle" font-family="sans-serif" font-size="15" transform="rotate(-90 35 350)">Humidity</text>
+<defs><linearGradient id="cog-gradient" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="rgb(37,99,235)" /><stop offset="33%" stop-color="rgb(37,231,235)" /><stop offset="66%" stop-color="rgb(250,244,41)" /><stop offset="100%" stop-color="rgb(239,68,14)" /></linearGradient></defs>
+<rect x="900" y="90" width="28" height="520" fill="url(#cog-gradient)" stroke="#111827" />
+<text x="940" y="95" font-family="sans-serif" font-size="12">85.571</text>
+<text x="940" y="610" font-family="sans-serif" font-size="12">0.000</text>
+<text x="914" y="350" text-anchor="middle" font-family="sans-serif" font-size="14" transform="rotate(-90 914 350)">COG</text>
+<foreignObject x="110" y="700" width="740" height="169">
+<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:sans-serif;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;">
+<label style="display:flex;flex-direction:column;font-size:13px;">CO2 Index: <span id="slice-value-2">0.0000</span><input id="slice-slider-2" type="range" min="0" max="2" step="0.01" value="0" /></label>
+<label style="display:flex;flex-direction:column;font-size:13px;">Occupancy: <span id="slice-value-3">0.0000</span><input id="slice-slider-3" type="range" min="0" max="2" step="0.01" value="0" /></label>
+<label style="display:flex;flex-direction:column;font-size:13px;">Outside Temp: <span id="slice-value-4">0.0000</span><input id="slice-slider-4" type="range" min="0" max="2" step="0.01" value="0" /></label>
+</div>
+</foreignObject>
+<script type="application/ecmascript"><![CDATA[
+const fuzzyValueName="COG";
+const fuzzySampleCounts=[3,3,3,3,3];
+const fuzzyLowers=[0,0,0,0,0];
+const fuzzySteps=[25,50,50,50,25];
+const fuzzyNames=["Indoor Temp","Humidity","CO2 Index","Occupancy","Outside Temp"];
+const fuzzyCogValues=[
+15.29508,15.29508,15.29508,15.29508,0,0,48.93163,85.57143,85.57143,15.29508,0,0,33.9267,50,50,48.93163,
+85.57143,85.57143,48.93163,85.57143,85.57143,48.93163,85.57143,85.57143,48.93163,85.57143,85.57143,15.29508,15.29508,15.29508,0,0,
+0,85.57143,85.57143,85.57143,0,0,0,50,50,50,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,
+85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,15.29508,15.29508,15.29508,0,0,0,85.57143,85.57143,85.57143,0,
+0,0,50,50,50,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,
+85.57143,15.29508,32.89238,15.29508,15.29508,49.99999,0,48.93163,66.75014,85.57143,15.29508,49.99999,0,33.9267,50,50,
+48.93163,66.75014,85.57143,48.93163,66.75014,85.57143,48.93163,66.75014,85.57143,48.93163,66.75014,85.57143,15.29508,32.89238,15.29508,0,
+49.99999,0,85.57143,66.75014,85.57143,0,49.99999,0,50,50,50,85.57143,66.75014,85.57143,85.57143,66.75014,
+85.57143,85.57143,66.75014,85.57143,85.57143,66.75014,85.57143,15.29508,32.89238,15.29508,0,49.99999,0,85.57143,66.75014,85.57143,
+0,49.99999,0,50,50,50,85.57143,66.75014,85.57143,85.57143,66.75014,85.57143,85.57143,66.75014,85.57143,85.57143,
+66.75014,85.57143,15.29508,15.29508,15.29508,15.29508,0,0,48.93163,85.57143,85.57143,15.29508,0,0,33.9267,50,
+50,48.93163,85.57143,85.57143,48.93163,85.57143,85.57143,48.93163,85.57143,85.57143,48.93163,85.57143,85.57143,15.29508,15.29508,15.29508,
+0,0,0,85.57143,85.57143,85.57143,0,0,0,50,50,50,85.57143,85.57143,85.57143,85.57143,
+85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,48.93163,48.93163,48.93163,85.57143,85.57143,85.57143,85.57143,85.57143,
+85.57143,85.57143,85.57143,85.57143,65.7021,65.7021,65.7021,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,85.57143,
+85.57143,85.57143,85.57143
+];
+const fuzzyMinCog=0;
+const fuzzyMaxCog=85.5714264;
+const fuzzyCogRange=Math.max(fuzzyMaxCog-fuzzyMinCog,1e-12);
+const fuzzyDimensionCount=5;
+const fuzzyXCount=3;
+const fuzzyYCount=3;
+const fuzzyCellCount=9;
+function fuzzyColour(cog){
+  let ratio=(cog-fuzzyMinCog)/fuzzyCogRange;
+  ratio=Math.max(0,Math.min(1,ratio));
+  let r,g,b;
+  if(ratio<0.33){
+    const local=ratio/0.33;
+    r=37;
+    g=Math.round(99+local*132);
+    b=235;
+  }else if(ratio<0.66){
+    const local=(ratio-0.33)/0.33;
+    r=Math.round(37+local*213);
+    g=Math.round(231+local*13);
+    b=Math.round(235-local*194);
+  }else{
+    const local=(ratio-0.66)/0.34;
+    r=Math.round(250-local*11);
+    g=Math.round(244-local*176);
+    b=Math.round(41-local*27);
+  }
+  return 'rgb('+r+','+g+','+b+')';
+}
+function fuzzyPointIndex(indices){
+  let point=indices[0];
+  for(let d=1;d<fuzzyDimensionCount;d++){
+    point=point*fuzzySampleCounts[d]+indices[d];
+  }
+  return point;
+}
+function fuzzyInterpolatedCog(x,y,positions){
+  const sliderDimensions=fuzzyDimensionCount-2;
+
+  if(sliderDimensions<=0){
+    return fuzzyCogValues[fuzzyPointIndex([x,y])];
+  }
+
+  const lowerIndices=[];
+  const upperIndices=[];
+  const fractions=[];
+
+  for(let local=0;local<sliderDimensions;local++){
+    const dimension=local+2;
+    const maximum=fuzzySampleCounts[dimension]-1;
+    const position=Math.max(0,Math.min(maximum,positions[local]));
+
+    const lower=Math.floor(position);
+    const upper=Math.min(lower+1,maximum);
+
+    lowerIndices.push(lower);
+    upperIndices.push(upper);
+    fractions.push(position-lower);
+  }
+
+  const cornerCount=Math.pow(2,sliderDimensions);
+  let result=0;
+
+  for(let corner=0;corner<cornerCount;corner++){
+    const indices=new Array(fuzzyDimensionCount).fill(0);
+
+    indices[0]=x;
+    indices[1]=y;
+
+    let weight=1;
+
+    for(let local=0;local<sliderDimensions;local++){
+      const useUpper=((corner>>local)&1)!==0;
+      const fraction=fractions[local];
+      const dimension=local+2;
+
+      if(useUpper){
+        indices[dimension]=upperIndices[local];
+        weight*=fraction;
+      }else{
+        indices[dimension]=lowerIndices[local];
+        weight*=1-fraction;
+      }
+    }
+
+    result+=weight*fuzzyCogValues[fuzzyPointIndex(indices)];
+  }
+
+  return result;
+}
+function fuzzyRenderHeatmap(){
+  const positions=[];
+  const physicalValues=[];
+
+  for(let d=2;d<fuzzyDimensionCount;d++){
+    const slider=document.getElementById('slice-slider-'+d);
+
+    let position=0;
+
+    if(slider){
+      position=Number(slider.value);
+    }
+
+    const maximum=fuzzySampleCounts[d]-1;
+
+    position=Math.max(0,Math.min(maximum,position));
+
+    const value=fuzzyLowers[d]+position*fuzzySteps[d];
+
+    positions.push(position);
+    physicalValues.push(value);
+
+    const label=document.getElementById('slice-value-'+d);
+
+    if(label){
+      label.textContent=value.toFixed(4);
+    }
+  }
+
+  for(let x=0;x<fuzzyXCount;x++){
+    for(let y=0;y<fuzzyYCount;y++){
+      const cell=x*fuzzyYCount+y;
+
+      const cog=fuzzyInterpolatedCog(x,y,positions);
+
+      const rect=document.getElementById('fuzzy-cell-'+cell);
+
+      const title=document.getElementById('fuzzy-title-'+cell);
+
+      if(rect){
+        rect.setAttribute('fill',fuzzyColour(cog));
+      }
+
+      if(title){
+        let text=fuzzyNames[0]+' = '+(fuzzyLowers[0]+x*fuzzySteps[0]).toFixed(4)+', '+fuzzyNames[1]+' = '+(fuzzyLowers[1]+y*fuzzySteps[1]).toFixed(4);
+
+        for(let local=0;local<physicalValues.length;local++){
+          const d=local+2;
+
+          text+=', '+fuzzyNames[d]+' = '+physicalValues[local].toFixed(4);
+        }
+
+        title.textContent=text+', '+fuzzyValueName+' = '+cog.toFixed(5);
+      }
+    }
+  }
+}
+document.getElementById('slice-slider-2').addEventListener('input',fuzzyRenderHeatmap);
+document.getElementById('slice-slider-3').addEventListener('input',fuzzyRenderHeatmap);
+document.getElementById('slice-slider-4').addEventListener('input',fuzzyRenderHeatmap);
+fuzzyRenderHeatmap();
+]]></script>
+</svg>

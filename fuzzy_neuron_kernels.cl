@@ -2414,3 +2414,981 @@ __kernel void fn_fuzzy_update(
             gradient;
     }
 }
+
+/* ============================================================================
+ * Adaptive Fuzzy Rules + ANN Membership Function Tuning OpenCL Kernels
+ *
+ * Extends fuzzy_neuron_kernels.cl so an ANN dynamically adjusts and tunes both
+ * input and output membership function parameters while evaluating static fuzzy
+ * rules and differentiable multi-output Mamdani COG & BOA defuzzification.
+ * ============================================================================ */
+
+#define FN_DEFUZZ_COG 0u
+#define FN_DEFUZZ_BOA 1u
+#define FN_TUNER_MAX_CHANNEL_MFS 16u
+#define FN_TUNER_MAX_CHANNEL_PARAMS 64u
+
+typedef struct fn_output_channel
+{
+    float minimum;
+    float maximum;
+    float step;
+    uint sample_count;
+    uint defuzz_method;
+    uint mf_offset;
+    uint mf_count;
+    uint reserved0;
+}
+fn_output_channel_t;
+
+inline float fn_eval_mf_hedged(
+    fn_premise_t mf,
+    float x,
+    __global const float *params,
+    uint param_base_offset
+)
+{
+    float base = fn_shape(
+        mf.shape,
+        x,
+        params,
+        param_base_offset + mf.parameter_offset,
+        mf.parameter_count,
+        mf.epsilon
+    );
+
+    if (fabs(mf.hedge - 1.0f) <= 1.0e-6f)
+    {
+        return clamp(base, 0.0f, 1.0f);
+    }
+
+    return pow(clamp(base, 0.0f, 1.0f), fmax(mf.hedge, mf.epsilon));
+}
+
+inline float fn_eval_mf_param_deriv(
+    fn_premise_t mf,
+    float x,
+    __global const float *params,
+    uint param_base_offset,
+    uint local_param
+)
+{
+    uint global_param = param_base_offset + mf.parameter_offset + local_param;
+    float span = fmax(mf.domain_maximum - mf.domain_minimum, mf.epsilon);
+    float step = fmax(mf.epsilon, span * 1.0e-3f);
+    float plus = fn_shape_shift(
+        mf.shape,
+        x,
+        params,
+        param_base_offset + mf.parameter_offset,
+        mf.parameter_count,
+        mf.epsilon,
+        global_param,
+        step
+    );
+    float minus = fn_shape_shift(
+        mf.shape,
+        x,
+        params,
+        param_base_offset + mf.parameter_offset,
+        mf.parameter_count,
+        mf.epsilon,
+        global_param,
+        -step
+    );
+    float derivative = (plus - minus) / (2.0f * step);
+
+    if (fabs(mf.hedge - 1.0f) > 1.0e-6f)
+    {
+        float base = fn_shape(
+            mf.shape,
+            x,
+            params,
+            param_base_offset + mf.parameter_offset,
+            mf.parameter_count,
+            mf.epsilon
+        );
+        derivative *= mf.hedge * pow(fmax(base, mf.epsilon), mf.hedge - 1.0f);
+    }
+
+    return derivative;
+}
+
+inline void fn_project_mf_at(
+    fn_premise_t mf,
+    __global float *params,
+    size_t base_offset
+)
+{
+    uint count = mf.parameter_count;
+    float dmin = mf.domain_minimum;
+    float dmax = mf.domain_maximum;
+    float span = fmax(dmax - dmin, mf.epsilon * 4.0f);
+    float sep = fmax(mf.epsilon * 2.0f, span * 1.0e-3f);
+    uint p;
+
+    for (p = 0u; p < count; ++p)
+    {
+        float val = params[base_offset + p];
+        if (!isfinite(val))
+        {
+            val = 0.5f * (dmin + dmax);
+        }
+        if (p < 32u && (mf.trainable_mask & (1u << p)) != 0u)
+        {
+            val = clamp(val, dmin, dmax);
+        }
+        params[base_offset + p] = val;
+    }
+
+    if (mf.shape == FN_SHAPE_RAMP && count == 3u)
+    {
+        float a = clamp(params[base_offset + 0u], dmin, dmax - sep);
+        float b = clamp(params[base_offset + 1u], a + sep, dmax);
+        params[base_offset + 0u] = a;
+        params[base_offset + 1u] = b;
+        params[base_offset + 2u] = params[base_offset + 2u] != 0.0f ? 1.0f : 0.0f;
+    }
+    else if (mf.shape == FN_SHAPE_TRIANGLE && count == 3u)
+    {
+        float a = clamp(params[base_offset + 0u], dmin, dmax - 2.0f * sep);
+        float b = clamp(params[base_offset + 1u], a + sep, dmax - sep);
+        float c = clamp(params[base_offset + 2u], b + sep, dmax);
+        params[base_offset + 0u] = a;
+        params[base_offset + 1u] = b;
+        params[base_offset + 2u] = c;
+    }
+    else if ((mf.shape == FN_SHAPE_TRAPEZOID || mf.shape == FN_SHAPE_PIMF) && count == 4u)
+    {
+        float a = clamp(params[base_offset + 0u], dmin, dmax - 2.0f * sep);
+        float b = clamp(params[base_offset + 1u], a + sep, dmax - sep);
+        float c = clamp(params[base_offset + 2u], b, dmax - sep);
+        float d = clamp(params[base_offset + 3u], c + sep, dmax);
+        params[base_offset + 0u] = a;
+        params[base_offset + 1u] = b;
+        params[base_offset + 2u] = c;
+        params[base_offset + 3u] = d;
+    }
+    else if ((mf.shape == FN_SHAPE_SMF || mf.shape == FN_SHAPE_ZMF) && count == 2u)
+    {
+        float a = clamp(params[base_offset + 0u], dmin, dmax - sep);
+        float b = clamp(params[base_offset + 1u], a + sep, dmax);
+        params[base_offset + 0u] = a;
+        params[base_offset + 1u] = b;
+    }
+    else if (mf.shape == FN_SHAPE_GAUSSIAN && count == 2u)
+    {
+        float min_sigma = fmax(mf.epsilon, span * 0.02f);
+        params[base_offset + 0u] = clamp(params[base_offset + 0u], dmin, dmax);
+        params[base_offset + 1u] = clamp(fabs(params[base_offset + 1u]), min_sigma, span);
+    }
+    else if (mf.shape == FN_SHAPE_BELL && count == 3u)
+    {
+        float min_w = fmax(mf.epsilon, span * 0.02f);
+        float sign = params[base_offset + 0u] < 0.0f ? -1.0f : 1.0f;
+        params[base_offset + 0u] = sign * fmax(fabs(params[base_offset + 0u]), min_w);
+    }
+    else if (mf.shape == FN_SHAPE_GAUSSIAN2 && count == 4u)
+    {
+        float min_sigma = fmax(mf.epsilon, span * 0.02f);
+        float m1 = clamp(params[base_offset + 0u], dmin, dmax);
+        float s1 = clamp(fabs(params[base_offset + 1u]), min_sigma, span);
+        float m2 = clamp(params[base_offset + 2u], m1, dmax);
+        float s2 = clamp(fabs(params[base_offset + 3u]), min_sigma, span);
+        params[base_offset + 0u] = m1;
+        params[base_offset + 1u] = s1;
+        params[base_offset + 2u] = m2;
+        params[base_offset + 3u] = s2;
+    }
+}
+
+__kernel void fn_tuner_prepare_inputs(
+    __global const float *restrict dataset_inputs,
+    __global const float *restrict input_min,
+    __global const float *restrict input_max,
+    __global float *restrict raw_inputs,
+    __global float *restrict ann_activations,
+    uint batch_start,
+    uint sample_count,
+    uint input_count,
+    uint neuron_count
+)
+{
+    size_t idx = get_global_id(0);
+    size_t total = (size_t)sample_count * input_count;
+    size_t sample;
+    size_t dim;
+    float value;
+    float span;
+    float normalized;
+
+    if (idx >= total)
+    {
+        return;
+    }
+
+    sample = idx / input_count;
+    dim = idx - sample * input_count;
+
+    value = dataset_inputs[((size_t)batch_start + sample) * input_count + dim];
+    raw_inputs[idx] = value;
+
+    span = input_max[dim] - input_min[dim];
+    normalized = span > 1.0e-12f
+        ? clamp((value - input_min[dim]) / span, 0.0f, 1.0f)
+        : value;
+
+    ann_activations[sample * neuron_count + dim] = normalized;
+}
+
+__kernel void fn_tuner_effective_mfs(
+    __global const fn_premise_t *restrict all_mfs,
+    __global const float *restrict base_params,
+    __global const float *restrict ann_activations,
+    __global float *restrict eff_params,
+    uint sample_count,
+    uint total_mf_count,
+    uint total_param_count,
+    uint neuron_count,
+    uint ann_output_offset,
+    float tuner_scale,
+    uint ann_enabled
+)
+{
+    size_t sample = get_global_id(0);
+    size_t mf_idx = get_global_id(1);
+    fn_premise_t mf;
+    size_t sample_param_base;
+    size_t ann_base;
+    float span;
+    uint p;
+
+    if (sample >= (size_t)sample_count || mf_idx >= (size_t)total_mf_count)
+    {
+        return;
+    }
+
+    mf = all_mfs[mf_idx];
+    sample_param_base = sample * total_param_count;
+    ann_base = sample * neuron_count + ann_output_offset;
+    span = fmax(mf.domain_maximum - mf.domain_minimum, mf.epsilon);
+
+    for (p = 0u; p < mf.parameter_count; ++p)
+    {
+        uint param_idx = mf.parameter_offset + p;
+        float base_val = base_params[param_idx];
+        float eff_val = base_val;
+
+        if (ann_enabled != 0u &&
+            tuner_scale > 0.0f &&
+            p < 32u &&
+            (mf.trainable_mask & (1u << p)) != 0u)
+        {
+            float ann_out = ann_activations[ann_base + param_idx];
+            eff_val = fma(tuner_scale * span, ann_out, base_val);
+        }
+
+        eff_params[sample_param_base + param_idx] = eff_val;
+    }
+
+    fn_project_mf_at(mf, eff_params, sample_param_base + mf.parameter_offset);
+}
+
+__kernel void fn_tuner_rules_forward(
+    __global const float *restrict raw_inputs,
+    __global const fn_premise_t *restrict input_mfs,
+    __global const float *restrict eff_params,
+    __global const fn_expression_t *restrict expressions,
+    __global const uint *restrict rule_roots,
+    __global float *restrict memberships,
+    __global float *restrict expression_values,
+    __global float *restrict raw_rules,
+    uint sample_count,
+    uint input_count,
+    uint premise_count,
+    uint expression_count,
+    uint rule_count,
+    uint total_param_count,
+    uint logic_method
+)
+{
+    size_t sample = get_global_id(0);
+    size_t raw_base;
+    size_t param_base;
+    size_t mem_base;
+    size_t expr_base;
+    size_t rule_base;
+    uint i;
+
+    if (sample >= (size_t)sample_count)
+    {
+        return;
+    }
+
+    raw_base = sample * input_count;
+    param_base = sample * total_param_count;
+    mem_base = sample * premise_count;
+    expr_base = sample * expression_count;
+    rule_base = sample * rule_count;
+
+    for (i = 0u; i < premise_count; ++i)
+    {
+        fn_premise_t mf = input_mfs[i];
+        float x = raw_inputs[raw_base + mf.input_index];
+        memberships[mem_base + i] = fn_eval_mf_hedged(mf, x, eff_params, (uint)param_base);
+    }
+
+    for (i = 0u; i < expression_count; ++i)
+    {
+        fn_expression_t expr = expressions[i];
+        float value;
+
+        if (expr.kind == FN_EXPR_MEMBERSHIP)
+        {
+            value = memberships[mem_base + expr.value];
+        }
+        else if (expr.kind == FN_EXPR_NOT)
+        {
+            value = 1.0f - expression_values[expr_base + expr.left];
+        }
+        else if (expr.kind == FN_EXPR_AND)
+        {
+            value = fn_logic_and(
+                expression_values[expr_base + expr.left],
+                expression_values[expr_base + expr.right],
+                logic_method
+            );
+        }
+        else
+        {
+            value = fn_logic_or(
+                expression_values[expr_base + expr.left],
+                expression_values[expr_base + expr.right],
+                logic_method
+            );
+        }
+
+        expression_values[expr_base + i] = value;
+    }
+
+    for (i = 0u; i < rule_count; ++i)
+    {
+        raw_rules[rule_base + i] = clamp(expression_values[expr_base + rule_roots[i]], 0.0f, 1.0f);
+    }
+}
+
+__kernel void fn_tuner_defuzz_forward_backward(
+    __global const fn_output_channel_t *restrict channels,
+    __global const fn_premise_t *restrict output_mfs,
+    __global const uint *restrict rule_consequents,
+    __global const float *restrict raw_rules,
+    __global const float *restrict eff_params,
+    __global const float *restrict dataset_targets,
+    __global const float *restrict ann_activations,
+    __global float *restrict predictions,
+    __global float *restrict losses,
+    __global float *restrict raw_rule_gradients,
+    __global float *restrict sample_mf_gradients,
+    __global float *restrict ann_deltas,
+    uint batch_start,
+    uint sample_count,
+    uint output_count,
+    uint rule_count,
+    uint total_param_count,
+    uint neuron_count,
+    uint ann_output_offset,
+    float tuner_scale,
+    uint ann_enabled,
+    uint compute_gradients,
+    uint loss_method,
+    float huber_delta
+)
+{
+    size_t sample = get_global_id(0);
+    size_t out_idx = get_global_id(1);
+    fn_output_channel_t ch;
+    float alpha[FN_TUNER_MAX_CHANNEL_MFS];
+    float alpha_grad[FN_TUNER_MAX_CHANNEL_MFS];
+    float out_param_grads[FN_TUNER_MAX_CHANNEL_PARAMS];
+    size_t param_base;
+    size_t rule_base;
+    uint c;
+    uint k;
+    uint step_idx;
+    uint ch_first_param_offset;
+    float weighted_sum = 0.0f;
+    float height_sum = 0.0f;
+    float prediction = 0.0f;
+    float mu_at_boa = 0.0f;
+
+    if (sample >= (size_t)sample_count || out_idx >= (size_t)output_count)
+    {
+        return;
+    }
+
+    ch = channels[out_idx];
+    if (ch.mf_count == 0u || ch.mf_count > FN_TUNER_MAX_CHANNEL_MFS)
+    {
+        predictions[sample * output_count + out_idx] = 0.0f;
+        return;
+    }
+
+    param_base = sample * total_param_count;
+    rule_base = sample * rule_count;
+    ch_first_param_offset = output_mfs[ch.mf_offset].parameter_offset;
+
+    for (c = 0u; c < ch.mf_count; ++c)
+    {
+        alpha[c] = 0.0f;
+        alpha_grad[c] = 0.0f;
+    }
+
+    for (k = 0u; k < rule_count; ++k)
+    {
+        uint conseq = rule_consequents[k];
+        if (conseq >= ch.mf_offset && conseq < ch.mf_offset + ch.mf_count)
+        {
+            uint local_c = conseq - ch.mf_offset;
+            float r = raw_rules[rule_base + k];
+            if (r > alpha[local_c])
+            {
+                alpha[local_c] = r;
+            }
+        }
+    }
+
+    for (step_idx = 0u; step_idx < ch.sample_count; ++step_idx)
+    {
+        float y = ch.minimum + ch.step * (float)step_idx;
+        float agg = 0.0f;
+
+        for (c = 0u; c < ch.mf_count; ++c)
+        {
+            if (alpha[c] > agg)
+            {
+                float mu = fn_eval_mf_hedged(
+                    output_mfs[ch.mf_offset + c],
+                    y,
+                    eff_params,
+                    (uint)param_base
+                );
+                float implied = fmin(alpha[c], mu);
+                if (implied > agg)
+                {
+                    agg = implied;
+                }
+            }
+        }
+
+        weighted_sum = fma(y, agg, weighted_sum);
+        height_sum += agg;
+    }
+
+    if (height_sum > 1.0e-12f)
+    {
+        if (ch.defuzz_method == FN_DEFUZZ_BOA)
+        {
+            float half_area = 0.5f * height_sum;
+            float acc = 0.0f;
+            prediction = ch.maximum;
+
+            for (step_idx = 0u; step_idx < ch.sample_count; ++step_idx)
+            {
+                float y = ch.minimum + ch.step * (float)step_idx;
+                float agg = 0.0f;
+
+                for (c = 0u; c < ch.mf_count; ++c)
+                {
+                    if (alpha[c] > agg)
+                    {
+                        float mu = fn_eval_mf_hedged(
+                            output_mfs[ch.mf_offset + c],
+                            y,
+                            eff_params,
+                            (uint)param_base
+                        );
+                        float implied = fmin(alpha[c], mu);
+                        if (implied > agg)
+                        {
+                            agg = implied;
+                        }
+                    }
+                }
+
+                acc += agg;
+                if (acc >= half_area)
+                {
+                    prediction = y;
+                    mu_at_boa = agg;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            prediction = weighted_sum / height_sum;
+        }
+    }
+
+    predictions[sample * output_count + out_idx] = prediction;
+
+    if (compute_gradients == 0u)
+    {
+        return;
+    }
+
+    {
+        float target = dataset_targets[((size_t)batch_start + sample) * output_count + out_idx];
+        float ch_span = fmax(ch.maximum - ch.minimum, 1.0e-6f);
+        float error = prediction - target;
+        float norm_error = error / ch_span;
+        float loss_grad;
+        uint p_idx;
+
+        if (loss_method == FN_LOSS_HUBER)
+        {
+            float mag = fabs(error);
+            if (mag <= huber_delta)
+            {
+                losses[sample * output_count + out_idx] = 0.5f * error * error / huber_delta;
+                loss_grad = (error / huber_delta) / (ch_span * ch_span);
+            }
+            else
+            {
+                losses[sample * output_count + out_idx] = mag - 0.5f * huber_delta;
+                loss_grad = copysign(1.0f, error) / ch_span;
+            }
+        }
+        else
+        {
+            losses[sample * output_count + out_idx] = error * error;
+            /* Scale gradient by 1/(span^2) so multi-scale outputs train uniformly */
+            loss_grad = (2.0f * norm_error) / ch_span;
+        }
+
+        for (p_idx = 0u; p_idx < FN_TUNER_MAX_CHANNEL_PARAMS; ++p_idx)
+        {
+            out_param_grads[p_idx] = 0.0f;
+        }
+
+        if (height_sum > 1.0e-12f)
+        {
+            for (step_idx = 0u; step_idx < ch.sample_count; ++step_idx)
+            {
+                float y = ch.minimum + ch.step * (float)step_idx;
+                float best_implied = -1.0f;
+                float best_mu = 0.0f;
+                uint winner = 0u;
+
+                for (c = 0u; c < ch.mf_count; ++c)
+                {
+                    float mu = fn_eval_mf_hedged(
+                        output_mfs[ch.mf_offset + c],
+                        y,
+                        eff_params,
+                        (uint)param_base
+                    );
+                    float implied = fmin(alpha[c], mu);
+                    if (implied > best_implied)
+                    {
+                        best_implied = implied;
+                        best_mu = mu;
+                        winner = c;
+                    }
+                }
+
+                if (best_implied > 0.0f)
+                {
+                    float sens;
+                    float g_agg;
+                    float alpha_share;
+                    float mu_share;
+
+                    if (ch.defuzz_method == FN_DEFUZZ_BOA)
+                    {
+                        float sgn = y < prediction ? -0.5f : (y > prediction ? 0.5f : 0.0f);
+                        sens = (ch.step * sgn) / fmax(mu_at_boa, 0.05f);
+                    }
+                    else
+                    {
+                        sens = (y - prediction) / height_sum;
+                    }
+
+                    g_agg = loss_grad * sens;
+
+                    if (alpha[winner] < best_mu - 1.0e-6f)
+                    {
+                        alpha_share = 1.0f;
+                        mu_share = 0.0f;
+                    }
+                    else if (best_mu < alpha[winner] - 1.0e-6f)
+                    {
+                        alpha_share = 0.0f;
+                        mu_share = 1.0f;
+                    }
+                    else
+                    {
+                        alpha_share = 0.5f;
+                        mu_share = 0.5f;
+                    }
+
+                    if (alpha_share > 0.0f)
+                    {
+                        alpha_grad[winner] = fma(g_agg, alpha_share, alpha_grad[winner]);
+                    }
+
+                    if (mu_share > 0.0f)
+                    {
+                        fn_premise_t wmf = output_mfs[ch.mf_offset + winner];
+                        uint p;
+                        for (p = 0u; p < wmf.parameter_count; ++p)
+                        {
+                            if (p < 32u && (wmf.trainable_mask & (1u << p)) != 0u)
+                            {
+                                uint local_p = (wmf.parameter_offset - ch_first_param_offset) + p;
+                                if (local_p < FN_TUNER_MAX_CHANNEL_PARAMS)
+                                {
+                                    float dmu = fn_eval_mf_param_deriv(
+                                        wmf,
+                                        y,
+                                        eff_params,
+                                        (uint)param_base,
+                                        p
+                                    );
+                                    out_param_grads[local_p] = fma(
+                                        g_agg * mu_share,
+                                        dmu,
+                                        out_param_grads[local_p]
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Write output MF gradients for both base MF optimizer and ANN backprop */
+        {
+            size_t ann_base = sample * neuron_count + ann_output_offset;
+            for (c = 0u; c < ch.mf_count; ++c)
+            {
+                fn_premise_t mf = output_mfs[ch.mf_offset + c];
+                float mf_span = fmax(mf.domain_maximum - mf.domain_minimum, mf.epsilon);
+                uint p;
+                for (p = 0u; p < mf.parameter_count; ++p)
+                {
+                    uint global_p = mf.parameter_offset + p;
+                    uint local_p = global_p - ch_first_param_offset;
+                    float g = (local_p < FN_TUNER_MAX_CHANNEL_PARAMS) ? out_param_grads[local_p] : 0.0f;
+                    float ann_delta = 0.0f;
+
+                    sample_mf_gradients[param_base + global_p] = g;
+
+                    if (ann_enabled != 0u &&
+                        tuner_scale > 0.0f &&
+                        p < 32u &&
+                        (mf.trainable_mask & (1u << p)) != 0u)
+                    {
+                        float ann_out = ann_activations[ann_base + global_p];
+                        ann_delta = g * (tuner_scale * mf_span) *
+                                    fn_derivative_from_output(ann_out, FN_ACTIVATION_TANH);
+                    }
+                    ann_deltas[ann_base + global_p] = ann_delta;
+                }
+            }
+        }
+
+        /* Route consequent activation gradients back to winning rules (lock-free per channel) */
+        for (c = 0u; c < ch.mf_count; ++c)
+        {
+            uint target_conseq = ch.mf_offset + c;
+            uint tie_count = 0u;
+            float max_a = alpha[c];
+
+            if (max_a > 0.0f)
+            {
+                for (k = 0u; k < rule_count; ++k)
+                {
+                    if (rule_consequents[k] == target_conseq &&
+                        raw_rules[rule_base + k] >= max_a - 1.0e-6f)
+                    {
+                        ++tie_count;
+                    }
+                }
+            }
+
+            {
+                float split_grad = tie_count > 0u ? alpha_grad[c] / (float)tie_count : 0.0f;
+                for (k = 0u; k < rule_count; ++k)
+                {
+                    if (rule_consequents[k] == target_conseq)
+                    {
+                        raw_rule_gradients[rule_base + k] =
+                            (tie_count > 0u && raw_rules[rule_base + k] >= max_a - 1.0e-6f)
+                                ? split_grad
+                                : 0.0f;
+                    }
+                }
+            }
+        }
+    }
+}
+
+__kernel void fn_tuner_rules_backward(
+    __global const float *restrict raw_inputs,
+    __global const fn_premise_t *restrict input_mfs,
+    __global const float *restrict eff_params,
+    __global const fn_expression_t *restrict expressions,
+    __global const uint *restrict rule_roots,
+    __global const float *restrict expression_values,
+    __global const float *restrict raw_rule_gradients,
+    __global const float *restrict ann_activations,
+    __global float *restrict expression_gradients,
+    __global float *restrict membership_gradients,
+    __global float *restrict sample_mf_gradients,
+    __global float *restrict ann_deltas,
+    uint sample_count,
+    uint input_count,
+    uint premise_count,
+    uint expression_count,
+    uint rule_count,
+    uint total_param_count,
+    uint neuron_count,
+    uint ann_output_offset,
+    uint logic_method,
+    float tuner_scale,
+    uint ann_enabled
+)
+{
+    size_t sample = get_global_id(0);
+    size_t raw_base;
+    size_t param_base;
+    size_t mem_base;
+    size_t expr_base;
+    size_t rule_base;
+    size_t ann_base;
+    uint i;
+    uint rev;
+
+    if (sample >= (size_t)sample_count)
+    {
+        return;
+    }
+
+    raw_base = sample * input_count;
+    param_base = sample * total_param_count;
+    mem_base = sample * premise_count;
+    expr_base = sample * expression_count;
+    rule_base = sample * rule_count;
+    ann_base = sample * neuron_count + ann_output_offset;
+
+    for (i = 0u; i < expression_count; ++i)
+    {
+        expression_gradients[expr_base + i] = 0.0f;
+    }
+
+    for (i = 0u; i < premise_count; ++i)
+    {
+        membership_gradients[mem_base + i] = 0.0f;
+    }
+
+    for (i = 0u; i < rule_count; ++i)
+    {
+        expression_gradients[expr_base + rule_roots[i]] += raw_rule_gradients[rule_base + i];
+    }
+
+    for (rev = expression_count; rev-- > 0u;)
+    {
+        fn_expression_t expr = expressions[rev];
+        float incoming = expression_gradients[expr_base + rev];
+
+        if (incoming == 0.0f)
+        {
+            continue;
+        }
+
+        if (expr.kind == FN_EXPR_MEMBERSHIP)
+        {
+            membership_gradients[mem_base + expr.value] += incoming;
+        }
+        else if (expr.kind == FN_EXPR_NOT)
+        {
+            expression_gradients[expr_base + expr.left] -= incoming;
+        }
+        else
+        {
+            float left = expression_values[expr_base + expr.left];
+            float right = expression_values[expr_base + expr.right];
+
+            if (logic_method == FN_LOGIC_ALGEBRAIC)
+            {
+                if (expr.kind == FN_EXPR_AND)
+                {
+                    expression_gradients[expr_base + expr.left] += incoming * right;
+                    expression_gradients[expr_base + expr.right] += incoming * left;
+                }
+                else
+                {
+                    expression_gradients[expr_base + expr.left] += incoming * (1.0f - right);
+                    expression_gradients[expr_base + expr.right] += incoming * (1.0f - left);
+                }
+            }
+            else if (logic_method == FN_LOGIC_BOUNDED)
+            {
+                int active = expr.kind == FN_EXPR_AND
+                    ? (left + right > 1.0f)
+                    : (left + right < 1.0f);
+                if (active)
+                {
+                    expression_gradients[expr_base + expr.left] += incoming;
+                    expression_gradients[expr_base + expr.right] += incoming;
+                }
+            }
+            else
+            {
+                int left_wins = expr.kind == FN_EXPR_AND ? (left < right) : (left > right);
+                int right_wins = expr.kind == FN_EXPR_AND ? (right < left) : (right > left);
+
+                if (!left_wins && !right_wins)
+                {
+                    expression_gradients[expr_base + expr.left] += 0.5f * incoming;
+                    expression_gradients[expr_base + expr.right] += 0.5f * incoming;
+                }
+                else if (left_wins)
+                {
+                    expression_gradients[expr_base + expr.left] += incoming;
+                }
+                else
+                {
+                    expression_gradients[expr_base + expr.right] += incoming;
+                }
+            }
+        }
+    }
+
+    /* Compute per-sample input MF parameter gradients and ANN output deltas */
+    for (i = 0u; i < premise_count; ++i)
+    {
+        fn_premise_t mf = input_mfs[i];
+        float mem_g = membership_gradients[mem_base + i];
+        float x = raw_inputs[raw_base + mf.input_index];
+        float mf_span = fmax(mf.domain_maximum - mf.domain_minimum, mf.epsilon);
+        uint p;
+
+        for (p = 0u; p < mf.parameter_count; ++p)
+        {
+            uint global_p = mf.parameter_offset + p;
+            float g = 0.0f;
+            float ann_delta = 0.0f;
+
+            if (mem_g != 0.0f && p < 32u && (mf.trainable_mask & (1u << p)) != 0u)
+            {
+                float dmu = fn_eval_mf_param_deriv(
+                    mf,
+                    x,
+                    eff_params,
+                    (uint)param_base,
+                    p
+                );
+                g = mem_g * dmu;
+            }
+
+            sample_mf_gradients[param_base + global_p] = g;
+
+            if (ann_enabled != 0u &&
+                tuner_scale > 0.0f &&
+                p < 32u &&
+                (mf.trainable_mask & (1u << p)) != 0u)
+            {
+                float ann_out = ann_activations[ann_base + global_p];
+                ann_delta = g * (tuner_scale * mf_span) *
+                            fn_derivative_from_output(ann_out, FN_ACTIVATION_TANH);
+            }
+
+            ann_deltas[ann_base + global_p] = ann_delta;
+        }
+    }
+}
+
+__kernel void fn_tuner_base_mf_update(
+    __global const float *restrict sample_mf_gradients,
+    __global float *restrict base_params,
+    __global float *restrict first_moment,
+    __global float *restrict second_moment,
+    uint sample_count,
+    uint total_param_count,
+    uint optimizer_kind,
+    float learning_rate,
+    float alpha,
+    float beta1,
+    float beta2,
+    float epsilon,
+    float grad_clip,
+    __local float *partial
+)
+{
+    size_t lane = get_local_id(0);
+    size_t local_count = get_local_size(0);
+    size_t param = get_group_id(0);
+    float sum = 0.0f;
+
+    if (param >= (size_t)total_param_count)
+    {
+        return;
+    }
+
+    for (size_t s = lane; s < (size_t)sample_count; s += local_count)
+    {
+        sum += sample_mf_gradients[s * total_param_count + param];
+    }
+
+    partial[lane] = sum;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    fn_reduce_local_sum(partial, lane, local_count);
+
+    if (lane == 0u)
+    {
+        float g = sample_count != 0u ? partial[0] / (float)sample_count : 0.0f;
+        if (!isfinite(g))
+        {
+            g = 0.0f;
+        }
+        if (grad_clip > 0.0f)
+        {
+            g = clamp(g, -grad_clip, grad_clip);
+        }
+
+        if (optimizer_kind == 1u)
+        {
+            float m1 = fma(1.0f - beta1, g, beta1 * first_moment[param]);
+            float m2 = fma(1.0f - beta2, g * g, beta2 * second_moment[param]);
+            first_moment[param] = m1;
+            second_moment[param] = m2;
+            base_params[param] -= alpha * m1 / (sqrt(m2) + epsilon);
+        }
+        else
+        {
+            base_params[param] -= learning_rate * g;
+        }
+    }
+}
+
+__kernel void fn_tuner_project_base_mfs(
+    __global const fn_premise_t *restrict all_mfs,
+    __global float *restrict base_params,
+    uint total_mf_count
+)
+{
+    size_t mf_idx = get_global_id(0);
+    fn_premise_t mf;
+
+    if (mf_idx >= (size_t)total_mf_count)
+    {
+        return;
+    }
+
+    mf = all_mfs[mf_idx];
+    fn_project_mf_at(mf, base_params, (size_t)mf.parameter_offset);
+}

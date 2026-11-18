@@ -1418,11 +1418,14 @@ typedef struct FuzzyGpuRule {
     cl_uint output;
 } fuzzy_gpu_rule_t;
 
+#ifndef FUZZY_ERROR_FN_DEFINED
+#define FUZZY_ERROR_FN_DEFINED
 typedef enum FuzzyNeuronErrorFunction {
     MSE,
     HUBER,
     MAE
 } fuzzy_error_fn_t;
+#endif
 
 _Static_assert(
     sizeof(fuzzy_gpu_variable_t) == 28u,
@@ -8025,9 +8028,26 @@ extern long FUZZY_CDECL ftell(FILE *);
 extern void FUZZY_CDECL rewind(FILE *);
 extern float FUZZY_CDECL tanhf(float);
 extern float FUZZY_CDECL sqrtf(float);
+extern float FUZZY_CDECL floorf(float);
+extern double FUZZY_CDECL fabs(double);
+extern double FUZZY_CDECL sqrt(double);
+extern size_t FUZZY_CDECL strlen(const char *);
+extern int FUZZY_CDECL fflush(FILE *);
+#ifndef FUZZY_ERROR_FN_DEFINED
+#define FUZZY_ERROR_FN_DEFINED
+typedef enum FuzzyNeuronErrorFunction {
+    MSE,
+    HUBER,
+    MAE
+} fuzzy_error_fn_t;
+#endif
 #ifndef SEEK_END
 #define SEEK_END 2
 #endif
+
+typedef void (*fuzzy_parallel_fn)(size_t begin, size_t end, void *context);
+size_t fuzzy_cpu_thread_count(void);
+void fuzzy_parallel_for(size_t count, size_t min_chunk, fuzzy_parallel_fn worker, void *context);
 
 /* fuzzy_neuron.h - STB-style fuzzy-rule front end + fully connected ANN.
  *
@@ -8274,6 +8294,9 @@ typedef struct fuzzy_neuron_opencl
     size_t batch_capacity;
     size_t dataset_capacity_rows;
     size_t loss_partial_capacity;
+    size_t device_max_work_group_size;
+    cl_ulong device_local_memory;
+    cl_uint device_compute_units;
     bool mamdani_enabled;
     cl_uint mamdani_sample_count;
     cl_float mamdani_minimum;
@@ -10550,6 +10573,37 @@ static bool fuzzy_neuron_opencl_create_kernel(
     return true;
 }
 
+static bool fuzzy_neuron_opencl_query_kernel_plan(
+    cl_device_id device,
+    cl_kernel kernel,
+    fuzzy_neuron_opencl_kernel_plan_t *plan
+)
+{
+    cl_int error = CL_SUCCESS;
+    if (device == NULL || kernel == NULL || plan == NULL) return false;
+    memset(plan, 0, sizeof(*plan));
+    error |= clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(plan->maximum_work_group_size), &plan->maximum_work_group_size, NULL);
+    error |= clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(plan->preferred_multiple), &plan->preferred_multiple, NULL);
+    error |= clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(plan->static_local_memory), &plan->static_local_memory, NULL);
+    if (error != CL_SUCCESS || plan->maximum_work_group_size == 0u) return false;
+    return true;
+}
+
+static const fuzzy_neuron_opencl_kernel_plan_t *fuzzy_neuron_opencl_lookup_plan(
+    const fuzzy_neuron_opencl_t *cl,
+    cl_kernel kernel
+)
+{
+    if (cl == NULL || kernel == NULL) return NULL;
+    if (kernel == cl->premise_gradient_kernel && cl->premise_gradient_plan.maximum_work_group_size != 0u) return &cl->premise_gradient_plan;
+    if (kernel == cl->loss_reduce_stage_kernel && cl->loss_reduce_stage_plan.maximum_work_group_size != 0u) return &cl->loss_reduce_stage_plan;
+    if (kernel == cl->loss_reduce_final_kernel && cl->loss_reduce_final_plan.maximum_work_group_size != 0u) return &cl->loss_reduce_final_plan;
+    if (kernel == cl->forward_gemm_tiled_kernel && cl->forward_gemm_plan.maximum_work_group_size != 0u) return &cl->forward_gemm_plan;
+    if (kernel == cl->hidden_delta_gemm_tiled_kernel && cl->hidden_delta_gemm_plan.maximum_work_group_size != 0u) return &cl->hidden_delta_gemm_plan;
+    if (kernel == cl->layer_backward_update_kernel && cl->layer_backward_update_plan.maximum_work_group_size != 0u) return &cl->layer_backward_update_plan;
+    return NULL;
+}
+
 static bool fuzzy_neuron_opencl_reduction_local_size(
     fuzzy_neuron_opencl_t *cl,
     cl_kernel kernel,
@@ -10563,6 +10617,7 @@ static bool fuzzy_neuron_opencl_reduction_local_size(
     size_t preferred_multiple;
     cl_ulong device_local_memory;
     cl_ulong kernel_static_local_memory;
+    const fuzzy_neuron_opencl_kernel_plan_t *cached_plan;
     size_t limit;
     size_t selected;
     cl_int error;
@@ -10576,52 +10631,64 @@ static bool fuzzy_neuron_opencl_reduction_local_size(
         return false;
     }
 
-    error = clGetDeviceInfo(
-        cl->device,
-        CL_DEVICE_MAX_WORK_GROUP_SIZE,
-        sizeof(device_maximum),
-        &device_maximum,
-        NULL
-    );
-
-    error |= clGetDeviceInfo(
-        cl->device,
-        CL_DEVICE_LOCAL_MEM_SIZE,
-        sizeof(device_local_memory),
-        &device_local_memory,
-        NULL
-    );
-
-    error |= clGetKernelWorkGroupInfo(
-        kernel,
-        cl->device,
-        CL_KERNEL_WORK_GROUP_SIZE,
-        sizeof(kernel_maximum),
-        &kernel_maximum,
-        NULL
-    );
-
-    error |= clGetKernelWorkGroupInfo(
-        kernel,
-        cl->device,
-        CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-        sizeof(preferred_multiple),
-        &preferred_multiple,
-        NULL
-    );
-
-    error |= clGetKernelWorkGroupInfo(
-        kernel,
-        cl->device,
-        CL_KERNEL_LOCAL_MEM_SIZE,
-        sizeof(kernel_static_local_memory),
-        &kernel_static_local_memory,
-        NULL
-    );
-
-    if (error != CL_SUCCESS)
+    cached_plan = fuzzy_neuron_opencl_lookup_plan(cl, kernel);
+    if (cached_plan != NULL && cl->device_max_work_group_size != 0u && cl->device_local_memory != 0u)
     {
-        return false;
+        device_maximum = cl->device_max_work_group_size;
+        device_local_memory = cl->device_local_memory;
+        kernel_maximum = cached_plan->maximum_work_group_size;
+        preferred_multiple = cached_plan->preferred_multiple;
+        kernel_static_local_memory = cached_plan->static_local_memory;
+    }
+    else
+    {
+        error = clGetDeviceInfo(
+            cl->device,
+            CL_DEVICE_MAX_WORK_GROUP_SIZE,
+            sizeof(device_maximum),
+            &device_maximum,
+            NULL
+        );
+
+        error |= clGetDeviceInfo(
+            cl->device,
+            CL_DEVICE_LOCAL_MEM_SIZE,
+            sizeof(device_local_memory),
+            &device_local_memory,
+            NULL
+        );
+
+        error |= clGetKernelWorkGroupInfo(
+            kernel,
+            cl->device,
+            CL_KERNEL_WORK_GROUP_SIZE,
+            sizeof(kernel_maximum),
+            &kernel_maximum,
+            NULL
+        );
+
+        error |= clGetKernelWorkGroupInfo(
+            kernel,
+            cl->device,
+            CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+            sizeof(preferred_multiple),
+            &preferred_multiple,
+            NULL
+        );
+
+        error |= clGetKernelWorkGroupInfo(
+            kernel,
+            cl->device,
+            CL_KERNEL_LOCAL_MEM_SIZE,
+            sizeof(kernel_static_local_memory),
+            &kernel_static_local_memory,
+            NULL
+        );
+
+        if (error != CL_SUCCESS)
+        {
+            return false;
+        }
     }
 
     if (kernel_static_local_memory >= device_local_memory)
@@ -10699,6 +10766,7 @@ static bool fuzzy_neuron_opencl_tiled_local_size(
     size_t kernel_maximum;
     cl_ulong device_local_memory;
     cl_ulong kernel_local_memory;
+    const fuzzy_neuron_opencl_kernel_plan_t *cached_plan;
     size_t first;
     size_t second;
     cl_int error;
@@ -10708,13 +10776,28 @@ static bool fuzzy_neuron_opencl_tiled_local_size(
         return false;
     }
 
-    error = clGetDeviceInfo(cl->device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(device_maximum), &device_maximum, NULL);
-    error |= clGetDeviceInfo(cl->device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(device_local_memory), &device_local_memory, NULL);
-    error |= clGetKernelWorkGroupInfo(kernel, cl->device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(kernel_maximum), &kernel_maximum, NULL);
-    error |= clGetKernelWorkGroupInfo(kernel, cl->device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(kernel_local_memory), &kernel_local_memory, NULL);
-    if (error != CL_SUCCESS || kernel_local_memory >= device_local_memory)
+    cached_plan = fuzzy_neuron_opencl_lookup_plan(cl, kernel);
+    if (cached_plan != NULL && cl->device_max_work_group_size != 0u && cl->device_local_memory != 0u)
     {
-        return false;
+        device_maximum = cl->device_max_work_group_size;
+        device_local_memory = cl->device_local_memory;
+        kernel_maximum = cached_plan->maximum_work_group_size;
+        kernel_local_memory = cached_plan->static_local_memory;
+        if (kernel_local_memory >= device_local_memory)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        error = clGetDeviceInfo(cl->device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(device_maximum), &device_maximum, NULL);
+        error |= clGetDeviceInfo(cl->device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(device_local_memory), &device_local_memory, NULL);
+        error |= clGetKernelWorkGroupInfo(kernel, cl->device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(kernel_maximum), &kernel_maximum, NULL);
+        error |= clGetKernelWorkGroupInfo(kernel, cl->device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(kernel_local_memory), &kernel_local_memory, NULL);
+        if (error != CL_SUCCESS || kernel_local_memory >= device_local_memory)
+        {
+            return false;
+        }
     }
 
     first = 1u;
@@ -10978,7 +11061,11 @@ bool fuzzy_neuron_opencl_init(
         return false;
     }
 
+#ifdef FUZZY_OPENCL_PROFILE
     cl->queue = clCreateCommandQueue(cl->context, cl->device, CL_QUEUE_PROFILING_ENABLE, &error);
+#else
+    cl->queue = clCreateCommandQueue(cl->context, cl->device, 0u, &error);
+#endif
 
     if (error != CL_SUCCESS || cl->queue == NULL)
     {
@@ -11052,6 +11139,22 @@ if (!fuzzy_neuron_opencl_create_kernel(cl->program, "fn_premise_forward", &cl->p
     fuzzy_neuron_opencl_release(cl);
     return false;
 }
+
+    if (clGetDeviceInfo(cl->device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(cl->device_max_work_group_size), &cl->device_max_work_group_size, NULL) != CL_SUCCESS ||
+        clGetDeviceInfo(cl->device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl->device_local_memory), &cl->device_local_memory, NULL) != CL_SUCCESS ||
+        clGetDeviceInfo(cl->device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl->device_compute_units), &cl->device_compute_units, NULL) != CL_SUCCESS ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->premise_gradient_kernel, &cl->premise_gradient_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->loss_reduce_stage_kernel, &cl->loss_reduce_stage_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->loss_reduce_final_kernel, &cl->loss_reduce_final_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->forward_gemm_tiled_kernel, &cl->forward_gemm_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->hidden_delta_gemm_tiled_kernel, &cl->hidden_delta_gemm_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->layer_backward_update_kernel, &cl->layer_backward_update_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->fuzzy_backward_kernel, &cl->fuzzy_backward_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->fuzzy_update_kernel, &cl->fuzzy_update_plan))
+    {
+        fuzzy_neuron_opencl_release(cl);
+        return false;
+    }
 
     {
         fuzzy_neuron_opencl_premise_abi_t *premises;
@@ -11388,11 +11491,30 @@ bool fuzzy_neuron_opencl_train(
     }
 
     {
+        size_t dataset_input_bytes = dataset->rows * network->raw_input_dimensions * sizeof(float);
+        size_t dataset_target_bytes = dataset->rows * dataset->target_dimensions * sizeof(float);
+        if (cl->dataset_capacity_rows < dataset->rows || cl->d_dataset_inputs == NULL || cl->d_dataset_targets == NULL)
+        {
+            if (cl->d_dataset_inputs != NULL) { clReleaseMemObject(cl->d_dataset_inputs); cl->d_dataset_inputs = NULL; }
+            if (cl->d_dataset_targets != NULL) { clReleaseMemObject(cl->d_dataset_targets); cl->d_dataset_targets = NULL; }
+            cl->d_dataset_inputs = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, dataset_input_bytes, NULL, &error);
+            if (error != CL_SUCCESS || cl->d_dataset_inputs == NULL) return false;
+            cl->d_dataset_targets = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, dataset_target_bytes, NULL, &error);
+            if (error != CL_SUCCESS || cl->d_dataset_targets == NULL) return false;
+            cl->dataset_capacity_rows = dataset->rows;
+        }
+        error = CL_SUCCESS;
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_dataset_inputs, CL_FALSE, 0u, dataset_input_bytes, dataset->inputs, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_dataset_targets, CL_FALSE, 0u, dataset_target_bytes, dataset->targets, 0u, NULL, NULL);
+        if (error != CL_SUCCESS) return false;
+    }
+
+    {
         float initial_best_loss = INFINITY;
         cl_uint enabled = 1u;
         error = CL_SUCCESS;
-        error |= clEnqueueWriteBuffer(cl->queue, cl->d_best_loss, CL_TRUE, 0u, sizeof(initial_best_loss), &initial_best_loss, 0u, NULL, NULL);
-        error |= clEnqueueWriteBuffer(cl->queue, cl->d_best_updated, CL_TRUE, 0u, sizeof(enabled), &enabled, 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_best_loss, &initial_best_loss, sizeof(initial_best_loss), 0u, sizeof(initial_best_loss), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_best_updated, &enabled, sizeof(enabled), 0u, sizeof(enabled), 0u, NULL, NULL);
         error |= clEnqueueCopyBuffer(cl->queue, cl->d_weights, cl->d_best_weights, 0u, 0u, network->weight_count * sizeof(float), 0u, NULL, NULL);
         error |= clEnqueueCopyBuffer(cl->queue, cl->d_biases, cl->d_best_biases, 0u, 0u, network->bias_count * sizeof(float), 0u, NULL, NULL);
         error |= clEnqueueCopyBuffer(cl->queue, cl->d_premise_parameters, cl->d_best_premise_parameters, 0u, 0u, network->premise_parameter_count * sizeof(float), 0u, NULL, NULL);
@@ -11402,25 +11524,20 @@ bool fuzzy_neuron_opencl_train(
     for (epoch = 0u; epoch < options->epochs; ++epoch)
     {
         float zero_loss = 0.0f;
-        error = clEnqueueWriteBuffer(cl->queue, cl->d_epoch_loss, CL_FALSE, 0u, sizeof(zero_loss), &zero_loss, 0u, NULL, NULL);
+        error = clEnqueueFillBuffer(cl->queue, cl->d_epoch_loss, &zero_loss, sizeof(zero_loss), 0u, sizeof(zero_loss), 0u, NULL, NULL);
         if (error != CL_SUCCESS) goto train_failure;
 
         for (batch_start = 0u; batch_start < dataset->rows; batch_start += options->batch_size)
         {
             size_t batch_count = dataset->rows - batch_start;
             cl_uint sample_count;
-            cl_uint output_count = (cl_uint)network->output_dimensions;
             cl_uint neuron_count = (cl_uint)network->neuron_count;
-            cl_uint output_offset;
-            cl_uint output_activation;
             cl_uint optimizer_kind = (cl_uint)options->optimizer;
             cl_float learning_rate = options->learning_rate;
             cl_float alpha = learning_rate;
 
             if (batch_count > options->batch_size) batch_count = options->batch_size;
             sample_count = (cl_uint)batch_count;
-            output_offset = (cl_uint)fuzzy_neuron_opencl_layer_destination_offset(network, network->layer_count - 1u);
-            output_activation = (cl_uint)network->layers[network->layer_count - 1u].activation;
 
             if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM)
             {
@@ -11428,8 +11545,8 @@ bool fuzzy_neuron_opencl_train(
                 alpha = learning_rate * sqrtf(1.0f - powf(adam_beta2, (float)cl->optimizer_step)) / (1.0f - powf(adam_beta1, (float)cl->optimizer_step));
             }
 
-            error = clEnqueueWriteBuffer(cl->queue, cl->d_raw_inputs, CL_FALSE, 0u, batch_count * network->raw_input_dimensions * sizeof(float), dataset->inputs + batch_start * dataset->input_dimensions, 0u, NULL, NULL);
-            error |= clEnqueueWriteBuffer(cl->queue, cl->d_targets, CL_FALSE, 0u, batch_count * dataset->target_dimensions * sizeof(float), dataset->targets + batch_start * dataset->target_dimensions, 0u, NULL, NULL);
+            error = clEnqueueCopyBuffer(cl->queue, cl->d_dataset_inputs, cl->d_raw_inputs, batch_start * network->raw_input_dimensions * sizeof(float), 0u, batch_count * network->raw_input_dimensions * sizeof(float), 0u, NULL, NULL);
+            error |= clEnqueueCopyBuffer(cl->queue, cl->d_dataset_targets, cl->d_targets, batch_start * dataset->target_dimensions * sizeof(float), 0u, batch_count * dataset->target_dimensions * sizeof(float), 0u, NULL, NULL);
             if (error != CL_SUCCESS || !fuzzy_neuron_opencl_enqueue_forward(network, sample_count)) goto train_failure;
 
             {
@@ -12348,12 +12465,33 @@ static void fuzzy_neuron_output_cache_free(fuzzy_neuron_output_cache_t *cache)
     memset(cache, 0, sizeof(*cache));
 }
 
+typedef struct fuzzy_neuron_cache_decode_ctx
+{
+    fuzzy_neuron_output_cache_t *cache;
+    const fuzzy_neuron_output_pipeline_t *pipeline;
+} fuzzy_neuron_cache_decode_ctx_t;
+
+static void fuzzy_neuron_cache_decode_worker(size_t begin, size_t end, void *context)
+{
+    fuzzy_neuron_cache_decode_ctx_t *ctx = (fuzzy_neuron_cache_decode_ctx_t *)context;
+    size_t row;
+    for (row = begin; row < end; ++row)
+    {
+        ctx->cache->raw_predictions[row] = fuzzy_neuron_output_decode_raw(
+            ctx->pipeline,
+            ctx->cache->activations + row * ctx->cache->output_count
+        );
+    }
+}
+
 static bool fuzzy_neuron_output_cache_refresh(fuzzy_neuron_output_cache_t *cache, fuzzy_neuron_network_t *model, const fuzzy_neuron_dataset_t *dataset, const fuzzy_neuron_output_pipeline_t *pipeline)
 {
-    size_t row;
+    fuzzy_neuron_cache_decode_ctx_t ctx;
     if (cache->rows != dataset->rows || cache->output_count != pipeline->membership_count) return false;
     if (!fuzzy_neuron_opencl_predict(model, dataset->inputs, dataset->rows, cache->activations)) return false;
-    for (row = 0u; row < cache->rows; ++row) cache->raw_predictions[row] = fuzzy_neuron_output_decode_raw(pipeline, cache->activations + row * cache->output_count);
+    ctx.cache = cache;
+    ctx.pipeline = pipeline;
+    fuzzy_parallel_for(cache->rows, 32u, fuzzy_neuron_cache_decode_worker, &ctx);
     return true;
 }
 
@@ -13226,6 +13364,3678 @@ void arena_neuron_free(fuzzy_neuron_output_cache_t *cache, fuzzy_neuron_checkpoi
 }
 
 #endif /* FUZZY_NEURON_DECOUPLED_IMPLEMENTATION_ONCE */
+#endif /* FUZZY_IMPLEMENTATION */
+#endif /* !FUZZY_8051 */
+
+/* ============================================================================
+ * Adaptive Fuzzy Rules + ANN Membership Function Tuning API (X-Macro DSL,
+ * OpenCL GPU Acceleration, Multi-Core CPU Threading, SQLite Autoload & C Autogen)
+ * ============================================================================ */
+#ifndef FUZZY_8051
+
+#if !defined(FUZZY_ESP32) && !defined(FUZZY_NO_THREADS) && (defined(__unix__) || defined(__APPLE__))
+#include <pthread.h>
+#include <unistd.h>
+#define FUZZY_HAS_PTHREADS 1
+#else
+#define FUZZY_HAS_PTHREADS 0
+#endif
+
+#ifndef FUZZY_TUNER_MAX_INPUTS
+#define FUZZY_TUNER_MAX_INPUTS 32u
+#endif
+
+#ifndef FUZZY_TUNER_MAX_OUTPUTS
+#define FUZZY_TUNER_MAX_OUTPUTS 16u
+#endif
+
+#ifndef FUZZY_TUNER_MAX_OUTPUT_MFS
+#define FUZZY_TUNER_MAX_OUTPUT_MFS 64u
+#endif
+
+#ifndef FUZZY_TUNER_MAX_OUTPUT_MF_PARAMS
+#define FUZZY_TUNER_MAX_OUTPUT_MF_PARAMS 256u
+#endif
+
+#ifndef FUZZY_TUNER_DATABASE_FORMAT_VERSION
+#define FUZZY_TUNER_DATABASE_FORMAT_VERSION 3u
+#endif
+
+typedef struct fuzzy_tuner_input_channel
+{
+    const char *name;
+    float minimum;
+    float maximum;
+} fuzzy_tuner_input_channel_t;
+
+typedef struct fuzzy_tuner_output_channel
+{
+    const char *name;
+    float minimum;
+    float maximum;
+    float step;
+    size_t sample_count;
+    fuzzy_defuzz_method_t defuzz_method;
+    size_t mf_offset;
+    size_t mf_count;
+} fuzzy_tuner_output_channel_t;
+
+struct fuzzy_tuner_model;
+
+typedef struct fuzzy_tuner_clause
+{
+    struct fuzzy_tuner_model *model;
+    size_t expression;
+} fuzzy_tuner_clause_t;
+
+typedef struct fuzzy_tuner_train_options
+{
+    size_t epochs;
+    size_t batch_size;
+    float ann_learning_rate;
+    float mf_learning_rate;
+    float adam_beta1;
+    float adam_beta2;
+    float adam_epsilon;
+    float grad_clip;
+    size_t report_every;
+    fuzzy_neuron_optimizer_t optimizer;
+    fuzzy_error_fn_t loss_fn;
+    float huber_delta;
+    bool reset_optimizer_state;
+    bool tune_base_mfs;
+    bool tune_ann;
+} fuzzy_tuner_train_options_t;
+
+typedef struct fuzzy_tuner_metrics
+{
+    double overall_mse;
+    double overall_rmse;
+    double overall_mae;
+    double channel_mse[FUZZY_TUNER_MAX_OUTPUTS];
+    double channel_rmse[FUZZY_TUNER_MAX_OUTPUTS];
+    double channel_mae[FUZZY_TUNER_MAX_OUTPUTS];
+    size_t output_count;
+} fuzzy_tuner_metrics_t;
+
+typedef struct fuzzy_tuner_inspection
+{
+    float effective_input_params[FUZZY_NEURON_MAX_PREMISE_PARAMETERS];
+    float effective_output_params[FUZZY_TUNER_MAX_OUTPUT_MF_PARAMS];
+    float input_memberships[FUZZY_NEURON_MAX_PREMISES];
+    float rule_firings[FUZZY_NEURON_MAX_RULES];
+    float outputs[FUZZY_TUNER_MAX_OUTPUTS];
+} fuzzy_tuner_inspection_t;
+
+#ifdef FUZZY_NEURON_OPENCL
+typedef struct fuzzy_tuner_opencl_output_channel_abi
+{
+    cl_float minimum;
+    cl_float maximum;
+    cl_float step;
+    cl_uint sample_count;
+    cl_uint defuzz_method;
+    cl_uint mf_offset;
+    cl_uint mf_count;
+    cl_uint reserved0;
+} fuzzy_tuner_opencl_output_channel_abi_t;
+
+typedef struct fuzzy_tuner_opencl
+{
+    cl_platform_id platform;
+    cl_device_id device;
+    cl_context context;
+    cl_command_queue queue;
+    cl_program program;
+
+    /* Reused ANN & reduction kernels */
+    cl_kernel forward_gemm_tiled_kernel;
+    cl_kernel hidden_delta_gemm_tiled_kernel;
+    cl_kernel layer_backward_update_kernel;
+    cl_kernel loss_reduce_stage_kernel;
+    cl_kernel loss_reduce_final_kernel;
+    cl_kernel best_model_kernel;
+    cl_kernel conditional_copy_kernel;
+
+    /* Adaptive Fuzzy Rules + ANN MF Tuner kernels */
+    cl_kernel prepare_inputs_kernel;
+    cl_kernel effective_mfs_kernel;
+    cl_kernel rules_forward_kernel;
+    cl_kernel defuzz_forward_backward_kernel;
+    cl_kernel rules_backward_kernel;
+    cl_kernel base_mf_update_kernel;
+    cl_kernel project_base_mfs_kernel;
+
+    /* Cached device limits and per-kernel work-group plans */
+    size_t device_max_work_group_size;
+    cl_ulong device_local_memory;
+    cl_uint device_compute_units;
+    fuzzy_neuron_opencl_kernel_plan_t forward_gemm_plan;
+    fuzzy_neuron_opencl_kernel_plan_t hidden_delta_gemm_plan;
+    fuzzy_neuron_opencl_kernel_plan_t layer_backward_update_plan;
+    fuzzy_neuron_opencl_kernel_plan_t loss_reduce_stage_plan;
+    fuzzy_neuron_opencl_kernel_plan_t loss_reduce_final_plan;
+    fuzzy_neuron_opencl_kernel_plan_t base_mf_update_plan;
+
+    /* Persistent GPU buffers */
+    cl_mem d_input_min;
+    cl_mem d_input_max;
+    cl_mem d_all_mfs;
+    cl_mem d_input_mfs;
+    cl_mem d_output_mfs;
+    cl_mem d_output_channels;
+    cl_mem d_expressions;
+    cl_mem d_rule_roots;
+    cl_mem d_rule_consequents;
+
+    cl_mem d_base_params;
+    cl_mem d_base_first_moment;
+    cl_mem d_base_second_moment;
+    cl_mem d_eff_params;
+    cl_mem d_sample_mf_gradients;
+
+    cl_mem d_raw_inputs;
+    cl_mem d_memberships;
+    cl_mem d_expression_values;
+    cl_mem d_raw_rules;
+    cl_mem d_raw_rule_gradients;
+    cl_mem d_expression_gradients;
+    cl_mem d_membership_gradients;
+
+    cl_mem d_weights;
+    cl_mem d_biases;
+    cl_mem d_activations;
+    cl_mem d_deltas;
+    cl_mem d_weight_first_moment;
+    cl_mem d_weight_second_moment;
+    cl_mem d_bias_first_moment;
+    cl_mem d_bias_second_moment;
+
+    cl_mem d_predictions;
+    cl_mem d_losses;
+    cl_mem d_loss_partials;
+    cl_mem d_epoch_loss;
+    cl_mem d_best_loss;
+    cl_mem d_best_updated;
+    cl_mem d_best_weights;
+    cl_mem d_best_biases;
+    cl_mem d_best_base_params;
+
+    cl_mem d_dataset_inputs;
+    cl_mem d_dataset_targets;
+    size_t dataset_capacity_rows;
+    size_t batch_capacity;
+    size_t loss_partial_capacity;
+    cl_ulong optimizer_step;
+    bool ready;
+} fuzzy_tuner_opencl_t;
+#endif
+
+typedef struct fuzzy_tuner_model
+{
+    const char *name;
+    fuzzy_logic_method_t logic_method;
+    float tuner_scale;
+    bool ann_enabled;
+
+    fuzzy_tuner_input_channel_t inputs[FUZZY_TUNER_MAX_INPUTS];
+    size_t input_count;
+
+    fuzzy_neuron_premise_t input_mfs[FUZZY_NEURON_MAX_PREMISES];
+    size_t input_mf_count;
+    float input_mf_parameters[FUZZY_NEURON_MAX_PREMISE_PARAMETERS];
+    size_t input_mf_parameter_count;
+
+    fuzzy_tuner_output_channel_t outputs[FUZZY_TUNER_MAX_OUTPUTS];
+    size_t output_count;
+
+    fuzzy_neuron_premise_t output_mfs[FUZZY_TUNER_MAX_OUTPUT_MFS];
+    size_t output_mf_count;
+    float output_mf_parameters[FUZZY_TUNER_MAX_OUTPUT_MF_PARAMS];
+    size_t output_mf_parameter_count;
+
+    fuzzy_neuron_expression_t expressions[FUZZY_NEURON_MAX_EXPRESSIONS];
+    size_t expression_count;
+    fuzzy_neuron_rule_t rules[FUZZY_NEURON_MAX_RULES];
+    size_t rule_roots[FUZZY_NEURON_MAX_RULES];
+    size_t rule_consequents[FUZZY_NEURON_MAX_RULES];
+    size_t rule_count;
+
+    fuzzy_neuron_layer_t layers[FUZZY_NEURON_MAX_LAYERS];
+    size_t layer_count;
+    size_t neuron_count;
+    size_t weight_count;
+    size_t bias_count;
+    float *weights;
+    float *biases;
+    unsigned int random_state;
+    bool compiled;
+
+    char **owned_strings;
+    size_t owned_string_count;
+    size_t owned_string_capacity;
+
+#ifdef FUZZY_NEURON_OPENCL
+    fuzzy_tuner_opencl_t opencl;
+#endif
+} fuzzy_tuner_model_t;
+
+/* Core Adaptive Fuzzy Rules + ANN MF Tuner API */
+void fuzzy_tuner_init(fuzzy_tuner_model_t *model, const char *name, fuzzy_logic_method_t logic_method, float tuner_scale);
+bool fuzzy_tuner_add_input(fuzzy_tuner_model_t *model, const char *name, float minimum, float maximum);
+size_t fuzzy_tuner_add_input_mf(fuzzy_tuner_model_t *model, const char *name, size_t input_index, fuzzy_shape_t shape, float hedge, unsigned int trainable_mask, float domain_minimum, float domain_maximum, size_t parameter_count, const float parameters[]);
+fuzzy_tuner_clause_t fuzzy_tuner_add_input_mf_clause(fuzzy_tuner_model_t *model, const char *name, size_t input_index, fuzzy_shape_t shape, float hedge, unsigned int trainable_mask, float domain_minimum, float domain_maximum, size_t parameter_count, const float parameters[]);
+bool fuzzy_tuner_add_output(fuzzy_tuner_model_t *model, const char *name, float minimum, float maximum, float step, fuzzy_defuzz_method_t defuzz_method);
+size_t fuzzy_tuner_add_output_mf(fuzzy_tuner_model_t *model, const char *name, size_t output_index, fuzzy_shape_t shape, float hedge, unsigned int trainable_mask, float domain_minimum, float domain_maximum, size_t parameter_count, const float parameters[]);
+size_t fuzzy_tuner_add_expression(fuzzy_tuner_model_t *model, fuzzy_neuron_expression_kind_t kind, size_t left, size_t right, size_t value);
+fuzzy_tuner_clause_t fuzzy_tuner_clause_not(fuzzy_tuner_clause_t clause);
+fuzzy_tuner_clause_t fuzzy_tuner_clause_and_array(size_t count, const fuzzy_tuner_clause_t clauses[]);
+fuzzy_tuner_clause_t fuzzy_tuner_clause_or_array(size_t count, const fuzzy_tuner_clause_t clauses[]);
+bool fuzzy_tuner_add_rule(fuzzy_tuner_model_t *model, const char *name, size_t root, size_t consequent_mf);
+bool fuzzy_tuner_add_rule_clause(fuzzy_tuner_model_t *model, const char *name, fuzzy_tuner_clause_t clause, size_t consequent_mf);
+bool fuzzy_tuner_add_layer(fuzzy_tuner_model_t *model, size_t neuron_count, fuzzy_neuron_activation_t activation);
+bool fuzzy_tuner_compile(fuzzy_tuner_model_t *model, unsigned int seed);
+void fuzzy_tuner_free(fuzzy_tuner_model_t *model);
+void fuzzy_tuner_destroy(fuzzy_tuner_model_t *model);
+
+bool fuzzy_tuner_predict_inspect(const fuzzy_tuner_model_t *model, const float raw_inputs[], float outputs[], fuzzy_tuner_inspection_t *inspection);
+bool fuzzy_tuner_predict(const fuzzy_tuner_model_t *model, const float raw_inputs[], float outputs[]);
+bool fuzzy_tuner_predict_batch_serial(const fuzzy_tuner_model_t *model, const float raw_inputs[], size_t rows, float outputs[]);
+bool fuzzy_tuner_predict_batch_mt(const fuzzy_tuner_model_t *model, const float raw_inputs[], size_t rows, float outputs[]);
+bool fuzzy_tuner_dataset_metrics_mt(const fuzzy_tuner_model_t *model, const fuzzy_neuron_dataset_t *dataset, fuzzy_tuner_metrics_t *metrics);
+bool fuzzy_tuner_plot_input_mfs(const fuzzy_tuner_model_t *model, size_t input_index, const char *path, const char *title, float step);
+bool fuzzy_tuner_plot_output_mfs(const fuzzy_tuner_model_t *model, size_t output_index, const char *path, const char *title, float step);
+void fuzzy_tuner_print_summary(const fuzzy_tuner_model_t *model);
+
+#ifdef FUZZY_NEURON_OPENCL
+bool fuzzy_tuner_opencl_init(fuzzy_tuner_model_t *model, size_t batch_capacity, const char *kernel_path);
+bool fuzzy_tuner_opencl_sync_to_device(fuzzy_tuner_model_t *model);
+bool fuzzy_tuner_opencl_predict(fuzzy_tuner_model_t *model, const float raw_inputs[], size_t rows, float outputs[]);
+bool fuzzy_tuner_opencl_train(fuzzy_tuner_model_t *model, const fuzzy_neuron_dataset_t *dataset, const fuzzy_tuner_train_options_t *options);
+void fuzzy_tuner_opencl_free(fuzzy_tuner_model_t *model);
+#endif
+
+#ifdef FUZZY_SQLITE
+bool fuzzy_tuner_database_save(const char *path, const char *model_name, const fuzzy_tuner_model_t *model);
+bool fuzzy_tuner_database_load(const char *path, fuzzy_tuner_model_t *model);
+fuzzy_tuner_model_t *fuzzy_tuner_database_autoload(const char *path);
+bool fuzzy_tuner_autogen_c_from_model(const fuzzy_tuner_model_t *model, const char *header_path, const char *symbol_prefix);
+bool fuzzy_tuner_autogen_c_from_db(const char *db_path, const char *header_path, const char *symbol_prefix);
+#endif
+
+/* ============================================================================
+ * X-Macro DSL for Adaptive Fuzzy Rules + ANN MF Tuning Systems
+ * ============================================================================ */
+#define FUZZY_TUNER_CLAUSE_COUNT(...) \
+    (sizeof((const fuzzy_tuner_clause_t[]){__VA_ARGS__}) / sizeof(fuzzy_tuner_clause_t))
+
+#define FT_NOT(clause) fuzzy_tuner_clause_not((clause))
+#define FT_AND(...) fuzzy_tuner_clause_and_array(FUZZY_TUNER_CLAUSE_COUNT(__VA_ARGS__), (const fuzzy_tuner_clause_t[]){__VA_ARGS__})
+#define FT_OR(...)  fuzzy_tuner_clause_or_array(FUZZY_TUNER_CLAUSE_COUNT(__VA_ARGS__), (const fuzzy_tuner_clause_t[]){__VA_ARGS__})
+
+#define FUZZY_TUNER_X_ENUM_ENTRY(sym, ...) sym,
+
+#define FUZZY_TUNER_X_ADD_INPUT(sym, min_v, max_v) \
+    if (!fuzzy_tuner_add_input(ft_model__, #sym, (min_v), (max_v))) { fuzzy_tuner_destroy(ft_model__); return NULL; }
+
+#define FUZZY_TUNER_X_ADD_INPUT_MF(sym, in_idx, shape_arg, hedge_arg, mask_arg, dmin_arg, dmax_arg, ...) \
+    fuzzy_tuner_clause_t sym = fuzzy_tuner_add_input_mf_clause( \
+        ft_model__, #sym, (in_idx), (shape_arg), (hedge_arg), (mask_arg), (dmin_arg), (dmax_arg), \
+        FUZZY_VALUE_COUNT(__VA_ARGS__), FUZZY_VALUES(__VA_ARGS__) \
+    ); \
+    (void)sym; \
+    if (sym.expression == SIZE_MAX) { fuzzy_tuner_destroy(ft_model__); return NULL; }
+
+#define FUZZY_TUNER_X_ADD_OUTPUT(sym, min_v, max_v, step_v, method_v) \
+    if (!fuzzy_tuner_add_output(ft_model__, #sym, (min_v), (max_v), (step_v), (method_v))) { fuzzy_tuner_destroy(ft_model__); return NULL; }
+
+#define FUZZY_TUNER_X_ADD_OUTPUT_MF(sym, out_idx, shape_arg, hedge_arg, mask_arg, dmin_arg, dmax_arg, ...) \
+    size_t sym = fuzzy_tuner_add_output_mf( \
+        ft_model__, #sym, (out_idx), (shape_arg), (hedge_arg), (mask_arg), (dmin_arg), (dmax_arg), \
+        FUZZY_VALUE_COUNT(__VA_ARGS__), FUZZY_VALUES(__VA_ARGS__) \
+    ); \
+    (void)sym; \
+    if (sym == SIZE_MAX) { fuzzy_tuner_destroy(ft_model__); return NULL; }
+
+#define FUZZY_TUNER_X_ADD_RULE(rule_name, clause_expr, out_mf_sym) \
+    if (!fuzzy_tuner_add_rule_clause(ft_model__, (rule_name), (clause_expr), (out_mf_sym))) { fuzzy_tuner_destroy(ft_model__); return NULL; }
+
+#define FUZZY_TUNER_X_ADD_LAYER(width_arg, act_arg) \
+    if (!fuzzy_tuner_add_layer(ft_model__, (width_arg), (act_arg))) { fuzzy_tuner_destroy(ft_model__); return NULL; }
+
+#define FUZZY_TUNER_DEFINE_SYSTEM(symbol, logic_method_arg, tuner_scale_arg, INPUTS_X, INPUT_MFS_X, OUTPUTS_X, OUTPUT_MFS_X, RULES_X, ANN_LAYERS_X) \
+    enum symbol##_inputs_enum { INPUTS_X(FUZZY_TUNER_X_ENUM_ENTRY) symbol##_INPUT_COUNT }; \
+    enum symbol##_outputs_enum { OUTPUTS_X(FUZZY_TUNER_X_ENUM_ENTRY) symbol##_OUTPUT_COUNT }; \
+    static fuzzy_tuner_model_t *symbol##_create(unsigned int seed_arg) \
+    { \
+        fuzzy_tuner_model_t *ft_model__ = (fuzzy_tuner_model_t *)calloc(1u, sizeof(*ft_model__)); \
+        if (ft_model__ == NULL) return NULL; \
+        fuzzy_tuner_init(ft_model__, #symbol, (logic_method_arg), (tuner_scale_arg)); \
+        INPUTS_X(FUZZY_TUNER_X_ADD_INPUT) \
+        INPUT_MFS_X(FUZZY_TUNER_X_ADD_INPUT_MF) \
+        OUTPUTS_X(FUZZY_TUNER_X_ADD_OUTPUT) \
+        OUTPUT_MFS_X(FUZZY_TUNER_X_ADD_OUTPUT_MF) \
+        RULES_X(FUZZY_TUNER_X_ADD_RULE) \
+        ANN_LAYERS_X(FUZZY_TUNER_X_ADD_LAYER) \
+        if (!fuzzy_tuner_compile(ft_model__, seed_arg)) \
+        { \
+            fuzzy_tuner_destroy(ft_model__); \
+            return NULL; \
+        } \
+        return ft_model__; \
+    }
+
+#define FUZZY_TUNER_TRAIN_OPTIONS_ADAM(epochs_arg, batch_arg, ann_lr_arg, mf_lr_arg, report_arg) \
+    ((fuzzy_tuner_train_options_t){ \
+        .epochs = (epochs_arg), \
+        .batch_size = (batch_arg), \
+        .ann_learning_rate = (ann_lr_arg), \
+        .mf_learning_rate = (mf_lr_arg), \
+        .adam_beta1 = 0.9f, \
+        .adam_beta2 = 0.999f, \
+        .adam_epsilon = 1.0e-8f, \
+        .grad_clip = 5.0f, \
+        .report_every = (report_arg), \
+        .optimizer = FUZZY_NEURON_OPTIMIZER_ADAM, \
+        .loss_fn = MSE, \
+        .huber_delta = 5.0f, \
+        .reset_optimizer_state = true, \
+        .tune_base_mfs = true, \
+        .tune_ann = true \
+    })
+
+#define FUZZY_TUNER_DB_SAVE(path_arg, name_arg, model_ptr) fuzzy_tuner_database_save((path_arg), (name_arg), (model_ptr))
+#define FUZZY_TUNER_DB_LOAD(path_arg, model_ptr) fuzzy_tuner_database_load((path_arg), (model_ptr))
+#define FUZZY_TUNER_DB_AUTOLOAD(path_arg) fuzzy_tuner_database_autoload((path_arg))
+#define FUZZY_TUNER_AUTOGEN_C(db_path_arg, header_path_arg, symbol_prefix_arg) fuzzy_tuner_autogen_c_from_db((db_path_arg), (header_path_arg), (symbol_prefix_arg))
+
+#ifdef FUZZY_IMPLEMENTATION
+#ifndef FUZZY_TUNER_IMPLEMENTATION_ONCE
+#define FUZZY_TUNER_IMPLEMENTATION_ONCE
+
+#if FUZZY_HAS_PTHREADS
+extern int FUZZY_CDECL atexit(void (*)(void));
+
+typedef struct fuzzy_thread_pool
+{
+    pthread_mutex_t mutex;
+    pthread_cond_t work_cv;
+    pthread_cond_t done_cv;
+    pthread_t workers[64];
+    size_t worker_count;
+    size_t generation;
+    size_t active_workers;
+    size_t completed_workers;
+    size_t job_count;
+    size_t job_active_threads;
+    fuzzy_parallel_fn worker_fn;
+    void *worker_ctx;
+    bool initialized;
+    bool shutdown;
+    bool busy;
+} fuzzy_thread_pool_t;
+
+static fuzzy_thread_pool_t fuzzy_global_pool = {
+    PTHREAD_MUTEX_INITIALIZER,
+    PTHREAD_COND_INITIALIZER,
+    PTHREAD_COND_INITIALIZER,
+    {0},
+    0u, 0u, 0u, 0u, 0u, 0u, NULL, NULL, false, false, false
+};
+
+static void *fuzzy_pool_worker_main(void *arg)
+{
+    size_t slot = (size_t)arg;
+    size_t seen_gen = 0u;
+
+    for (;;)
+    {
+        fuzzy_parallel_fn fn;
+        void *ctx;
+        size_t total;
+        size_t threads;
+        size_t begin = 0u;
+        size_t end = 0u;
+
+        pthread_mutex_lock(&fuzzy_global_pool.mutex);
+        while (!fuzzy_global_pool.shutdown && fuzzy_global_pool.generation == seen_gen)
+        {
+            pthread_cond_wait(&fuzzy_global_pool.work_cv, &fuzzy_global_pool.mutex);
+        }
+        if (fuzzy_global_pool.shutdown)
+        {
+            pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+            return NULL;
+        }
+        seen_gen = fuzzy_global_pool.generation;
+        fn = fuzzy_global_pool.worker_fn;
+        ctx = fuzzy_global_pool.worker_ctx;
+        total = fuzzy_global_pool.job_count;
+        threads = fuzzy_global_pool.job_active_threads;
+        pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+
+        if (slot < threads)
+        {
+            size_t base = total / threads;
+            size_t extra = total % threads;
+            begin = slot * base + (slot < extra ? slot : extra);
+            end = begin + base + (slot < extra ? 1u : 0u);
+            if (begin < end && fn != NULL)
+            {
+                fn(begin, end, ctx);
+            }
+        }
+
+        pthread_mutex_lock(&fuzzy_global_pool.mutex);
+        fuzzy_global_pool.completed_workers++;
+        if (fuzzy_global_pool.completed_workers == fuzzy_global_pool.worker_count)
+        {
+            pthread_cond_signal(&fuzzy_global_pool.done_cv);
+        }
+        pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+    }
+}
+
+static void fuzzy_pool_shutdown(void)
+{
+    size_t i;
+    pthread_mutex_lock(&fuzzy_global_pool.mutex);
+    if (!fuzzy_global_pool.initialized || fuzzy_global_pool.shutdown)
+    {
+        pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+        return;
+    }
+    fuzzy_global_pool.shutdown = true;
+    pthread_cond_broadcast(&fuzzy_global_pool.work_cv);
+    pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+
+    for (i = 0u; i < fuzzy_global_pool.worker_count; ++i)
+    {
+        pthread_join(fuzzy_global_pool.workers[i], NULL);
+    }
+}
+
+static void fuzzy_pool_ensure_init(void)
+{
+    size_t total_threads;
+    size_t i;
+
+    pthread_mutex_lock(&fuzzy_global_pool.mutex);
+    if (fuzzy_global_pool.initialized)
+    {
+        pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+        return;
+    }
+    total_threads = fuzzy_cpu_thread_count();
+    if (total_threads > 64u) total_threads = 64u;
+    fuzzy_global_pool.worker_count = 0u;
+    for (i = 1u; i < total_threads; ++i)
+    {
+        if (pthread_create(&fuzzy_global_pool.workers[fuzzy_global_pool.worker_count], NULL, fuzzy_pool_worker_main, (void *)i) == 0)
+        {
+            fuzzy_global_pool.worker_count++;
+        }
+    }
+    fuzzy_global_pool.initialized = true;
+    atexit(fuzzy_pool_shutdown);
+    pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+}
+#endif
+
+size_t fuzzy_cpu_thread_count(void)
+{
+#if FUZZY_HAS_PTHREADS
+    long detected = sysconf(_SC_NPROCESSORS_ONLN);
+    if (detected < 1L) return 1u;
+    if (detected > 64L) return 64u;
+    return (size_t)detected;
+#else
+    return 1u;
+#endif
+}
+
+void fuzzy_parallel_for(size_t count, size_t min_chunk, fuzzy_parallel_fn worker, void *context)
+{
+    if (worker == NULL || count == 0u) return;
+    if (min_chunk == 0u) min_chunk = 1u;
+
+#if FUZZY_HAS_PTHREADS
+    {
+        size_t max_threads = fuzzy_cpu_thread_count();
+        size_t needed_threads = (count + min_chunk - 1u) / min_chunk;
+        size_t active_threads = max_threads < needed_threads ? max_threads : needed_threads;
+
+        if (active_threads > 1u)
+        {
+            size_t base;
+            size_t extra;
+            size_t end0;
+
+            fuzzy_pool_ensure_init();
+            pthread_mutex_lock(&fuzzy_global_pool.mutex);
+            if (fuzzy_global_pool.busy || fuzzy_global_pool.shutdown || fuzzy_global_pool.worker_count == 0u)
+            {
+                pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+                worker(0u, count, context);
+                return;
+            }
+            if (active_threads > fuzzy_global_pool.worker_count + 1u)
+            {
+                active_threads = fuzzy_global_pool.worker_count + 1u;
+            }
+            fuzzy_global_pool.busy = true;
+            fuzzy_global_pool.worker_fn = worker;
+            fuzzy_global_pool.worker_ctx = context;
+            fuzzy_global_pool.job_count = count;
+            fuzzy_global_pool.job_active_threads = active_threads;
+            fuzzy_global_pool.completed_workers = 0u;
+            fuzzy_global_pool.generation++;
+            pthread_cond_broadcast(&fuzzy_global_pool.work_cv);
+            pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+
+            /* Main thread executes slice 0 concurrently */
+            base = count / active_threads;
+            extra = count % active_threads;
+            end0 = base + (extra > 0u ? 1u : 0u);
+            if (end0 > 0u)
+            {
+                worker(0u, end0, context);
+            }
+
+            pthread_mutex_lock(&fuzzy_global_pool.mutex);
+            while (fuzzy_global_pool.completed_workers < fuzzy_global_pool.worker_count)
+            {
+                pthread_cond_wait(&fuzzy_global_pool.done_cv, &fuzzy_global_pool.mutex);
+            }
+            fuzzy_global_pool.busy = false;
+            pthread_mutex_unlock(&fuzzy_global_pool.mutex);
+            return;
+        }
+    }
+#endif
+
+    worker(0u, count, context);
+}
+
+static bool fuzzy_tuner_isfinite(float v)
+{
+    return v == v && fabsf(v) <= 3.402823466e+38F;
+}
+
+static float fuzzy_tuner_clampf(float v, float lo, float hi)
+{
+    if (v < lo) return lo;
+    if (v > hi) return hi;
+    return v;
+}
+
+#ifdef FUZZY_SQLITE
+static const char *fuzzy_tuner_intern_string(fuzzy_tuner_model_t *model, const char *text)
+{
+    size_t len;
+    char *copy;
+    if (model == NULL || text == NULL) return NULL;
+    if (model->owned_string_count == model->owned_string_capacity)
+    {
+        size_t next_cap = model->owned_string_capacity == 0u ? 64u : model->owned_string_capacity * 2u;
+        char **next_arr = (char **)realloc(model->owned_strings, next_cap * sizeof(char *));
+        if (next_arr == NULL) return NULL;
+        model->owned_strings = next_arr;
+        model->owned_string_capacity = next_cap;
+    }
+    len = strlen(text);
+    copy = (char *)malloc(len + 1u);
+    if (copy == NULL) return NULL;
+    memcpy(copy, text, len + 1u);
+    model->owned_strings[model->owned_string_count++] = copy;
+    return copy;
+}
+#endif
+
+static void fuzzy_tuner_project_mf_cpu(const fuzzy_neuron_premise_t *mf, float *params)
+{
+    size_t count = mf->parameter_count;
+    float dmin = mf->domain_minimum;
+    float dmax = mf->domain_maximum;
+    float span = dmax - dmin > mf->epsilon * 4.0f ? (dmax - dmin) : (mf->epsilon * 4.0f);
+    float sep = mf->epsilon * 2.0f > span * 1.0e-3f ? (mf->epsilon * 2.0f) : (span * 1.0e-3f);
+    size_t p;
+
+    for (p = 0u; p < count; ++p)
+    {
+        float val = params[p];
+        if (!fuzzy_tuner_isfinite(val)) val = 0.5f * (dmin + dmax);
+        if (p < 32u && (mf->trainable_mask & (1u << p)) != 0u)
+        {
+            val = fuzzy_tuner_clampf(val, dmin, dmax);
+        }
+        params[p] = val;
+    }
+
+    if (mf->shape == FUZZY_SHAPE_RAMP && count == 3u)
+    {
+        float a = fuzzy_tuner_clampf(params[0], dmin, dmax - sep);
+        float b = fuzzy_tuner_clampf(params[1], a + sep, dmax);
+        params[0] = a;
+        params[1] = b;
+        params[2] = params[2] != 0.0f ? 1.0f : 0.0f;
+    }
+    else if (mf->shape == FUZZY_SHAPE_TRIANGLE && count == 3u)
+    {
+        float a = fuzzy_tuner_clampf(params[0], dmin, dmax - 2.0f * sep);
+        float b = fuzzy_tuner_clampf(params[1], a + sep, dmax - sep);
+        float c = fuzzy_tuner_clampf(params[2], b + sep, dmax);
+        params[0] = a;
+        params[1] = b;
+        params[2] = c;
+    }
+    else if ((mf->shape == FUZZY_SHAPE_TRAPEZOID || mf->shape == FUZZY_SHAPE_PIMF) && count == 4u)
+    {
+        float a = fuzzy_tuner_clampf(params[0], dmin, dmax - 2.0f * sep);
+        float b = fuzzy_tuner_clampf(params[1], a + sep, dmax - sep);
+        float c = fuzzy_tuner_clampf(params[2], b, dmax - sep);
+        float d = fuzzy_tuner_clampf(params[3], c + sep, dmax);
+        params[0] = a;
+        params[1] = b;
+        params[2] = c;
+        params[3] = d;
+    }
+    else if ((mf->shape == FUZZY_SHAPE_SMF || mf->shape == FUZZY_SHAPE_ZMF) && count == 2u)
+    {
+        float a = fuzzy_tuner_clampf(params[0], dmin, dmax - sep);
+        float b = fuzzy_tuner_clampf(params[1], a + sep, dmax);
+        params[0] = a;
+        params[1] = b;
+    }
+    else if (mf->shape == FUZZY_SHAPE_GAUSSIAN && count == 2u)
+    {
+        float min_sigma = mf->epsilon > span * 0.02f ? mf->epsilon : (span * 0.02f);
+        params[0] = fuzzy_tuner_clampf(params[0], dmin, dmax);
+        params[1] = fuzzy_tuner_clampf(fabsf(params[1]), min_sigma, span);
+    }
+    else if (mf->shape == FUZZY_SHAPE_BELL && count == 3u)
+    {
+        float min_w = mf->epsilon > span * 0.02f ? mf->epsilon : (span * 0.02f);
+        float sign = params[0] < 0.0f ? -1.0f : 1.0f;
+        float mag = fabsf(params[0]);
+        params[0] = sign * (mag > min_w ? mag : min_w);
+    }
+    else if (mf->shape == FUZZY_SHAPE_GAUSSIAN2 && count == 4u)
+    {
+        float min_sigma = mf->epsilon > span * 0.02f ? mf->epsilon : (span * 0.02f);
+        float m1 = fuzzy_tuner_clampf(params[0], dmin, dmax);
+        float s1 = fuzzy_tuner_clampf(fabsf(params[1]), min_sigma, span);
+        float m2 = fuzzy_tuner_clampf(params[2], m1, dmax);
+        float s2 = fuzzy_tuner_clampf(fabsf(params[3]), min_sigma, span);
+        params[0] = m1;
+        params[1] = s1;
+        params[2] = m2;
+        params[3] = s2;
+    }
+}
+
+void fuzzy_tuner_init(fuzzy_tuner_model_t *model, const char *name, fuzzy_logic_method_t logic_method, float tuner_scale)
+{
+    if (model == NULL) return;
+    memset(model, 0, sizeof(*model));
+    model->name = name != NULL ? name : "fuzzy_tuner_model";
+    model->logic_method = logic_method;
+    model->tuner_scale = tuner_scale >= 0.0f ? tuner_scale : 0.0f;
+    model->ann_enabled = tuner_scale > 0.0f;
+    model->random_state = 42u;
+}
+
+bool fuzzy_tuner_add_input(fuzzy_tuner_model_t *model, const char *name, float minimum, float maximum)
+{
+    fuzzy_tuner_input_channel_t *ch;
+    if (model == NULL || name == NULL || model->compiled || model->input_count >= FUZZY_TUNER_MAX_INPUTS || !(maximum > minimum)) return false;
+    ch = &model->inputs[model->input_count++];
+    ch->name = name;
+    ch->minimum = minimum;
+    ch->maximum = maximum;
+    return true;
+}
+
+size_t fuzzy_tuner_add_input_mf(
+    fuzzy_tuner_model_t *model,
+    const char *name,
+    size_t input_index,
+    fuzzy_shape_t shape,
+    float hedge,
+    unsigned int trainable_mask,
+    float domain_minimum,
+    float domain_maximum,
+    size_t parameter_count,
+    const float parameters[]
+)
+{
+    fuzzy_neuron_premise_t *mf;
+    size_t index;
+    size_t p;
+    unsigned int valid_mask;
+
+    if (model == NULL || name == NULL || parameters == NULL || model->compiled ||
+        input_index >= model->input_count || model->input_mf_count >= FUZZY_NEURON_MAX_PREMISES ||
+        parameter_count == 0u || parameter_count > FUZZY_MAX_VALUES ||
+        model->input_mf_parameter_count + parameter_count > FUZZY_NEURON_MAX_PREMISE_PARAMETERS ||
+        !(domain_maximum > domain_minimum) || !(hedge > 0.0f))
+    {
+        return SIZE_MAX;
+    }
+
+    if (!fuzzy_neuron_shape_parameter_count_valid(shape, parameter_count) ||
+        !fuzzy_neuron_shape_parameters_valid(shape, parameter_count, parameters, 1.0e-4f))
+    {
+        return SIZE_MAX;
+    }
+
+    valid_mask = parameter_count >= 32u ? 0xffffffffu : ((1u << parameter_count) - 1u);
+    if ((trainable_mask & ~valid_mask) != 0u) return SIZE_MAX;
+
+    index = model->input_mf_count++;
+    mf = &model->input_mfs[index];
+    mf->name = name;
+    mf->input_index = input_index;
+    mf->shape = shape;
+    mf->parameter_offset = model->input_mf_parameter_count;
+    mf->parameter_count = parameter_count;
+    mf->trainable_mask = trainable_mask;
+    mf->hedge = hedge;
+    mf->domain_minimum = domain_minimum;
+    mf->domain_maximum = domain_maximum;
+    mf->epsilon = 1.0e-4f;
+
+    for (p = 0u; p < parameter_count; ++p)
+    {
+        model->input_mf_parameters[model->input_mf_parameter_count++] = parameters[p];
+    }
+
+    return index;
+}
+
+size_t fuzzy_tuner_add_expression(fuzzy_tuner_model_t *model, fuzzy_neuron_expression_kind_t kind, size_t left, size_t right, size_t value)
+{
+    fuzzy_neuron_expression_t *expr;
+    size_t index;
+    if (model == NULL || model->compiled || model->expression_count >= FUZZY_NEURON_MAX_EXPRESSIONS) return SIZE_MAX;
+    if (kind == FUZZY_NEURON_EXPRESSION_MEMBERSHIP && value >= model->input_mf_count) return SIZE_MAX;
+    if (kind != FUZZY_NEURON_EXPRESSION_MEMBERSHIP && left >= model->expression_count) return SIZE_MAX;
+    if ((kind == FUZZY_NEURON_EXPRESSION_AND || kind == FUZZY_NEURON_EXPRESSION_OR) && right >= model->expression_count) return SIZE_MAX;
+    index = model->expression_count++;
+    expr = &model->expressions[index];
+    expr->kind = kind;
+    expr->left = left;
+    expr->right = right;
+    expr->value = value;
+    return index;
+}
+
+fuzzy_tuner_clause_t fuzzy_tuner_add_input_mf_clause(
+    fuzzy_tuner_model_t *model,
+    const char *name,
+    size_t input_index,
+    fuzzy_shape_t shape,
+    float hedge,
+    unsigned int trainable_mask,
+    float domain_minimum,
+    float domain_maximum,
+    size_t parameter_count,
+    const float parameters[]
+)
+{
+    fuzzy_tuner_clause_t clause;
+    size_t mf_idx = fuzzy_tuner_add_input_mf(model, name, input_index, shape, hedge, trainable_mask, domain_minimum, domain_maximum, parameter_count, parameters);
+    clause.model = model;
+    clause.expression = mf_idx == SIZE_MAX ? SIZE_MAX : fuzzy_tuner_add_expression(model, FUZZY_NEURON_EXPRESSION_MEMBERSHIP, 0u, 0u, mf_idx);
+    return clause;
+}
+
+bool fuzzy_tuner_add_output(fuzzy_tuner_model_t *model, const char *name, float minimum, float maximum, float step, fuzzy_defuzz_method_t defuzz_method)
+{
+    fuzzy_tuner_output_channel_t *ch;
+    if (model == NULL || name == NULL || model->compiled || model->output_count >= FUZZY_TUNER_MAX_OUTPUTS ||
+        !(maximum > minimum) || !(step > 0.0f) ||
+        (defuzz_method != FUZZY_DEFUZZ_COG && defuzz_method != FUZZY_DEFUZZ_BOA))
+    {
+        return false;
+    }
+    ch = &model->outputs[model->output_count++];
+    ch->name = name;
+    ch->minimum = minimum;
+    ch->maximum = maximum;
+    ch->step = step;
+    ch->sample_count = (size_t)floorf((maximum - minimum) / step + 0.5f) + 1u;
+    ch->defuzz_method = defuzz_method;
+    ch->mf_offset = 0u;
+    ch->mf_count = 0u;
+    return true;
+}
+
+size_t fuzzy_tuner_add_output_mf(
+    fuzzy_tuner_model_t *model,
+    const char *name,
+    size_t output_index,
+    fuzzy_shape_t shape,
+    float hedge,
+    unsigned int trainable_mask,
+    float domain_minimum,
+    float domain_maximum,
+    size_t parameter_count,
+    const float parameters[]
+)
+{
+    fuzzy_neuron_premise_t *mf;
+    size_t index;
+    size_t p;
+    unsigned int valid_mask;
+
+    if (model == NULL || name == NULL || parameters == NULL || model->compiled ||
+        output_index >= model->output_count || model->output_mf_count >= FUZZY_TUNER_MAX_OUTPUT_MFS ||
+        parameter_count == 0u || parameter_count > FUZZY_MAX_VALUES ||
+        model->output_mf_parameter_count + parameter_count > FUZZY_TUNER_MAX_OUTPUT_MF_PARAMS ||
+        !(domain_maximum > domain_minimum) || !(hedge > 0.0f))
+    {
+        return SIZE_MAX;
+    }
+
+    if (!fuzzy_neuron_shape_parameter_count_valid(shape, parameter_count) ||
+        !fuzzy_neuron_shape_parameters_valid(shape, parameter_count, parameters, 1.0e-4f))
+    {
+        return SIZE_MAX;
+    }
+
+    valid_mask = parameter_count >= 32u ? 0xffffffffu : ((1u << parameter_count) - 1u);
+    if ((trainable_mask & ~valid_mask) != 0u) return SIZE_MAX;
+
+    /* Output MFs for each channel must be added contiguously */
+    if (model->outputs[output_index].mf_count == 0u)
+    {
+        model->outputs[output_index].mf_offset = model->output_mf_count;
+    }
+    else if (model->outputs[output_index].mf_offset + model->outputs[output_index].mf_count != model->output_mf_count)
+    {
+        return SIZE_MAX;
+    }
+
+    index = model->output_mf_count++;
+    model->outputs[output_index].mf_count++;
+
+    mf = &model->output_mfs[index];
+    mf->name = name;
+    mf->input_index = output_index;
+    mf->shape = shape;
+    mf->parameter_offset = model->output_mf_parameter_count;
+    mf->parameter_count = parameter_count;
+    mf->trainable_mask = trainable_mask;
+    mf->hedge = hedge;
+    mf->domain_minimum = domain_minimum;
+    mf->domain_maximum = domain_maximum;
+    mf->epsilon = 1.0e-4f;
+
+    for (p = 0u; p < parameter_count; ++p)
+    {
+        model->output_mf_parameters[model->output_mf_parameter_count++] = parameters[p];
+    }
+
+    return index;
+}
+
+fuzzy_tuner_clause_t fuzzy_tuner_clause_not(fuzzy_tuner_clause_t clause)
+{
+    if (clause.model == NULL || clause.expression == SIZE_MAX)
+    {
+        clause.expression = SIZE_MAX;
+        return clause;
+    }
+    clause.expression = fuzzy_tuner_add_expression(clause.model, FUZZY_NEURON_EXPRESSION_NOT, clause.expression, 0u, 0u);
+    return clause;
+}
+
+fuzzy_tuner_clause_t fuzzy_tuner_clause_and_array(size_t count, const fuzzy_tuner_clause_t clauses[])
+{
+    fuzzy_tuner_clause_t result = {NULL, SIZE_MAX};
+    size_t i;
+    if (count == 0u || clauses == NULL || clauses[0].model == NULL || clauses[0].expression == SIZE_MAX) return result;
+    result = clauses[0];
+    for (i = 1u; i < count; ++i)
+    {
+        if (clauses[i].model != result.model || clauses[i].expression == SIZE_MAX)
+        {
+            result.expression = SIZE_MAX;
+            return result;
+        }
+        result.expression = fuzzy_tuner_add_expression(result.model, FUZZY_NEURON_EXPRESSION_AND, result.expression, clauses[i].expression, 0u);
+        if (result.expression == SIZE_MAX) return result;
+    }
+    return result;
+}
+
+fuzzy_tuner_clause_t fuzzy_tuner_clause_or_array(size_t count, const fuzzy_tuner_clause_t clauses[])
+{
+    fuzzy_tuner_clause_t result = {NULL, SIZE_MAX};
+    size_t i;
+    if (count == 0u || clauses == NULL || clauses[0].model == NULL || clauses[0].expression == SIZE_MAX) return result;
+    result = clauses[0];
+    for (i = 1u; i < count; ++i)
+    {
+        if (clauses[i].model != result.model || clauses[i].expression == SIZE_MAX)
+        {
+            result.expression = SIZE_MAX;
+            return result;
+        }
+        result.expression = fuzzy_tuner_add_expression(result.model, FUZZY_NEURON_EXPRESSION_OR, result.expression, clauses[i].expression, 0u);
+        if (result.expression == SIZE_MAX) return result;
+    }
+    return result;
+}
+
+bool fuzzy_tuner_add_rule(fuzzy_tuner_model_t *model, const char *name, size_t root, size_t consequent_mf)
+{
+    size_t idx;
+    if (model == NULL || name == NULL || model->compiled || root >= model->expression_count ||
+        consequent_mf >= model->output_mf_count || model->rule_count >= FUZZY_NEURON_MAX_RULES)
+    {
+        return false;
+    }
+    idx = model->rule_count++;
+    model->rules[idx].name = name;
+    model->rules[idx].evaluate = NULL;
+    model->rules[idx].user = NULL;
+    model->rule_roots[idx] = root;
+    model->rule_consequents[idx] = consequent_mf;
+    return true;
+}
+
+bool fuzzy_tuner_add_rule_clause(fuzzy_tuner_model_t *model, const char *name, fuzzy_tuner_clause_t clause, size_t consequent_mf)
+{
+    if (model == NULL || clause.model != model || clause.expression == SIZE_MAX) return false;
+    return fuzzy_tuner_add_rule(model, name, clause.expression, consequent_mf);
+}
+
+bool fuzzy_tuner_add_layer(fuzzy_tuner_model_t *model, size_t neuron_count, fuzzy_neuron_activation_t activation)
+{
+    fuzzy_neuron_layer_t *layer;
+    if (model == NULL || model->compiled || neuron_count == 0u || model->layer_count + 1u >= FUZZY_NEURON_MAX_LAYERS) return false;
+    layer = &model->layers[model->layer_count++];
+    memset(layer, 0, sizeof(*layer));
+    layer->count = neuron_count;
+    layer->activation = activation;
+    return true;
+}
+
+static bool fuzzy_tuner_compile_internal(fuzzy_tuner_model_t *model, unsigned int seed, bool append_output_layer)
+{
+    size_t total_mf_params;
+    size_t layer;
+    size_t source_count;
+    size_t weight_offset = 0u;
+    size_t bias_offset = 0u;
+    size_t i;
+
+    if (model == NULL || model->compiled || model->input_count == 0u || model->output_count == 0u ||
+        model->input_mf_count == 0u || model->output_mf_count == 0u || model->rule_count == 0u)
+    {
+        return false;
+    }
+
+    for (i = 0u; i < model->output_count; ++i)
+    {
+        if (model->outputs[i].mf_count == 0u) return false;
+    }
+
+    total_mf_params = model->input_mf_parameter_count + model->output_mf_parameter_count;
+    if (total_mf_params == 0u) return false;
+
+    if (append_output_layer)
+    {
+        if (model->layer_count >= FUZZY_NEURON_MAX_LAYERS) return false;
+        model->layers[model->layer_count].count = total_mf_params;
+        model->layers[model->layer_count].activation = FUZZY_NEURON_TANH;
+        model->layer_count++;
+    }
+    else
+    {
+        if (model->layer_count == 0u || model->layers[model->layer_count - 1u].count != total_mf_params) return false;
+    }
+
+    model->neuron_count = model->input_count;
+    model->weight_count = 0u;
+    model->bias_count = 0u;
+    source_count = model->input_count;
+
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        fuzzy_neuron_layer_t *cur = &model->layers[layer];
+        cur->weight_offset = weight_offset;
+        cur->bias_offset = bias_offset;
+        weight_offset += source_count * cur->count;
+        bias_offset += cur->count;
+        model->neuron_count += cur->count;
+        source_count = cur->count;
+    }
+
+    model->weight_count = weight_offset;
+    model->bias_count = bias_offset;
+    model->weights = (float *)calloc(model->weight_count, sizeof(float));
+    model->biases = (float *)calloc(model->bias_count, sizeof(float));
+    if (model->weights == NULL || model->biases == NULL) return false;
+
+    /* Xavier initialization for hidden layers; zero-init for the final MF-delta layer so
+     * the untrained network starts at the exact expert static fuzzy rule system! */
+    model->random_state = seed != 0u ? seed : 42u;
+    source_count = model->input_count;
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        fuzzy_neuron_layer_t *cur = &model->layers[layer];
+        size_t count = source_count * cur->count;
+        if (layer + 1u < model->layer_count)
+        {
+            float limit = sqrtf(6.0f / (float)(source_count + cur->count));
+            for (i = 0u; i < count; ++i)
+            {
+                float u;
+                model->random_state = model->random_state * 1664525u + 1013904223u;
+                u = (float)(model->random_state & 0x00ffffffu) / 16777215.0f;
+                model->weights[cur->weight_offset + i] = -limit + 2.0f * limit * u;
+            }
+        }
+        else
+        {
+            /* Residual identity start: delta = 0 at epoch 0 */
+            memset(model->weights + cur->weight_offset, 0, count * sizeof(float));
+            memset(model->biases + cur->bias_offset, 0, cur->count * sizeof(float));
+        }
+        source_count = cur->count;
+    }
+
+    model->compiled = true;
+    return true;
+}
+
+bool fuzzy_tuner_compile(fuzzy_tuner_model_t *model, unsigned int seed)
+{
+    return fuzzy_tuner_compile_internal(model, seed, true);
+}
+
+void fuzzy_tuner_free(fuzzy_tuner_model_t *model)
+{
+    size_t i;
+    if (model == NULL) return;
+#ifdef FUZZY_NEURON_OPENCL
+    fuzzy_tuner_opencl_free(model);
+#endif
+    free(model->weights);
+    free(model->biases);
+    for (i = 0u; i < model->owned_string_count; ++i)
+    {
+        free(model->owned_strings[i]);
+    }
+    free(model->owned_strings);
+    memset(model, 0, sizeof(*model));
+}
+
+void fuzzy_tuner_destroy(fuzzy_tuner_model_t *model)
+{
+    if (model == NULL) return;
+    fuzzy_tuner_free(model);
+    free(model);
+}
+
+bool fuzzy_tuner_predict_inspect(
+    const fuzzy_tuner_model_t *model,
+    const float raw_inputs[],
+    float outputs[],
+    fuzzy_tuner_inspection_t *inspection
+)
+{
+    float stack_activations[512];
+    float *activations = stack_activations;
+    float eff_in_params[FUZZY_NEURON_MAX_PREMISE_PARAMETERS];
+    float eff_out_params[FUZZY_TUNER_MAX_OUTPUT_MF_PARAMS];
+    float memberships[FUZZY_NEURON_MAX_PREMISES];
+    float expressions[FUZZY_NEURON_MAX_EXPRESSIONS];
+    float rule_firings[FUZZY_NEURON_MAX_RULES];
+    size_t i;
+    size_t p;
+    size_t layer;
+    size_t source_offset = 0u;
+    size_t destination_offset;
+    size_t source_count;
+    const float *ann_out;
+
+    if (model == NULL || !model->compiled || raw_inputs == NULL || outputs == NULL) return false;
+
+    if (model->neuron_count > 512u)
+    {
+        activations = (float *)malloc(model->neuron_count * sizeof(float));
+        if (activations == NULL) return false;
+    }
+
+    /* 1. ANN forward pass (normalized inputs -> bounded MF parameter adjustments) */
+    for (i = 0u; i < model->input_count; ++i)
+    {
+        float span = model->inputs[i].maximum - model->inputs[i].minimum;
+        activations[i] = span > 1.0e-12f
+            ? fuzzy_tuner_clampf((raw_inputs[i] - model->inputs[i].minimum) / span, 0.0f, 1.0f)
+            : raw_inputs[i];
+    }
+
+    destination_offset = model->input_count;
+    source_count = model->input_count;
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        const fuzzy_neuron_layer_t *cur = &model->layers[layer];
+        size_t dest;
+        for (dest = 0u; dest < cur->count; ++dest)
+        {
+            float sum = model->biases[cur->bias_offset + dest];
+            const float *wrow = model->weights + cur->weight_offset + dest * source_count;
+            size_t src;
+            for (src = 0u; src < source_count; ++src)
+            {
+                sum += activations[source_offset + src] * wrow[src];
+            }
+            activations[destination_offset + dest] = fuzzy_neuron_activate(sum, cur->activation);
+        }
+        source_offset = destination_offset;
+        destination_offset += cur->count;
+        source_count = cur->count;
+    }
+
+    ann_out = activations + (model->neuron_count - (model->input_mf_parameter_count + model->output_mf_parameter_count));
+
+    /* 2. Apply bounded ANN adjustments to input & output MFs + project valid shape invariants */
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        float span = mf->domain_maximum - mf->domain_minimum;
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            size_t idx = mf->parameter_offset + p;
+            float val = model->input_mf_parameters[idx];
+            if (model->ann_enabled && model->tuner_scale > 0.0f && p < 32u && (mf->trainable_mask & (1u << p)) != 0u)
+            {
+                val += model->tuner_scale * span * ann_out[idx];
+            }
+            eff_in_params[idx] = val;
+        }
+        fuzzy_tuner_project_mf_cpu(mf, eff_in_params + mf->parameter_offset);
+    }
+
+    for (i = 0u; i < model->output_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->output_mfs[i];
+        float span = mf->domain_maximum - mf->domain_minimum;
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            size_t idx = mf->parameter_offset + p;
+            float val = model->output_mf_parameters[idx];
+            if (model->ann_enabled && model->tuner_scale > 0.0f && p < 32u && (mf->trainable_mask & (1u << p)) != 0u)
+            {
+                val += model->tuner_scale * span * ann_out[model->input_mf_parameter_count + idx];
+            }
+            eff_out_params[idx] = val;
+        }
+        fuzzy_tuner_project_mf_cpu(mf, eff_out_params + mf->parameter_offset);
+    }
+
+    /* 3. Evaluate static fuzzy premises & expression DAG */
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        memberships[i] = fuzzy_function_array(
+            mf->shape,
+            raw_inputs[mf->input_index],
+            mf->hedge,
+            mf->parameter_count,
+            eff_in_params + mf->parameter_offset
+        );
+    }
+
+    for (i = 0u; i < model->expression_count; ++i)
+    {
+        const fuzzy_neuron_expression_t *expr = &model->expressions[i];
+        if (expr->kind == FUZZY_NEURON_EXPRESSION_MEMBERSHIP)
+        {
+            expressions[i] = memberships[expr->value];
+        }
+        else if (expr->kind == FUZZY_NEURON_EXPRESSION_NOT)
+        {
+            expressions[i] = 1.0f - expressions[expr->left];
+        }
+        else
+        {
+            float ops[2];
+            ops[0] = expressions[expr->left];
+            ops[1] = expressions[expr->right];
+            expressions[i] = expr->kind == FUZZY_NEURON_EXPRESSION_AND
+                ? fuzzy_and_array(model->logic_method, 2u, ops)
+                : fuzzy_or_array(model->logic_method, 2u, ops);
+        }
+    }
+
+    for (i = 0u; i < model->rule_count; ++i)
+    {
+        rule_firings[i] = fuzzy_tuner_clampf(expressions[model->rule_roots[i]], 0.0f, 1.0f);
+    }
+
+    /* 4. Defuzzify each output channel (Mamdani COG or BOA) */
+    for (i = 0u; i < model->output_count; ++i)
+    {
+        const fuzzy_tuner_output_channel_t *ch = &model->outputs[i];
+        float alpha[FUZZY_TUNER_MAX_OUTPUT_MFS];
+        size_t c;
+        size_t k;
+        size_t step_idx;
+        float weighted_sum = 0.0f;
+        float height_sum = 0.0f;
+        float prediction = 0.0f;
+
+        for (c = 0u; c < ch->mf_count; ++c) alpha[c] = 0.0f;
+
+        for (k = 0u; k < model->rule_count; ++k)
+        {
+            size_t conseq = model->rule_consequents[k];
+            if (conseq >= ch->mf_offset && conseq < ch->mf_offset + ch->mf_count)
+            {
+                size_t local_c = conseq - ch->mf_offset;
+                if (rule_firings[k] > alpha[local_c]) alpha[local_c] = rule_firings[k];
+            }
+        }
+
+        for (step_idx = 0u; step_idx < ch->sample_count; ++step_idx)
+        {
+            float y = ch->minimum + ch->step * (float)step_idx;
+            float agg = 0.0f;
+            for (c = 0u; c < ch->mf_count; ++c)
+            {
+                if (alpha[c] > agg)
+                {
+                    const fuzzy_neuron_premise_t *omf = &model->output_mfs[ch->mf_offset + c];
+                    float mu = fuzzy_function_array(omf->shape, y, omf->hedge, omf->parameter_count, eff_out_params + omf->parameter_offset);
+                    float implied = alpha[c] < mu ? alpha[c] : mu;
+                    if (implied > agg) agg = implied;
+                }
+            }
+            weighted_sum += y * agg;
+            height_sum += agg;
+        }
+
+        if (height_sum > 1.0e-12f)
+        {
+            if (ch->defuzz_method == FUZZY_DEFUZZ_BOA)
+            {
+                float half_area = 0.5f * height_sum;
+                float acc = 0.0f;
+                prediction = ch->maximum;
+                for (step_idx = 0u; step_idx < ch->sample_count; ++step_idx)
+                {
+                    float y = ch->minimum + ch->step * (float)step_idx;
+                    float agg = 0.0f;
+                    for (c = 0u; c < ch->mf_count; ++c)
+                    {
+                        if (alpha[c] > agg)
+                        {
+                            const fuzzy_neuron_premise_t *omf = &model->output_mfs[ch->mf_offset + c];
+                            float mu = fuzzy_function_array(omf->shape, y, omf->hedge, omf->parameter_count, eff_out_params + omf->parameter_offset);
+                            float implied = alpha[c] < mu ? alpha[c] : mu;
+                            if (implied > agg) agg = implied;
+                        }
+                    }
+                    acc += agg;
+                    if (acc >= half_area)
+                    {
+                        prediction = y;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                prediction = weighted_sum / height_sum;
+            }
+        }
+
+        outputs[i] = prediction;
+    }
+
+    if (inspection != NULL)
+    {
+        memcpy(inspection->effective_input_params, eff_in_params, model->input_mf_parameter_count * sizeof(float));
+        memcpy(inspection->effective_output_params, eff_out_params, model->output_mf_parameter_count * sizeof(float));
+        memcpy(inspection->input_memberships, memberships, model->input_mf_count * sizeof(float));
+        memcpy(inspection->rule_firings, rule_firings, model->rule_count * sizeof(float));
+        memcpy(inspection->outputs, outputs, model->output_count * sizeof(float));
+    }
+
+    if (activations != stack_activations) free(activations);
+    return true;
+}
+
+bool fuzzy_tuner_predict(const fuzzy_tuner_model_t *model, const float raw_inputs[], float outputs[])
+{
+    return fuzzy_tuner_predict_inspect(model, raw_inputs, outputs, NULL);
+}
+
+bool fuzzy_tuner_predict_batch_serial(const fuzzy_tuner_model_t *model, const float raw_inputs[], size_t rows, float outputs[])
+{
+    size_t row;
+    if (model == NULL || !model->compiled || raw_inputs == NULL || outputs == NULL || rows == 0u) return false;
+    for (row = 0u; row < rows; ++row)
+    {
+        if (!fuzzy_tuner_predict(model, raw_inputs + row * model->input_count, outputs + row * model->output_count)) return false;
+    }
+    return true;
+}
+
+typedef struct fuzzy_tuner_batch_ctx
+{
+    const fuzzy_tuner_model_t *model;
+    const float *raw_inputs;
+    float *outputs;
+    bool ok;
+} fuzzy_tuner_batch_ctx_t;
+
+static void fuzzy_tuner_batch_worker(size_t begin, size_t end, void *context)
+{
+    fuzzy_tuner_batch_ctx_t *ctx = (fuzzy_tuner_batch_ctx_t *)context;
+    size_t row;
+    for (row = begin; row < end; ++row)
+    {
+        if (!fuzzy_tuner_predict(ctx->model, ctx->raw_inputs + row * ctx->model->input_count, ctx->outputs + row * ctx->model->output_count))
+        {
+            ctx->ok = false;
+            return;
+        }
+    }
+}
+
+bool fuzzy_tuner_predict_batch_mt(const fuzzy_tuner_model_t *model, const float raw_inputs[], size_t rows, float outputs[])
+{
+    fuzzy_tuner_batch_ctx_t ctx;
+    if (model == NULL || !model->compiled || raw_inputs == NULL || outputs == NULL || rows == 0u) return false;
+    ctx.model = model;
+    ctx.raw_inputs = raw_inputs;
+    ctx.outputs = outputs;
+    ctx.ok = true;
+    fuzzy_parallel_for(rows, 16u, fuzzy_tuner_batch_worker, &ctx);
+    return ctx.ok;
+}
+
+bool fuzzy_tuner_dataset_metrics_mt(const fuzzy_tuner_model_t *model, const fuzzy_neuron_dataset_t *dataset, fuzzy_tuner_metrics_t *metrics)
+{
+    float *predictions;
+    size_t row;
+    size_t o;
+    double total_sq = 0.0;
+    double total_abs = 0.0;
+
+    if (model == NULL || dataset == NULL || metrics == NULL || !model->compiled ||
+        dataset->rows == 0u || dataset->input_dimensions != model->input_count ||
+        dataset->target_dimensions != model->output_count)
+    {
+        return false;
+    }
+
+    memset(metrics, 0, sizeof(*metrics));
+    metrics->output_count = model->output_count;
+
+    predictions = (float *)malloc(dataset->rows * model->output_count * sizeof(float));
+    if (predictions == NULL) return false;
+
+    if (!fuzzy_tuner_predict_batch_mt(model, dataset->inputs, dataset->rows, predictions))
+    {
+        free(predictions);
+        return false;
+    }
+
+    for (row = 0u; row < dataset->rows; ++row)
+    {
+        for (o = 0u; o < model->output_count; ++o)
+        {
+            size_t idx = row * model->output_count + o;
+            double err = (double)predictions[idx] - (double)dataset->targets[idx];
+            double sq = err * err;
+            double ab = fabs(err);
+            metrics->channel_mse[o] += sq;
+            metrics->channel_mae[o] += ab;
+            total_sq += sq;
+            total_abs += ab;
+        }
+    }
+
+    for (o = 0u; o < model->output_count; ++o)
+    {
+        metrics->channel_mse[o] /= (double)dataset->rows;
+        metrics->channel_rmse[o] = sqrt(metrics->channel_mse[o]);
+        metrics->channel_mae[o] /= (double)dataset->rows;
+    }
+
+    metrics->overall_mse = total_sq / (double)(dataset->rows * model->output_count);
+    metrics->overall_rmse = sqrt(metrics->overall_mse);
+    metrics->overall_mae = total_abs / (double)(dataset->rows * model->output_count);
+
+    free(predictions);
+    return true;
+}
+
+static bool fuzzy_tuner_plot_mf_group(
+    const fuzzy_neuron_premise_t mfs[],
+    size_t mf_count,
+    const float params[],
+    size_t channel_index,
+    float minimum,
+    float maximum,
+    float step,
+    const char *path,
+    const char *title
+)
+{
+    FILE *file;
+    size_t i;
+    size_t legend_idx = 0u;
+    const float left = 70.0f, top = 60.0f, plot_width = 880.0f, plot_height = 470.0f;
+    static const char *colors[] = {"#2563eb", "#16a34a", "#dc2626", "#9333ea", "#ea580c", "#0891b2"};
+
+    if (mfs == NULL || params == NULL || path == NULL || title == NULL || !(maximum > minimum) || !(step > 0.0f)) return false;
+    file = fopen(path, "w");
+    if (file == NULL) return false;
+
+    fprintf(file,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1000\" height=\"600\" viewBox=\"0 0 1000 600\">"
+        "<rect width=\"1000\" height=\"600\" fill=\"white\"/>"
+        "<text x=\"500\" y=\"32\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"22\">%s</text>"
+        "<line x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke=\"black\"/>"
+        "<line x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke=\"black\"/>",
+        title, left, top + plot_height, left + plot_width, top + plot_height, left, top, left, top + plot_height
+    );
+
+    for (i = 0u; i < mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &mfs[i];
+        float x;
+        const char *color;
+        if (mf->input_index != channel_index) continue;
+        color = colors[legend_idx % 6u];
+        fprintf(file, "<polyline fill=\"none\" stroke=\"%s\" stroke-width=\"3\" points=\"", color);
+        for (x = minimum; x <= maximum + step * 0.5f; x += step)
+        {
+            float mu = fuzzy_function_array(mf->shape, x, mf->hedge, mf->parameter_count, params + mf->parameter_offset);
+            float px = left + (x - minimum) * plot_width / (maximum - minimum);
+            float py = top + (1.0f - mu) * plot_height;
+            fprintf(file, "%.2f,%.2f ", px, py);
+        }
+        fprintf(file, "\"/><text x=\"740\" y=\"%.1f\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%s\">%s</text>",
+            82.0f + 22.0f * (float)legend_idx, color, mf->name != NULL ? mf->name : "mf");
+        ++legend_idx;
+    }
+
+    fprintf(file, "</svg>\n");
+    return fclose(file) == 0;
+}
+
+bool fuzzy_tuner_plot_input_mfs(const fuzzy_tuner_model_t *model, size_t input_index, const char *path, const char *title, float step)
+{
+    if (model == NULL || input_index >= model->input_count) return false;
+    return fuzzy_tuner_plot_mf_group(
+        model->input_mfs,
+        model->input_mf_count,
+        model->input_mf_parameters,
+        input_index,
+        model->inputs[input_index].minimum,
+        model->inputs[input_index].maximum,
+        step,
+        path,
+        title
+    );
+}
+
+bool fuzzy_tuner_plot_output_mfs(const fuzzy_tuner_model_t *model, size_t output_index, const char *path, const char *title, float step)
+{
+    if (model == NULL || output_index >= model->output_count) return false;
+    return fuzzy_tuner_plot_mf_group(
+        model->output_mfs,
+        model->output_mf_count,
+        model->output_mf_parameters,
+        output_index,
+        model->outputs[output_index].minimum,
+        model->outputs[output_index].maximum,
+        step,
+        path,
+        title
+    );
+}
+
+void fuzzy_tuner_print_summary(const fuzzy_tuner_model_t *model)
+{
+    size_t i;
+    size_t p;
+    if (model == NULL) return;
+    printf("Fuzzy Rules + ANN Tuner Model: %s\n", model->name != NULL ? model->name : "(unnamed)");
+    printf("  Inputs: %zu (%zu MFs, %zu params) | Outputs: %zu (%zu MFs, %zu params) | Rules: %zu\n",
+        model->input_count, model->input_mf_count, model->input_mf_parameter_count,
+        model->output_count, model->output_mf_count, model->output_mf_parameter_count,
+        model->rule_count);
+    printf("  ANN: %zu layers (%zu weights, %zu biases), tuner_scale=%.3f, ann_enabled=%s\n",
+        model->layer_count, model->weight_count, model->bias_count,
+        model->tuner_scale, model->ann_enabled ? "true" : "false");
+    for (i = 0u; i < model->output_count; ++i)
+    {
+        printf("  Output[%zu] %-16s [%.2f, %.2f] step=%.3f defuzz=%s (%zu MFs)\n",
+            i,
+            model->outputs[i].name != NULL ? model->outputs[i].name : "out",
+            model->outputs[i].minimum,
+            model->outputs[i].maximum,
+            model->outputs[i].step,
+            model->outputs[i].defuzz_method == FUZZY_DEFUZZ_BOA ? "BOA" : "Mamdani-COG",
+            model->outputs[i].mf_count);
+    }
+    printf("  Base Input MFs:\n");
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        printf("    [%2zu] %-20s in=%zu shape=%u params=[", i, mf->name, mf->input_index, (unsigned)mf->shape);
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            printf("%s%.3f", p > 0u ? ", " : "", model->input_mf_parameters[mf->parameter_offset + p]);
+        }
+        printf("]\n");
+    }
+    printf("  Base Output MFs:\n");
+    for (i = 0u; i < model->output_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->output_mfs[i];
+        printf("    [%2zu] %-20s out=%zu shape=%u params=[", i, mf->name, mf->input_index, (unsigned)mf->shape);
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            printf("%s%.3f", p > 0u ? ", " : "", model->output_mf_parameters[mf->parameter_offset + p]);
+        }
+        printf("]\n");
+    }
+}
+
+#ifdef FUZZY_NEURON_OPENCL
+
+static size_t fuzzy_tuner_layer_source_offset(const fuzzy_tuner_model_t *model, size_t layer)
+{
+    size_t offset;
+    size_t i;
+    if (layer == 0u) return 0u;
+    offset = model->input_count;
+    for (i = 0u; i + 1u < layer; ++i) offset += model->layers[i].count;
+    return offset;
+}
+
+static size_t fuzzy_tuner_layer_destination_offset(const fuzzy_tuner_model_t *model, size_t layer)
+{
+    return fuzzy_tuner_layer_source_offset(model, layer) +
+        (layer == 0u ? model->input_count : model->layers[layer - 1u].count);
+}
+
+static bool fuzzy_tuner_plan_reduction_local_size(
+    const fuzzy_tuner_opencl_t *cl,
+    const fuzzy_neuron_opencl_kernel_plan_t *plan,
+    size_t item_count,
+    size_t elem_bytes,
+    size_t *local_size
+)
+{
+    size_t limit;
+    size_t selected;
+    size_t local_mem_limit;
+
+    if (cl == NULL || plan == NULL || item_count == 0u || elem_bytes == 0u || local_size == NULL) return false;
+    if (plan->static_local_memory >= cl->device_local_memory) return false;
+
+    limit = item_count;
+    if (limit > cl->device_max_work_group_size) limit = cl->device_max_work_group_size;
+    if (limit > plan->maximum_work_group_size) limit = plan->maximum_work_group_size;
+    local_mem_limit = (size_t)((cl->device_local_memory - plan->static_local_memory) / (cl_ulong)elem_bytes);
+    if (limit > local_mem_limit) limit = local_mem_limit;
+    if (limit == 0u) return false;
+
+    selected = 1u;
+    while (selected <= limit / 2u) selected *= 2u;
+    if (plan->preferred_multiple > 1u && selected >= plan->preferred_multiple)
+    {
+        while (selected > 1u && (selected % plan->preferred_multiple) != 0u) selected /= 2u;
+    }
+    if (selected == 0u) selected = 1u;
+    *local_size = selected;
+    return true;
+}
+
+static bool fuzzy_tuner_plan_tiled_local_size(
+    const fuzzy_tuner_opencl_t *cl,
+    const fuzzy_neuron_opencl_kernel_plan_t *plan,
+    size_t first_count,
+    size_t second_count,
+    size_t *first_local,
+    size_t *second_local
+)
+{
+    size_t first = 1u;
+    size_t second = 1u;
+    if (cl == NULL || plan == NULL || first_count == 0u || second_count == 0u || first_local == NULL || second_local == NULL) return false;
+    if (plan->static_local_memory >= cl->device_local_memory) return false;
+
+    for (;;)
+    {
+        size_t next_first = first;
+        size_t next_second = second;
+        size_t local_bytes;
+
+        if ((first <= second && first < first_count) || second >= second_count)
+        {
+            next_first = first <= first_count / 2u ? first * 2u : first;
+        }
+        else
+        {
+            next_second = second <= second_count / 2u ? second * 2u : second;
+        }
+
+        if (next_first == first && next_second == second) break;
+        if (next_first > cl->device_max_work_group_size / next_second ||
+            next_first * next_second > plan->maximum_work_group_size)
+        {
+            break;
+        }
+
+        local_bytes = (next_first * next_second + next_second * next_second) * sizeof(float);
+        if ((cl_ulong)local_bytes > cl->device_local_memory - plan->static_local_memory) break;
+
+        first = next_first;
+        second = next_second;
+    }
+
+    *first_local = first;
+    *second_local = second;
+    return true;
+}
+
+void fuzzy_tuner_opencl_free(fuzzy_tuner_model_t *model)
+{
+    fuzzy_tuner_opencl_t *cl;
+    if (model == NULL) return;
+    cl = &model->opencl;
+
+#define FT_REL_MEM(m) do { if (cl->m != NULL) clReleaseMemObject(cl->m); } while (0)
+#define FT_REL_KER(k) do { if (cl->k != NULL) clReleaseKernel(cl->k); } while (0)
+    FT_REL_MEM(d_dataset_targets);
+    FT_REL_MEM(d_dataset_inputs);
+    FT_REL_MEM(d_best_base_params);
+    FT_REL_MEM(d_best_biases);
+    FT_REL_MEM(d_best_weights);
+    FT_REL_MEM(d_best_updated);
+    FT_REL_MEM(d_best_loss);
+    FT_REL_MEM(d_epoch_loss);
+    FT_REL_MEM(d_loss_partials);
+    FT_REL_MEM(d_losses);
+    FT_REL_MEM(d_predictions);
+    FT_REL_MEM(d_bias_second_moment);
+    FT_REL_MEM(d_bias_first_moment);
+    FT_REL_MEM(d_weight_second_moment);
+    FT_REL_MEM(d_weight_first_moment);
+    FT_REL_MEM(d_deltas);
+    FT_REL_MEM(d_activations);
+    FT_REL_MEM(d_biases);
+    FT_REL_MEM(d_weights);
+    FT_REL_MEM(d_membership_gradients);
+    FT_REL_MEM(d_expression_gradients);
+    FT_REL_MEM(d_raw_rule_gradients);
+    FT_REL_MEM(d_raw_rules);
+    FT_REL_MEM(d_expression_values);
+    FT_REL_MEM(d_memberships);
+    FT_REL_MEM(d_raw_inputs);
+    FT_REL_MEM(d_sample_mf_gradients);
+    FT_REL_MEM(d_eff_params);
+    FT_REL_MEM(d_base_second_moment);
+    FT_REL_MEM(d_base_first_moment);
+    FT_REL_MEM(d_base_params);
+    FT_REL_MEM(d_rule_consequents);
+    FT_REL_MEM(d_rule_roots);
+    FT_REL_MEM(d_expressions);
+    FT_REL_MEM(d_output_channels);
+    FT_REL_MEM(d_output_mfs);
+    FT_REL_MEM(d_input_mfs);
+    FT_REL_MEM(d_all_mfs);
+    FT_REL_MEM(d_input_max);
+    FT_REL_MEM(d_input_min);
+
+    FT_REL_KER(project_base_mfs_kernel);
+    FT_REL_KER(base_mf_update_kernel);
+    FT_REL_KER(rules_backward_kernel);
+    FT_REL_KER(defuzz_forward_backward_kernel);
+    FT_REL_KER(rules_forward_kernel);
+    FT_REL_KER(effective_mfs_kernel);
+    FT_REL_KER(prepare_inputs_kernel);
+    FT_REL_KER(conditional_copy_kernel);
+    FT_REL_KER(best_model_kernel);
+    FT_REL_KER(loss_reduce_final_kernel);
+    FT_REL_KER(loss_reduce_stage_kernel);
+    FT_REL_KER(layer_backward_update_kernel);
+    FT_REL_KER(hidden_delta_gemm_tiled_kernel);
+    FT_REL_KER(forward_gemm_tiled_kernel);
+#undef FT_REL_MEM
+#undef FT_REL_KER
+
+    if (cl->program != NULL) clReleaseProgram(cl->program);
+    if (cl->queue != NULL) clReleaseCommandQueue(cl->queue);
+    if (cl->context != NULL) clReleaseContext(cl->context);
+    memset(cl, 0, sizeof(*cl));
+}
+
+bool fuzzy_tuner_opencl_init(fuzzy_tuner_model_t *model, size_t batch_capacity, const char *kernel_path)
+{
+    fuzzy_tuner_opencl_t *cl;
+    char *source;
+    cl_int error;
+    cl_uint platform_count = 0u;
+    cl_platform_id *platforms = NULL;
+    cl_uint pi;
+    bool gpu_found = false;
+    cl_ulong best_score = 0u;
+    cl_ulong best_mem = 0u;
+    size_t total_mf_count;
+    size_t total_param_count;
+
+    if (model == NULL || !model->compiled || batch_capacity == 0u || kernel_path == NULL) return false;
+
+    cl = &model->opencl;
+    fuzzy_tuner_opencl_free(model);
+    cl->batch_capacity = batch_capacity;
+
+    source = fuzzy_neuron_read_text(kernel_path);
+    if (source == NULL)
+    {
+        fprintf(stderr, "OpenCL fail-fast: cannot read kernel file %s\n", kernel_path);
+        return false;
+    }
+
+    if (clGetPlatformIDs(0u, NULL, &platform_count) != CL_SUCCESS || platform_count == 0u)
+    {
+        free(source);
+        return false;
+    }
+
+    platforms = (cl_platform_id *)malloc(platform_count * sizeof(*platforms));
+    if (platforms == NULL || clGetPlatformIDs(platform_count, platforms, NULL) != CL_SUCCESS)
+    {
+        free(platforms);
+        free(source);
+        return false;
+    }
+
+    for (pi = 0u; pi < platform_count; ++pi)
+    {
+        cl_uint dev_count = 0u;
+        cl_device_id *devices;
+        cl_uint di;
+
+        if (clGetDeviceIDs(platforms[pi], CL_DEVICE_TYPE_GPU, 0u, NULL, &dev_count) != CL_SUCCESS || dev_count == 0u) continue;
+        devices = (cl_device_id *)malloc(dev_count * sizeof(*devices));
+        if (devices == NULL) continue;
+
+        if (clGetDeviceIDs(platforms[pi], CL_DEVICE_TYPE_GPU, dev_count, devices, NULL) == CL_SUCCESS)
+        {
+            for (di = 0u; di < dev_count; ++di)
+            {
+                cl_bool avail = CL_FALSE;
+                cl_bool comp = CL_FALSE;
+                cl_uint cus = 0u;
+                cl_uint clk = 0u;
+                cl_ulong mem = 0u;
+                cl_ulong score;
+
+                if (clGetDeviceInfo(devices[di], CL_DEVICE_AVAILABLE, sizeof(avail), &avail, NULL) != CL_SUCCESS ||
+                    clGetDeviceInfo(devices[di], CL_DEVICE_COMPILER_AVAILABLE, sizeof(comp), &comp, NULL) != CL_SUCCESS ||
+                    clGetDeviceInfo(devices[di], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cus), &cus, NULL) != CL_SUCCESS ||
+                    clGetDeviceInfo(devices[di], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(clk), &clk, NULL) != CL_SUCCESS ||
+                    clGetDeviceInfo(devices[di], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(mem), &mem, NULL) != CL_SUCCESS)
+                {
+                    continue;
+                }
+                if (avail != CL_TRUE || comp != CL_TRUE) continue;
+
+                score = (cl_ulong)cus * (cl_ulong)clk;
+                if (!gpu_found || score > best_score || (score == best_score && mem > best_mem))
+                {
+                    cl->platform = platforms[pi];
+                    cl->device = devices[di];
+                    best_score = score;
+                    best_mem = mem;
+                    gpu_found = true;
+                }
+            }
+        }
+        free(devices);
+    }
+    free(platforms);
+
+    if (!gpu_found)
+    {
+        fprintf(stderr, "OpenCL fail-fast: no OpenCL GPU device available.\n");
+        free(source);
+        return false;
+    }
+
+    cl->context = clCreateContext(NULL, 1u, &cl->device, NULL, NULL, &error);
+    if (error != CL_SUCCESS || cl->context == NULL) { free(source); fuzzy_tuner_opencl_free(model); return false; }
+
+#ifdef FUZZY_OPENCL_PROFILE
+    cl->queue = clCreateCommandQueue(cl->context, cl->device, CL_QUEUE_PROFILING_ENABLE, &error);
+#else
+    cl->queue = clCreateCommandQueue(cl->context, cl->device, 0u, &error);
+#endif
+    if (error != CL_SUCCESS || cl->queue == NULL) { free(source); fuzzy_tuner_opencl_free(model); return false; }
+
+    cl->program = clCreateProgramWithSource(cl->context, 1u, (const char **)&source, NULL, &error);
+    free(source);
+    if (error != CL_SUCCESS || cl->program == NULL) { fuzzy_tuner_opencl_free(model); return false; }
+
+    error = clBuildProgram(cl->program, 1u, &cl->device, "-cl-mad-enable -cl-fast-relaxed-math", NULL, NULL);
+    if (error != CL_SUCCESS)
+    {
+        size_t log_size = 0u;
+        char *log = NULL;
+        clGetProgramBuildInfo(cl->program, cl->device, CL_PROGRAM_BUILD_LOG, 0u, NULL, &log_size);
+        log = (char *)malloc(log_size + 1u);
+        if (log != NULL)
+        {
+            clGetProgramBuildInfo(cl->program, cl->device, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+            log[log_size] = '\0';
+            fprintf(stderr, "OpenCL tuner kernel build log:\n%s\n", log);
+            free(log);
+        }
+        fuzzy_tuner_opencl_free(model);
+        return false;
+    }
+
+    if (!fuzzy_neuron_opencl_create_kernel(cl->program, "fn_forward_gemm_tiled", &cl->forward_gemm_tiled_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_hidden_delta_gemm_tiled", &cl->hidden_delta_gemm_tiled_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_layer_backward_update", &cl->layer_backward_update_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_loss_reduce_stage", &cl->loss_reduce_stage_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_loss_reduce_final", &cl->loss_reduce_final_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_best_model", &cl->best_model_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_conditional_copy", &cl->conditional_copy_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_prepare_inputs", &cl->prepare_inputs_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_effective_mfs", &cl->effective_mfs_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_rules_forward", &cl->rules_forward_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_defuzz_forward_backward", &cl->defuzz_forward_backward_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_rules_backward", &cl->rules_backward_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_base_mf_update", &cl->base_mf_update_kernel) ||
+        !fuzzy_neuron_opencl_create_kernel(cl->program, "fn_tuner_project_base_mfs", &cl->project_base_mfs_kernel))
+    {
+        fuzzy_tuner_opencl_free(model);
+        return false;
+    }
+
+    if (clGetDeviceInfo(cl->device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(cl->device_max_work_group_size), &cl->device_max_work_group_size, NULL) != CL_SUCCESS ||
+        clGetDeviceInfo(cl->device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl->device_local_memory), &cl->device_local_memory, NULL) != CL_SUCCESS ||
+        clGetDeviceInfo(cl->device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl->device_compute_units), &cl->device_compute_units, NULL) != CL_SUCCESS ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->forward_gemm_tiled_kernel, &cl->forward_gemm_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->hidden_delta_gemm_tiled_kernel, &cl->hidden_delta_gemm_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->layer_backward_update_kernel, &cl->layer_backward_update_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->loss_reduce_stage_kernel, &cl->loss_reduce_stage_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->loss_reduce_final_kernel, &cl->loss_reduce_final_plan) ||
+        !fuzzy_neuron_opencl_query_kernel_plan(cl->device, cl->base_mf_update_kernel, &cl->base_mf_update_plan))
+    {
+        fuzzy_tuner_opencl_free(model);
+        return false;
+    }
+
+    total_mf_count = model->input_mf_count + model->output_mf_count;
+    total_param_count = model->input_mf_parameter_count + model->output_mf_parameter_count;
+
+    {
+        float input_min[FUZZY_TUNER_MAX_INPUTS];
+        float input_max[FUZZY_TUNER_MAX_INPUTS];
+        fuzzy_neuron_opencl_premise_abi_t *all_mfs;
+        fuzzy_tuner_opencl_output_channel_abi_t channels[FUZZY_TUNER_MAX_OUTPUTS];
+        fuzzy_neuron_opencl_expression_abi_t *expressions;
+        cl_uint *rule_roots;
+        cl_uint *rule_consequents;
+        float *base_params;
+        size_t i;
+
+        all_mfs = (fuzzy_neuron_opencl_premise_abi_t *)malloc(total_mf_count * sizeof(*all_mfs));
+        expressions = (fuzzy_neuron_opencl_expression_abi_t *)malloc(model->expression_count * sizeof(*expressions));
+        rule_roots = (cl_uint *)malloc(model->rule_count * sizeof(*rule_roots));
+        rule_consequents = (cl_uint *)malloc(model->rule_count * sizeof(*rule_consequents));
+        base_params = (float *)malloc(total_param_count * sizeof(float));
+
+        if (all_mfs == NULL || expressions == NULL || rule_roots == NULL || rule_consequents == NULL || base_params == NULL)
+        {
+            free(all_mfs); free(expressions); free(rule_roots); free(rule_consequents); free(base_params);
+            fuzzy_tuner_opencl_free(model);
+            return false;
+        }
+
+        for (i = 0u; i < model->input_count; ++i)
+        {
+            input_min[i] = model->inputs[i].minimum;
+            input_max[i] = model->inputs[i].maximum;
+        }
+
+        for (i = 0u; i < model->input_mf_count; ++i)
+        {
+            all_mfs[i].input_index = (cl_uint)model->input_mfs[i].input_index;
+            all_mfs[i].shape = (cl_uint)model->input_mfs[i].shape;
+            all_mfs[i].parameter_offset = (cl_uint)model->input_mfs[i].parameter_offset;
+            all_mfs[i].parameter_count = (cl_uint)model->input_mfs[i].parameter_count;
+            all_mfs[i].trainable_mask = (cl_uint)model->input_mfs[i].trainable_mask;
+            all_mfs[i].reserved0 = 0u;
+            all_mfs[i].hedge = model->input_mfs[i].hedge;
+            all_mfs[i].domain_minimum = model->input_mfs[i].domain_minimum;
+            all_mfs[i].domain_maximum = model->input_mfs[i].domain_maximum;
+            all_mfs[i].epsilon = model->input_mfs[i].epsilon;
+        }
+
+        for (i = 0u; i < model->output_mf_count; ++i)
+        {
+            size_t dst = model->input_mf_count + i;
+            all_mfs[dst].input_index = (cl_uint)model->output_mfs[i].input_index;
+            all_mfs[dst].shape = (cl_uint)model->output_mfs[i].shape;
+            all_mfs[dst].parameter_offset = (cl_uint)(model->input_mf_parameter_count + model->output_mfs[i].parameter_offset);
+            all_mfs[dst].parameter_count = (cl_uint)model->output_mfs[i].parameter_count;
+            all_mfs[dst].trainable_mask = (cl_uint)model->output_mfs[i].trainable_mask;
+            all_mfs[dst].reserved0 = 0u;
+            all_mfs[dst].hedge = model->output_mfs[i].hedge;
+            all_mfs[dst].domain_minimum = model->output_mfs[i].domain_minimum;
+            all_mfs[dst].domain_maximum = model->output_mfs[i].domain_maximum;
+            all_mfs[dst].epsilon = model->output_mfs[i].epsilon;
+        }
+
+        for (i = 0u; i < model->output_count; ++i)
+        {
+            channels[i].minimum = model->outputs[i].minimum;
+            channels[i].maximum = model->outputs[i].maximum;
+            channels[i].step = model->outputs[i].step;
+            channels[i].sample_count = (cl_uint)model->outputs[i].sample_count;
+            channels[i].defuzz_method = model->outputs[i].defuzz_method == FUZZY_DEFUZZ_BOA ? 1u : 0u;
+            channels[i].mf_offset = (cl_uint)model->outputs[i].mf_offset;
+            channels[i].mf_count = (cl_uint)model->outputs[i].mf_count;
+            channels[i].reserved0 = 0u;
+        }
+
+        for (i = 0u; i < model->expression_count; ++i)
+        {
+            expressions[i].kind = (cl_uint)model->expressions[i].kind;
+            expressions[i].left = (cl_uint)model->expressions[i].left;
+            expressions[i].right = (cl_uint)model->expressions[i].right;
+            expressions[i].value = (cl_uint)model->expressions[i].value;
+        }
+
+        for (i = 0u; i < model->rule_count; ++i)
+        {
+            rule_roots[i] = (cl_uint)model->rule_roots[i];
+            rule_consequents[i] = (cl_uint)model->rule_consequents[i];
+        }
+
+        memcpy(base_params, model->input_mf_parameters, model->input_mf_parameter_count * sizeof(float));
+        memcpy(base_params + model->input_mf_parameter_count, model->output_mf_parameters, model->output_mf_parameter_count * sizeof(float));
+
+#define FT_BUF(member, flags, bytes) do { \
+        cl->member = clCreateBuffer(cl->context, (flags), (bytes), NULL, &error); \
+        if (error != CL_SUCCESS || cl->member == NULL) { \
+            free(all_mfs); free(expressions); free(rule_roots); free(rule_consequents); free(base_params); \
+            fuzzy_tuner_opencl_free(model); return false; \
+        } \
+    } while (0)
+
+        FT_BUF(d_input_min, CL_MEM_READ_ONLY, model->input_count * sizeof(float));
+        FT_BUF(d_input_max, CL_MEM_READ_ONLY, model->input_count * sizeof(float));
+        FT_BUF(d_all_mfs, CL_MEM_READ_ONLY, total_mf_count * sizeof(*all_mfs));
+        FT_BUF(d_input_mfs, CL_MEM_READ_ONLY, model->input_mf_count * sizeof(*all_mfs));
+        FT_BUF(d_output_mfs, CL_MEM_READ_ONLY, model->output_mf_count * sizeof(*all_mfs));
+        FT_BUF(d_output_channels, CL_MEM_READ_ONLY, model->output_count * sizeof(channels[0]));
+        FT_BUF(d_expressions, CL_MEM_READ_ONLY, model->expression_count * sizeof(*expressions));
+        FT_BUF(d_rule_roots, CL_MEM_READ_ONLY, model->rule_count * sizeof(*rule_roots));
+        FT_BUF(d_rule_consequents, CL_MEM_READ_ONLY, model->rule_count * sizeof(*rule_consequents));
+
+        FT_BUF(d_base_params, CL_MEM_READ_WRITE, total_param_count * sizeof(float));
+        FT_BUF(d_base_first_moment, CL_MEM_READ_WRITE, total_param_count * sizeof(float));
+        FT_BUF(d_base_second_moment, CL_MEM_READ_WRITE, total_param_count * sizeof(float));
+        FT_BUF(d_eff_params, CL_MEM_READ_WRITE, batch_capacity * total_param_count * sizeof(float));
+        FT_BUF(d_sample_mf_gradients, CL_MEM_READ_WRITE, batch_capacity * total_param_count * sizeof(float));
+
+        FT_BUF(d_raw_inputs, CL_MEM_READ_WRITE, batch_capacity * model->input_count * sizeof(float));
+        FT_BUF(d_memberships, CL_MEM_READ_WRITE, batch_capacity * model->input_mf_count * sizeof(float));
+        FT_BUF(d_expression_values, CL_MEM_READ_WRITE, batch_capacity * model->expression_count * sizeof(float));
+        FT_BUF(d_raw_rules, CL_MEM_READ_WRITE, batch_capacity * model->rule_count * sizeof(float));
+        FT_BUF(d_raw_rule_gradients, CL_MEM_READ_WRITE, batch_capacity * model->rule_count * sizeof(float));
+        FT_BUF(d_expression_gradients, CL_MEM_READ_WRITE, batch_capacity * model->expression_count * sizeof(float));
+        FT_BUF(d_membership_gradients, CL_MEM_READ_WRITE, batch_capacity * model->input_mf_count * sizeof(float));
+
+        FT_BUF(d_weights, CL_MEM_READ_WRITE, model->weight_count * sizeof(float));
+        FT_BUF(d_biases, CL_MEM_READ_WRITE, model->bias_count * sizeof(float));
+        FT_BUF(d_activations, CL_MEM_READ_WRITE, batch_capacity * model->neuron_count * sizeof(float));
+        FT_BUF(d_deltas, CL_MEM_READ_WRITE, batch_capacity * model->neuron_count * sizeof(float));
+        FT_BUF(d_weight_first_moment, CL_MEM_READ_WRITE, model->weight_count * sizeof(float));
+        FT_BUF(d_weight_second_moment, CL_MEM_READ_WRITE, model->weight_count * sizeof(float));
+        FT_BUF(d_bias_first_moment, CL_MEM_READ_WRITE, model->bias_count * sizeof(float));
+        FT_BUF(d_bias_second_moment, CL_MEM_READ_WRITE, model->bias_count * sizeof(float));
+
+        FT_BUF(d_predictions, CL_MEM_READ_WRITE, batch_capacity * model->output_count * sizeof(float));
+        FT_BUF(d_losses, CL_MEM_READ_WRITE, batch_capacity * model->output_count * sizeof(float));
+        FT_BUF(d_loss_partials, CL_MEM_READ_WRITE, batch_capacity * model->output_count * sizeof(float));
+        FT_BUF(d_epoch_loss, CL_MEM_READ_WRITE, sizeof(float));
+        FT_BUF(d_best_loss, CL_MEM_READ_WRITE, sizeof(float));
+        FT_BUF(d_best_updated, CL_MEM_READ_WRITE, sizeof(cl_uint));
+        FT_BUF(d_best_weights, CL_MEM_READ_WRITE, model->weight_count * sizeof(float));
+        FT_BUF(d_best_biases, CL_MEM_READ_WRITE, model->bias_count * sizeof(float));
+        FT_BUF(d_best_base_params, CL_MEM_READ_WRITE, total_param_count * sizeof(float));
+        cl->loss_partial_capacity = batch_capacity * model->output_count;
+#undef FT_BUF
+
+        error = CL_SUCCESS;
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_input_min, CL_FALSE, 0u, model->input_count * sizeof(float), input_min, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_input_max, CL_FALSE, 0u, model->input_count * sizeof(float), input_max, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_all_mfs, CL_FALSE, 0u, total_mf_count * sizeof(*all_mfs), all_mfs, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_input_mfs, CL_FALSE, 0u, model->input_mf_count * sizeof(*all_mfs), all_mfs, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_output_mfs, CL_FALSE, 0u, model->output_mf_count * sizeof(*all_mfs), all_mfs + model->input_mf_count, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_output_channels, CL_FALSE, 0u, model->output_count * sizeof(channels[0]), channels, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_expressions, CL_FALSE, 0u, model->expression_count * sizeof(*expressions), expressions, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_rule_roots, CL_FALSE, 0u, model->rule_count * sizeof(*rule_roots), rule_roots, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_rule_consequents, CL_FALSE, 0u, model->rule_count * sizeof(*rule_consequents), rule_consequents, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_base_params, CL_FALSE, 0u, total_param_count * sizeof(float), base_params, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_weights, CL_FALSE, 0u, model->weight_count * sizeof(float), model->weights, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_biases, CL_TRUE, 0u, model->bias_count * sizeof(float), model->biases, 0u, NULL, NULL);
+
+        free(all_mfs);
+        free(expressions);
+        free(rule_roots);
+        free(rule_consequents);
+        free(base_params);
+        if (error != CL_SUCCESS) { fuzzy_tuner_opencl_free(model); return false; }
+    }
+
+    cl->optimizer_step = 0u;
+    cl->ready = true;
+    return true;
+}
+
+bool fuzzy_tuner_opencl_sync_to_device(fuzzy_tuner_model_t *model)
+{
+    fuzzy_tuner_opencl_t *cl;
+    size_t total_param_count;
+    float *base_params;
+    cl_int error = CL_SUCCESS;
+
+    if (model == NULL || !model->opencl.ready) return false;
+    cl = &model->opencl;
+    total_param_count = model->input_mf_parameter_count + model->output_mf_parameter_count;
+    base_params = (float *)malloc(total_param_count * sizeof(float));
+    if (base_params == NULL) return false;
+    memcpy(base_params, model->input_mf_parameters, model->input_mf_parameter_count * sizeof(float));
+    memcpy(base_params + model->input_mf_parameter_count, model->output_mf_parameters, model->output_mf_parameter_count * sizeof(float));
+
+    error |= clEnqueueWriteBuffer(cl->queue, cl->d_base_params, CL_FALSE, 0u, total_param_count * sizeof(float), base_params, 0u, NULL, NULL);
+    error |= clEnqueueWriteBuffer(cl->queue, cl->d_weights, CL_FALSE, 0u, model->weight_count * sizeof(float), model->weights, 0u, NULL, NULL);
+    error |= clEnqueueWriteBuffer(cl->queue, cl->d_biases, CL_TRUE, 0u, model->bias_count * sizeof(float), model->biases, 0u, NULL, NULL);
+    free(base_params);
+    return error == CL_SUCCESS;
+}
+
+static bool fuzzy_tuner_opencl_enqueue_forward(
+    fuzzy_tuner_model_t *model,
+    cl_mem d_source_inputs,
+    cl_uint batch_start,
+    cl_uint sample_count
+)
+{
+    fuzzy_tuner_opencl_t *cl = &model->opencl;
+    cl_uint input_count = (cl_uint)model->input_count;
+    cl_uint neuron_count = (cl_uint)model->neuron_count;
+    cl_uint total_mf_count = (cl_uint)(model->input_mf_count + model->output_mf_count);
+    cl_uint total_param_count = (cl_uint)(model->input_mf_parameter_count + model->output_mf_parameter_count);
+    cl_uint ann_out_offset = (cl_uint)fuzzy_tuner_layer_destination_offset(model, model->layer_count - 1u);
+    cl_uint premise_count = (cl_uint)model->input_mf_count;
+    cl_uint expr_count = (cl_uint)model->expression_count;
+    cl_uint rule_count = (cl_uint)model->rule_count;
+    cl_uint logic_method = (cl_uint)model->logic_method;
+    cl_float tuner_scale = model->tuner_scale;
+    cl_uint ann_enabled = model->ann_enabled ? 1u : 0u;
+    size_t prep_global = (size_t)sample_count * model->input_count;
+    size_t mf_global[2] = {(size_t)sample_count, (size_t)total_mf_count};
+    size_t sample_global = (size_t)sample_count;
+    size_t layer;
+    cl_int error = CL_SUCCESS;
+
+    /* 1. Slice inputs from GPU-resident dataset and normalize into ANN input buffer */
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 0u, sizeof(cl_mem), &d_source_inputs);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 1u, sizeof(cl_mem), &cl->d_input_min);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 2u, sizeof(cl_mem), &cl->d_input_max);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 3u, sizeof(cl_mem), &cl->d_raw_inputs);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 4u, sizeof(cl_mem), &cl->d_activations);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 5u, sizeof(batch_start), &batch_start);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 6u, sizeof(sample_count), &sample_count);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 7u, sizeof(input_count), &input_count);
+    error |= clSetKernelArg(cl->prepare_inputs_kernel, 8u, sizeof(neuron_count), &neuron_count);
+    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->prepare_inputs_kernel, 1u, NULL, &prep_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+    /* 2. ANN forward via cached tiled GEMM */
+    if (ann_enabled != 0u && tuner_scale > 0.0f)
+    {
+        for (layer = 0u; layer < model->layer_count; ++layer)
+        {
+            const fuzzy_neuron_layer_t *cur = &model->layers[layer];
+            cl_uint src_offset = (cl_uint)fuzzy_tuner_layer_source_offset(model, layer);
+            cl_uint src_count = (cl_uint)(layer == 0u ? model->input_count : model->layers[layer - 1u].count);
+            cl_uint dst_offset = (cl_uint)fuzzy_tuner_layer_destination_offset(model, layer);
+            cl_uint dst_count = (cl_uint)cur->count;
+            cl_uint w_offset = (cl_uint)cur->weight_offset;
+            cl_uint b_offset = (cl_uint)cur->bias_offset;
+            cl_uint act_kind = (cl_uint)cur->activation;
+            size_t local_size[2];
+            size_t global_size[2];
+
+            if (!fuzzy_tuner_plan_tiled_local_size(cl, &cl->forward_gemm_plan, sample_count, cur->count, &local_size[0], &local_size[1])) return false;
+            global_size[0] = ((size_t)sample_count + local_size[0] - 1u) / local_size[0] * local_size[0];
+            global_size[1] = (cur->count + local_size[1] - 1u) / local_size[1] * local_size[1];
+
+            error = CL_SUCCESS;
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 1u, sizeof(cl_mem), &cl->d_biases);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 2u, sizeof(cl_mem), &cl->d_activations);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 3u, sizeof(sample_count), &sample_count);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 4u, sizeof(neuron_count), &neuron_count);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 5u, sizeof(src_offset), &src_offset);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 6u, sizeof(src_count), &src_count);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 7u, sizeof(dst_offset), &dst_offset);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 8u, sizeof(dst_count), &dst_count);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 9u, sizeof(w_offset), &w_offset);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 10u, sizeof(b_offset), &b_offset);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 11u, sizeof(act_kind), &act_kind);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 12u, local_size[0] * local_size[1] * sizeof(float), NULL);
+            error |= clSetKernelArg(cl->forward_gemm_tiled_kernel, 13u, local_size[1] * local_size[1] * sizeof(float), NULL);
+            if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->forward_gemm_tiled_kernel, 2u, NULL, global_size, local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
+        }
+    }
+
+    /* 3. Compute & project per-sample effective input + output MF parameters */
+    error = CL_SUCCESS;
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 0u, sizeof(cl_mem), &cl->d_all_mfs);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 1u, sizeof(cl_mem), &cl->d_base_params);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 2u, sizeof(cl_mem), &cl->d_activations);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 3u, sizeof(cl_mem), &cl->d_eff_params);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 4u, sizeof(sample_count), &sample_count);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 5u, sizeof(total_mf_count), &total_mf_count);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 6u, sizeof(total_param_count), &total_param_count);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 7u, sizeof(neuron_count), &neuron_count);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 8u, sizeof(ann_out_offset), &ann_out_offset);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 9u, sizeof(tuner_scale), &tuner_scale);
+    error |= clSetKernelArg(cl->effective_mfs_kernel, 10u, sizeof(ann_enabled), &ann_enabled);
+    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->effective_mfs_kernel, 2u, NULL, mf_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+    /* 4. Fused premise + expression DAG + static rule firing forward */
+    error = CL_SUCCESS;
+    error |= clSetKernelArg(cl->rules_forward_kernel, 0u, sizeof(cl_mem), &cl->d_raw_inputs);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 1u, sizeof(cl_mem), &cl->d_input_mfs);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 2u, sizeof(cl_mem), &cl->d_eff_params);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 3u, sizeof(cl_mem), &cl->d_expressions);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 4u, sizeof(cl_mem), &cl->d_rule_roots);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 5u, sizeof(cl_mem), &cl->d_memberships);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 6u, sizeof(cl_mem), &cl->d_expression_values);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 7u, sizeof(cl_mem), &cl->d_raw_rules);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 8u, sizeof(sample_count), &sample_count);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 9u, sizeof(input_count), &input_count);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 10u, sizeof(premise_count), &premise_count);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 11u, sizeof(expr_count), &expr_count);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 12u, sizeof(rule_count), &rule_count);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 13u, sizeof(total_param_count), &total_param_count);
+    error |= clSetKernelArg(cl->rules_forward_kernel, 14u, sizeof(logic_method), &logic_method);
+    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->rules_forward_kernel, 1u, NULL, &sample_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+    return true;
+}
+
+bool fuzzy_tuner_opencl_predict(fuzzy_tuner_model_t *model, const float raw_inputs[], size_t rows, float outputs[])
+{
+    fuzzy_tuner_opencl_t *cl;
+    size_t batch_start;
+    cl_int error;
+    size_t input_bytes;
+
+    if (model == NULL || raw_inputs == NULL || outputs == NULL || rows == 0u || !model->opencl.ready) return false;
+    cl = &model->opencl;
+    input_bytes = rows * model->input_count * sizeof(float);
+
+    if (cl->dataset_capacity_rows < rows || cl->d_dataset_inputs == NULL)
+    {
+        if (cl->d_dataset_inputs != NULL) { clReleaseMemObject(cl->d_dataset_inputs); cl->d_dataset_inputs = NULL; }
+        if (cl->d_dataset_targets != NULL) { clReleaseMemObject(cl->d_dataset_targets); cl->d_dataset_targets = NULL; }
+        cl->d_dataset_inputs = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, input_bytes, NULL, &error);
+        if (error != CL_SUCCESS || cl->d_dataset_inputs == NULL) return false;
+        cl->d_dataset_targets = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, rows * model->output_count * sizeof(float), NULL, &error);
+        if (error != CL_SUCCESS || cl->d_dataset_targets == NULL) return false;
+        cl->dataset_capacity_rows = rows;
+    }
+
+    if (clEnqueueWriteBuffer(cl->queue, cl->d_dataset_inputs, CL_FALSE, 0u, input_bytes, raw_inputs, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+    for (batch_start = 0u; batch_start < rows; batch_start += cl->batch_capacity)
+    {
+        size_t batch_count = rows - batch_start;
+        cl_uint sample_count;
+        cl_uint bstart = (cl_uint)batch_start;
+        cl_uint output_count = (cl_uint)model->output_count;
+        cl_uint rule_count = (cl_uint)model->rule_count;
+        cl_uint total_param_count = (cl_uint)(model->input_mf_parameter_count + model->output_mf_parameter_count);
+        cl_uint neuron_count = (cl_uint)model->neuron_count;
+        cl_uint ann_out_offset = (cl_uint)fuzzy_tuner_layer_destination_offset(model, model->layer_count - 1u);
+        cl_float tuner_scale = model->tuner_scale;
+        cl_uint ann_enabled = model->ann_enabled ? 1u : 0u;
+        cl_uint compute_grads = 0u;
+        cl_uint loss_method = 0u;
+        cl_float huber_delta = 1.0f;
+        size_t defuzz_global[2];
+
+        if (batch_count > cl->batch_capacity) batch_count = cl->batch_capacity;
+        sample_count = (cl_uint)batch_count;
+        defuzz_global[0] = batch_count;
+        defuzz_global[1] = model->output_count;
+
+        if (!fuzzy_tuner_opencl_enqueue_forward(model, cl->d_dataset_inputs, bstart, sample_count)) return false;
+
+        error = CL_SUCCESS;
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 0u, sizeof(cl_mem), &cl->d_output_channels);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 1u, sizeof(cl_mem), &cl->d_output_mfs);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 2u, sizeof(cl_mem), &cl->d_rule_consequents);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 3u, sizeof(cl_mem), &cl->d_raw_rules);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 4u, sizeof(cl_mem), &cl->d_eff_params);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 5u, sizeof(cl_mem), &cl->d_dataset_targets);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 6u, sizeof(cl_mem), &cl->d_activations);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 7u, sizeof(cl_mem), &cl->d_predictions);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 8u, sizeof(cl_mem), &cl->d_losses);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 9u, sizeof(cl_mem), &cl->d_raw_rule_gradients);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 10u, sizeof(cl_mem), &cl->d_sample_mf_gradients);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 11u, sizeof(cl_mem), &cl->d_deltas);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 12u, sizeof(bstart), &bstart);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 13u, sizeof(sample_count), &sample_count);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 14u, sizeof(output_count), &output_count);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 15u, sizeof(rule_count), &rule_count);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 16u, sizeof(total_param_count), &total_param_count);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 17u, sizeof(neuron_count), &neuron_count);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 18u, sizeof(ann_out_offset), &ann_out_offset);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 19u, sizeof(tuner_scale), &tuner_scale);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 20u, sizeof(ann_enabled), &ann_enabled);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 21u, sizeof(compute_grads), &compute_grads);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 22u, sizeof(loss_method), &loss_method);
+        error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 23u, sizeof(huber_delta), &huber_delta);
+        if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->defuzz_forward_backward_kernel, 2u, NULL, defuzz_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+        if (clEnqueueReadBuffer(cl->queue, cl->d_predictions, CL_TRUE, 0u, batch_count * model->output_count * sizeof(float), outputs + batch_start * model->output_count, 0u, NULL, NULL) != CL_SUCCESS) return false;
+    }
+
+    return true;
+}
+
+bool fuzzy_tuner_opencl_train(
+    fuzzy_tuner_model_t *model,
+    const fuzzy_neuron_dataset_t *dataset,
+    const fuzzy_tuner_train_options_t *options
+)
+{
+    fuzzy_tuner_opencl_t *cl;
+    size_t epoch;
+    size_t batch_start;
+    size_t layer;
+    size_t total_mf_count;
+    size_t total_param_count;
+    cl_uint loss_method;
+    cl_float huber_delta;
+    cl_int error;
+
+    if (model == NULL || dataset == NULL || options == NULL || !model->opencl.ready ||
+        options->batch_size == 0u || options->batch_size > model->opencl.batch_capacity ||
+        dataset->rows == 0u || dataset->input_dimensions != model->input_count ||
+        dataset->target_dimensions != model->output_count)
+    {
+        return false;
+    }
+
+    cl = &model->opencl;
+    total_mf_count = model->input_mf_count + model->output_mf_count;
+    total_param_count = model->input_mf_parameter_count + model->output_mf_parameter_count;
+    loss_method = options->loss_fn == HUBER ? 1u : 0u;
+    huber_delta = options->huber_delta > 0.0f ? options->huber_delta : 5.0f;
+
+    /* Upload entire dataset ONCE into GPU-resident memory */
+    {
+        size_t in_bytes = dataset->rows * model->input_count * sizeof(float);
+        size_t tgt_bytes = dataset->rows * model->output_count * sizeof(float);
+        if (cl->dataset_capacity_rows < dataset->rows || cl->d_dataset_inputs == NULL || cl->d_dataset_targets == NULL)
+        {
+            if (cl->d_dataset_inputs != NULL) { clReleaseMemObject(cl->d_dataset_inputs); cl->d_dataset_inputs = NULL; }
+            if (cl->d_dataset_targets != NULL) { clReleaseMemObject(cl->d_dataset_targets); cl->d_dataset_targets = NULL; }
+            cl->d_dataset_inputs = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, in_bytes, NULL, &error);
+            if (error != CL_SUCCESS || cl->d_dataset_inputs == NULL) return false;
+            cl->d_dataset_targets = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, tgt_bytes, NULL, &error);
+            if (error != CL_SUCCESS || cl->d_dataset_targets == NULL) return false;
+            cl->dataset_capacity_rows = dataset->rows;
+        }
+        error = CL_SUCCESS;
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_dataset_inputs, CL_FALSE, 0u, in_bytes, dataset->inputs, 0u, NULL, NULL);
+        error |= clEnqueueWriteBuffer(cl->queue, cl->d_dataset_targets, CL_FALSE, 0u, tgt_bytes, dataset->targets, 0u, NULL, NULL);
+        if (error != CL_SUCCESS) return false;
+    }
+
+    if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM && options->reset_optimizer_state)
+    {
+        float zero = 0.0f;
+        error = CL_SUCCESS;
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_weight_first_moment, &zero, sizeof(zero), 0u, model->weight_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_weight_second_moment, &zero, sizeof(zero), 0u, model->weight_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_bias_first_moment, &zero, sizeof(zero), 0u, model->bias_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_bias_second_moment, &zero, sizeof(zero), 0u, model->bias_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_base_first_moment, &zero, sizeof(zero), 0u, total_param_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_base_second_moment, &zero, sizeof(zero), 0u, total_param_count * sizeof(float), 0u, NULL, NULL);
+        if (error != CL_SUCCESS) return false;
+        cl->optimizer_step = 0u;
+    }
+
+    {
+        float init_best = 3.402823466e+38F;
+        cl_uint enabled = 1u;
+        error = CL_SUCCESS;
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_best_loss, &init_best, sizeof(init_best), 0u, sizeof(init_best), 0u, NULL, NULL);
+        error |= clEnqueueFillBuffer(cl->queue, cl->d_best_updated, &enabled, sizeof(enabled), 0u, sizeof(enabled), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_weights, cl->d_best_weights, 0u, 0u, model->weight_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_biases, cl->d_best_biases, 0u, 0u, model->bias_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_base_params, cl->d_best_base_params, 0u, 0u, total_param_count * sizeof(float), 0u, NULL, NULL);
+        if (error != CL_SUCCESS) return false;
+    }
+
+    for (epoch = 0u; epoch < options->epochs; ++epoch)
+    {
+        float zero_loss = 0.0f;
+        if (clEnqueueFillBuffer(cl->queue, cl->d_epoch_loss, &zero_loss, sizeof(zero_loss), 0u, sizeof(zero_loss), 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+        for (batch_start = 0u; batch_start < dataset->rows; batch_start += options->batch_size)
+        {
+            size_t batch_count = dataset->rows - batch_start;
+            cl_uint sample_count;
+            cl_uint bstart = (cl_uint)batch_start;
+            cl_uint input_count = (cl_uint)model->input_count;
+            cl_uint output_count = (cl_uint)model->output_count;
+            cl_uint premise_count = (cl_uint)model->input_mf_count;
+            cl_uint expr_count = (cl_uint)model->expression_count;
+            cl_uint rule_count = (cl_uint)model->rule_count;
+            cl_uint total_mf_u = (cl_uint)total_mf_count;
+            cl_uint total_param_u = (cl_uint)total_param_count;
+            cl_uint neuron_count = (cl_uint)model->neuron_count;
+            cl_uint ann_out_offset = (cl_uint)fuzzy_tuner_layer_destination_offset(model, model->layer_count - 1u);
+            cl_uint logic_method = (cl_uint)model->logic_method;
+            cl_float tuner_scale = model->tuner_scale;
+            cl_uint ann_enabled = model->ann_enabled ? 1u : 0u;
+            cl_uint compute_grads = 1u;
+            cl_uint optimizer_kind = (cl_uint)options->optimizer;
+            cl_float ann_lr = options->ann_learning_rate;
+            cl_float mf_lr = options->mf_learning_rate;
+            cl_float ann_alpha = ann_lr;
+            cl_float mf_alpha = mf_lr;
+            cl_float beta1 = options->adam_beta1;
+            cl_float beta2 = options->adam_beta2;
+            cl_float eps = options->adam_epsilon;
+            cl_float grad_clip = options->grad_clip;
+            size_t defuzz_global[2];
+            size_t sample_global;
+
+            if (batch_count > options->batch_size) batch_count = options->batch_size;
+            sample_count = (cl_uint)batch_count;
+            defuzz_global[0] = batch_count;
+            defuzz_global[1] = model->output_count;
+            sample_global = batch_count;
+
+            if (options->optimizer == FUZZY_NEURON_OPTIMIZER_ADAM)
+            {
+                float bias_corr;
+                ++cl->optimizer_step;
+                bias_corr = sqrtf(1.0f - powf(beta2, (float)cl->optimizer_step)) / (1.0f - powf(beta1, (float)cl->optimizer_step));
+                ann_alpha = ann_lr * bias_corr;
+                mf_alpha = mf_lr * bias_corr;
+            }
+
+            /* 1. Forward pass: inputs -> ANN -> effective MFs -> static rules */
+            if (!fuzzy_tuner_opencl_enqueue_forward(model, cl->d_dataset_inputs, bstart, sample_count)) return false;
+
+            /* 2. Differentiable multi-output COG/BOA defuzzification + output MF & rule gradients */
+            error = CL_SUCCESS;
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 0u, sizeof(cl_mem), &cl->d_output_channels);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 1u, sizeof(cl_mem), &cl->d_output_mfs);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 2u, sizeof(cl_mem), &cl->d_rule_consequents);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 3u, sizeof(cl_mem), &cl->d_raw_rules);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 4u, sizeof(cl_mem), &cl->d_eff_params);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 5u, sizeof(cl_mem), &cl->d_dataset_targets);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 6u, sizeof(cl_mem), &cl->d_activations);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 7u, sizeof(cl_mem), &cl->d_predictions);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 8u, sizeof(cl_mem), &cl->d_losses);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 9u, sizeof(cl_mem), &cl->d_raw_rule_gradients);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 10u, sizeof(cl_mem), &cl->d_sample_mf_gradients);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 11u, sizeof(cl_mem), &cl->d_deltas);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 12u, sizeof(bstart), &bstart);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 13u, sizeof(sample_count), &sample_count);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 14u, sizeof(output_count), &output_count);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 15u, sizeof(rule_count), &rule_count);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 16u, sizeof(total_param_u), &total_param_u);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 17u, sizeof(neuron_count), &neuron_count);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 18u, sizeof(ann_out_offset), &ann_out_offset);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 19u, sizeof(tuner_scale), &tuner_scale);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 20u, sizeof(ann_enabled), &ann_enabled);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 21u, sizeof(compute_grads), &compute_grads);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 22u, sizeof(loss_method), &loss_method);
+            error |= clSetKernelArg(cl->defuzz_forward_backward_kernel, 23u, sizeof(huber_delta), &huber_delta);
+            if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->defuzz_forward_backward_kernel, 2u, NULL, defuzz_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+            /* 3. GPU loss reduction (reuses existing kernels & cached plans) */
+            {
+                size_t loss_count = batch_count * model->output_count;
+                size_t local_size;
+                size_t group_count;
+                size_t global_size;
+                cl_uint gpu_loss_count = (cl_uint)loss_count;
+                cl_uint partial_count;
+
+                if (!fuzzy_tuner_plan_reduction_local_size(cl, &cl->loss_reduce_stage_plan, loss_count, sizeof(float), &local_size)) return false;
+                group_count = (loss_count + local_size - 1u) / local_size;
+                if (group_count > cl->loss_partial_capacity) return false;
+                global_size = group_count * local_size;
+                partial_count = (cl_uint)group_count;
+
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 0u, sizeof(cl_mem), &cl->d_losses);
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 1u, sizeof(cl_mem), &cl->d_loss_partials);
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 2u, sizeof(gpu_loss_count), &gpu_loss_count);
+                error |= clSetKernelArg(cl->loss_reduce_stage_kernel, 3u, local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->loss_reduce_stage_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+                if (!fuzzy_tuner_plan_reduction_local_size(cl, &cl->loss_reduce_final_plan, group_count, sizeof(float), &local_size)) return false;
+                global_size = local_size;
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 0u, sizeof(cl_mem), &cl->d_loss_partials);
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 1u, sizeof(cl_mem), &cl->d_epoch_loss);
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 2u, sizeof(partial_count), &partial_count);
+                error |= clSetKernelArg(cl->loss_reduce_final_kernel, 3u, local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->loss_reduce_final_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
+            }
+
+            /* 4. Fused rule-DAG + input MF gradient backward (fills both sample MF grads and ANN deltas) */
+            error = CL_SUCCESS;
+            error |= clSetKernelArg(cl->rules_backward_kernel, 0u, sizeof(cl_mem), &cl->d_raw_inputs);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 1u, sizeof(cl_mem), &cl->d_input_mfs);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 2u, sizeof(cl_mem), &cl->d_eff_params);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 3u, sizeof(cl_mem), &cl->d_expressions);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 4u, sizeof(cl_mem), &cl->d_rule_roots);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 5u, sizeof(cl_mem), &cl->d_expression_values);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 6u, sizeof(cl_mem), &cl->d_raw_rule_gradients);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 7u, sizeof(cl_mem), &cl->d_activations);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 8u, sizeof(cl_mem), &cl->d_expression_gradients);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 9u, sizeof(cl_mem), &cl->d_membership_gradients);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 10u, sizeof(cl_mem), &cl->d_sample_mf_gradients);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 11u, sizeof(cl_mem), &cl->d_deltas);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 12u, sizeof(sample_count), &sample_count);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 13u, sizeof(input_count), &input_count);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 14u, sizeof(premise_count), &premise_count);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 15u, sizeof(expr_count), &expr_count);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 16u, sizeof(rule_count), &rule_count);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 17u, sizeof(total_param_u), &total_param_u);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 18u, sizeof(neuron_count), &neuron_count);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 19u, sizeof(ann_out_offset), &ann_out_offset);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 20u, sizeof(logic_method), &logic_method);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 21u, sizeof(tuner_scale), &tuner_scale);
+            error |= clSetKernelArg(cl->rules_backward_kernel, 22u, sizeof(ann_enabled), &ann_enabled);
+            if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->rules_backward_kernel, 1u, NULL, &sample_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+            /* 5. Backprop & update ANN weights/biases via existing tiled GEMM + fused Adam kernels */
+            if (options->tune_ann && model->ann_enabled && model->tuner_scale > 0.0f)
+            {
+                for (layer = model->layer_count - 1u; layer-- > 0u;)
+                {
+                    const fuzzy_neuron_layer_t *cur = &model->layers[layer];
+                    const fuzzy_neuron_layer_t *next = &model->layers[layer + 1u];
+                    cl_uint cur_off = (cl_uint)fuzzy_tuner_layer_destination_offset(model, layer);
+                    cl_uint cur_cnt = (cl_uint)cur->count;
+                    cl_uint nxt_off = (cl_uint)fuzzy_tuner_layer_destination_offset(model, layer + 1u);
+                    cl_uint nxt_cnt = (cl_uint)next->count;
+                    cl_uint nxt_woff = (cl_uint)next->weight_offset;
+                    cl_uint cur_act = (cl_uint)cur->activation;
+                    size_t local_size[2];
+                    size_t global_size[2];
+
+                    if (!fuzzy_tuner_plan_tiled_local_size(cl, &cl->hidden_delta_gemm_plan, batch_count, cur->count, &local_size[0], &local_size[1])) return false;
+                    global_size[0] = (batch_count + local_size[0] - 1u) / local_size[0] * local_size[0];
+                    global_size[1] = (cur->count + local_size[1] - 1u) / local_size[1] * local_size[1];
+
+                    error = CL_SUCCESS;
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 1u, sizeof(cl_mem), &cl->d_activations);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 2u, sizeof(cl_mem), &cl->d_deltas);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 3u, sizeof(sample_count), &sample_count);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 4u, sizeof(neuron_count), &neuron_count);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 5u, sizeof(cur_off), &cur_off);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 6u, sizeof(cur_cnt), &cur_cnt);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 7u, sizeof(nxt_off), &nxt_off);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 8u, sizeof(nxt_cnt), &nxt_cnt);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 9u, sizeof(nxt_woff), &nxt_woff);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 10u, sizeof(cur_act), &cur_act);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 11u, local_size[0] * local_size[1] * sizeof(float), NULL);
+                    error |= clSetKernelArg(cl->hidden_delta_gemm_tiled_kernel, 12u, local_size[1] * local_size[1] * sizeof(float), NULL);
+                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->hidden_delta_gemm_tiled_kernel, 2u, NULL, global_size, local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
+                }
+
+                for (layer = 0u; layer < model->layer_count; ++layer)
+                {
+                    const fuzzy_neuron_layer_t *cur = &model->layers[layer];
+                    cl_uint src_off = (cl_uint)fuzzy_tuner_layer_source_offset(model, layer);
+                    cl_uint src_cnt = (cl_uint)(layer == 0u ? model->input_count : model->layers[layer - 1u].count);
+                    cl_uint dst_off = (cl_uint)fuzzy_tuner_layer_destination_offset(model, layer);
+                    cl_uint dst_cnt = (cl_uint)cur->count;
+                    cl_uint w_off = (cl_uint)cur->weight_offset;
+                    cl_uint b_off = (cl_uint)cur->bias_offset;
+                    size_t param_cnt = (size_t)src_cnt * dst_cnt + dst_cnt;
+                    size_t local_size;
+                    size_t global_size;
+
+                    if (!fuzzy_tuner_plan_reduction_local_size(cl, &cl->layer_backward_update_plan, batch_count, sizeof(float), &local_size)) return false;
+                    global_size = param_cnt * local_size;
+
+                    error = CL_SUCCESS;
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 0u, sizeof(cl_mem), &cl->d_weights);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 1u, sizeof(cl_mem), &cl->d_biases);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 2u, sizeof(cl_mem), &cl->d_activations);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 3u, sizeof(cl_mem), &cl->d_deltas);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 4u, sizeof(cl_mem), &cl->d_weight_first_moment);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 5u, sizeof(cl_mem), &cl->d_weight_second_moment);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 6u, sizeof(cl_mem), &cl->d_bias_first_moment);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 7u, sizeof(cl_mem), &cl->d_bias_second_moment);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 8u, sizeof(sample_count), &sample_count);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 9u, sizeof(neuron_count), &neuron_count);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 10u, sizeof(src_off), &src_off);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 11u, sizeof(src_cnt), &src_cnt);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 12u, sizeof(dst_off), &dst_off);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 13u, sizeof(dst_cnt), &dst_cnt);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 14u, sizeof(w_off), &w_off);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 15u, sizeof(b_off), &b_off);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 16u, sizeof(optimizer_kind), &optimizer_kind);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 17u, sizeof(ann_lr), &ann_lr);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 18u, sizeof(ann_alpha), &ann_alpha);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 19u, sizeof(beta1), &beta1);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 20u, sizeof(beta2), &beta2);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 21u, sizeof(eps), &eps);
+                    error |= clSetKernelArg(cl->layer_backward_update_kernel, 22u, local_size * sizeof(float), NULL);
+                    if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->layer_backward_update_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
+                }
+            }
+
+            /* 6. Reduce per-sample MF gradients and update + project base input & output MFs */
+            if (options->tune_base_mfs && mf_lr > 0.0f)
+            {
+                size_t local_size;
+                size_t global_size;
+                size_t proj_global = total_mf_count;
+
+                if (!fuzzy_tuner_plan_reduction_local_size(cl, &cl->base_mf_update_plan, batch_count, sizeof(float), &local_size)) return false;
+                global_size = total_param_count * local_size;
+
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 0u, sizeof(cl_mem), &cl->d_sample_mf_gradients);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 1u, sizeof(cl_mem), &cl->d_base_params);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 2u, sizeof(cl_mem), &cl->d_base_first_moment);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 3u, sizeof(cl_mem), &cl->d_base_second_moment);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 4u, sizeof(sample_count), &sample_count);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 5u, sizeof(total_param_u), &total_param_u);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 6u, sizeof(optimizer_kind), &optimizer_kind);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 7u, sizeof(mf_lr), &mf_lr);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 8u, sizeof(mf_alpha), &mf_alpha);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 9u, sizeof(beta1), &beta1);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 10u, sizeof(beta2), &beta2);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 11u, sizeof(eps), &eps);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 12u, sizeof(grad_clip), &grad_clip);
+                error |= clSetKernelArg(cl->base_mf_update_kernel, 13u, local_size * sizeof(float), NULL);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->base_mf_update_kernel, 1u, NULL, &global_size, &local_size, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+                error = CL_SUCCESS;
+                error |= clSetKernelArg(cl->project_base_mfs_kernel, 0u, sizeof(cl_mem), &cl->d_all_mfs);
+                error |= clSetKernelArg(cl->project_base_mfs_kernel, 1u, sizeof(cl_mem), &cl->d_base_params);
+                error |= clSetKernelArg(cl->project_base_mfs_kernel, 2u, sizeof(total_mf_u), &total_mf_u);
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->project_base_mfs_kernel, 1u, NULL, &proj_global, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+            }
+        }
+
+        /* GPU-resident best checkpoint update (zero host roundtrip!) */
+        {
+            cl_uint norm_count = (cl_uint)(dataset->rows * model->output_count);
+            size_t one = 1u;
+            size_t wg = model->weight_count;
+            size_t bg = model->bias_count;
+            size_t pg = total_param_count;
+            cl_uint wc = (cl_uint)model->weight_count;
+            cl_uint bc = (cl_uint)model->bias_count;
+            cl_uint pc = (cl_uint)total_param_count;
+
+            error = CL_SUCCESS;
+            error |= clSetKernelArg(cl->best_model_kernel, 0u, sizeof(cl_mem), &cl->d_epoch_loss);
+            error |= clSetKernelArg(cl->best_model_kernel, 1u, sizeof(cl_mem), &cl->d_best_loss);
+            error |= clSetKernelArg(cl->best_model_kernel, 2u, sizeof(cl_mem), &cl->d_best_updated);
+            error |= clSetKernelArg(cl->best_model_kernel, 3u, sizeof(norm_count), &norm_count);
+            if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->best_model_kernel, 1u, NULL, &one, NULL, 0u, NULL, NULL) != CL_SUCCESS) return false;
+
+#define FT_BEST_CP(src, dst, cnt, glb) do { \
+                error = CL_SUCCESS; \
+                error |= clSetKernelArg(cl->conditional_copy_kernel, 0u, sizeof(cl_mem), &(src)); \
+                error |= clSetKernelArg(cl->conditional_copy_kernel, 1u, sizeof(cl_mem), &(dst)); \
+                error |= clSetKernelArg(cl->conditional_copy_kernel, 2u, sizeof(cl_mem), &cl->d_best_updated); \
+                error |= clSetKernelArg(cl->conditional_copy_kernel, 3u, sizeof(cnt), &(cnt)); \
+                if (error != CL_SUCCESS || clEnqueueNDRangeKernel(cl->queue, cl->conditional_copy_kernel, 1u, NULL, &(glb), NULL, 0u, NULL, NULL) != CL_SUCCESS) return false; \
+            } while (0)
+            FT_BEST_CP(cl->d_weights, cl->d_best_weights, wc, wg);
+            FT_BEST_CP(cl->d_biases, cl->d_best_biases, bc, bg);
+            FT_BEST_CP(cl->d_base_params, cl->d_best_base_params, pc, pg);
+#undef FT_BEST_CP
+
+            if (options->report_every != 0u && (((epoch + 1u) % options->report_every) == 0u || epoch + 1u == options->epochs))
+            {
+                float epoch_loss_sum = 0.0f;
+                if (clEnqueueReadBuffer(cl->queue, cl->d_epoch_loss, CL_TRUE, 0u, sizeof(epoch_loss_sum), &epoch_loss_sum, 0u, NULL, NULL) != CL_SUCCESS) return false;
+                printf("  [GPU Tuner] Epoch %4u/%u | %s = %.6f (RMSE = %.6f)\n",
+                    (unsigned)(epoch + 1u),
+                    (unsigned)options->epochs,
+                    options->loss_fn == HUBER ? "Huber" : "MSE",
+                    epoch_loss_sum / (float)norm_count,
+                    sqrtf(epoch_loss_sum / (float)norm_count));
+                fflush(stdout);
+            }
+        }
+    }
+
+    /* Restore best GPU checkpoint to both device buffers and host model */
+    {
+        float *best_base = (float *)malloc(total_param_count * sizeof(float));
+        if (best_base == NULL) return false;
+
+        error = CL_SUCCESS;
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_best_weights, cl->d_weights, 0u, 0u, model->weight_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_best_biases, cl->d_biases, 0u, 0u, model->bias_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueCopyBuffer(cl->queue, cl->d_best_base_params, cl->d_base_params, 0u, 0u, total_param_count * sizeof(float), 0u, NULL, NULL);
+        error |= clEnqueueReadBuffer(cl->queue, cl->d_weights, CL_FALSE, 0u, model->weight_count * sizeof(float), model->weights, 0u, NULL, NULL);
+        error |= clEnqueueReadBuffer(cl->queue, cl->d_biases, CL_FALSE, 0u, model->bias_count * sizeof(float), model->biases, 0u, NULL, NULL);
+        error |= clEnqueueReadBuffer(cl->queue, cl->d_base_params, CL_TRUE, 0u, total_param_count * sizeof(float), best_base, 0u, NULL, NULL);
+
+        if (error == CL_SUCCESS)
+        {
+            memcpy(model->input_mf_parameters, best_base, model->input_mf_parameter_count * sizeof(float));
+            memcpy(model->output_mf_parameters, best_base + model->input_mf_parameter_count, model->output_mf_parameter_count * sizeof(float));
+        }
+        free(best_base);
+        if (error != CL_SUCCESS) return false;
+    }
+
+    return true;
+}
+
+#endif /* FUZZY_NEURON_OPENCL */
+
+#ifdef FUZZY_SQLITE
+#include <sqlite3.h>
+
+#ifndef FUZZY_NEURON_OPENCL
+static void fuzzy_neuron_sqlite_fail(sqlite3 *database, const char *operation)
+{
+    fprintf(stderr, "SQLite %s failed: %s\n", operation, database != NULL ? sqlite3_errmsg(database) : "database handle unavailable");
+    exit(EXIT_FAILURE);
+}
+static void fuzzy_neuron_sqlite_expect(int result, sqlite3 *database, int expected, const char *operation)
+{
+    if (result != expected) fuzzy_neuron_sqlite_fail(database, operation);
+}
+static void fuzzy_neuron_sqlite_execute(sqlite3 *database, const char *sql)
+{
+    char *message = NULL;
+    if (sqlite3_exec(database, sql, NULL, NULL, &message) != SQLITE_OK)
+    {
+        fprintf(stderr, "SQLite statement failed: %s\nSQL: %s\n", message != NULL ? message : sqlite3_errmsg(database), sql);
+        sqlite3_free(message);
+        exit(EXIT_FAILURE);
+    }
+}
+static sqlite3_stmt *fuzzy_neuron_sqlite_prepare(sqlite3 *database, const char *sql)
+{
+    sqlite3_stmt *stmt = NULL;
+    fuzzy_neuron_sqlite_expect(sqlite3_prepare_v2(database, sql, -1, &stmt, NULL), database, SQLITE_OK, "prepare");
+    return stmt;
+}
+static void fuzzy_neuron_sqlite_bind_int64(sqlite3 *database, sqlite3_stmt *stmt, int param, sqlite3_int64 val)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_bind_int64(stmt, param, val), database, SQLITE_OK, "bind integer");
+}
+static void fuzzy_neuron_sqlite_bind_double(sqlite3 *database, sqlite3_stmt *stmt, int param, double val)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_bind_double(stmt, param, val), database, SQLITE_OK, "bind real");
+}
+static void fuzzy_neuron_sqlite_bind_text(sqlite3 *database, sqlite3_stmt *stmt, int param, const char *val)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_bind_text(stmt, param, val, -1, SQLITE_TRANSIENT), database, SQLITE_OK, "bind text");
+}
+static void fuzzy_neuron_sqlite_insert_done(sqlite3 *database, sqlite3_stmt *stmt)
+{
+    fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), database, SQLITE_DONE, "insert");
+    fuzzy_neuron_sqlite_expect(sqlite3_reset(stmt), database, SQLITE_OK, "reset");
+    fuzzy_neuron_sqlite_expect(sqlite3_clear_bindings(stmt), database, SQLITE_OK, "clear bindings");
+}
+#endif
+
+bool fuzzy_tuner_database_save(const char *path, const char *model_name, const fuzzy_tuner_model_t *model)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt;
+    size_t i;
+    size_t layer;
+    const char *effective_name;
+
+    if (path == NULL || model == NULL || !model->compiled) return false;
+    effective_name = model_name != NULL ? model_name : (model->name != NULL ? model->name : "fuzzy_tuner_model");
+
+    fuzzy_neuron_sqlite_expect(sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL), db, SQLITE_OK, "open tuner db");
+    fuzzy_neuron_sqlite_execute(db, "PRAGMA foreign_keys=ON; PRAGMA journal_mode=DELETE; PRAGMA synchronous=FULL;");
+    fuzzy_neuron_sqlite_execute(db, "BEGIN IMMEDIATE;");
+    fuzzy_neuron_sqlite_execute(db,
+        "DROP TABLE IF EXISTS output_mf_parameters;"
+        "DROP TABLE IF EXISTS output_mfs;"
+        "DROP TABLE IF EXISTS output_channels;"
+        "DROP TABLE IF EXISTS input_channels;"
+        "DROP TABLE IF EXISTS tuner_config;"
+        "DROP TABLE IF EXISTS scales;"
+        "DROP TABLE IF EXISTS premise_parameters;"
+        "DROP TABLE IF EXISTS premises;"
+        "DROP TABLE IF EXISTS expressions;"
+        "DROP TABLE IF EXISTS rules;"
+        "DROP TABLE IF EXISTS biases;"
+        "DROP TABLE IF EXISTS weights;"
+        "DROP TABLE IF EXISTS layers;"
+        "DROP TABLE IF EXISTS model;"
+    );
+
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE model("
+        "id INTEGER PRIMARY KEY CHECK(id=1),"
+        "format_version INTEGER NOT NULL,"
+        "model_name TEXT NOT NULL,"
+        "raw_input_dimensions INTEGER NOT NULL,"
+        "output_dimensions INTEGER NOT NULL,"
+        "logic_method INTEGER NOT NULL,"
+        "rule_count INTEGER NOT NULL,"
+        "premise_count INTEGER NOT NULL,"
+        "expression_count INTEGER NOT NULL,"
+        "premise_parameter_count INTEGER NOT NULL,"
+        "layer_count INTEGER NOT NULL,"
+        "neuron_count INTEGER NOT NULL,"
+        "weight_count INTEGER NOT NULL,"
+        "bias_count INTEGER NOT NULL,"
+        "trainable_fuzzy INTEGER NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE tuner_config("
+        "id INTEGER PRIMARY KEY CHECK(id=1),"
+        "tuner_scale REAL NOT NULL,"
+        "ann_enabled INTEGER NOT NULL,"
+        "output_mf_count INTEGER NOT NULL,"
+        "output_mf_parameter_count INTEGER NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE input_channels("
+        "input_index INTEGER PRIMARY KEY,"
+        "name TEXT NOT NULL,"
+        "minimum REAL NOT NULL,"
+        "maximum REAL NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE output_channels("
+        "output_index INTEGER PRIMARY KEY,"
+        "name TEXT NOT NULL,"
+        "minimum REAL NOT NULL,"
+        "maximum REAL NOT NULL,"
+        "step REAL NOT NULL,"
+        "defuzz_method INTEGER NOT NULL,"
+        "mf_offset INTEGER NOT NULL,"
+        "mf_count INTEGER NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE layers("
+        "layer_index INTEGER PRIMARY KEY,"
+        "source_count INTEGER NOT NULL,"
+        "neuron_count INTEGER NOT NULL,"
+        "activation INTEGER NOT NULL,"
+        "weight_offset INTEGER NOT NULL,"
+        "bias_offset INTEGER NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE weights("
+        "layer_index INTEGER NOT NULL,"
+        "destination_neuron INTEGER NOT NULL,"
+        "source_neuron INTEGER NOT NULL,"
+        "value REAL NOT NULL,"
+        "PRIMARY KEY(layer_index,destination_neuron,source_neuron),"
+        "FOREIGN KEY(layer_index) REFERENCES layers(layer_index));"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE biases("
+        "layer_index INTEGER NOT NULL,"
+        "neuron_index INTEGER NOT NULL,"
+        "value REAL NOT NULL,"
+        "PRIMARY KEY(layer_index,neuron_index),"
+        "FOREIGN KEY(layer_index) REFERENCES layers(layer_index));"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE premises("
+        "premise_index INTEGER PRIMARY KEY,"
+        "name TEXT NOT NULL,"
+        "input_index INTEGER NOT NULL,"
+        "shape INTEGER NOT NULL,"
+        "parameter_offset INTEGER NOT NULL,"
+        "parameter_count INTEGER NOT NULL,"
+        "trainable_mask INTEGER NOT NULL,"
+        "hedge REAL NOT NULL,"
+        "domain_minimum REAL NOT NULL,"
+        "domain_maximum REAL NOT NULL,"
+        "epsilon REAL NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE premise_parameters("
+        "premise_index INTEGER NOT NULL,"
+        "parameter_index INTEGER NOT NULL,"
+        "value REAL NOT NULL,"
+        "PRIMARY KEY(premise_index,parameter_index),"
+        "FOREIGN KEY(premise_index) REFERENCES premises(premise_index));"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE output_mfs("
+        "mf_index INTEGER PRIMARY KEY,"
+        "name TEXT NOT NULL,"
+        "output_index INTEGER NOT NULL,"
+        "shape INTEGER NOT NULL,"
+        "parameter_offset INTEGER NOT NULL,"
+        "parameter_count INTEGER NOT NULL,"
+        "trainable_mask INTEGER NOT NULL,"
+        "hedge REAL NOT NULL,"
+        "domain_minimum REAL NOT NULL,"
+        "domain_maximum REAL NOT NULL,"
+        "epsilon REAL NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE output_mf_parameters("
+        "mf_index INTEGER NOT NULL,"
+        "parameter_index INTEGER NOT NULL,"
+        "value REAL NOT NULL,"
+        "PRIMARY KEY(mf_index,parameter_index),"
+        "FOREIGN KEY(mf_index) REFERENCES output_mfs(mf_index));"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE expressions("
+        "expression_index INTEGER PRIMARY KEY,"
+        "kind INTEGER NOT NULL,"
+        "left_index INTEGER NOT NULL,"
+        "right_index INTEGER NOT NULL,"
+        "value_index INTEGER NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE rules("
+        "rule_index INTEGER PRIMARY KEY,"
+        "name TEXT NOT NULL,"
+        "root_expression INTEGER NOT NULL,"
+        "consequent_index INTEGER NOT NULL);"
+    );
+    fuzzy_neuron_sqlite_execute(db,
+        "CREATE TABLE scales("
+        "kind TEXT NOT NULL,"
+        "value_index INTEGER NOT NULL,"
+        "minimum REAL NOT NULL,"
+        "maximum REAL NOT NULL,"
+        "PRIMARY KEY(kind,value_index));"
+    );
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO model VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, FUZZY_TUNER_DATABASE_FORMAT_VERSION);
+    fuzzy_neuron_sqlite_bind_text(db, stmt, 2, effective_name);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)model->input_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)model->output_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 5, (sqlite3_int64)model->logic_method);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 6, (sqlite3_int64)model->rule_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 7, (sqlite3_int64)model->input_mf_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 8, (sqlite3_int64)model->expression_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 9, (sqlite3_int64)model->input_mf_parameter_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 10, (sqlite3_int64)model->layer_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 11, (sqlite3_int64)model->neuron_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 12, (sqlite3_int64)model->weight_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 13, (sqlite3_int64)model->bias_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 14, 1);
+    fuzzy_neuron_sqlite_insert_done(db, stmt);
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO tuner_config VALUES(1,?,?,?,?);");
+    fuzzy_neuron_sqlite_bind_double(db, stmt, 1, (double)model->tuner_scale);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, model->ann_enabled ? 1 : 0);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)model->output_mf_count);
+    fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)model->output_mf_parameter_count);
+    fuzzy_neuron_sqlite_insert_done(db, stmt);
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO input_channels VALUES(?,?,?,?);");
+    for (i = 0u; i < model->input_count; ++i)
+    {
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 2, model->inputs[i].name != NULL ? model->inputs[i].name : "in");
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->inputs[i].minimum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 4, (double)model->inputs[i].maximum);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO output_channels VALUES(?,?,?,?,?,?,?,?);");
+    for (i = 0u; i < model->output_count; ++i)
+    {
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 2, model->outputs[i].name != NULL ? model->outputs[i].name : "out");
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->outputs[i].minimum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 4, (double)model->outputs[i].maximum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 5, (double)model->outputs[i].step);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 6, (sqlite3_int64)model->outputs[i].defuzz_method);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 7, (sqlite3_int64)model->outputs[i].mf_offset);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 8, (sqlite3_int64)model->outputs[i].mf_count);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO layers VALUES(?,?,?,?,?,?);");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t src_cnt = layer == 0u ? model->input_count : model->layers[layer - 1u].count;
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)layer);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)src_cnt);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)model->layers[layer].count);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)model->layers[layer].activation);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 5, (sqlite3_int64)model->layers[layer].weight_offset);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 6, (sqlite3_int64)model->layers[layer].bias_offset);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO weights VALUES(?,?,?,?);");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t dst;
+        size_t src_cnt = layer == 0u ? model->input_count : model->layers[layer - 1u].count;
+        for (dst = 0u; dst < model->layers[layer].count; ++dst)
+        {
+            size_t src;
+            for (src = 0u; src < src_cnt; ++src)
+            {
+                size_t widx = model->layers[layer].weight_offset + dst * src_cnt + src;
+                fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)layer);
+                fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)dst);
+                fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)src);
+                fuzzy_neuron_sqlite_bind_double(db, stmt, 4, (double)model->weights[widx]);
+                fuzzy_neuron_sqlite_insert_done(db, stmt);
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO biases VALUES(?,?,?);");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t n;
+        for (n = 0u; n < model->layers[layer].count; ++n)
+        {
+            fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)layer);
+            fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)n);
+            fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->biases[model->layers[layer].bias_offset + n]);
+            fuzzy_neuron_sqlite_insert_done(db, stmt);
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO premises VALUES(?,?,?,?,?,?,?,?,?,?,?);");
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 2, mf->name);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)mf->input_index);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)mf->shape);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 5, (sqlite3_int64)mf->parameter_offset);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 6, (sqlite3_int64)mf->parameter_count);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 7, (sqlite3_int64)mf->trainable_mask);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 8, (double)mf->hedge);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 9, (double)mf->domain_minimum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 10, (double)mf->domain_maximum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 11, (double)mf->epsilon);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO premise_parameters VALUES(?,?,?);");
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        size_t p;
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+            fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)p);
+            fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->input_mf_parameters[mf->parameter_offset + p]);
+            fuzzy_neuron_sqlite_insert_done(db, stmt);
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO output_mfs VALUES(?,?,?,?,?,?,?,?,?,?,?);");
+    for (i = 0u; i < model->output_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->output_mfs[i];
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 2, mf->name);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)mf->input_index);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)mf->shape);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 5, (sqlite3_int64)mf->parameter_offset);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 6, (sqlite3_int64)mf->parameter_count);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 7, (sqlite3_int64)mf->trainable_mask);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 8, (double)mf->hedge);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 9, (double)mf->domain_minimum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 10, (double)mf->domain_maximum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 11, (double)mf->epsilon);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO output_mf_parameters VALUES(?,?,?);");
+    for (i = 0u; i < model->output_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->output_mfs[i];
+        size_t p;
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+            fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)p);
+            fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->output_mf_parameters[mf->parameter_offset + p]);
+            fuzzy_neuron_sqlite_insert_done(db, stmt);
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO expressions VALUES(?,?,?,?,?);");
+    for (i = 0u; i < model->expression_count; ++i)
+    {
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)model->expressions[i].kind);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)model->expressions[i].left);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)model->expressions[i].right);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 5, (sqlite3_int64)model->expressions[i].value);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO rules VALUES(?,?,?,?);");
+    for (i = 0u; i < model->rule_count; ++i)
+    {
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 1, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 2, model->rules[i].name);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 3, (sqlite3_int64)model->rule_roots[i]);
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 4, (sqlite3_int64)model->rule_consequents[i]);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "INSERT INTO scales VALUES(?,?,?,?);");
+    for (i = 0u; i < model->input_count; ++i)
+    {
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 1, "input");
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->inputs[i].minimum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 4, (double)model->inputs[i].maximum);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    for (i = 0u; i < model->output_count; ++i)
+    {
+        fuzzy_neuron_sqlite_bind_text(db, stmt, 1, "output");
+        fuzzy_neuron_sqlite_bind_int64(db, stmt, 2, (sqlite3_int64)i);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 3, (double)model->outputs[i].minimum);
+        fuzzy_neuron_sqlite_bind_double(db, stmt, 4, (double)model->outputs[i].maximum);
+        fuzzy_neuron_sqlite_insert_done(db, stmt);
+    }
+    sqlite3_finalize(stmt);
+
+    fuzzy_neuron_sqlite_execute(db, "COMMIT;");
+    fuzzy_neuron_sqlite_expect(sqlite3_close(db), db, SQLITE_OK, "close tuner db");
+    printf("Adaptive Fuzzy-ANN Tuner database saved to %s\n", path);
+    return true;
+}
+
+fuzzy_tuner_model_t *fuzzy_tuner_database_autoload(const char *path)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    fuzzy_tuner_model_t *model = NULL;
+    size_t i;
+    size_t layer;
+    size_t expected_inputs;
+    size_t expected_outputs;
+    size_t expected_rules;
+    size_t expected_premises;
+    size_t expected_exprs;
+    size_t expected_in_params;
+    size_t expected_layers;
+    size_t expected_out_mfs;
+    size_t expected_out_params;
+    float tuner_scale;
+    bool ann_enabled;
+    fuzzy_logic_method_t logic_method;
+    const char *model_name_col;
+
+    if (path == NULL) return NULL;
+    if (sqlite3_open_v2(path, &db, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK)
+    {
+        fprintf(stderr, "Failed to open SQLite tuner database %s\n", path);
+        if (db != NULL) sqlite3_close(db);
+        return NULL;
+    }
+
+    model = (fuzzy_tuner_model_t *)calloc(1u, sizeof(*model));
+    if (model == NULL) { sqlite3_close(db); return NULL; }
+
+    /* 1. Read model & tuner_config metadata */
+    stmt = fuzzy_neuron_sqlite_prepare(db,
+        "SELECT format_version,model_name,raw_input_dimensions,output_dimensions,logic_method,"
+        "rule_count,premise_count,expression_count,premise_parameter_count,layer_count "
+        "FROM model WHERE id=1;");
+    fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read tuner model header");
+    if ((unsigned)sqlite3_column_int(stmt, 0) != FUZZY_TUNER_DATABASE_FORMAT_VERSION)
+    {
+        fprintf(stderr, "Unsupported tuner database format version %d.\n", sqlite3_column_int(stmt, 0));
+        sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+    }
+    model_name_col = (const char *)sqlite3_column_text(stmt, 1);
+    expected_inputs = (size_t)sqlite3_column_int64(stmt, 2);
+    expected_outputs = (size_t)sqlite3_column_int64(stmt, 3);
+    logic_method = (fuzzy_logic_method_t)sqlite3_column_int(stmt, 4);
+    expected_rules = (size_t)sqlite3_column_int64(stmt, 5);
+    expected_premises = (size_t)sqlite3_column_int64(stmt, 6);
+    expected_exprs = (size_t)sqlite3_column_int64(stmt, 7);
+    expected_in_params = (size_t)sqlite3_column_int64(stmt, 8);
+    expected_layers = (size_t)sqlite3_column_int64(stmt, 9);
+    model->name = fuzzy_tuner_intern_string(model, model_name_col != NULL ? model_name_col : "autoload_model");
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT tuner_scale,ann_enabled,output_mf_count,output_mf_parameter_count FROM tuner_config WHERE id=1;");
+    fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read tuner_config");
+    tuner_scale = (float)sqlite3_column_double(stmt, 0);
+    ann_enabled = sqlite3_column_int(stmt, 1) != 0;
+    expected_out_mfs = (size_t)sqlite3_column_int64(stmt, 2);
+    expected_out_params = (size_t)sqlite3_column_int64(stmt, 3);
+    sqlite3_finalize(stmt);
+
+    model->logic_method = logic_method;
+    model->tuner_scale = tuner_scale;
+    model->ann_enabled = ann_enabled;
+
+    /* 2. Auto-reconstruct input channels */
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT input_index,name,minimum,maximum FROM input_channels ORDER BY input_index;");
+    for (i = 0u; i < expected_inputs; ++i)
+    {
+        const char *name;
+        fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read input_channel");
+        name = fuzzy_tuner_intern_string(model, (const char *)sqlite3_column_text(stmt, 1));
+        if (!fuzzy_tuner_add_input(model, name, (float)sqlite3_column_double(stmt, 2), (float)sqlite3_column_double(stmt, 3)))
+        {
+            sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    /* 3. Auto-reconstruct output channels */
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT output_index,name,minimum,maximum,step,defuzz_method FROM output_channels ORDER BY output_index;");
+    for (i = 0u; i < expected_outputs; ++i)
+    {
+        const char *name;
+        fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read output_channel");
+        name = fuzzy_tuner_intern_string(model, (const char *)sqlite3_column_text(stmt, 1));
+        if (!fuzzy_tuner_add_output(
+                model,
+                name,
+                (float)sqlite3_column_double(stmt, 2),
+                (float)sqlite3_column_double(stmt, 3),
+                (float)sqlite3_column_double(stmt, 4),
+                (fuzzy_defuzz_method_t)sqlite3_column_int(stmt, 5)))
+        {
+            sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    /* 4. Auto-reconstruct input premises & tuned parameters */
+    {
+        sqlite3_stmt *p_stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT parameter_index,value FROM premise_parameters WHERE premise_index=? ORDER BY parameter_index;");
+        stmt = fuzzy_neuron_sqlite_prepare(db,
+            "SELECT premise_index,name,input_index,shape,parameter_count,trainable_mask,hedge,domain_minimum,domain_maximum,epsilon "
+            "FROM premises ORDER BY premise_index;");
+        for (i = 0u; i < expected_premises; ++i)
+        {
+            float params[FUZZY_MAX_VALUES];
+            size_t p_count;
+            size_t p;
+            const char *name;
+            fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read premise");
+            name = fuzzy_tuner_intern_string(model, (const char *)sqlite3_column_text(stmt, 1));
+            p_count = (size_t)sqlite3_column_int64(stmt, 4);
+            fuzzy_neuron_sqlite_bind_int64(db, p_stmt, 1, (sqlite3_int64)i);
+            for (p = 0u; p < p_count; ++p)
+            {
+                fuzzy_neuron_sqlite_expect(sqlite3_step(p_stmt), db, SQLITE_ROW, "read premise param");
+                params[p] = (float)sqlite3_column_double(p_stmt, 1);
+            }
+            sqlite3_reset(p_stmt);
+            sqlite3_clear_bindings(p_stmt);
+
+            if (fuzzy_tuner_add_input_mf(
+                    model,
+                    name,
+                    (size_t)sqlite3_column_int64(stmt, 2),
+                    (fuzzy_shape_t)sqlite3_column_int(stmt, 3),
+                    (float)sqlite3_column_double(stmt, 6),
+                    (unsigned int)sqlite3_column_int64(stmt, 5),
+                    (float)sqlite3_column_double(stmt, 7),
+                    (float)sqlite3_column_double(stmt, 8),
+                    p_count,
+                    params) == SIZE_MAX)
+            {
+                sqlite3_finalize(p_stmt); sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+            }
+            model->input_mfs[i].epsilon = (float)sqlite3_column_double(stmt, 9);
+        }
+        sqlite3_finalize(p_stmt);
+        sqlite3_finalize(stmt);
+    }
+
+    /* 5. Auto-reconstruct output MFs & tuned parameters */
+    {
+        sqlite3_stmt *p_stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT parameter_index,value FROM output_mf_parameters WHERE mf_index=? ORDER BY parameter_index;");
+        stmt = fuzzy_neuron_sqlite_prepare(db,
+            "SELECT mf_index,name,output_index,shape,parameter_count,trainable_mask,hedge,domain_minimum,domain_maximum,epsilon "
+            "FROM output_mfs ORDER BY mf_index;");
+        for (i = 0u; i < expected_out_mfs; ++i)
+        {
+            float params[FUZZY_MAX_VALUES];
+            size_t p_count;
+            size_t p;
+            const char *name;
+            fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read output_mf");
+            name = fuzzy_tuner_intern_string(model, (const char *)sqlite3_column_text(stmt, 1));
+            p_count = (size_t)sqlite3_column_int64(stmt, 4);
+            fuzzy_neuron_sqlite_bind_int64(db, p_stmt, 1, (sqlite3_int64)i);
+            for (p = 0u; p < p_count; ++p)
+            {
+                fuzzy_neuron_sqlite_expect(sqlite3_step(p_stmt), db, SQLITE_ROW, "read output_mf param");
+                params[p] = (float)sqlite3_column_double(p_stmt, 1);
+            }
+            sqlite3_reset(p_stmt);
+            sqlite3_clear_bindings(p_stmt);
+
+            if (fuzzy_tuner_add_output_mf(
+                    model,
+                    name,
+                    (size_t)sqlite3_column_int64(stmt, 2),
+                    (fuzzy_shape_t)sqlite3_column_int(stmt, 3),
+                    (float)sqlite3_column_double(stmt, 6),
+                    (unsigned int)sqlite3_column_int64(stmt, 5),
+                    (float)sqlite3_column_double(stmt, 7),
+                    (float)sqlite3_column_double(stmt, 8),
+                    p_count,
+                    params) == SIZE_MAX)
+            {
+                sqlite3_finalize(p_stmt); sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+            }
+            model->output_mfs[i].epsilon = (float)sqlite3_column_double(stmt, 9);
+        }
+        sqlite3_finalize(p_stmt);
+        sqlite3_finalize(stmt);
+    }
+
+    if (model->input_mf_parameter_count != expected_in_params || model->output_mf_parameter_count != expected_out_params)
+    {
+        sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+    }
+
+    /* 6. Auto-reconstruct expression DAG */
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT expression_index,kind,left_index,right_index,value_index FROM expressions ORDER BY expression_index;");
+    for (i = 0u; i < expected_exprs; ++i)
+    {
+        fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read expression");
+        if (fuzzy_tuner_add_expression(
+                model,
+                (fuzzy_neuron_expression_kind_t)sqlite3_column_int(stmt, 1),
+                (size_t)sqlite3_column_int64(stmt, 2),
+                (size_t)sqlite3_column_int64(stmt, 3),
+                (size_t)sqlite3_column_int64(stmt, 4)) == SIZE_MAX)
+        {
+            sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    /* 7. Auto-reconstruct static fuzzy rules */
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT rule_index,name,root_expression,consequent_index FROM rules ORDER BY rule_index;");
+    for (i = 0u; i < expected_rules; ++i)
+    {
+        const char *rname;
+        fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read rule");
+        rname = fuzzy_tuner_intern_string(model, (const char *)sqlite3_column_text(stmt, 1));
+        if (!fuzzy_tuner_add_rule(model, rname, (size_t)sqlite3_column_int64(stmt, 2), (size_t)sqlite3_column_int64(stmt, 3)))
+        {
+            sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    /* 8. Auto-reconstruct ANN topology (including saved output layer) & compile */
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT layer_index,neuron_count,activation FROM layers ORDER BY layer_index;");
+    for (layer = 0u; layer < expected_layers; ++layer)
+    {
+        fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read layer");
+        if (model->layer_count >= FUZZY_NEURON_MAX_LAYERS)
+        {
+            sqlite3_finalize(stmt); sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+        }
+        model->layers[model->layer_count].count = (size_t)sqlite3_column_int64(stmt, 1);
+        model->layers[model->layer_count].activation = (fuzzy_neuron_activation_t)sqlite3_column_int(stmt, 2);
+        model->layer_count++;
+    }
+    sqlite3_finalize(stmt);
+
+    if (!fuzzy_tuner_compile_internal(model, 42u, false))
+    {
+        sqlite3_close(db); fuzzy_tuner_destroy(model); return NULL;
+    }
+
+    /* 9. Load exact trained ANN weights & biases */
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT layer_index,destination_neuron,source_neuron,value FROM weights ORDER BY layer_index,destination_neuron,source_neuron;");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t dst;
+        size_t src_cnt = layer == 0u ? model->input_count : model->layers[layer - 1u].count;
+        for (dst = 0u; dst < model->layers[layer].count; ++dst)
+        {
+            size_t src;
+            for (src = 0u; src < src_cnt; ++src)
+            {
+                size_t widx = model->layers[layer].weight_offset + dst * src_cnt + src;
+                fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read weight");
+                model->weights[widx] = (float)sqlite3_column_double(stmt, 3);
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = fuzzy_neuron_sqlite_prepare(db, "SELECT layer_index,neuron_index,value FROM biases ORDER BY layer_index,neuron_index;");
+    for (layer = 0u; layer < model->layer_count; ++layer)
+    {
+        size_t n;
+        for (n = 0u; n < model->layers[layer].count; ++n)
+        {
+            fuzzy_neuron_sqlite_expect(sqlite3_step(stmt), db, SQLITE_ROW, "read bias");
+            model->biases[model->layers[layer].bias_offset + n] = (float)sqlite3_column_double(stmt, 2);
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    fuzzy_neuron_sqlite_expect(sqlite3_close(db), db, SQLITE_OK, "close tuner db");
+    printf("Auto-loaded complete Fuzzy-ANN Tuner network '%s' from %s\n", model->name, path);
+    return model;
+}
+
+bool fuzzy_tuner_database_load(const char *path, fuzzy_tuner_model_t *model)
+{
+    fuzzy_tuner_model_t *loaded;
+    if (path == NULL || model == NULL || !model->compiled) return false;
+    loaded = fuzzy_tuner_database_autoload(path);
+    if (loaded == NULL) return false;
+    if (loaded->input_count != model->input_count ||
+        loaded->output_count != model->output_count ||
+        loaded->input_mf_parameter_count != model->input_mf_parameter_count ||
+        loaded->output_mf_parameter_count != model->output_mf_parameter_count ||
+        loaded->weight_count != model->weight_count ||
+        loaded->bias_count != model->bias_count)
+    {
+        fuzzy_tuner_destroy(loaded);
+        return false;
+    }
+    memcpy(model->input_mf_parameters, loaded->input_mf_parameters, model->input_mf_parameter_count * sizeof(float));
+    memcpy(model->output_mf_parameters, loaded->output_mf_parameters, model->output_mf_parameter_count * sizeof(float));
+    memcpy(model->weights, loaded->weights, model->weight_count * sizeof(float));
+    memcpy(model->biases, loaded->biases, model->bias_count * sizeof(float));
+    model->tuner_scale = loaded->tuner_scale;
+    model->ann_enabled = loaded->ann_enabled;
+    fuzzy_tuner_destroy(loaded);
+    return true;
+}
+
+static const char *fuzzy_tuner_shape_enum_name(fuzzy_shape_t shape)
+{
+    switch (shape)
+    {
+        case FUZZY_SHAPE_RAMP: return "FUZZY_SHAPE_RAMP";
+        case FUZZY_SHAPE_TRIANGLE: return "FUZZY_SHAPE_TRIANGLE";
+        case FUZZY_SHAPE_TRAPEZOID: return "FUZZY_SHAPE_TRAPEZOID";
+        case FUZZY_SHAPE_SMF: return "FUZZY_SHAPE_SMF";
+        case FUZZY_SHAPE_ZMF: return "FUZZY_SHAPE_ZMF";
+        case FUZZY_SHAPE_GAUSSIAN: return "FUZZY_SHAPE_GAUSSIAN";
+        case FUZZY_SHAPE_BELL: return "FUZZY_SHAPE_BELL";
+        case FUZZY_SHAPE_SIGMOID: return "FUZZY_SHAPE_SIGMOID";
+        case FUZZY_SHAPE_PIMF: return "FUZZY_SHAPE_PIMF";
+        case FUZZY_SHAPE_DSIGMOID: return "FUZZY_SHAPE_DSIGMOID";
+        case FUZZY_SHAPE_PSIGMOID: return "FUZZY_SHAPE_PSIGMOID";
+        case FUZZY_SHAPE_GAUSSIAN2: return "FUZZY_SHAPE_GAUSSIAN2";
+        default: return "FUZZY_SHAPE_GAUSSIAN";
+    }
+}
+
+static const char *fuzzy_tuner_activation_enum_name(fuzzy_neuron_activation_t act)
+{
+    switch (act)
+    {
+        case FUZZY_NEURON_LINEAR: return "FUZZY_NEURON_LINEAR";
+        case FUZZY_NEURON_SIGMOID: return "FUZZY_NEURON_SIGMOID";
+        case FUZZY_NEURON_TANH: return "FUZZY_NEURON_TANH";
+        case FUZZY_NEURON_RELU: return "FUZZY_NEURON_RELU";
+        default: return "FUZZY_NEURON_TANH";
+    }
+}
+
+static const char *fuzzy_tuner_logic_enum_name(fuzzy_logic_method_t m)
+{
+    switch (m)
+    {
+        case FUZZY_LOGIC_ALGEBRAIC: return "FUZZY_LOGIC_ALGEBRAIC";
+        case FUZZY_LOGIC_BOUNDED: return "FUZZY_LOGIC_BOUNDED";
+        default: return "FUZZY_LOGIC_STANDARD";
+    }
+}
+
+bool fuzzy_tuner_autogen_c_from_model(const fuzzy_tuner_model_t *model, const char *header_path, const char *symbol_prefix)
+{
+    FILE *f;
+    size_t i;
+    size_t p;
+
+    if (model == NULL || !model->compiled || header_path == NULL || symbol_prefix == NULL) return false;
+    f = fopen(header_path, "w");
+    if (f == NULL) return false;
+
+    fprintf(f, "/* AUTO-GENERATED by fuzzy.h fuzzy_tuner_autogen_c_from_db()\n");
+    fprintf(f, " * Model: %s | Inputs: %zu | Outputs: %zu | Rules: %zu | Weights: %zu | Biases: %zu\n",
+        model->name != NULL ? model->name : symbol_prefix,
+        model->input_count, model->output_count, model->rule_count,
+        model->weight_count, model->bias_count);
+    fprintf(f, " * Seamless standalone deployment header (zero SQLite runtime dependency).\n */\n");
+    fprintf(f, "#ifndef %s_AUTOGEN_H\n#define %s_AUTOGEN_H\n\n", symbol_prefix, symbol_prefix);
+
+    /* Emit X-Macro tables */
+    fprintf(f, "#define %s_INPUTS(X)", symbol_prefix);
+    for (i = 0u; i < model->input_count; ++i)
+    {
+        fprintf(f, " \\\n    X(%s, %.9ff, %.9ff)",
+            model->inputs[i].name != NULL ? model->inputs[i].name : "in",
+            model->inputs[i].minimum, model->inputs[i].maximum);
+    }
+    fprintf(f, "\n\n");
+
+    fprintf(f, "#define %s_OUTPUTS(X)", symbol_prefix);
+    for (i = 0u; i < model->output_count; ++i)
+    {
+        fprintf(f, " \\\n    X(%s, %.9ff, %.9ff, %.9ff, %s)",
+            model->outputs[i].name != NULL ? model->outputs[i].name : "out",
+            model->outputs[i].minimum, model->outputs[i].maximum, model->outputs[i].step,
+            model->outputs[i].defuzz_method == FUZZY_DEFUZZ_BOA ? "FUZZY_DEFUZZ_BOA" : "FUZZY_DEFUZZ_COG");
+    }
+    fprintf(f, "\n\n");
+
+    fprintf(f, "#define %s_INPUT_MFS(X)", symbol_prefix);
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        fprintf(f, " \\\n    X(%s, %zuu, %s, %.9ff, 0x%xu, %.9ff, %.9ff",
+            mf->name, mf->input_index, fuzzy_tuner_shape_enum_name(mf->shape),
+            mf->hedge, mf->trainable_mask, mf->domain_minimum, mf->domain_maximum);
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            fprintf(f, ", %.9ff", model->input_mf_parameters[mf->parameter_offset + p]);
+        }
+        fprintf(f, ")");
+    }
+    fprintf(f, "\n\n");
+
+    fprintf(f, "#define %s_OUTPUT_MFS(X)", symbol_prefix);
+    for (i = 0u; i < model->output_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->output_mfs[i];
+        fprintf(f, " \\\n    X(%s, %zuu, %s, %.9ff, 0x%xu, %.9ff, %.9ff",
+            mf->name, mf->input_index, fuzzy_tuner_shape_enum_name(mf->shape),
+            mf->hedge, mf->trainable_mask, mf->domain_minimum, mf->domain_maximum);
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            fprintf(f, ", %.9ff", model->output_mf_parameters[mf->parameter_offset + p]);
+        }
+        fprintf(f, ")");
+    }
+    fprintf(f, "\n\n");
+
+    fprintf(f, "#define %s_ANN_LAYERS(X)", symbol_prefix);
+    for (i = 0u; i + 1u < model->layer_count; ++i)
+    {
+        fprintf(f, " \\\n    X(%zuu, %s)",
+            model->layers[i].count,
+            fuzzy_tuner_activation_enum_name(model->layers[i].activation));
+    }
+    fprintf(f, "\n\n");
+
+    /* Emit trained weights & biases arrays */
+    fprintf(f, "static const float %s_trained_weights[%zuu] = {\n", symbol_prefix, model->weight_count);
+    for (i = 0u; i < model->weight_count; ++i)
+    {
+        fprintf(f, "%s%.9ff%s%s",
+            (i % 8u == 0u) ? "    " : "",
+            model->weights[i],
+            (i + 1u < model->weight_count) ? ", " : "",
+            ((i + 1u) % 8u == 0u || i + 1u == model->weight_count) ? "\n" : "");
+    }
+    fprintf(f, "};\n\n");
+
+    fprintf(f, "static const float %s_trained_biases[%zuu] = {\n", symbol_prefix, model->bias_count);
+    for (i = 0u; i < model->bias_count; ++i)
+    {
+        fprintf(f, "%s%.9ff%s%s",
+            (i % 8u == 0u) ? "    " : "",
+            model->biases[i],
+            (i + 1u < model->bias_count) ? ", " : "",
+            ((i + 1u) % 8u == 0u || i + 1u == model->bias_count) ? "\n" : "");
+    }
+    fprintf(f, "};\n\n");
+
+    /* Emit standalone autogenerated builder function */
+    fprintf(f, "static fuzzy_tuner_model_t *%s_create_autogen(void)\n{\n", symbol_prefix);
+    fprintf(f, "    fuzzy_tuner_model_t *ft_model__ = (fuzzy_tuner_model_t *)calloc(1u, sizeof(*ft_model__));\n");
+    fprintf(f, "    if (ft_model__ == NULL) return NULL;\n");
+    fprintf(f, "    fuzzy_tuner_init(ft_model__, \"%s\", %s, %.9ff);\n",
+        model->name != NULL ? model->name : symbol_prefix,
+        fuzzy_tuner_logic_enum_name(model->logic_method),
+        model->tuner_scale);
+    fprintf(f, "    ft_model__->ann_enabled = %s;\n", model->ann_enabled ? "true" : "false");
+    fprintf(f, "    %s_INPUTS(FUZZY_TUNER_X_ADD_INPUT)\n", symbol_prefix);
+    fprintf(f, "    %s_OUTPUTS(FUZZY_TUNER_X_ADD_OUTPUT)\n", symbol_prefix);
+    for (i = 0u; i < model->input_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->input_mfs[i];
+        fprintf(f, "    { const float p__[] = {");
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            fprintf(f, "%s%.9ff", p > 0u ? ", " : "", model->input_mf_parameters[mf->parameter_offset + p]);
+        }
+        fprintf(f, "}; if (fuzzy_tuner_add_input_mf(ft_model__, \"%s\", %zuu, %s, %.9ff, 0x%xu, %.9ff, %.9ff, %zuu, p__) == SIZE_MAX) { fuzzy_tuner_destroy(ft_model__); return NULL; } }\n",
+            mf->name, mf->input_index, fuzzy_tuner_shape_enum_name(mf->shape),
+            mf->hedge, mf->trainable_mask, mf->domain_minimum, mf->domain_maximum, mf->parameter_count);
+    }
+    for (i = 0u; i < model->output_mf_count; ++i)
+    {
+        const fuzzy_neuron_premise_t *mf = &model->output_mfs[i];
+        fprintf(f, "    { const float p__[] = {");
+        for (p = 0u; p < mf->parameter_count; ++p)
+        {
+            fprintf(f, "%s%.9ff", p > 0u ? ", " : "", model->output_mf_parameters[mf->parameter_offset + p]);
+        }
+        fprintf(f, "}; if (fuzzy_tuner_add_output_mf(ft_model__, \"%s\", %zuu, %s, %.9ff, 0x%xu, %.9ff, %.9ff, %zuu, p__) == SIZE_MAX) { fuzzy_tuner_destroy(ft_model__); return NULL; } }\n",
+            mf->name, mf->input_index, fuzzy_tuner_shape_enum_name(mf->shape),
+            mf->hedge, mf->trainable_mask, mf->domain_minimum, mf->domain_maximum, mf->parameter_count);
+    }
+    for (i = 0u; i < model->expression_count; ++i)
+    {
+        fprintf(f, "    if (fuzzy_tuner_add_expression(ft_model__, (fuzzy_neuron_expression_kind_t)%u, %zuu, %zuu, %zuu) == SIZE_MAX) { fuzzy_tuner_destroy(ft_model__); return NULL; }\n",
+            (unsigned)model->expressions[i].kind,
+            model->expressions[i].left,
+            model->expressions[i].right,
+            model->expressions[i].value);
+    }
+    for (i = 0u; i < model->rule_count; ++i)
+    {
+        fprintf(f, "    if (!fuzzy_tuner_add_rule(ft_model__, \"%s\", %zuu, %zuu)) { fuzzy_tuner_destroy(ft_model__); return NULL; }\n",
+            model->rules[i].name != NULL ? model->rules[i].name : "rule",
+            model->rule_roots[i],
+            model->rule_consequents[i]);
+    }
+    fprintf(f, "    %s_ANN_LAYERS(FUZZY_TUNER_X_ADD_LAYER)\n", symbol_prefix);
+    fprintf(f, "    if (!fuzzy_tuner_compile(ft_model__, 42u)) { fuzzy_tuner_destroy(ft_model__); return NULL; }\n");
+    fprintf(f, "    memcpy(ft_model__->weights, %s_trained_weights, sizeof(%s_trained_weights));\n", symbol_prefix, symbol_prefix);
+    fprintf(f, "    memcpy(ft_model__->biases, %s_trained_biases, sizeof(%s_trained_biases));\n", symbol_prefix, symbol_prefix);
+    fprintf(f, "    return ft_model__;\n}\n\n#endif /* %s_AUTOGEN_H */\n", symbol_prefix);
+
+    if (fclose(f) != 0) return false;
+    printf("Auto-generated standalone deployment network header: %s\n", header_path);
+    return true;
+}
+
+bool fuzzy_tuner_autogen_c_from_db(const char *db_path, const char *header_path, const char *symbol_prefix)
+{
+    fuzzy_tuner_model_t *loaded;
+    bool ok;
+    if (db_path == NULL || header_path == NULL || symbol_prefix == NULL) return false;
+    loaded = fuzzy_tuner_database_autoload(db_path);
+    if (loaded == NULL) return false;
+    ok = fuzzy_tuner_autogen_c_from_model(loaded, header_path, symbol_prefix);
+    fuzzy_tuner_destroy(loaded);
+    return ok;
+}
+
+#endif /* FUZZY_SQLITE */
+
+#endif /* FUZZY_TUNER_IMPLEMENTATION_ONCE */
 #endif /* FUZZY_IMPLEMENTATION */
 #endif /* !FUZZY_8051 */
 

@@ -117,6 +117,8 @@ sudo apt-get install -y \
     opencl-c-headers \
     opencl-clhpp-headers\
     sqlite3\
+    libsqlite3-dev\
+    sdcc
     
 
 pass "Vendor-neutral OpenCL development stack installed."

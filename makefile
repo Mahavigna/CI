@@ -5,7 +5,7 @@
 CC ?= clang
 CFLAGS := -O3 -Wall -Wextra -Wpedantic -std=c11
 LDFLAGS :=
-LDLIBS := -lm -lsqlite3
+LDLIBS := -lm -lsqlite3 -pthread
 CPU_THREADS := $(shell nproc)
 MAKE_JOBS := $(shell echo $$(( $(CPU_THREADS) * 3 )))
 MAKEFLAGS += -j$(MAKE_JOBS)
@@ -66,6 +66,12 @@ FUZZY_NEURON_SOURCE := fuzzy_neuron_train.c
 FUZZY_NEURON_PLUGIN := fuzzy_model_rules.so
 FUZZY_NEURON_KERNEL := fuzzy_neuron_kernels.cl
 FUZZY_NEURON_OUTPUT := fuzzy-neuron-output
+SMART_HVAC_TARGET := smart-hvac-app
+SMART_HVAC_SOURCE := smart_hvac.c
+SMART_HVAC_DEPLOY_TARGET := smart-hvac-deploy
+SMART_HVAC_DEPLOY_SOURCE := smart_hvac_deploy.c
+SMART_HVAC_DB := $(FUZZY_NEURON_OUTPUT)/smart_hvac_tuner.db
+SMART_HVAC_AUTOGEN := $(FUZZY_NEURON_OUTPUT)/smart_hvac_autogen.h
 FUZZY_NEURON_MODEL := $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_model.csv
 FUZZY_NEURON_TEST_OUTPUT := $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_test_predictions.csv
 FUZZY_NEURON_ORIGINAL_OUTPUT := $(FUZZY_NEURON_OUTPUT)/fuzzy_neuron_original_predictions.csv
@@ -360,6 +366,46 @@ $(FUZZY_NEURON_TARGET): $(FUZZY_NEURON_SOURCE) fuzzy.h $(FUZZY_NEURON_KERNEL)
 	@echo "============================================================"
 	$(CC_CMD) $(CFLAGS) $(GPU_CFLAGS) -rdynamic $(FUZZY_NEURON_SOURCE) $(LDFLAGS) -o $(FUZZY_NEURON_TARGET) $(GPU_LDLIBS) -ldl $(LDLIBS)
 	@echo "[OK] Built $(FUZZY_NEURON_TARGET)"
+
+
+$(SMART_HVAC_TARGET): $(SMART_HVAC_SOURCE) fuzzy.h
+	@echo ""
+	@echo "============================================================"
+	@echo "Building Smart HVAC 5-input / 3-output fuzzy controller"
+	@echo "============================================================"
+	$(CC_CMD) $(CFLAGS) $(SMART_HVAC_SOURCE) $(LDFLAGS) -o $(SMART_HVAC_TARGET) $(LDLIBS)
+	@echo "[OK] Built $(SMART_HVAC_TARGET)"
+
+
+$(SMART_HVAC_DEPLOY_TARGET): $(SMART_HVAC_DEPLOY_SOURCE) fuzzy.h $(FUZZY_NEURON_KERNEL)
+	@echo ""
+	@echo "============================================================"
+	@echo "Building Smart HVAC seamless SQLite autoload/autogen deploy demo"
+	@echo "============================================================"
+	@if [ -f "$(SMART_HVAC_AUTOGEN)" ]; then \
+		$(CC_CMD) $(CFLAGS) $(GPU_CFLAGS) -DUSE_AUTOGEN_HEADER $(SMART_HVAC_DEPLOY_SOURCE) $(LDFLAGS) -o $(SMART_HVAC_DEPLOY_TARGET) $(GPU_LDLIBS) $(LDLIBS); \
+	else \
+		$(CC_CMD) $(CFLAGS) $(GPU_CFLAGS) $(SMART_HVAC_DEPLOY_SOURCE) $(LDFLAGS) -o $(SMART_HVAC_DEPLOY_TARGET) $(GPU_LDLIBS) $(LDLIBS); \
+	fi
+	@echo "[OK] Built $(SMART_HVAC_DEPLOY_TARGET)"
+
+
+verify-fuzzy-tuner: $(FUZZY_NEURON_TARGET) $(FUZZY_NEURON_PLUGIN)
+	@echo ""
+	@echo "============================================================"
+	@echo "Verifying Adaptive Fuzzy Rules + ANN MF-Tuning System"
+	@echo "============================================================"
+	mkdir -p $(FUZZY_NEURON_OUTPUT)
+	./$(FUZZY_NEURON_TARGET) --verify
+
+
+run-smart-hvac-deploy: verify-fuzzy-tuner
+	@echo ""
+	@echo "============================================================"
+	@echo "Building & Running Seamless SQLite Autoload + Autogen Deploy Demo"
+	@echo "============================================================"
+	$(CC_CMD) $(CFLAGS) $(GPU_CFLAGS) -DUSE_AUTOGEN_HEADER $(SMART_HVAC_DEPLOY_SOURCE) $(LDFLAGS) -o $(SMART_HVAC_DEPLOY_TARGET) $(GPU_LDLIBS) $(LDLIBS)
+	./$(SMART_HVAC_DEPLOY_TARGET)
 
 
 # ============================================================
